@@ -2,7 +2,7 @@
 
 const User = require('../collections/user')
 
-const fetchOrCreate = async (ctx, userid, username, msg) => {
+const fetchOrCreate = async (ctx, userid, username) => {
     let user = await User.findOne({ discord_id: userid })
 
     if (!user) {
@@ -12,7 +12,7 @@ const fetchOrCreate = async (ctx, userid, username, msg) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.rpl(msg.channel.id, user, 'welcome to **amoosement clup**')
+        await ctx.rpl(user, 'welcome to **amoosement clup**')
     }
 
     return user
@@ -27,7 +27,7 @@ module.exports = {
 const {cmd} = require('../utils/cmd')
 
 
-cmd('inv', ({ rpl }, user, msg) => {
+cmd('inv', ({ rpl }, user, ...args) => {
     if (user.inventory.length == 0) {
         return rpl(user, 'your inventory is empty. Buy something from the `/store`')
     }

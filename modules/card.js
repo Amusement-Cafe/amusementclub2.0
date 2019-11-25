@@ -20,9 +20,9 @@ const fetchRandom = async (query = {}, amount = 1) => {
 const formatClaim = (cards) => {
     const repl = "you got:\n"
     cards.sort((a, b) => b.level - a.level)
-    return { 
+    return {
         url: formatLink(cards[0]),
-        description: repl.concat(cards.map(x => formatName(x)).join('\n')) 
+        description: repl.concat(cards.map(x => formatName(x)).join('\n'))
     }
 }
 
@@ -42,14 +42,14 @@ module.exports = {
 
 const {cmd} = require('../utils/cmd')
 
-cmd('claim', async (ctx, user, {channel}, arg1) => {
+cmd('claim', async (ctx, user, arg1) => {
     const items = await fetchRandom({}, parseInt(arg1) || 1)
 
-    return ctx.rpl(channel.id, user, formatClaim(items))
+    return ctx.rpl(user, formatClaim(items))
 })
 
-cmd('claim', 'promo', async (ctx, user, {channel}, arg1) => {
+cmd('claim', 'promo', async (ctx, user, arg1) => {
     const items = await fetchRandom({ isPromo: true }, parseInt(arg1) || 1)
 
-    return ctx.rpl(channel.id, user, items.join('\n'))
+    return ctx.rpl(user, items.join('\n'))
 })
