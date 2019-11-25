@@ -1,5 +1,6 @@
 const {cmd} = require('../utils/cmd')
 
-cmd('help', ({ rpl }, user, { channel }) => {
-    rpl(channel.id, user, 'here is some help for you: **no**')
+cmd('help', ({ reply, msg }, user, ...args) => {
+    console.log('a user', user.username, 'sent help with args', args, 'in channel:', msg.channel.id)
+    reply(user, 'here is some help for you: **no**')
 })

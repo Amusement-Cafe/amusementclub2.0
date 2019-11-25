@@ -16,17 +16,16 @@ async function main() {
     const bot = new Eris(config.token)
 
     /* create our glorious sending fn */
-    const msg = (ch, content) => new Promise((r, f) => {
+    const send = (ch, content) => new Promise((r, f) => {
         return bot.createMessage(ch, { embed: content })
     })
 
-    /* create our player reply sending fn */
-    const rpl = (ch, user, str, clr = 'default') => msg(ch, typeof str === 'object'? 
-        { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] } : 
-        { description: `**${user.username}**, ${str}`, color: colors[clr] })
-
     /* create our context */
-    const ctx = { mcn, bot, msg, rpl }
+    const ctx = {
+        mcn, /* mongoose database connection */
+        bot, /* create and connected Eris bot instance */
+        send, /* a sending function to send stuff to a specific channel */
+    }
 
     /* events */
     bot.on('ready', async event => {
@@ -42,13 +41,24 @@ async function main() {
         if (!msg.content.startsWith(config.prefix)) return; /* skip not commands */
         if (msg.author.bot) return; /* skip bot users */
 
-        const usr  = await user.fetchOrCreate(ctx, msg.author.id, msg.author.username)
-        const args = msg.content.trim().substring(2).split(' ')
-
         try {
-            await trigger(args, ctx, usr, msg)
+            /* create our player reply sending fn */
+            const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object' ?
+                { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] } :
+                { description: `**${user.username}**, ${str}`, color: colors[clr] })
+
+            /* fill in additional context data */
+            const isolatedCtx = Object.assign({}, ctx, {
+                msg, /* current icoming msg object */
+                reply, /* quick reply function to the user */
+            })
+
+            const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+            const args = msg.content.trim().substring(2).split(' ')
+
+            await trigger(isolatedCtx, usr, args)
         } catch (e) {
-            rpl(msg.channel.id, usr, e.message, 'red')
+            send(msg.channel.id, { description: e.message, color: colors.red })
         }
     })
 
