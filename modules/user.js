@@ -12,7 +12,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.rpl(user, 'welcome to **amoosement clup**')
+        await ctx.reply(user, 'welcome to **amoosement clup**')
     }
 
     return user
@@ -27,13 +27,13 @@ module.exports = {
 const {cmd} = require('../utils/cmd')
 
 
-cmd('inv', ({ rpl }, user, ...args) => {
+cmd('inv', ({ reply }, user, ...args) => {
     if (user.inventory.length == 0) {
-        return rpl(user, 'your inventory is empty. Buy something from the `/store`')
+        return reply(user, 'your inventory is empty. Buy something from the `/store`')
     }
 
     const items = user.inventory
         .map((item, index) => `${index+1}. ${item.name}`)
 
-    return rpl(user, items.join(' '))
+    return reply(user, items.join(' '))
 })

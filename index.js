@@ -42,9 +42,6 @@ async function main() {
         if (msg.author.bot) return; /* skip bot users */
 
         try {
-            const usr  = await user.fetchOrCreate(ctx, msg.author.id, msg.author.username)
-            const args = msg.content.trim().substring(2).split(' ')
-
             /* create our player reply sending fn */
             const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object' ?
                 { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] } :
@@ -54,7 +51,10 @@ async function main() {
             ctx.msg = msg; /* current icoming msg object */
             ctx.reply = reply; /* quick reply function to the user */
 
-            await trigger(args, ctx, usr)
+            const usr  = await user.fetchOrCreate(ctx, msg.author.id, msg.author.username)
+            const args = msg.content.trim().substring(2).split(' ')
+
+            await trigger(ctx, usr, args)
         } catch (e) {
             send(msg.channel.id, { description: e.message, color: colors.red })
         }

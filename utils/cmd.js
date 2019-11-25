@@ -15,7 +15,7 @@ const cmd = (...args) => {
     cursor._callback = callback
 }
 
-const trigger = async (args, ctx, user) => {
+const trigger = async (ctx, user, args) => {
     let cursor = cmdtree
 
     while (cursor.hasOwnProperty(args[0])) {

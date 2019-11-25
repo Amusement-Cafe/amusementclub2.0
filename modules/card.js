@@ -45,11 +45,11 @@ const {cmd} = require('../utils/cmd')
 cmd('claim', async (ctx, user, arg1) => {
     const items = await fetchRandom({}, parseInt(arg1) || 1)
 
-    return ctx.rpl(user, formatClaim(items))
+    return ctx.reply(user, formatClaim(items))
 })
 
 cmd('claim', 'promo', async (ctx, user, arg1) => {
     const items = await fetchRandom({ isPromo: true }, parseInt(arg1) || 1)
 
-    return ctx.rpl(user, items.join('\n'))
+    return ctx.reply(user, items.join('\n'))
 })
