@@ -1,0 +1,19 @@
+{
+  "name": "amusementclub2.0",
+  "version": "1.0.0",
+  "description": "Next version of Amusement Club discord gacha",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "noxcaos",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.578.0",
+    "eris": "^0.11.1",
+    "lodash": "^4.17.15",
+    "mongodb": "^3.3.4",
+    "mongoose": "^5.7.12",
+    "pretty-ms": "^5.1.0"
+  }
+}
