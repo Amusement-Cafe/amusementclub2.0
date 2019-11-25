@@ -15,7 +15,7 @@ const cmd = (...args) => {
     cursor._callback = callback
 }
 
-const trigger = async (args, ctx, user) => {
+const trigger = async (args, ctx, user, msg) => {
     let cursor = cmdtree
 
     while (cursor.hasOwnProperty(args[0])) {
@@ -27,7 +27,7 @@ const trigger = async (args, ctx, user) => {
         throw new Error('unknown command name, please try again, or use ->help')
     }
 
-    const newArgs = [ctx, user].concat(args)
+    const newArgs = [ctx, user, msg].concat(args)
 
     try {
         return await cursor._callback.apply({}, newArgs)

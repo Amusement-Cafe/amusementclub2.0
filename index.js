@@ -16,13 +16,14 @@ async function main() {
     const bot = new Eris(config.token)
 
     /* create our glorious sending fn */
-    const msg = (ch, str, color = 'default', title = '') => new Promise((r, f) => {
-        const content = { embed: { color: colors[color], description: str, title: title }}
-        bot.createMessage(ch, content)
+    const msg = (ch, content) => new Promise((r, f) => {
+        return bot.createMessage(ch, { embed: content })
     })
 
     /* create our player reply sending fn */
-    const rpl = (ch, user, str, clr = 'default', title = '') => msg(ch, `**${user.username}**, ${Array.isArray(str) ? str.join('\n') : str}`, clr)
+    const rpl = (ch, user, str, clr = 'default') => msg(ch, typeof str === 'object'? 
+        { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] } : 
+        { description: `**${user.username}**, ${str}`, color: colors[clr] })
 
     /* create our context */
     const ctx = { mcn, bot, msg, rpl }
@@ -45,9 +46,9 @@ async function main() {
         const args = msg.content.trim().substring(2).split(' ')
 
         try {
-            await trigger(args, ctx, usr)
+            await trigger(args, ctx, usr, msg)
         } catch (e) {
-            rpl(msg.channel.id, usr, e.message, 'red', '[debug:on]')
+            rpl(msg.channel.id, usr, e.message, 'red')
         }
     })
 
