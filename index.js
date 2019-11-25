@@ -46,7 +46,7 @@ async function main() {
             const args = msg.content.trim().substring(2).split(' ')
 
             /* create our player reply sending fn */
-            const reply = (user, str, clr = 'default') => msg(msg.channel.id, typeof str === 'object' ?
+            const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object' ?
                 { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] } :
                 { description: `**${user.username}**, ${str}`, color: colors[clr] })
 
