@@ -48,13 +48,15 @@ async function main() {
                 { description: `**${user.username}**, ${str}`, color: colors[clr] })
 
             /* fill in additional context data */
-            ctx.msg = msg; /* current icoming msg object */
-            ctx.reply = reply; /* quick reply function to the user */
+            const isolatedCtx = Object.assign({}, ctx, {
+                msg, /* current icoming msg object */
+                reply, /* quick reply function to the user */
+            })
 
-            const usr  = await user.fetchOrCreate(ctx, msg.author.id, msg.author.username)
+            const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const args = msg.content.trim().substring(2).split(' ')
 
-            await trigger(ctx, usr, args)
+            await trigger(isolatedCtx, usr, args)
         } catch (e) {
             send(msg.channel.id, { description: e.message, color: colors.red })
         }
