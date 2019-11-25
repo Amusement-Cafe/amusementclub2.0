@@ -23,7 +23,7 @@ async function main() {
     /* create our context */
     const ctx = {
         mcn, /* mongoose database connection */
-        bot, /* create and connected Eris bot instance */
+        bot, /* created and connected Eris bot instance */
         send, /* a sending function to send stuff to a specific channel */
     }
 

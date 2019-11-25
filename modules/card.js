@@ -1,20 +1,15 @@
 /* functions */
 
-const Card      = require('../collections/card')
-const config    = require('../config')
-const {cap}     = require('../utils/tools')
+const Card          = require('../collections/card')
+const Collection    = require('../collections/collection')
+const config        = require('../config')
+const {cap}         = require('../utils/tools')
 
-const fetchRandom = async (query = {}, amount = 1) => {
-    const count = await Card.countDocuments()
-    const cards = []
+const colMod    = require('./collection')
 
-    for (let i = 0; i < amount; i++) {
-        let random = Math.floor(Math.random() * count)
-        let card = await Card.findOne(query).skip(random)
-        cards.push(card)
-    }
-
-    return cards
+const fetchRandom = async (amount, query = {}) => {
+    const random = Math.floor(Math.random() * amount)
+    return await Card.findOne(query).skip(random)
 }
 
 const formatClaim = (cards) => {
@@ -43,7 +38,15 @@ module.exports = {
 const {cmd} = require('../utils/cmd')
 
 cmd('claim', async (ctx, user, arg1) => {
-    const items = await fetchRandom({}, parseInt(arg1) || 1)
+    const countCol = await Collection.countDocuments()
+    const items = []
+    const amount = parseInt(arg1) || 1
+
+    for (let i = 0; i < amount; i++) {
+        const q = { col: (await colMod.fetchRandom(countCol)).name }
+        const countCard = await Card.countDocuments(q)
+        items.push(await fetchRandom(countCard, q))
+    }
 
     return ctx.reply(user, formatClaim(items))
 })
