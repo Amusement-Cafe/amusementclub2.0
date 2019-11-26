@@ -1,5 +1,5 @@
 const {cmd} = require('../utils/cmd')
 
-cmd('admin', 'item', 'add', (ctx, user) => {
+cmd(['admin', 'item', 'add'], (ctx, user) => {
     console.log('lol')
 })

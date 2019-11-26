@@ -51,7 +51,7 @@ cmd('claim', async (ctx, user, arg1) => {
     return ctx.reply(user, formatClaim(items))
 })
 
-cmd('claim', 'promo', async (ctx, user, arg1) => {
+cmd(['claim', 'promo'], async (ctx, user, arg1) => {
     const items = await fetchRandom({ isPromo: true }, parseInt(arg1) || 1)
 
     return ctx.reply(user, items.join('\n'))
