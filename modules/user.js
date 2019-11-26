@@ -31,7 +31,7 @@ cmd('bal', ({ reply }, user, ...args) => {
 })
 
 
-cmd('inv', ({ reply }, user, ...args) => {
+cmd('inv', ['inventory', 'check'], ({ reply }, user, ...args) => {
     if (user.inventory.length == 0) {
         return reply(user, 'your inventory is empty. Buy something from the `/store`')
     }

@@ -2,17 +2,21 @@ const cmdtree = {}
 
 const cmd = (...args) => {
     const callback = args.pop()
-    let cursor = cmdtree
 
-    args.map(arg => {
-        if (!cursor.hasOwnProperty(arg)) {
-            cursor[arg] = {}
-        }
+    args.map(alias => {
+        let sequence = Array.isArray(alias) ? alias : [alias]
+        let cursor = cmdtree
 
-        cursor = cursor[arg]
+        sequence.map(arg => {
+            if (!cursor.hasOwnProperty(arg)) {
+                cursor[arg] = {}
+            }
+
+            cursor = cursor[arg]
+        })
+
+        cursor._callback = callback
     })
-
-    cursor._callback = callback
 }
 
 const trigger = async (ctx, user, args) => {
