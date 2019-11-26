@@ -29,6 +29,16 @@ const formatLink = (x) => {
     return `${config.baseurl}/cards/${x.col}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
 }
 
+const parseArgs = (args) => {
+
+}
+
+const userHasCard = (user, card) => {
+    console.log(card._id)
+    console.log(user.cards[0]._id)
+    return user.cards.filter(x => x._id == card._id).length > 0
+}
+
 module.exports = {
     fetchRandom,
 }
@@ -56,3 +66,19 @@ cmd('claim', 'promo', async (ctx, user, arg1) => {
 
     return ctx.reply(user, items.join('\n'))
 })
+
+cmd('sum', async (ctx, user, ...args) => {
+    const regexp = new RegExp("(_|^)" + args.join('_'), 'ig');
+    const card = await Card.findOne({ name: regexp })
+
+    if(!card)
+        return ctx.reply(user, `card with name **${args.join(' ')}** was not found`)
+
+    //if(!userHasCard(user, card))
+        //return ctx.reply(user, `card **${formatName(card)}** exists, but you don't have it`)
+
+    return ctx.reply(user, {
+        url: formatLink(card),
+        description: `summons **${formatName(card)}**`
+    })
+});

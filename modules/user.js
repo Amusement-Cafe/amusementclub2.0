@@ -26,6 +26,10 @@ module.exports = {
 
 const {cmd} = require('../utils/cmd')
 
+cmd('bal', ({ reply }, user, ...args) => {
+    return reply(user, `you have **${Math.floor(user.exp)}** tomatoes`)
+})
+
 
 cmd('inv', ({ reply }, user, ...args) => {
     if (user.inventory.length == 0) {
