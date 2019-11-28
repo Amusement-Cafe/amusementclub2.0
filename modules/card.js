@@ -43,10 +43,7 @@ const parseArgs = async (args) => {
             const pos = x[0] == '-'
             switch(sub) {
                 case 'craft': q.craft = pos; break
-                case 'multi': q.amount = pos? {$gte: 2} : {$eq: 1}; break
                 case 'gif': q.animated = pos; break
-                case 'fav': q.fav = pos; break
-                case 'new': q.obtained = pos? {$gt: date} : {$lt: date}; break
                 default: 
                     if(parseInt(sub))
                         pos? (q.level.$in = q.level.$in || []).push(sub) : q.level.$nin.push(sub)
@@ -61,12 +58,25 @@ const parseArgs = async (args) => {
 
     if(keywords.length > 0)
         q.name = new RegExp(`(_|^)${keywords.join('_')}`, 'gi')
-    console.log(q)
     return q;
 }
 
+const getUserCards = (user, args) => {
+    let res = user.cards
+    args.map(x => {
+        const sub = x.substr(1)
+        const pos = x[0] == '-'
+        switch(sub) {
+            case 'multi': res = pos? res.filter(c => c.amount > 1) : res.filter(c => !c.amount || c.amount == 1); break
+            case 'fav': res = pos? res.filter(c => c.fav) : res.filter(c => !c.fav); break
+            //case 'new': q.obtained = pos? {$gt: date} : {$lt: date}; break
+        }
+    })
+    return res
+}
+
 const userHasCard = (user, card) => {
-    return user.cards.filter(x => equals(x, card)).length > 0
+    return user.cards.filter(x => equals(x, card))[0]
 }
 
 const equals = (card1, card2) => {
@@ -79,15 +89,22 @@ const getUserCard = async (user, args) => {
     if(!match[0])
         return 0
 
-    const userMatch = match.filter(x =>  userHasCard(user, x))
+    const userFilter = getUserCards(user, args)
+    const userMatch = match.filter(x => userFilter.filter(c => equals(c, x)).length > 0)
     if(!userMatch[0])
         return match.length
 
     const final = userMatch.sort((a, b) => a.length - b.length)[0]
-    const userFinal = user.cards.filter(x => equals(x, final))[0]
+    const userFinal = userFilter.filter(x => equals(x, final))[0]
 
     for (let attrname in userFinal) { final[attrname] = userFinal[attrname] }
     return final
+}
+
+const addUserCard = (user, card) => {
+    const userCard = userHasCard(user, card)
+    if(userCard) userCard.amount = (userCard.amount + 1 || 2);
+    else user.cards.push({ name: card.name, level: card.level, col: card.col, amount: 1 });
 }
 
 module.exports = {
@@ -104,11 +121,14 @@ cmd('claim', async (ctx, user, arg1) => {
     const amount = parseInt(arg1) || 1
 
     for (let i = 0; i < amount; i++) {
-        const q = { col: (await colMod.fetchRandom(countCol)).name }
+        const q = { col: (await colMod.fetchRandom(countCol)).id }
         const countCard = await Card.countDocuments(q)
-        items.push(await fetchRandom(countCard, q))
+        const item = await fetchRandom(countCard, q)
+        addUserCard(user, item)
+        items.push(item)
     }
 
+    await user.save()
     return ctx.reply(user, formatClaim(items))
 })
 
@@ -119,8 +139,10 @@ cmd(['claim', 'promo'], async (ctx, user, arg1) => {
 })
 
 cmd('sum', async (ctx, user, ...args) => {
-    const card = await getUserCard(user, args)
-    console.log(card)
+    let card = {}
+    if(args.length == 0)
+        card = user.cards[0]
+    else card = await getUserCard(user, args)
 
     if(!card || card === 0)
         return ctx.reply(user, `card with name **${args.join(' ')}** was not found`)
