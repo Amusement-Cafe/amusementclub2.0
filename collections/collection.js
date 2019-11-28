@@ -5,7 +5,7 @@ module.exports = model('Collection', {
     name:          	{ type: String },
     origin:      	{ type: String },
 
-    aliases:      	{ type: Array },
+    aliases:      	[ { type: String } ],
 
     special:       	{ type: Boolean, default: false },
     compressed: 	{ type: Boolean, default: true },
