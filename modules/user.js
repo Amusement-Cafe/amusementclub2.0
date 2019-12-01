@@ -1,6 +1,8 @@
 /* functions */
 
 const User = require('../collections/user')
+const msToTime = require('pretty-ms')
+const config = require('../config')
 
 const fetchOrCreate = async (ctx, userid, username) => {
     let user = await User.findOne({ discord_id: userid })
@@ -26,8 +28,8 @@ module.exports = {
 
 const {cmd} = require('../utils/cmd')
 
-cmd('bal', ({ reply }, user, ...args) => {
-    return reply(user, `you have **${Math.floor(user.exp)}** tomatoes`)
+cmd('bal', ({ reply }, user) => {
+    return reply(user, `you have **${Math.floor(user.exp)}** {currency}`)
 })
 
 
@@ -40,4 +42,25 @@ cmd('inv', ['inventory', 'check'], ({ reply }, user, ...args) => {
         .map((item, index) => `${index+1}. ${item.name}`)
 
     return reply(user, items.join(' '))
+})
+
+cmd('daily', async ({ reply }, user) => {
+    user.lastdaily = user.lastdaily || new Date(0)
+
+    const now = new Date()
+    const future = (new Date()).setHours(user.lastdaily.getHours() + 20)
+    //console.log(user.lastdaily)
+
+    if(future < now) {
+        const amount = 300
+
+        user.lastdaily = now
+        user.dailystats = {}
+        user.exp += amount
+        await user.save()
+
+        return reply(user, `you recieved daily **${amount}** {currency} You now have **${user.exp}** {currency}`)
+    }
+
+    return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
 })

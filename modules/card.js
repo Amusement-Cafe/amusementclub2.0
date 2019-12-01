@@ -133,8 +133,8 @@ cmd('claim', async (ctx, user, arg1) => {
     }
 
     user.exp -= price
-    user.dailystats.claims += amount
-    
+    user.dailystats.claims = user.dailystats.claims + amount || amount
+
     await user.save()
     return ctx.reply(user, formatClaim(items))
 })

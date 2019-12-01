@@ -3,7 +3,7 @@ const cap = (str) => {
 }
 
 const claimCost = (user, amount) => {
-	return (user.dailystats.claim + amount) * 50
+	return ((user.dailystats.claim || 0) + amount) * 50
 }
 
 module.exports = {
