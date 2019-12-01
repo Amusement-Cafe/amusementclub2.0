@@ -3,5 +3,5 @@ module.exports = {
     card: require('./card'),
     admin: require('./admin'),
     collection: require('./collection'),
-    misc: require('./misc'),
+    misc: require('./misc')
 }

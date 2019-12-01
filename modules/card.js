@@ -1,11 +1,10 @@
 /* functions */
 
-const Card          = require('../collections/card')
-const Collection    = require('../collections/collection')
-const config        = require('../config')
-const {cap}         = require('../utils/tools')
-
-const colMod    = require('./collection')
+const {Card, Collection}    = require('../collections')
+const config                = require('../config')
+const {cap, claimCost}      = require('../utils/tools')
+const colMod                = require('./collection')
+const userMod               = require('./user')
 
 const fetchRandom = async (amount, query = {}) => {
     const random = Math.floor(Math.random() * amount)
@@ -119,15 +118,23 @@ cmd('claim', async (ctx, user, arg1) => {
     const countCol = await Collection.countDocuments()
     const items = []
     const amount = parseInt(arg1) || 1
+    const price = claimCost(user, amount)
+
+    if(price > user.exp)
+        return ctx.reply(user, `you need ${price} {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+            You have ${Math.floor(user.exp)}`)
 
     for (let i = 0; i < amount; i++) {
-        const q = { col: (await colMod.fetchRandom(countCol)).id }
+        const q = { col: (await colMod.fetchRandom(countCol)).id, level: { $lt: 4 } }
         const countCard = await Card.countDocuments(q)
         const item = await fetchRandom(countCard, q)
         addUserCard(user, item)
         items.push(item)
     }
 
+    user.exp -= price
+    user.dailystats.claims += amount
+    
     await user.save()
     return ctx.reply(user, formatClaim(items))
 })
