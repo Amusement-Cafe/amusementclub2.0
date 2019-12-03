@@ -23,7 +23,7 @@ const formatClaim = (user, cards) => {
 }
 
 const formatName = (x) => {
-    return `[[${new Array(x.level + 1).join('★')}] ${cap(x.name.replace(/_/g, ' '))} \`[${x.col}]\`](${formatLink(x)})`
+    return `[${new Array(x.level + 1).join('★')}] [${cap(x.name.replace(/_/g, ' '))}](${formatLink(x)}) \`[${x.col || x.collection}]\``
 }
 
 const formatLink = (x) => {
@@ -113,7 +113,7 @@ const cardIndex = (user, card) => {
 }
 
 module.exports = {
-    fetchRandom,
+    fetchRandom, formatName
 }
 
 /* commands */

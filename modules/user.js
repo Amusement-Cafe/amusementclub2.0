@@ -3,6 +3,8 @@
 const User = require('../collections/user')
 const msToTime = require('pretty-ms')
 const config = require('../config')
+const paginator = require('../utils/paginator')
+const cardMod = require('./card')
 
 const fetchOrCreate = async (ctx, userid, username) => {
     let user = await User.findOne({ discord_id: userid })
@@ -63,4 +65,19 @@ cmd('daily', async ({ reply }, user) => {
     }
 
     return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
+})
+
+cmd('cards', 'li', async (ctx, user) => {
+    const pages = []
+    let count = 0
+    user.cards.sort((a, b) => b.level - a.level)
+    user.cards.map(c => {
+        if(count % 15 == 0)
+            pages.push("");
+
+        pages[Math.floor(count/15)] += `${cardMod.formatName(c)}\n`
+        count++;
+    })
+
+    await paginator.addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
 })
