@@ -17,9 +17,7 @@ async function main() {
     const bot = new Eris(config.token)
 
     /* create our glorious sending fn */
-    const send = (ch, content) => new Promise((r, f) => {
-        return bot.createMessage(ch, { embed: content })
-    })
+    const send = (ch, content) => bot.createMessage(ch, { embed: content })
 
     /* create our context */
     const ctx = {
@@ -57,7 +55,24 @@ async function main() {
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const args = msg.content.trim().substring(config.prefix.length).split(' ')
 
-            await trigger(isolatedCtx, usr, args, config.prefix)
+            await trigger('cmd', isolatedCtx, usr, args, config.prefix)
+        } catch (e) {
+            send(msg.channel.id, { description: e.message, color: colors.red })
+        }
+    })
+
+    bot.on('messageReactionAdd', async (msg, emoji, userID) => {
+        if(!msg.author || msg.author.id != bot.user.id || userID == bot.user.id)
+            return
+
+        try {
+            const isolatedCtx = Object.assign({}, ctx, {
+                msg, /* current icoming message */
+                userID, /* user who reacted */
+            })
+
+            console.log(emoji.name)
+            await trigger('rct', isolatedCtx, msg.author, [emoji.name])
         } catch (e) {
             send(msg.channel.id, { description: e.message, color: colors.red })
         }

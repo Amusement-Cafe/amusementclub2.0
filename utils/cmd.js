@@ -1,11 +1,14 @@
-const cmdtree = {}
+const tree = {
+    cmd: {},
+    rct: {},
+}
 
 const cmd = (...args) => {
     const callback = args.pop()
 
     args.map(alias => {
         let sequence = Array.isArray(alias) ? alias : [alias]
-        let cursor = cmdtree
+        let cursor = tree.cmd
 
         sequence.map(arg => {
             if (!cursor.hasOwnProperty(arg)) {
@@ -19,8 +22,22 @@ const cmd = (...args) => {
     })
 }
 
-const trigger = async (ctx, user, args, prefix = '/') => {
-    let cursor = cmdtree
+const rct = (...args) => {
+    const callback = args.pop()
+    let cursor = tree.rct
+
+    args.map(alias => {
+        if (!cursor.hasOwnProperty(alias)) {
+            cursor[alias] = {}
+        }
+
+        cursor = cursor[alias]
+        cursor._callback = callback
+    })
+}
+
+const trigger = async (type, ctx, user, args, prefix = '/') => {
+    let cursor = tree[type]
 
     while (cursor.hasOwnProperty(args[0])) {
         cursor = cursor[args[0]]
@@ -31,7 +48,7 @@ const trigger = async (ctx, user, args, prefix = '/') => {
         throw new Error(`Unknown command name, please try again, or use ${prefix}help`)
     }
 
-    const newArgs = [ctx, user].concat(args)
+    const newArgs = [ctx, user || { }].concat(args)
 
     try {
         return await cursor._callback.apply({}, newArgs)
@@ -43,6 +60,7 @@ const trigger = async (ctx, user, args, prefix = '/') => {
 
 module.exports = {
     cmd,
+    rct,
     trigger,
 }
 
