@@ -69,6 +69,7 @@ async function main() {
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming message */
                 userID, /* user who reacted */
+                emoji, /* reaction data */
             })
 
             console.log(emoji.name)

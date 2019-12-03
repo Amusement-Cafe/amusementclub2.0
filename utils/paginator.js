@@ -1,6 +1,8 @@
 var pages = []
 var bot;
 
+const colors = require('./colors')
+
 const addPagination = async (ctx, user, title, data) => {
     pages = pages.filter(x => x.userID != user.discord_id)
 
@@ -45,7 +47,8 @@ const getEmbed = (pg) => {
     return { 
         title: `${pg.username}, ${pg.title}`, 
         description: pg.data[pg.page] ,
-        footer: { text: `Page ${pg.page + 1}/${pg.data.length}` }
+        footer: { text: `Page ${pg.page + 1}/${pg.data.length}` },
+        color: colors.blue
     }
 }
 

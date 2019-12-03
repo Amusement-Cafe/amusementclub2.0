@@ -2,6 +2,7 @@ const {Card, Collection}    = require('../collections')
 const {cap, claimCost}      = require('../utils/tools')
 const colMod                = require('../modules/collection')
 const {cmd}                 = require('../utils/cmd')
+const {addConfirmation}     = require('../utils/confirmator')
 
 const {
     fetchRandom,
@@ -54,11 +55,18 @@ cmd('sum', 'summon', withCard({autoselect: true}, async (ctx, user, ...args) => 
 }))
 
 cmd('sell', withCard({}, async (ctx, user, card, ...args) => {
-    if(card.amount > 1)
-        user.cards[cardIndex(user, card)].amount--
-    else
-        user.cards = user.cards.filter(x => !equals(x, card))
+    const price = 100
+    addConfirmation(ctx, user, 
+        `do you want to sell ${formatName(card)} to bot for **${price}** {currency}?`, 
+        [], 
+        () => {
+            if(card.amount > 1)
+                user.cards[cardIndex(user, card)].amount--
+            else
+                user.cards = user.cards.filter(x => !equals(x, card))
 
-    await user.save()
-    return ctx.reply(user, `you sold **${formatName(card)}** for `)
+            uaer.exp += price
+            await user.save()
+            return ctx.reply(user, `you sold **${formatName(card)}** for **${price}** {currency}`)
+        })
 }))
