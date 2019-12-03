@@ -59,7 +59,7 @@ const {rct} = require('../utils/cmd')
 
 setInterval(tick.bind(this), 5000);
 
-rct(['✅', '❌'], async (ctx) => {
+rct('✅', '❌', async (ctx) => {
     const msg = ctx.msg
     const data = queue.filter(x => x.msg === msg.id && x.permits.filter(y => y === ctx.userID)[0])[0]
 

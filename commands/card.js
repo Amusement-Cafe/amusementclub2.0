@@ -23,7 +23,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 
 
     if(price > user.exp)
-        return ctx.reply(user, `you need ${price} {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}.\n 
+        return ctx.reply(user, `you need **${price}** {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}.\n 
             You have ${Math.floor(user.exp)}`)
 
     for (let i = 0; i < amount; i++) {
@@ -57,15 +57,15 @@ cmd('sum', 'summon', withCard({autoselect: true}, async (ctx, user, card, ...arg
 cmd('sell', withCard({}, async (ctx, user, card, ...args) => {
     const price = 100
     addConfirmation(ctx, user, 
-        `do you want to sell ${formatName(card)} to bot for **${price}** {currency}?`, 
+        `do you want to sell **${formatName(card)}** to bot for **${price}** {currency}?`, 
         [], 
-        () => {
+        async () => {
             if(card.amount > 1)
                 user.cards[cardIndex(user, card)].amount--
             else
                 user.cards = user.cards.filter(x => !equals(x, card))
 
-            uaer.exp += price
+            user.exp += price
             await user.save()
             return ctx.reply(user, `you sold **${formatName(card)}** for **${price}** {currency}`)
         })
