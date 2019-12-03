@@ -4,6 +4,7 @@ const config    = require('./config')
 const colors    = require('./utils/colors')
 const {trigger} = require('./utils/cmd')
 const {user}    = require('./modules')
+const commands  = require('./commands')
 
 const mongoUri = config.database
 const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
@@ -54,9 +55,9 @@ async function main() {
             })
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
-            const args = msg.content.trim().substring(2).split(' ')
+            const args = msg.content.trim().substring(config.prefix.length).split(' ')
 
-            await trigger(isolatedCtx, usr, args)
+            await trigger(isolatedCtx, usr, args, config.prefix)
         } catch (e) {
             send(msg.channel.id, { description: e.message, color: colors.red })
         }

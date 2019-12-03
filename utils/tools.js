@@ -7,5 +7,6 @@ const claimCost = (user, amount) => {
 }
 
 module.exports = {
-    cap, claimCost
+    cap,
+    claimCost,
 }

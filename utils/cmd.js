@@ -19,7 +19,7 @@ const cmd = (...args) => {
     })
 }
 
-const trigger = async (ctx, user, args) => {
+const trigger = async (ctx, user, args, prefix = '/') => {
     let cursor = cmdtree
 
     while (cursor.hasOwnProperty(args[0])) {
@@ -28,7 +28,7 @@ const trigger = async (ctx, user, args) => {
     }
 
     if (!cursor.hasOwnProperty('_callback')) {
-        throw new Error('unknown command name, please try again, or use ->help')
+        throw new Error(`Unknown command name, please try again, or use ${prefix}help`)
     }
 
     const newArgs = [ctx, user].concat(args)
@@ -37,7 +37,7 @@ const trigger = async (ctx, user, args) => {
         return await cursor._callback.apply({}, newArgs)
     } catch (err) {
         console.error(err) /* log actual error to the console */
-        throw new Error('internal error, please notify the developer')
+        throw new Error('Internal error, please notify the developer')
     }
 }
 

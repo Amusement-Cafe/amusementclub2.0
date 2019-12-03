@@ -13,7 +13,6 @@ const byName = async (name) => {
 }
 
 module.exports = {
-    fetchRandom, byName
+    fetchRandom,
+    byName,
 }
-
-/* commands */

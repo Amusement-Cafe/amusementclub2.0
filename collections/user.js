@@ -8,7 +8,7 @@ module.exports = model('User', {
     promoexp:           { type: Number, default: 0 },
 
     lastQueriedCard:    { type: Object },
-    dailystats:         { type: Object },
+    dailystats:         { type: Object, default: {} },
 
     cards:              [],
     quests:             [],
