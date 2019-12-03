@@ -1,18 +1,18 @@
 const {model, Schema} = require('mongoose')
 
 module.exports = model('User', {
-    discord_id: 		{ type: String },
-    username:       	{ type: String },
+    discord_id:         { type: String },
+    username:           { type: String },
 
-    exp: 				{ type: Number, default: 0 },
-    promoexp: 			{ type: Number, default: 0 },
+    exp:                { type: Number, default: 0 },
+    promoexp:           { type: Number, default: 0 },
 
-    lastQueriedCard: 	{ type: Object },
-    dailystats: 		{ type: Object },
+    lastQueriedCard:    { type: Object },
+    dailystats:         { type: Object },
 
-    cards: 				[],
-    quests: 			[],
+    cards:              [],
+    quests:             [],
 
-    lastdaily: 			{ type: Date, default: Date.now() },
-    lastmsg:       		{ type: String },
+    lastdaily:          { type: Date, default: Date.now() },
+    lastmsg:            { type: String },
 })
