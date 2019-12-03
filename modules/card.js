@@ -112,6 +112,29 @@ const cardIndex = (user, card) => {
     return user.cards.findIndex(x => equals(x, card))
 }
 
+/**
+ * Helper function to enrich the comamnd with selected card
+ * @param  {Function} callback command hanlder
+ * @return {Promise}
+ */
+const withCard = (options, callback) => async (ctx, user, ...args) => {
+    let card = {}
+
+    if (options.autoselect && args.length == 0) {
+        card = user.cards[0]
+    } else {
+        card = await getUserCard(user, args)
+    }
+
+    if (!card || card === 0)
+        return ctx.reply(user, `card **${args.join(' ')}** doesn't exist`)
+
+    if (parseInt(card))
+        return ctx.reply(user, `got **${parseInt(card)}** results. You have none of those cards`)
+
+    return callback(ctx, user, card, ...args)
+}
+
 module.exports = {
     fetchRandom,
     formatClaim,
@@ -122,4 +145,5 @@ module.exports = {
     getUserCard,
     addUserCard,
     cardIndex,
+    withCard,
 }

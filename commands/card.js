@@ -8,11 +8,10 @@ const {
     formatClaim,
     formatName,
     formatLink,
-    userHasCard,
     equals,
-    getUserCard,
     addUserCard,
-    cardIndex
+    cardIndex,
+    withCard,
 } = require('../modules/card')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
@@ -47,33 +46,14 @@ cmd(['claim', 'promo'], async (ctx, user, arg1) => {
     return ctx.reply(user, items.join('\n'))
 })
 
-cmd('sum', 'summon', async (ctx, user, ...args) => {
-    let card = {}
-    if(args.length == 0)
-        card = user.cards[0]
-    else card = await getUserCard(user, args)
-
-    if(!card || card === 0)
-        return ctx.reply(user, `card **${args.join(' ')}** doesn't exist`)
-
-    if(parseInt(card))
-        return ctx.reply(user, `got **${parseInt(card)}** results. You have none of those cards`)
-
+cmd('sum', 'summon', withCard({autoselect: true}, async (ctx, user, ...args) => {
     return ctx.reply(user, {
         url: formatLink(card),
         description: `summons **${formatName(card)}**!`
     })
-});
+}))
 
-cmd('sell', async (ctx, user, ...args) => {
-    const card = await getUserCard(user, args)
-
-    if(!card || card === 0)
-        return ctx.reply(user, `card **${args.join(' ')}** doesn't exist`)
-
-    if(parseInt(card))
-        return ctx.reply(user, `got **${parseInt(card)}** results. You have none of those cards`)
-
+cmd('sell', withCard({}, async (ctx, user, card, ...args) => {
     if(card.amount > 1)
         user.cards[cardIndex(user, card)].amount--
     else
@@ -81,4 +61,4 @@ cmd('sell', async (ctx, user, ...args) => {
 
     await user.save()
     return ctx.reply(user, `you sold **${formatName(card)}** for `)
-})
+}))
