@@ -46,7 +46,7 @@ cmd(['claim', 'promo'], async (ctx, user, arg1) => {
     return ctx.reply(user, items.join('\n'))
 })
 
-cmd('sum', 'summon', withCard({autoselect: true}, async (ctx, user, ...args) => {
+cmd('sum', 'summon', withCard({autoselect: true}, async (ctx, user, card, ...args) => {
     return ctx.reply(user, {
         url: formatLink(card),
         description: `summons **${formatName(card)}**!`
