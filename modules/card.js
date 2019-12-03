@@ -11,13 +11,15 @@ const fetchRandom = async (amount, query = {}) => {
     return await Card.findOne(query).skip(random)
 }
 
-const formatClaim = (cards) => {
+const formatClaim = (user, cards) => {
     const repl = "you got:\n"
     cards.sort((a, b) => b.level - a.level)
     return {
         url: formatLink(cards[0]),
         description: repl.concat(cards.map(x => formatName(x)).join('\n'))
     }
+
+    repl.concat(`\nYour next claim will cost ${claimCost(user, user.dailystats.claims + 1)}`)
 }
 
 const formatName = (x) => {
@@ -101,9 +103,13 @@ const getUserCard = async (user, args) => {
 }
 
 const addUserCard = (user, card) => {
-    const userCard = userHasCard(user, card)
-    if(userCard) userCard.amount = (userCard.amount + 1 || 2);
+    const userCard = cardIndex(user, card)
+    if(userCard >= 0) user.cards[userCard].amount = (user.cards[userCard].amount + 1 || 2);
     else user.cards.push({ name: card.name, level: card.level, col: card.col, amount: 1 });
+}
+
+const cardIndex = (user, card) => {
+    return user.cards.findIndex(x => equals(x, card))
 }
 
 module.exports = {
@@ -114,14 +120,14 @@ module.exports = {
 
 const {cmd} = require('../utils/cmd')
 
-cmd('claim', async (ctx, user, arg1) => {
+cmd('claim', 'cl', async (ctx, user, arg1) => {
     const countCol = await Collection.countDocuments()
     const items = []
     const amount = parseInt(arg1) || 1
     const price = claimCost(user, amount)
 
     if(price > user.exp)
-        return ctx.reply(user, `you need ${price} {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+        return ctx.reply(user, `you need ${price} {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}.\n 
             You have ${Math.floor(user.exp)}`)
 
     for (let i = 0; i < amount; i++) {
@@ -136,7 +142,7 @@ cmd('claim', async (ctx, user, arg1) => {
     user.dailystats.claims = user.dailystats.claims + amount || amount
 
     await user.save()
-    return ctx.reply(user, formatClaim(items))
+    return ctx.reply(user, formatClaim(user, items))
 })
 
 cmd(['claim', 'promo'], async (ctx, user, arg1) => {
@@ -145,20 +151,38 @@ cmd(['claim', 'promo'], async (ctx, user, arg1) => {
     return ctx.reply(user, items.join('\n'))
 })
 
-cmd('sum', async (ctx, user, ...args) => {
+cmd('sum', 'summon', async (ctx, user, ...args) => {
     let card = {}
     if(args.length == 0)
         card = user.cards[0]
     else card = await getUserCard(user, args)
 
     if(!card || card === 0)
-        return ctx.reply(user, `card with name **${args.join(' ')}** was not found`)
+        return ctx.reply(user, `card **${args.join(' ')}** doesn't exist`)
 
     if(parseInt(card))
         return ctx.reply(user, `got **${parseInt(card)}** results. You have none of those cards`)
 
     return ctx.reply(user, {
         url: formatLink(card),
-        description: `summons **${formatName(card)}**`
+        description: `summons **${formatName(card)}**!`
     })
 });
+
+cmd('sell', async (ctx, user, ...args) => {
+    const card = await getUserCard(user, args)
+
+    if(!card || card === 0)
+        return ctx.reply(user, `card **${args.join(' ')}** doesn't exist`)
+
+    if(parseInt(card))
+        return ctx.reply(user, `got **${parseInt(card)}** results. You have none of those cards`)
+
+    if(card.amount > 1)
+        user.cards[cardIndex(user, card)].amount--
+    else 
+        user.cards = user.cards.filter(x => !equals(x, card))
+
+    await user.save()
+    return ctx.reply(user, `you sold **${formatName(card)}** for `)
+})

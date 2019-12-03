@@ -48,8 +48,8 @@ cmd('daily', async ({ reply }, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
     const now = new Date()
-    const future = (new Date()).setHours(user.lastdaily.getHours() + 20)
-    //console.log(user.lastdaily)
+    const future = user.lastdaily
+    future.setHours(user.lastdaily.getHours() + 20)
 
     if(future < now) {
         const amount = 300
