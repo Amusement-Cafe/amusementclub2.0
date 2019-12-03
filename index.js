@@ -42,9 +42,9 @@ async function main() {
 
         try {
             /* create our player reply sending fn */
-            const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object' ?
-                { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] } :
-                { description: `**${user.username}**, ${str}`, color: colors[clr] })
+            const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object'
+                ? { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] }
+                : { description: `**${user.username}**, ${str}`, color: colors[clr] })
 
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
@@ -57,12 +57,16 @@ async function main() {
 
             await trigger('cmd', isolatedCtx, usr, args, config.prefix)
         } catch (e) {
-            send(msg.channel.id, { description: e.message, color: colors.red })
+            const color = e.message.indexOf('Unknown command name') !== -1
+                ? colors.yellow /* nice 404 color */
+                : colors.red /* nice pure error color */
+
+            send(msg.channel.id, { description: e.message, color })
         }
     })
 
     bot.on('messageReactionAdd', async (msg, emoji, userID) => {
-        if(!msg.author || msg.author.id != bot.user.id || userID == bot.user.id)
+        if (!msg.author || msg.author.id != bot.user.id || userID == bot.user.id)
             return
 
         try {
