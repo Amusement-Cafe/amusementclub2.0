@@ -1,7 +1,7 @@
 const msToTime = require('pretty-ms')
 const {cmd} = require('../utils/cmd')
 const paginator = require('../utils/paginator')
-const cardMod = require('./card')
+const cardMod = require('../modules/card')
 
 cmd('bal', ({ reply }, user) => {
     return reply(user, `you have **${Math.floor(user.exp)}** {currency}`)
