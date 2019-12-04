@@ -1,20 +1,26 @@
 const Eris      = require('eris')
 const mongoose  = require('mongoose')
-const config    = require('./config')
 const colors    = require('./utils/colors')
 const {trigger} = require('./utils/cmd')
 const {user}    = require('./modules')
 const commands  = require('./commands')
+const Emitter   = require('events')
 
-const mongoUri = config.database
-const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
-
-async function main() {
+module.exports.start = async ({ shareded, database, token, prefix, baseurl, data }) => {
     console.log('[info] intializing connection and starting bot...')
+
+    /* prefill in the urls */
+    data.cards = data.cards.map(x => {
+        x.url = `${baseurl}/cards/${data.collections[x.collection].name}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+        return x
+    })
+
+    const mongoUri = database
+    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
 
     /* basics */
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
-    const bot = new Eris(config.token)
+    const bot = new Eris(token)
 
     /* create our glorious sending fn */
     const send = (ch, content) => bot.createMessage(ch, { embed: content })
@@ -37,7 +43,7 @@ async function main() {
     })
 
     bot.on('messageCreate', async (msg) => {
-        if (!msg.content.startsWith(config.prefix)) return; /* skip not commands */
+        if (!msg.content.startsWith(prefix)) return; /* skip not commands */
         if (msg.author.bot) return; /* skip bot users */
 
         try {
@@ -50,12 +56,14 @@ async function main() {
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
                 reply, /* quick reply function to the user */
+                cards: data.cards, /* data with cards */
+                collections: data.collections, /* data with collections */
             })
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
-            const args = msg.content.trim().substring(config.prefix.length).split(' ')
+            const args = msg.content.trim().substring(prefix.length).split(' ')
 
-            await trigger('cmd', isolatedCtx, usr, args, config.prefix)
+            await trigger('cmd', isolatedCtx, usr, args, prefix)
         } catch (e) {
             const color = e.message.indexOf('Unknown command name') !== -1
                 ? colors.yellow /* nice 404 color */
@@ -74,6 +82,8 @@ async function main() {
                 msg, /* current icoming message */
                 userID, /* user who reacted */
                 emoji, /* reaction data */
+                cards: data.cards, /* data with cards */
+                collections: data.collections, /* data with collections */
             })
 
             console.log(emoji.name)
@@ -84,6 +94,7 @@ async function main() {
     })
 
     bot.connect();
+
+    return new Emitter()
 }
 
-main().catch(console.error)

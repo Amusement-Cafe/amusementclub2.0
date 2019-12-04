@@ -1,7 +1,4 @@
-/* functions */
-
 const {Card, Collection}    = require('../collections')
-const config                = require('../config')
 const {cap, claimCost}      = require('../utils/tools')
 const colMod                = require('./collection')
 const userMod               = require('./user')
@@ -27,7 +24,7 @@ const formatName = (x) => {
 }
 
 const formatLink = (x) => {
-    return `${config.baseurl}/cards/${x.col}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+    return x.url
 }
 
 const parseArgs = async (args) => {

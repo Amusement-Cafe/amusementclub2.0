@@ -1,0 +1,5 @@
+[
+    {"name": "test_card_1", "collection": 1, "level": 1, "crafted": false, "animated": false},
+    {"name": "test_card_2", "collection": 1, "level": 2, "crafted": false, "animated": false},
+    {"name": "test_card_3", "collection": 1, "level": 3, "crafted": false, "animated": false}
+]

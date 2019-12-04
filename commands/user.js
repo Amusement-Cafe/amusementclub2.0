@@ -41,15 +41,14 @@ cmd('daily', async ({ reply }, user) => {
 
 cmd('cards', 'li', async (ctx, user) => {
     const pages = []
-    let count = 0
 
-    user.cards.sort((a, b) => b.level - a.level)
-    user.cards.map(c => {
-        if(count % 15 == 0)
-            pages.push("");
+    /* join user cards to actual card types */
+    const cards = user.cards.map(card => ctx.cards[card.id])
 
-        pages[Math.floor(count/15)] += `${cardMod.formatName(c)}\n`
-        count++;
+    cards.sort((a, b) => b.level - a.level)
+    cards.map((c, i) => {
+        if (i % 15 == 0) pages.push("")
+        pages[Math.floor(i/15)] += `${cardMod.formatName(c)}\n`
     })
 
     await paginator.addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
