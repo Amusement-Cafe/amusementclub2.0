@@ -1,5 +1,6 @@
 [
-    {"name": "test_collection_1"},
-    {"name": "test_collection_2"},
-    {"name": "test_collection_3"}
+    {"id":"blends","name":"blends","origin":null,"aliases":["blends"],"promo":false,"compressed":true},
+    {"id":"codegeass","name":"codegeass","origin":null,"aliases":["codegeass"],"promo":false,"compressed":true},
+    {"id":"darlinginthefranxx","name":"darlinginthefranxx","origin":null,"aliases":["darlinginthefranxx"],"promo":false,"compressed":false},
+    {"id":"special","name":"special","origin":null,"aliases":["special"],"promo":false,"compressed":true}
 ]
