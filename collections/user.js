@@ -13,6 +13,6 @@ module.exports = model('User', {
     cards:              [],
     quests:             [],
 
-    lastdaily:          { type: Date, default: Date.now() },
+    lastdaily:          { type: Date },
     lastmsg:            { type: String },
 })

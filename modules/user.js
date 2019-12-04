@@ -7,6 +7,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
         user = new User()
         user.username = username
         user.discord_id = userid
+        user.exp = 3000
 
         /* save, and send welcome msg */
         await user.save()
