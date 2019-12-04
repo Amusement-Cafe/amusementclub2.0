@@ -60,50 +60,24 @@ const {rct} = require('../utils/cmd')
 
 setInterval(tick.bind(this), 5000);
 
-rct('➡', async (ctx) => {
+rct('➡', '⬅', '⏩', '⏪', async (ctx) => {
     const msg = ctx.msg
+    const name = ctx.emoji.name
     const pg = pages.filter(x => x.msg === msg.id && x.userID === ctx.userID)[0]
 
-    if(pg && pg.page < pg.data.length - 1) {
-        pg.page++
+    if(!pg) return;
+
+    if((name === '➡' || name === '⏩') && pg.page < pg.data.length - 1) {
+
+        pg.page = name === '➡'? pg.page + 1 : pg.data.length - 1
         await edit(ctx, pg)
+
+    } else if((name === '⬅' || name === '⏪') && pg.page > 0) {
+
+        pg.page = name === '⬅'? pg.page - 1 : 0
+        await edit(ctx, pg)
+
     }
 
-    await ctx.bot.removeMessageReaction(msg.channel.id, msg.id, '➡', ctx.userID)
-})
-
-rct('⬅', async (ctx) => {
-    const msg = ctx.msg
-    const pg = pages.filter(x => x.msg === msg.id && x.userID === ctx.userID)[0]
-
-    if(pg && pg.page > 0) {
-        pg.page--
-        await edit(ctx, pg)
-    }
-
-    await ctx.bot.removeMessageReaction(msg.channel.id, msg.id, '⬅', ctx.userID)
-})
-
-rct('⏩', async (ctx) => {
-    const msg = ctx.msg
-    const pg = pages.filter(x => x.msg === msg.id && x.userID === ctx.userID)[0]
-
-    if(pg && pg.page < pg.data.length - 1) {
-        pg.page = pg.data.length - 1
-        await edit(ctx, pg)
-    }
-
-    await ctx.bot.removeMessageReaction(msg.channel.id, msg.id, '⏩', ctx.userID)
-})
-
-rct('⏪', async (ctx) => {
-    const msg = ctx.msg
-    const pg = pages.filter(x => x.msg === msg.id && x.userID === ctx.userID)[0]
-
-    if(pg && pg.page > 0) {
-        pg.page = 0
-        await edit(ctx, pg)
-    }
-
-    await ctx.bot.removeMessageReaction(msg.channel.id, msg.id, '⏪', ctx.userID)
+    return await ctx.bot.removeMessageReaction(msg.channel.id, msg.id, name, ctx.userID)
 })

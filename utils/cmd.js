@@ -24,15 +24,14 @@ const cmd = (...args) => {
 
 const rct = (...args) => {
     const callback = args.pop()
-    let cursor = tree.rct
+    const cursor = tree.rct
 
     args.map(alias => {
         if (!cursor.hasOwnProperty(alias)) {
             cursor[alias] = {}
         }
 
-        cursor = cursor[alias]
-        cursor._callback = callback
+        cursor[alias]._callback = callback
     })
 }
 
