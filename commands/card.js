@@ -1,6 +1,4 @@
-const {Card, Collection}    = require('../collections')
-const {cap, claimCost}      = require('../utils/tools')
-const colMod                = require('../modules/collection')
+const {claimCost}           = require('../utils/tools')
 const {cmd}                 = require('../utils/cmd')
 const {addConfirmation}     = require('../utils/confirmator')
 const sample                = require('lodash.sample');
@@ -10,8 +8,8 @@ const {
     formatLink,
     equals,
     addUserCard,
-    cardIndex,
     withCards,
+    bestMatch
 } = require('../modules/card')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
@@ -44,22 +42,26 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 })
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
+    const card = bestMatch(cards)
     return ctx.reply(user, {
-        url: formatLink(cards[0]),
-        description: `summons **${formatName(cards[0])}**!`
+        url: formatLink(card),
+        description: `summons **${formatName(card)}**!`
     })
 }))
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const price = 100
+    const card = bestMatch(cards)
+
+    //await 
+
     addConfirmation(ctx, user, 
-        `do you want to sell **${formatName(card)}** to bot for **${price}** {currency}?`, 
-        [], 
+        `do you want to sell **${formatName(card)}** to bot for **${price}** {currency}?`, [], 
         async () => {
             if(card.amount > 1)
-                user.cards[cardIndex(user, card)].amount--
+                user.cards.filter(x => x.id === card.id)[0].amount--
             else
-                user.cards = user.cards.filter(x => !equals(x, card))
+                user.cards = user.cards.filter(x => x.id != card.id)
 
             user.exp += price
             await user.save()

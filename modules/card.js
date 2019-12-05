@@ -91,17 +91,13 @@ const userHasCard = (user, card) => {
 }
 
 const equals = (card1, card2) => {
-    return card1.name === card2.name && card1.level === card2.level
+    return card1.name === card2.name && card1.level === card2.level && card1.col === card2.col
 }
 
 const addUserCard = (user, cardID) => {
     const userCard = user.cards.filter(x => x.id == cardID)[0]
     if(userCard >= 0) user.cards[userCard].amount++
     else user.cards.push({ id: cardID, amount: 1, obtained: new Date() });
-}
-
-const cardIndex = (user, card) => {
-    return user.cards.findIndex(x => equals(x, card))
 }
 
 /**
@@ -122,14 +118,15 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     return callback(ctx, user, cards, parsedargs)
 }
 
+const bestMatch = cards => cards.sort((a, b) => a.name.length - b.name.length)[0]
+
 module.exports = {
     formatName,
     formatLink,
     userHasCard,
     equals,
-    //getUserCard,
+    bestMatch,
     addUserCard,
-    cardIndex,
     filter,
     parseArgs,
     withCards

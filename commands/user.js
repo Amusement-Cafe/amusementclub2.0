@@ -42,7 +42,7 @@ cmd('daily', async ({ reply }, user) => {
     return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
 })
 
-cmd('cards', 'li', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     const pages = []
 
     cards.map((c, i) => {
