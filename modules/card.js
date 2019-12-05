@@ -27,50 +27,71 @@ const formatLink = (x) => {
     return x.url
 }
 
-const parseArgs = async (args) => {
-    const q = { level: { $nin: [] }, col: { $nin: [] } }
-    const keywords = []
+const parseArgs = (args) => {
     const date = new Date()
     date.setDate(date.getDate() - 1)
+    const cols = [], levels = [], keywords = []
+    const q = { 
+        id: false, 
+        sort: (a, b) => a.length - b.length,
+        filters: [],
+        tags: []
+    }
 
-    await Promise.all(args.map(async x => {
-        if(x[0] != '-' && x[0] != '!') {
-            keywords.push(x)
-        } else {
-            const sub = x.substr(1)
-            const pos = x[0] == '-'
-            switch(sub) {
-                case 'craft': q.craft = pos; break
-                case 'gif': q.animated = pos; break
-                default: 
-                    if(parseInt(sub))
-                        pos? (q.level.$in = q.level.$in || []).push(sub) : q.level.$nin.push(sub)
-                    else {
-                        const col = await colMod.byName(sub)
-                        if(col) (pos? (q.col.$in = q.col.$in || []).push(col.id) : q.col.$nin.push(col.id))
-                    }
-                    break
-            }
-        }
-    }))
-
-    if(keywords.length > 0)
-        q.name = new RegExp(`(_|^)${keywords.join('_')}`, 'gi')
-    return q;
-}
-
-const getUserCards = (user, args) => {
-    let res = user.cards
     args.map(x => {
-        const sub = x.substr(1)
-        const pos = x[0] == '-'
-        switch(sub) {
-            case 'multi': res = pos? res.filter(c => c.amount > 1) : res.filter(c => !c.amount || c.amount == 1); break
-            case 'fav': res = pos? res.filter(c => c.fav) : res.filter(c => !c.fav); break
-            //case 'new': q.obtained = pos? {$gt: date} : {$lt: date}; break
+        let substr = x.substr(1)
+        q.id = q.id || tryGetUserID(x)
+        if(x[0] === '<' || x[0] === '>') {
+            switch(x) {
+                case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
+                case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '>star': q.sort = (a, b) => b.length - a.length; break
+            }
+        } else if(x[0] === '-' || x[0] === '!') {
+            //let m = x[0] === '-'
+            switch(substr) {
+                case 'gif': q.filters.push(c => c.animated = true); break
+                case 'multi': q.filters.push(c => c.amount > 1); break
+                case 'fav': q.filters.push(c => c.fav = true); break
+                case 'new': q.filters.push(c => c.obtained > date); break
+                default: {
+                    if(parseInt(substr)) levels.push(parseInt(substr))
+                    else cols.push(substr)
+                }
+            }
+        } else if(x[0] === '#') {
+            q.tags.push(substr)
+        } else {
+            keywords.push(x)
         }
     })
-    return res
+
+    if(cols.length > 0) q.filters.push(c => cols.includes(c.col))
+    if(levels.length > 0) q.filters.push(c => levels.includes(c.level))
+    if(keywords.length > 0) 
+        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
+
+    return q
+}
+
+const filter = (cards, query) => {
+    query.filters.map(f => cards = cards.filter(f))
+    return cards
+}
+
+const tryGetUserID = (inp) => {
+    inp = inp.trim()
+
+    try {
+        if (/^\d+$/.test(inp) && inp > (1000 * 60 * 60 * 24 * 30 * 2 ** 22)){
+            return inp;
+        } else {
+            return inp.slice(0, -1).split('@')[1].replace('!', '');
+        }
+    }
+    catch(err) { }
+
+    return false
 }
 
 const userHasCard = (user, card) => {
@@ -81,7 +102,7 @@ const equals = (card1, card2) => {
     return card1.name === card2.name && card1.level === card2.level
 }
 
-const getUserCard = async (user, args) => {
+/*const getUserCard = async (user, args) => {
     const req = await parseArgs(args)
     const match = await Card.find(req)
     if(!match[0])
@@ -97,7 +118,7 @@ const getUserCard = async (user, args) => {
 
     for (let attrname in userFinal) { final[attrname] = userFinal[attrname] }
     return final
-}
+}*/
 
 const addUserCard = (user, card) => {
     const userCard = cardIndex(user, card)
@@ -139,8 +160,10 @@ module.exports = {
     formatLink,
     userHasCard,
     equals,
-    getUserCard,
+    //getUserCard,
     addUserCard,
     cardIndex,
     withCard,
+    filter,
+    parseArgs
 }

@@ -39,13 +39,15 @@ cmd('daily', async ({ reply }, user) => {
     return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
 })
 
-cmd('cards', 'li', async (ctx, user) => {
+cmd('cards', 'li', async (ctx, user, ...args) => {
     const pages = []
+    const pargs = cardMod.parseArgs(args)
 
     /* join user cards to actual card types */
-    const cards = user.cards.map(card => ctx.cards[card.id])
+    const cards = user.cards.map(card => Object.assign({}, ctx.cards[card.id], card))
+    cards = cardMod.filter(cards, pargs)
+    cards.sort(pargs.sort)
 
-    cards.sort((a, b) => b.level - a.level)
     cards.map((c, i) => {
         if (i % 15 == 0) pages.push("")
         pages[Math.floor(i/15)] += `${cardMod.formatName(c)}\n`
