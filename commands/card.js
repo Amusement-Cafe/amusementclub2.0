@@ -6,17 +6,16 @@ const {addConfirmation}     = require('../utils/confirmator')
 const sample                = require('lodash.sample');
 
 const {
-    formatClaim,
     formatName,
     formatLink,
     equals,
     addUserCard,
     cardIndex,
-    withCard,
+    withCards,
 } = require('../modules/card')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
-    const items = []
+    const cards = []
     const amount = parseInt(arg1) || 1
     const price = claimCost(user, amount)
 
@@ -28,30 +27,30 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         const col = sample(ctx.collections)
         const item = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         addUserCard(user, ctx.cards.findIndex(x => equals(x, item)))
-        items.push(item)
+        cards.push(item)
     }
 
     user.exp -= price
     user.dailystats.claims = user.dailystats.claims + amount || amount
 
     await user.save()
-    return ctx.reply(user, formatClaim(user, items))
-})
 
-cmd(['claim', 'promo'], async (ctx, user, arg1) => {
-    const items = await fetchRandom({ isPromo: true }, parseInt(arg1) || 1)
+    cards.sort((a, b) => b.level - a.level)
 
-    return ctx.reply(user, items.join('\n'))
-})
-
-cmd('sum', 'summon', withCard({autoselect: true}, async (ctx, user, card, ...args) => {
     return ctx.reply(user, {
-        url: formatLink(card),
-        description: `summons **${formatName(card)}**!`
+        url: formatLink(cards[0]),
+        description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, user.dailystats.claims)}** {currency}`
+    })
+})
+
+cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
+    return ctx.reply(user, {
+        url: formatLink(cards[0]),
+        description: `summons **${formatName(cards[0])}**!`
     })
 }))
 
-cmd('sell', withCard({}, async (ctx, user, card, ...args) => {
+cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const price = 100
     addConfirmation(ctx, user, 
         `do you want to sell **${formatName(card)}** to bot for **${price}** {currency}?`, 

@@ -23,10 +23,12 @@ const addPagination = async (ctx, user, title, data) => {
     obj.msg = msg.id
     obj.channel = msg.channel.id
 
-    await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⏪')
-    await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⬅')
-    await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '➡')
-    await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⏩')
+    if(data.length > 1) {
+        await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⏪')
+        await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⬅')
+        await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '➡')
+        await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⏩')
+    }
 
     bot = ctx.bot
 }

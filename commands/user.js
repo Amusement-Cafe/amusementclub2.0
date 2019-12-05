@@ -1,7 +1,10 @@
 const msToTime = require('pretty-ms')
 const {cmd} = require('../utils/cmd')
 const paginator = require('../utils/paginator')
-const cardMod = require('../modules/card')
+const {
+    formatName,
+    withCards
+} = require('../modules/card')
 
 cmd('bal', ({ reply }, user) => {
     return reply(user, `you have **${Math.floor(user.exp)}** {currency}`)
@@ -39,22 +42,13 @@ cmd('daily', async ({ reply }, user) => {
     return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
 })
 
-cmd('cards', 'li', async (ctx, user, ...args) => {
+cmd('cards', 'li', withCards(async (ctx, user, cards, parsedargs) => {
     const pages = []
-    const pargs = cardMod.parseArgs(args)
-
-    /* join user cards to actual card types */
-    const cards = cardMod.filter(user.cards.map(card => Object.assign({}, ctx.cards[card.id], card)), pargs)
-
-    if(cards.length == 0)
-        return ctx.reply(user, `no cards found`)
-
-    cards.sort(pargs.sort)
 
     cards.map((c, i) => {
         if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += `${cardMod.formatName(c)}\n`
+        pages[Math.floor(i/15)] += (formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
     })
 
     return await paginator.addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
-})
+}))
