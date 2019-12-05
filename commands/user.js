@@ -44,8 +44,11 @@ cmd('cards', 'li', async (ctx, user, ...args) => {
     const pargs = cardMod.parseArgs(args)
 
     /* join user cards to actual card types */
-    const cards = user.cards.map(card => Object.assign({}, ctx.cards[card.id], card))
-    cards = cardMod.filter(cards, pargs)
+    const cards = cardMod.filter(user.cards.map(card => Object.assign({}, ctx.cards[card.id], card)), pargs)
+
+    if(cards.length == 0)
+        return ctx.reply(user, `no cards found`)
+
     cards.sort(pargs.sort)
 
     cards.map((c, i) => {
@@ -53,5 +56,5 @@ cmd('cards', 'li', async (ctx, user, ...args) => {
         pages[Math.floor(i/15)] += `${cardMod.formatName(c)}\n`
     })
 
-    await paginator.addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
+    return await paginator.addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
 })

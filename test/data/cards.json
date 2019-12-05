@@ -103,5 +103,5 @@
     {"name":"did_someone_say_cheesecake","level":4,"animated":true,"col":"special"},
     {"name":"end_of_times","level":4,"animated":true,"col":"special"},
     {"name":"hai_domo","level":4,"animated":false,"col":"special"},
-    {"name":"poi_kai_ni","level":4,"animated":false,"col":"special"},
-],
+    {"name":"poi_kai_ni","level":4,"animated":false,"col":"special"}
+]

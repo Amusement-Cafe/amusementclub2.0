@@ -11,7 +11,7 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
 
     /* prefill in the urls */
     data.cards = data.cards.map(x => {
-        x.url = `${baseurl}/cards/${data.collections[x.collection].name}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+        x.url = `${baseurl}/cards/${data.collections.filter(y => y.id == x.col)[0].name}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
         return x
     })
 

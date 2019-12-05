@@ -3,11 +3,6 @@ const {cap, claimCost}      = require('../utils/tools')
 const colMod                = require('./collection')
 const userMod               = require('./user')
 
-const fetchRandom = async (amount, query = {}) => {
-    const random = Math.floor(Math.random() * amount)
-    return await Card.findOne(query).skip(random)
-}
-
 const formatClaim = (user, cards) => {
     const repl = "you got:\n"
     cards.sort((a, b) => b.level - a.level)
@@ -120,10 +115,10 @@ const equals = (card1, card2) => {
     return final
 }*/
 
-const addUserCard = (user, card) => {
-    const userCard = cardIndex(user, card)
-    if(userCard >= 0) user.cards[userCard].amount = (user.cards[userCard].amount + 1 || 2);
-    else user.cards.push({ name: card.name, level: card.level, col: card.col, amount: 1 });
+const addUserCard = (user, cardID) => {
+    const userCard = user.cards.filter(x => x.id == cardID)[0]
+    if(userCard >= 0) user.cards[userCard].amount++
+    else user.cards.push({ id: cardID, amount: 1, obtained: new Date() });
 }
 
 const cardIndex = (user, card) => {
@@ -154,7 +149,6 @@ const withCard = (options, callback) => async (ctx, user, ...args) => {
 }
 
 module.exports = {
-    fetchRandom,
     formatClaim,
     formatName,
     formatLink,

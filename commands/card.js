@@ -3,9 +3,9 @@ const {cap, claimCost}      = require('../utils/tools')
 const colMod                = require('../modules/collection')
 const {cmd}                 = require('../utils/cmd')
 const {addConfirmation}     = require('../utils/confirmator')
+const sample                = require('lodash.sample');
 
 const {
-    fetchRandom,
     formatClaim,
     formatName,
     formatLink,
@@ -16,21 +16,18 @@ const {
 } = require('../modules/card')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
-    const countCol = await Collection.countDocuments()
     const items = []
     const amount = parseInt(arg1) || 1
     const price = claimCost(user, amount)
-
 
     if(price > user.exp)
         return ctx.reply(user, `you need **${price}** {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}.\n 
             You have ${Math.floor(user.exp)}`)
 
     for (let i = 0; i < amount; i++) {
-        const q = { col: (await colMod.fetchRandom(countCol)).id, level: { $lt: 4 } }
-        const countCard = await Card.countDocuments(q)
-        const item = await fetchRandom(countCard, q)
-        addUserCard(user, item)
+        const col = sample(ctx.collections)
+        const item = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        addUserCard(user, ctx.cards.findIndex(x => equals(x, item)))
         items.push(item)
     }
 
