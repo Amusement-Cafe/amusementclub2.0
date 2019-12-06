@@ -86,10 +86,6 @@ const tryGetUserID = (inp) => {
     return false
 }
 
-const userHasCard = (user, card) => {
-    return user.cards.filter(x => equals(x, card))[0]
-}
-
 const equals = (card1, card2) => {
     return card1.name === card2.name && card1.level === card2.level && card1.col === card2.col
 }
@@ -123,7 +119,6 @@ const bestMatch = cards => cards.sort((a, b) => a.name.length - b.name.length)[0
 module.exports = {
     formatName,
     formatLink,
-    userHasCard,
     equals,
     bestMatch,
     addUserCard,

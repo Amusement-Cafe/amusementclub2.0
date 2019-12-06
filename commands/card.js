@@ -4,6 +4,12 @@ const {addConfirmation}     = require('../utils/confirmator')
 const sample                = require('lodash.sample');
 
 const {
+    new_trs,
+    confirm_trs,
+    decline_trs
+} = require('../modules/transaction')
+
+const {
     formatName,
     formatLink,
     equals,
@@ -53,18 +59,13 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const price = 100
     const card = bestMatch(cards)
 
-    //await 
+    const trs = await new_trs(ctx, user, card, parsedargs.id)
 
     addConfirmation(ctx, user, 
-        `do you want to sell **${formatName(card)}** to bot for **${price}** {currency}?`, [], 
+        `do you want to sell **${formatName(card)}** to **${trs.to? trs.to : 'bot'}** for **${price}** {currency}?`, [], 
         async () => {
-            if(card.amount > 1)
-                user.cards.filter(x => x.id === card.id)[0].amount--
-            else
-                user.cards = user.cards.filter(x => x.id != card.id)
-
-            user.exp += price
-            await user.save()
-            return ctx.reply(user, `you sold **${formatName(card)}** for **${price}** {currency}`)
+            await confirm_trs(ctx, user, trs.id)
+        }, async () => {
+            await decline_trs(ctx, user, trs.id)
         })
 }))
