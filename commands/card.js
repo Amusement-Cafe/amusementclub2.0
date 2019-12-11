@@ -6,7 +6,8 @@ const sample                = require('lodash.sample');
 const {
     new_trs,
     confirm_trs,
-    decline_trs
+    decline_trs,
+    check_trs
 } = require('../modules/transaction')
 
 const {
@@ -56,13 +57,19 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
+    const pending = await check_trs(ctx, user, parsedargs.id)
+    if(pending)
+        return ctx.reply(user, `you have pending unconfirmed transaction to **${pending.to}**. 
+            You must resolve that transaction before setting up a new one`, 'red')
+
     const price = 100
     const card = bestMatch(cards)
 
     const trs = await new_trs(ctx, user, card, parsedargs.id)
 
     addConfirmation(ctx, user, 
-        `do you want to sell **${formatName(card)}** to **${trs.to? trs.to : 'bot'}** for **${price}** {currency}?`, [], 
+        `do you want to sell **${formatName(card)}** to **${trs.to? trs.to : 'bot'}** for **${price}** {currency}?`, 
+        [user.discord_id, parsedargs.id], 
         async () => {
             await confirm_trs(ctx, user, trs.id)
         }, async () => {

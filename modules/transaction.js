@@ -1,5 +1,8 @@
 const {User, Transaction}   = require('../collections')
 const {addUserCard}         = require('./card')
+const {
+    formatName
+} = require('../modules/card')
 
 const new_trs = async (ctx, user, card, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
@@ -7,7 +10,7 @@ const new_trs = async (ctx, user, card, to_id) => {
     transaction.id = getNewID()
     transaction.from = user.username
     transaction.from_id = user.discord_id
-    transaction.to = target.username
+    transaction.to = target? target.username : 'bot'
     transaction.to_id = to_id
     //transaction.guild 
     //transaction.guild_id 
@@ -21,7 +24,9 @@ const new_trs = async (ctx, user, card, to_id) => {
 }
 
 const confirm_trs = async (ctx, user, trs_id) => {
-    const transaction = Transaction.findOne({ id: trs_id })
+    const transaction = await Transaction.findOne({ id: trs_id })
+
+    console.log(transaction)
 
     if(!transaction)
         return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red')
@@ -29,9 +34,9 @@ const confirm_trs = async (ctx, user, trs_id) => {
     if(transaction.status != 'pending')
         return ctx.reply(user, `this transaction was already **${transaction.status}**`, 'red')
 
-    const from_user = User.findOne({ discord_id: transaction.from_id })
-    const to_user = User.findOne({ discord_id: transaction.to_id })
-    const card = from_user.filter(x => x.id == transaction.card)[0]
+    const from_user = await User.findOne({ discord_id: transaction.from_id })
+    const to_user = await User.findOne({ discord_id: transaction.to_id })
+    const card = from_user.cards.filter(x => x.id == transaction.card)[0]
 
     if(!card){
         transaction.status = 'declined'
@@ -65,24 +70,29 @@ const confirm_trs = async (ctx, user, trs_id) => {
     await from_user.save()
     await transaction.save()
 
-    return ctx.reply(user, `sold **${formatName(card)}** 
-        to **${transaction.to_id? transaction.to : 'bot'}** 
-        for **${transaction.price}** {currency}`)
+    return ctx.reply(user, `sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** {currency}`)
 }
 
 const decline_trs = async (ctx, user, trs_id) => {
-    const transaction = Transaction.findOne({ id: trs_id })
+    const transaction = await Transaction.findOne({ id: trs_id })
 
     if(!transaction)
         return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red')
 
-    if((user.discord_id != transaction.from_id || user.discord_id != transaction.to_id) && !user.isMod)
+    console.log(user.discord_id)
+    console.log(transaction)
+
+    if(!(user.discord_id === transaction.from_id || user.discord_id === transaction.to_id) && !user.isMod)
         return ctx.reply(user, `you don't have rights to decline this transaction`, 'red')
 
     transaction.status = 'declined'
     await transaction.save()
 
     return ctx.reply(user, `transaction \`${trs_id}\` was declined`)
+}
+
+const check_trs = async (ctx, user, target) => {
+    return await Transaction.findOne({ from_id: user.discord_id, status: 'pending', to_id: target })
 }
 
 const getNewID = () => {
@@ -92,5 +102,6 @@ const getNewID = () => {
 module.exports = {
     new_trs,
     confirm_trs,
-    decline_trs
+    decline_trs,
+    check_trs
 }

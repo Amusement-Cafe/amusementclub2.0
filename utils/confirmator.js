@@ -5,7 +5,7 @@ const colors = require('./colors')
 
 const addConfirmation = async (ctx, user, question, permits, confirm, decline) => {
     queue = queue.filter(x => x.userID != user.discord_id)
-    permits.push(user.discord_id)
+    //permits.push(user.discord_id)
 
     const obj = {
         userID: user.discord_id,
