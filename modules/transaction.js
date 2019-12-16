@@ -12,8 +12,8 @@ const new_trs = async (ctx, user, card, to_id) => {
     transaction.from_id = user.discord_id
     transaction.to = target? target.username : 'bot'
     transaction.to_id = to_id
-    //transaction.guild 
-    //transaction.guild_id 
+    transaction.guild = ctx.msg.channel.guild.name
+    transaction.guild_id = ctx.msg.channel.guild.id
     transaction.status = 'pending'
     transaction.time = new Date()
     transaction.card = card.id

@@ -59,12 +59,14 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const pending = await check_trs(ctx, user, parsedargs.id)
     if(pending)
-        return ctx.reply(user, `you have pending unconfirmed transaction to **${pending.to}**. 
+        return ctx.reply(user, `you already have pending unconfirmed transaction to **${pending.to}**. 
             You must resolve that transaction before setting up a new one`, 'red')
+
+    if(!ctx.msg.channel.guild)
+        return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
     const price = 100
     const card = bestMatch(cards)
-
     const trs = await new_trs(ctx, user, card, parsedargs.id)
 
     addConfirmation(ctx, user, 
