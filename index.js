@@ -80,14 +80,16 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
         try {
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming message */
-                userID, /* user who reacted */
                 emoji, /* reaction data */
                 cards: data.cards, /* data with cards */
                 collections: data.collections, /* data with collections */
             })
 
-            console.log(emoji.name)
-            await trigger('rct', isolatedCtx, msg.author, [emoji.name])
+            const usr  = await user.fetchOnly(isolatedCtx, msg.author.id)
+
+            if(!user) return
+
+            await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
             send(msg.channel.id, { description: e.message, color: colors.red })
         }

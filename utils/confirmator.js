@@ -5,7 +5,6 @@ const colors = require('./colors')
 
 const addConfirmation = async (ctx, user, question, permits, confirm, decline) => {
     queue = queue.filter(x => x.userID != user.discord_id)
-    //permits.push(user.discord_id)
 
     const obj = {
         userID: user.discord_id,
@@ -27,11 +26,11 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline) =
     await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '❌')
 }
 
-const getEmbed = (user, text) => {
+const getEmbed = (user, text, footer) => {
     return { 
         title: `Confirmation`, 
         description: `**${user.username},** ${text}` ,
-        //footer: { text: `Page ${pg.page + 1}/${pg.data.length}` },
+        footer: { text: footer },
         color: colors.yellow
     }
 }
@@ -59,18 +58,20 @@ const {rct} = require('../utils/cmd')
 
 setInterval(tick.bind(this), 5000);
 
-rct('✅', '❌', async (ctx) => {
+rct('✅', '❌', async (ctx, user) => {
     const msg = ctx.msg
-    const data = queue.filter(x => x.msg === msg.id && x.permits.filter(y => y === ctx.userID)[0])[0]
+    const data = queue.filter(x => x.msg === msg.id)[0]
 
-    if(data) {
-        queue = queue.filter(x => x.msg != msg.id)
+    if(data && ctx.emoji.name === '✅' && data.onConfirm 
+        && data.permits.confirm.filter(y => y === ctx.userID)[0]) {
+        data.onConfirm(user)
 
-        if(ctx.emoji.name === '✅' && data.onConfirm)
-            data.onConfirm()
-        else if(ctx.emoji.name === '❌' && data.onDecline)
-            data.onDecline()
+    } else if(data && ctx.emoji.name === '❌' && data.onDecline
+        && data.permits.decline.filter(y => y === ctx.userID)[0]) {
+        data.onDecline(user)
 
-        await ctx.bot.deleteMessage(msg.channel.id, msg.id, 'Removing confirmation dialog')
-    }
+    } else return
+
+    queue = queue.filter(x => x.msg != msg.id)
+    await ctx.bot.deleteMessage(msg.channel.id, msg.id, 'Removing confirmation dialog')
 })

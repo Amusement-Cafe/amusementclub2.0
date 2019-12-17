@@ -65,16 +65,23 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(!ctx.msg.channel.guild)
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
+    const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
     const price = 100
     const card = bestMatch(cards)
     const trs = await new_trs(ctx, user, card, parsedargs.id)
 
-    addConfirmation(ctx, user, 
-        `do you want to sell **${formatName(card)}** to **${trs.to? trs.to : 'bot'}** for **${price}** {currency}?`, 
-        [user.discord_id, parsedargs.id], 
-        async () => {
-            await confirm_trs(ctx, user, trs.id)
-        }, async () => {
-            await decline_trs(ctx, user, trs.id)
+    let question = `do you want to sell **${formatName(card)}** to **bot** for **${price}** {currency}?`
+
+    if(trs.to) {
+        question = `**${trs.from}** wants to sell you **${formatName(card)}** for **${price}** {currency}`
+    } else {
+        prm.confirm.push(user.discord_id)
+    }
+
+    addConfirmation(ctx, user, question, prm, 
+        async (x) => {
+            await confirm_trs(ctx, x, trs.id)
+        }, async (x) => {
+            await decline_trs(ctx, x, trs.id)
         })
 }))

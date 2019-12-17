@@ -14,9 +14,19 @@ const fetchOrCreate = async (ctx, userid, username) => {
         await ctx.reply(user, 'welcome to **amoosement clup**')
     }
 
+    if(user.username != username) {
+        user.username = username
+        await user.save()
+    }
+
     return user
+}
+
+const fetchOnly = async (ctx, userid) => {
+    return await User.findOne({ discord_id: userid })
 }
 
 module.exports = {
     fetchOrCreate,
+    fetchOnly
 }
