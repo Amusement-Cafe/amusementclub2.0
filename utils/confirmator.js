@@ -62,12 +62,15 @@ rct('✅', '❌', async (ctx, user) => {
     const msg = ctx.msg
     const data = queue.filter(x => x.msg === msg.id)[0]
 
+    console.log(data)
+    console.log(user)
+
     if(data && ctx.emoji.name === '✅' && data.onConfirm 
-        && data.permits.confirm.filter(y => y === ctx.userID)[0]) {
+        && data.permits.confirm.filter(y => y === user.discord_id)[0]) {
         data.onConfirm(user)
 
     } else if(data && ctx.emoji.name === '❌' && data.onDecline
-        && data.permits.decline.filter(y => y === ctx.userID)[0]) {
+        && data.permits.decline.filter(y => y === user.discord_id)[0]) {
         data.onDecline(user)
 
     } else return

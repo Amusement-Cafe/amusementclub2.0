@@ -72,7 +72,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     let question = `do you want to sell **${formatName(card)}** to **bot** for **${price}** {currency}?`
 
-    if(trs.to) {
+    if(parsedargs.id) {
         question = `**${trs.from}** wants to sell you **${formatName(card)}** for **${price}** {currency}`
     } else {
         prm.confirm.push(user.discord_id)

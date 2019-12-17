@@ -85,9 +85,10 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
                 collections: data.collections, /* data with collections */
             })
 
-            const usr  = await user.fetchOnly(isolatedCtx, msg.author.id)
+            const usr  = await user.fetchOnly(isolatedCtx, userID)
+            console.log(usr)
 
-            if(!user) return
+            if(!usr) return
 
             await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {

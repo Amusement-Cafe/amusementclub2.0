@@ -51,7 +51,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         if(to_user.exp < transaction.price)
             return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** {currency} to confirm this transaction`, 'red')
 
-        addUserCard(to_user, card)
+        addUserCard(to_user, card.id)
         to_user.exp -= transaction.price
 
         await to_user.save()
