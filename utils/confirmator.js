@@ -3,7 +3,7 @@ var bot;
 
 const colors = require('./colors')
 
-const addConfirmation = async (ctx, user, question, permits, confirm, decline) => {
+const addConfirmation = async (ctx, user, question, permits, confirm, decline, footer) => {
     queue = queue.filter(x => x.userID != user.discord_id)
 
     const obj = {
@@ -17,7 +17,7 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline) =
     obj.expires.setMinutes(obj.expires.getMinutes() + 1)
     queue.push(obj)
 
-    const msg = await ctx.send(ctx.msg.channel.id, getEmbed(user, question))
+    const msg = await ctx.send(ctx.msg.channel.id, getEmbed(user, question, footer))
 
     obj.msg = msg.id
     obj.channel = msg.channel.id
@@ -29,7 +29,7 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline) =
 const getEmbed = (user, text, footer) => {
     return { 
         title: `Confirmation`, 
-        description: `**${user.username},** ${text}` ,
+        description: text,
         footer: { text: footer },
         color: colors.yellow
     }

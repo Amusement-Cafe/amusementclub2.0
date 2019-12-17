@@ -69,11 +69,12 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const price = 100
     const card = bestMatch(cards)
     const trs = await new_trs(ctx, user, card, parsedargs.id)
+    const footer = `ID: \`${trs.id}\``
 
-    let question = `do you want to sell **${formatName(card)}** to **bot** for **${price}** {currency}?`
+    let question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** {currency}?`
 
     if(parsedargs.id) {
-        question = `**${trs.from}** wants to sell you **${formatName(card)}** for **${price}** {currency}`
+        question = `**${trs.to}**, **${trs.from}** wants to sell you **${formatName(card)}** for **${price}** {currency}`
     } else {
         prm.confirm.push(user.discord_id)
     }
@@ -83,5 +84,5 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
             await confirm_trs(ctx, x, trs.id)
         }, async (x) => {
             await decline_trs(ctx, x, trs.id)
-        })
+        }, footer)
 }))
