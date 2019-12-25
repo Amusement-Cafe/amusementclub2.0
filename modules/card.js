@@ -97,7 +97,7 @@ const addUserCard = (user, cardID) => {
 }
 
 /**
- * Helper function to enrich the comamnd with selected card
+ * Helper function to enrich the comamnd with user cards
  * @param  {Function} callback command handler
  * @return {Promise}
  */
@@ -109,9 +109,24 @@ const withCards = (callback) => async (ctx, user, ...args) => {
         .sort(parsedargs.sort)
 
     if(cards.length == 0)
-        return ctx.reply(user, `no cards found`)
+        return ctx.reply(user, `no cards found`, 'red')
 
     return callback(ctx, user, cards, parsedargs)
+}
+
+/**
+ * Helper function to enrich the comamnd with selected card
+ * @param  {Function} callback command handler
+ * @return {Promise}
+ */
+const withGlobalCard = (callback) => async(ctx, user, ...args) => {
+    const parsedargs = parseArgs(ctx, args)
+    const cards = filter(ctx.cards, parsedargs).sort(parsedargs.sort)
+
+    if(cards.length == 0)
+        return ctx.reply(user, `card wasn't found`, 'red')
+
+    return callback(ctx, user, bestMatch(cards), parsedargs)
 }
 
 const bestMatch = cards => cards.sort((a, b) => a.name.length - b.name.length)[0]
@@ -124,5 +139,6 @@ module.exports = {
     addUserCard,
     filter,
     parseArgs,
-    withCards
+    withCards,
+    withGlobalCard
 }

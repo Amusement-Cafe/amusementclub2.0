@@ -15,4 +15,6 @@ module.exports = model('User', {
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
+
+    roles:              []
 })

@@ -3,7 +3,24 @@ const tree = {
     rct: {},
 }
 
-const cmd = (...args) => {
+const cmd = (...args) => { buildTree(args) }
+
+const pcmd = (perm, ...args) => { buildTree(args, perm) }
+
+const rct = (...args) => {
+    const callback = args.pop()
+    const cursor = tree.rct
+
+    args.map(alias => {
+        if (!cursor.hasOwnProperty(alias)) {
+            cursor[alias] = {}
+        }
+
+        cursor[alias]._callback = callback
+    })
+}
+
+const buildTree = async(args, perm) => {
     const callback = args.pop()
 
     args.map(alias => {
@@ -19,23 +36,13 @@ const cmd = (...args) => {
         })
 
         cursor._callback = callback
+
+        if(perm)
+            cursor._perm = perm
     })
 }
 
-const rct = (...args) => {
-    const callback = args.pop()
-    const cursor = tree.rct
-
-    args.map(alias => {
-        if (!cursor.hasOwnProperty(alias)) {
-            cursor[alias] = {}
-        }
-
-        cursor[alias]._callback = callback
-    })
-}
-
-const trigger = async (type, ctx, user, args, prefix = '/') => {
+const trigger = async (type, ctx, user, args) => {
     let cursor = tree[type]
 
     while (cursor.hasOwnProperty(args[0])) {
@@ -44,7 +51,12 @@ const trigger = async (type, ctx, user, args, prefix = '/') => {
     }
 
     if (!cursor.hasOwnProperty('_callback')) {
-        throw new Error(`Unknown command name, please try again, or use ${prefix}help`)
+        //throw new Error(`Unknown command name, please try again, or use ${prefix}help`)
+    }
+
+    if (cursor._perm) {
+        if(!user.roles || !cursor._perm.filter(x => user.roles.filter(y => x === y)[0])[0])
+            throw new Error(`Only users with roles **[${cursor._perm}]** can execute this command`)
     }
 
     const newArgs = [ctx, user || { }].concat(args)
@@ -53,12 +65,13 @@ const trigger = async (type, ctx, user, args, prefix = '/') => {
         return await cursor._callback.apply({}, newArgs)
     } catch (err) {
         console.error(err) /* log actual error to the console */
-        throw new Error('Internal error, please notify the developer')
+        throw new Error(err)
     }
 }
 
 module.exports = {
     cmd,
+    pcmd,
     rct,
     trigger,
 }
