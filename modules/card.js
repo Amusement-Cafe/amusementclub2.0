@@ -77,8 +77,20 @@ const equals = (card1, card2) => {
 
 const addUserCard = (user, cardID) => {
     const userCard = user.cards.filter(x => x.id == cardID)[0]
-    if(userCard >= 0) user.cards[userCard].amount++
-    else user.cards.push({ id: cardID, amount: 1, obtained: new Date() });
+    if(userCard) {
+        user.cards[user.cards.findIndex(x => x.id == cardID)].amount++
+        user.markModified('cards')
+
+    } else user.cards.push({ id: cardID, amount: 1, obtained: new Date() });
+}
+
+const removeUserCard = (user, cardID) => {
+    const userCard = user.cards.filter(x => x.id == cardID)[0]
+    if(userCard.amount > 1){
+        user.cards[user.cards.findIndex(x => x.id == cardID)].amount--
+        user.markModified('cards')
+
+    } else user.cards = user.cards.filter(x => x.id != cardID)
 }
 
 /**
@@ -122,6 +134,7 @@ module.exports = {
     equals,
     bestMatch,
     addUserCard,
+    removeUserCard,
     filter,
     parseArgs,
     withCards,

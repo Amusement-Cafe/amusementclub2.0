@@ -88,7 +88,7 @@ pcmd(['admin', 'mod'], ['admin', 'add', 'card'], withGlobalCard(async (ctx, user
     if(!parsedargs.id)
         return ctx.reply(user, `please specify user ID`, 'red')
 
-    const target = await fetchOnly(parsedargs.id)
+    var target = await fetchOnly(parsedargs.id)
 
     if(!target)
         return ctx.reply(user, `cannot find user with that ID`, 'red')

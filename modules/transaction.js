@@ -1,5 +1,9 @@
 const {User, Transaction}   = require('../collections')
-const {addUserCard}         = require('./card')
+const {
+    addUserCard, 
+    removeUserCard
+} = require('./card')
+
 const {
     formatName
 } = require('../modules/card')
@@ -25,8 +29,6 @@ const new_trs = async (ctx, user, card, to_id) => {
 
 const confirm_trs = async (ctx, user, trs_id) => {
     const transaction = await Transaction.findOne({ id: trs_id })
-
-    console.log(transaction)
 
     if(!transaction)
         return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red')
@@ -59,10 +61,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
     } else if(user.discord_id != transaction.from_id)
         return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
 
-    if(card.amount > 1)
-        card.amount--
-    else
-        from_user.cards = from_user.cards.filter(x => x.id != card.id)
+    removeUserCard(from_user, card.id)
 
     from_user.exp += transaction.price
     transaction.status = 'confirmed'
@@ -78,9 +77,6 @@ const decline_trs = async (ctx, user, trs_id) => {
 
     if(!transaction)
         return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red')
-
-    console.log(user.discord_id)
-    console.log(transaction)
 
     if(!(user.discord_id === transaction.from_id || user.discord_id === transaction.to_id) && !user.isMod)
         return ctx.reply(user, `you don't have rights to decline this transaction`, 'red')
