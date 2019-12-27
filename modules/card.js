@@ -1,7 +1,7 @@
-const {Card, Collection}    = require('../collections')
-const {cap, claimCost}      = require('../utils/tools')
-const colMod                = require('./collection')
-const userMod               = require('./user')
+const {Card, Collection}                    = require('../collections')
+const {cap, claimCost, tryGetUserID}        = require('../utils/tools')
+const colMod                                = require('./collection')
+const userMod                               = require('./user')
 
 const formatName = (x) => {
     return `[${new Array(x.level + 1).join('★')}] [${cap(x.name.replace(/_/g, ' '))}](${x.url}) \`[${x.col}]\``
@@ -71,21 +71,6 @@ const filter = (cards, query) => {
     return cards
 }
 
-const tryGetUserID = (inp) => {
-    inp = inp.trim()
-
-    try {
-        if (/^\d+$/.test(inp) && inp > (1000 * 60 * 60 * 24 * 30 * 2 ** 22)){
-            return inp;
-        } else {
-            return inp.slice(0, -1).split('@')[1].replace('!', '');
-        }
-    }
-    catch(err) { }
-
-    return false
-}
-
 const equals = (card1, card2) => {
     return card1.name === card2.name && card1.level === card2.level && card1.col === card2.col
 }
@@ -111,7 +96,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     if(cards.length == 0)
         return ctx.reply(user, `no cards found`, 'red')
 
-    return callback(ctx, user, cards, parsedargs)
+    return callback(ctx, user, cards, parsedargs, args)
 }
 
 /**
@@ -126,7 +111,7 @@ const withGlobalCard = (callback) => async(ctx, user, ...args) => {
     if(cards.length == 0)
         return ctx.reply(user, `card wasn't found`, 'red')
 
-    return callback(ctx, user, bestMatch(cards), parsedargs)
+    return callback(ctx, user, bestMatch(cards), parsedargs, args)
 }
 
 const bestMatch = cards => cards.sort((a, b) => a.name.length - b.name.length)[0]

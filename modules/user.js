@@ -1,4 +1,7 @@
 const User = require('../collections/user')
+const {
+    getAllUserIDs
+} = require('../utils/tools')
 
 const fetchOrCreate = async (ctx, userid, username) => {
     let user = await User.findOne({ discord_id: userid })
@@ -22,11 +25,26 @@ const fetchOrCreate = async (ctx, userid, username) => {
     return user
 }
 
-const fetchOnly = async (ctx, userid) => {
+const fetchOnly = async (userid) => {
     return await User.findOne({ discord_id: userid })
+}
+
+const onUsersFromArgs = async (args, callback) => {
+    const pa = getAllUserIDs(args)
+
+    if(pa.ids.length === 0)
+        return `please specify at least one user ID`
+
+    await Promise.all(pa.ids.map(async x => {
+       const target = await fetchOnly(x) 
+       await callback(target, pa.args)
+    }))
+
+    return false
 }
 
 module.exports = {
     fetchOrCreate,
-    fetchOnly
+    fetchOnly,
+    onUsersFromArgs
 }

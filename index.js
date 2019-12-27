@@ -85,7 +85,7 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
                 collections: data.collections, /* data with collections */
             })
 
-            const usr  = await user.fetchOnly(isolatedCtx, userID)
+            const usr  = await user.fetchOnly(userID)
             console.log(usr)
 
             if(!usr) return
