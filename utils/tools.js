@@ -32,6 +32,12 @@ const getAllUserIDs = (args) => {
 	return out
 }
 
+const nameSort = (a, b, prop = "name") => {
+    if(a[prop] < b[prop]) return -1;
+    if(a[prop] > b[prop]) return 1;
+    return 0;
+}
+
 const generateNextId = (lastId, idLength = 4) => {
     // The digits in the space are aliased by these characters:
     const charPool = ['a','b','c','d','e','f','g','h','i','j','k','m',
@@ -68,6 +74,7 @@ const generateNextId = (lastId, idLength = 4) => {
 module.exports = {
     cap,
     claimCost,
+    nameSort,
     tryGetUserID,
     getAllUserIDs,
     generateNextId

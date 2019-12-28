@@ -1,6 +1,6 @@
 [
-    {"id":"blends","name":"blends","origin":null,"aliases":["blends"],"promo":false,"compressed":true},
-    {"id":"codegeass","name":"codegeass","origin":null,"aliases":["codegeass"],"promo":false,"compressed":true},
-    {"id":"darlinginthefranxx","name":"darlinginthefranxx","origin":null,"aliases":["darlinginthefranxx"],"promo":false,"compressed":false},
-    {"id":"special","name":"special","origin":null,"aliases":["special"],"promo":false,"compressed":true}
+    {"id":"blends","name":"Blend S","origin":null,"aliases":["blends"],"promo":false,"compressed":true},
+    {"id":"codegeass","name":"Code Geass","origin":null,"aliases":["codegeass"],"promo":false,"compressed":true},
+    {"id":"darlinginthefranxx","name":"Darling In The FranXX","origin":null,"aliases":["darlinginthefranxx"],"promo":false,"compressed":false},
+    {"id":"special","name":"s p e c i a l","origin":null,"aliases":["special"],"promo":false,"compressed":true}
 ]

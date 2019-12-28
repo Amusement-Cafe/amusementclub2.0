@@ -1,7 +1,11 @@
-const {Card, Collection}                    = require('../collections')
-const {cap, claimCost, tryGetUserID}        = require('../utils/tools')
-const colMod                                = require('./collection')
-const userMod                               = require('./user')
+const {
+    cap,
+    claimCost, 
+    tryGetUserID,
+    nameSort
+} = require('../utils/tools')
+
+const { bestColMatch }    = require('./collection')
 
 const formatName = (x) => {
     return `[${new Array(x.level + 1).join('★')}] [${cap(x.name.replace(/_/g, ' '))}](${x.url}) \`[${x.col}]\``
@@ -42,7 +46,7 @@ const parseArgs = (ctx, args) => {
                 case 'new': q.filters.push(c => c.obtained > date); break
                 default: {
                     if(parseInt(substr)) levels.push(parseInt(substr))
-                    else cols.push(colMod.byAlias(ctx, substr).id)
+                    else cols.push(bestColMatch(ctx, substr).id)
                 }
             }
         } else if(x[0] === '#') {
@@ -58,12 +62,6 @@ const parseArgs = (ctx, args) => {
         q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
 
     return q
-}
-
-const nameSort = (a, b) => {
-    if(a.name < b.name) return -1;
-    if(a.name > b.name) return 1;
-    return 0;
 }
 
 const filter = (cards, query) => {
