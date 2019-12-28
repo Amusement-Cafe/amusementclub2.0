@@ -3,7 +3,7 @@ const cap = (str) => {
 }
 
 const claimCost = (user, amount) => {
-    return ((user.dailystats.claim || 0) + amount) * 50
+    return ((user.dailystats.claims || 0) * 50) + (50 * ((amount * (amount + 1)) / 2))
 }
 
 const tryGetUserID = (inp) => {

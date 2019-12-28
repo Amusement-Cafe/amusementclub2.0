@@ -31,12 +31,13 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     for (let i = 0; i < amount; i++) {
         const col = sample(ctx.collections)
         const item = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
-        addUserCard(user, ctx.cards.findIndex(x => equals(x, item)))
+        addUserCard(user, item.id)
         cards.push(item)
     }
 
     user.exp -= price
     user.dailystats.claims = user.dailystats.claims + amount || amount
+    user.markModified('dailystats')
 
     await user.save()
 
@@ -44,7 +45,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 
     return ctx.reply(user, {
         url: formatLink(cards[0]),
-        description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, user.dailystats.claims)}** {currency}`
+        description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, 1)}** {currency}`
     })
 })
 

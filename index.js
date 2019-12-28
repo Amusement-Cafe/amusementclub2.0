@@ -24,7 +24,12 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
     const bot = new Eris(token)
 
     /* create our glorious sending fn */
-    const send = (ch, content) => bot.createMessage(ch, { embed: content })
+    const send = (ch, content) => { 
+        if(content.description)
+            content.description = content.description.replace(/{currency}/gi, '`🍅`')
+
+        bot.createMessage(ch, { embed: content })
+    }
 
     /* create our context */
     const ctx = {

@@ -1,13 +1,14 @@
-const msToTime = require('pretty-ms')
-const {cmd} = require('../utils/cmd')
-const paginator = require('../utils/paginator')
+const msToTime      = require('pretty-ms')
+const {cmd}         = require('../utils/cmd')
+const paginator     = require('../utils/paginator')
+const {claimCost}   = require('../utils/tools')
 const {
     formatName,
     withCards
 } = require('../modules/card')
 
 cmd('bal', ({ reply }, user) => {
-    return reply(user, `you have **${Math.floor(user.exp)}** {currency}`)
+    return reply(user, `you have **${Math.floor(user.exp)}** {currency}\nYour next claim will cost **${claimCost(user, 1)}** {currency}`)
 })
 
 cmd('inv', ['inventory', 'check'], ({ reply }, user, ...args) => {
