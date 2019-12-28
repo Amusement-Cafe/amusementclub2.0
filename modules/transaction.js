@@ -10,7 +10,7 @@ const {
 
 const new_trs = async (ctx, user, card, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
-    const last_trs = await Transaction.findOne()
+    const last_trs = (await Transaction.find().sort({ _id: -1 }))[0]
     const transaction = new Transaction()
     transaction.id = getNewID(last_trs)
     transaction.from = user.username
@@ -108,7 +108,7 @@ const format_listtrs = (ctx, user, trans) => {
     const isget = trans.from_id != user.discord_id
 
     resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${formatName(ctx.cards[trans.card])}`
-    resp += isget ? ` \`⬅️\` **${trans.from}**` : ` \`➡️\` **${trans.to}**`;
+    resp += isget ? ` \`<-\` **${trans.from}**` : ` \`->\` **${trans.to}**`;
     return resp;
 }
 
@@ -118,8 +118,8 @@ const format_trs = (ctx, user, trans) => {
 
 const getNewID = (last_trs) => {
     if(!last_trs)
-        return generateNextId('bigpp')
-    return generateNextId(last_trs.id)
+        return generateNextId('aaaaaa', 6)
+    return generateNextId(last_trs.id, 6)
 }
 
 const ch_map = {

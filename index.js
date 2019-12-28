@@ -28,7 +28,7 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
         if(content.description)
             content.description = content.description.replace(/{currency}/gi, '`🍅`')
 
-        bot.createMessage(ch, { embed: content })
+        return bot.createMessage(ch, { embed: content })
     }
 
     /* create our context */
