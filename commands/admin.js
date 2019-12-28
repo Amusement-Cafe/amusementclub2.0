@@ -7,7 +7,7 @@ const {
 const {
     formatName,
     addUserCard,
-    withGlobalCard,
+    withGlobalCards,
     bestMatch,
     equals
 } = require('../modules/card')
@@ -84,7 +84,7 @@ pcmd(['admin', 'mod'], ['admin', 'award'], async (ctx, user, ...args) => {
      return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin', 'mod'], ['admin', 'add', 'card'], withGlobalCard(async (ctx, user, card, parsedargs, args) => {
+pcmd(['admin', 'mod'], ['admin', 'add', 'card'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(!parsedargs.id)
         return ctx.reply(user, `please specify user ID`, 'red')
 
@@ -93,7 +93,8 @@ pcmd(['admin', 'mod'], ['admin', 'add', 'card'], withGlobalCard(async (ctx, user
     if(!target)
         return ctx.reply(user, `cannot find user with that ID`, 'red')
 
-    addUserCard(target, ctx.cards.findIndex(x => equals(x, card)))
+    const card = bestMatch(cards)
+    addUserCard(target, card.id)
     await target.save()
 
     return ctx.reply(user, `added ${formatName(card)} to **${target.username}**`)

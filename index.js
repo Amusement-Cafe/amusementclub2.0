@@ -10,8 +10,9 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, data
     console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
-    data.cards = data.cards.map(x => {
+    data.cards = data.cards.map((x, i) => {
         x.url = `${baseurl}/cards/${data.collections.filter(y => y.id == x.col)[0].name}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+        x.id = i
         return x
     })
 

@@ -1,17 +1,18 @@
 const {User, Transaction}   = require('../collections')
-const {
-    addUserCard, 
-    removeUserCard
-} = require('./card')
+const {generateNextId} = require('../utils/tools')
+const msToTime = require('pretty-ms')
 
 const {
+    addUserCard, 
+    removeUserCard,
     formatName
-} = require('../modules/card')
+} = require('./card')
 
 const new_trs = async (ctx, user, card, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
+    const last_trs = await Transaction.findOne()
     const transaction = new Transaction()
-    transaction.id = getNewID()
+    transaction.id = getNewID(last_trs)
     transaction.from = user.username
     transaction.from_id = user.discord_id
     transaction.to = target? target.username : 'bot'
@@ -91,13 +92,47 @@ const check_trs = async (ctx, user, target) => {
     return await Transaction.findOne({ from_id: user.discord_id, status: 'pending', to_id: target })
 }
 
-const getNewID = () => {
-    return Math.random() * 100
+const paginate_trslist = (ctx, user, list) => {
+    const pages = []
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("")
+        pages[Math.floor(i/10)] += `${format_listtrs(ctx, user, t)}\n`
+    })
+
+    return pages;
+}
+
+const format_listtrs = (ctx, user, trans) => {
+    let resp = ""
+    const timediff = msToTime(new Date() - trans.time, {compact: true})
+    const isget = trans.from_id != user.discord_id
+
+    resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${formatName(ctx.cards[trans.card])}`
+    resp += isget ? ` \`⬅️\` **${trans.from}**` : ` \`➡️\` **${trans.to}**`;
+    return resp;
+}
+
+const format_trs = (ctx, user, trans) => {
+
+}
+
+const getNewID = (last_trs) => {
+    if(!last_trs)
+        return generateNextId('bigpp')
+    return generateNextId(last_trs.id)
+}
+
+const ch_map = {
+    confirmed: "\`✅\`",
+    declined: "\`❌\`",
+    pending: "\`❗\`"
 }
 
 module.exports = {
     new_trs,
     confirm_trs,
     decline_trs,
-    check_trs
+    check_trs,
+    format_listtrs,
+    paginate_trslist
 }

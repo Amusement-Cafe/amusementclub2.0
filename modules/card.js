@@ -116,14 +116,14 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withGlobalCard = (callback) => async(ctx, user, ...args) => {
+const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
     const cards = filter(ctx.cards, parsedargs).sort(parsedargs.sort)
 
     if(cards.length == 0)
         return ctx.reply(user, `card wasn't found`, 'red')
 
-    return callback(ctx, user, bestMatch(cards), parsedargs, args)
+    return callback(ctx, user, cards, parsedargs, args)
 }
 
 const bestMatch = cards => cards.sort((a, b) => a.name.length - b.name.length)[0]
@@ -138,5 +138,5 @@ module.exports = {
     filter,
     parseArgs,
     withCards,
-    withGlobalCard
+    withGlobalCards
 }
