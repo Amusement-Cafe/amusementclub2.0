@@ -2,6 +2,7 @@ const {claimCost}           = require('../utils/tools')
 const {cmd}                 = require('../utils/cmd')
 const {addConfirmation}     = require('../utils/confirmator')
 const sample                = require('lodash.sample');
+const {evalCard}            = require('../modules/eval')
 
 const {
     new_trs,
@@ -16,6 +17,7 @@ const {
     equals,
     addUserCard,
     withCards,
+    withGlobalCards,
     bestMatch
 } = require('../modules/card')
 
@@ -67,8 +69,9 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
     const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
-    const price = 100
+    
     const card = bestMatch(cards)
+    const price = await evalCard(ctx, card)
     const trs = await new_trs(ctx, user, card, parsedargs.id)
     const footer = `ID: \`${trs.id}\``
 
@@ -86,4 +89,10 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         }, async (x) => {
             await decline_trs(ctx, x, trs.id)
         }, footer)
+}))
+
+cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const card = bestMatch(cards)
+    const price = await evalCard(ctx, card)
+    return ctx.reply(user, `card ${formatName(card)} is worth **${price}** {currency}`)
 }))
