@@ -6,7 +6,7 @@ const evalLastDaily = new Date();
 
 evalLastDaily.setMonth(evalLastDaily.getMonth() - 6);
 
-const evalCard = async (ctx, card) => {
+const evalCard = async (ctx, card, modifier = 1) => {
     if(card.hasOwnProperty('eval'))
         return card.eval
 
@@ -16,8 +16,8 @@ const evalCard = async (ctx, card) => {
         cards: { $elemMatch: { id: card.id }}, 
         lastdaily: { $gt: evalLastDaily }})
 
-    return Math.round((cardPrices[card.level] + (card.animated? 100 : 0))
-    	* limitPriceGrowth((userCount * evalUserRate) / amount))
+    return Math.round(((cardPrices[card.level] + (card.animated? 100 : 0))
+    	* limitPriceGrowth((userCount * evalUserRate) / amount)) * modifier)
 }
 
 const limitPriceGrowth = x => { 

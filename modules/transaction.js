@@ -8,7 +8,7 @@ const {
     formatName
 } = require('./card')
 
-const new_trs = async (ctx, user, card, to_id) => {
+const new_trs = async (ctx, user, card, price, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
     const last_trs = (await Transaction.find().sort({ _id: -1 }))[0]
     const transaction = new Transaction()
@@ -22,7 +22,7 @@ const new_trs = async (ctx, user, card, to_id) => {
     transaction.status = 'pending'
     transaction.time = new Date()
     transaction.card = card.id
-    transaction.price = target? 300 : 100
+    transaction.price = price
 
     await transaction.save()
     return transaction

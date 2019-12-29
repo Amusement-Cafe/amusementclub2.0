@@ -6,12 +6,14 @@ const {user}    = require('./modules')
 const commands  = require('./commands')
 const Emitter   = require('events')
 
-module.exports.start = async ({ shareded, database, token, prefix, baseurl, data }) => {
+module.exports.start = async ({ shareded, database, token, prefix, baseurl, shorturl, data }) => {
     console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
     data.cards = data.cards.map((x, i) => {
-        x.url = `${baseurl}/cards/${data.collections.filter(y => y.id == x.col)[0].id}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+        const basePath = `/cards/${data.collections.filter(y => y.id == x.col)[0].id}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+        x.url = baseurl + basePath
+        x.shorturl = shorturl + basePath
         x.id = i
         return x
     })

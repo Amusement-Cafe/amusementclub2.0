@@ -3,6 +3,7 @@ const {cmd}                 = require('../utils/cmd')
 const {addConfirmation}     = require('../utils/confirmator')
 const sample                = require('lodash.sample');
 const {evalCard}            = require('../modules/eval')
+const {addPagination}       = require('../utils/paginator')
 
 const {
     new_trs,
@@ -59,6 +60,17 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
+cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const pages = []
+
+    cards.map((c, i) => {
+        if (i % 15 == 0) pages.push("")
+        pages[Math.floor(i/15)] += (formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
+    })
+
+    return await addPagination(ctx, user, `matched cards from database (${cards.length} results)`, pages)
+}))
+
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const pending = await check_trs(ctx, user, parsedargs.id)
     if(pending)
@@ -69,17 +81,17 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
     const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
-    
+
     const card = bestMatch(cards)
-    const price = await evalCard(ctx, card)
-    const trs = await new_trs(ctx, user, card, parsedargs.id)
+    const price = await evalCard(ctx, card, .4)
+    const trs = await new_trs(ctx, user, card, price, parsedargs.id)
     const footer = `ID: \`${trs.id}\``
 
-    let question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** {currency}?`
-
+    let question = ""
     if(parsedargs.id) {
         question = `**${trs.to}**, **${trs.from}** wants to sell you **${formatName(card)}** for **${price}** {currency}`
     } else {
+        question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** {currency}?`
         prm.confirm.push(user.discord_id)
     }
 

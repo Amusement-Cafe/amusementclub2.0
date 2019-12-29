@@ -3,5 +3,7 @@
     "channel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
     "database": "mongodb://localhost/amusement",
     "prefix": "->",
-    "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com"
+    "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com",
+    "shorturl": "https://amuse.noxc.dev",
+    "daily": 72000000
 }

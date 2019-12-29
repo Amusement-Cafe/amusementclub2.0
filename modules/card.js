@@ -8,7 +8,7 @@ const {
 const { bestColMatch }    = require('./collection')
 
 const formatName = (x) => {
-    return `[${new Array(x.level + 1).join('★')}] [${cap(x.name.replace(/_/g, ' '))}](${x.url}) \`[${x.col}]\``
+    return `[${new Array(x.level + 1).join('★')}] [${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
 const formatLink = (x) => {
