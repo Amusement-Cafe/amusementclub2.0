@@ -91,6 +91,10 @@ const removeUserCard = (user, cardID) => {
     } else user.cards = user.cards.filter(x => x.id != cardID)
 }
 
+const mapUserCards = (ctx, user) => {
+    return user.cards.map(card => Object.assign({}, ctx.cards[card.id], card))
+}
+
 /**
  * Helper function to enrich the comamnd with user cards
  * @param  {Function} callback command handler
@@ -100,8 +104,8 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
 
     /* join user cards to actual card types */
-    const cards = filter(user.cards.map(card => Object.assign({}, ctx.cards[card.id], card)), parsedargs)
-        .sort(parsedargs.sort)
+    const map = mapUserCards(ctx, user)
+    const cards = filter(map, parsedargs).sort(parsedargs.sort)
 
     if(cards.length == 0)
         return ctx.reply(user, `no cards found`, 'red')
@@ -136,5 +140,6 @@ module.exports = {
     filter,
     parseArgs,
     withCards,
-    withGlobalCards
+    withGlobalCards,
+    mapUserCards
 }
