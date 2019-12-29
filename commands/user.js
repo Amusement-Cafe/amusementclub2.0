@@ -2,10 +2,17 @@ const msToTime      = require('pretty-ms')
 const {cmd}         = require('../utils/cmd')
 const paginator     = require('../utils/paginator')
 const {claimCost}   = require('../utils/tools')
+const colors        = require('../utils/colors')
+
 const {
     formatName,
-    withCards
+    withCards,
+    mapUserCards
 } = require('../modules/card')
+
+const {
+    fetchOnly
+} = require('../modules/user')
 
 cmd('bal', ({ reply }, user) => {
     return reply(user, `you have **${Math.floor(user.exp)}** {currency}\nYour next claim will cost **${claimCost(user, 1)}** {currency}`)
@@ -53,3 +60,27 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
 
     return await paginator.addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
 }))
+
+cmd('profile', async (ctx, user, arg1) => {
+    if(arg1) user = await fetchOnly(arg1)
+
+    const stamp = user._id.getTimestamp()
+    const cards = mapUserCards(ctx, user)
+    const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
+
+    const resp = []
+    resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b)}**`)
+    resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
+    resp.push(`Roles: **${user.roles.join(" **|** ")}**`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        description: resp.join('\n'),
+        color: colors['yellow'],
+        author: {
+            name: `**${user.username}** (${user.discord_id})`
+        },
+        thumbnail: {
+            url: ctx.msg.author.avatarURL
+        }
+    })
+})

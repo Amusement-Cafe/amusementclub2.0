@@ -27,9 +27,12 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     const amount = parseInt(arg1) || 1
     const price = claimCost(user, amount)
 
+    if(amount > 10)
+        return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
+
     if(price > user.exp)
-        return ctx.reply(user, `you need **${price}** {curency} to claim ${amount > 1? amount + ' cards' : 'a card'}.\n 
-            You have ${Math.floor(user.exp)}`)
+        return ctx.reply(user, `you need **${price}** {currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+            You have **${Math.floor(user.exp)}** {currency}`, 'red')
 
     for (let i = 0; i < amount; i++) {
         const col = sample(ctx.collections)
@@ -108,3 +111,7 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const price = await evalCard(ctx, card)
     return ctx.reply(user, `card ${formatName(card)} is worth **${price}** {currency}`)
 }))
+
+cmd('diff', async (ctx, user, ...args) => {
+
+})

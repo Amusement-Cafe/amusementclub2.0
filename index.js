@@ -94,7 +94,6 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
             })
 
             const usr  = await user.fetchOnly(userID)
-            console.log(usr)
 
             if(!usr) return
 
