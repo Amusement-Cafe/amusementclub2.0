@@ -19,8 +19,15 @@ const {
     addUserCard,
     withCards,
     withGlobalCards,
-    bestMatch
+    bestMatch,
+    parseArgs,
+    filter,
+    mapUserCards
 } = require('../modules/card')
+
+const {
+    fetchOnly
+} = require('../modules/user')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
     const cards = []
@@ -113,5 +120,33 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('diff', async (ctx, user, ...args) => {
+    const pages = []
+    const newArgs = parseArgs(ctx, args)
 
+    if(!newArgs.id)
+        return ctx.reply(user, `please, include ID of other user`, 'red')
+
+    const otherUser = await fetchOnly(newArgs.id)
+    const ourCards = filter(mapUserCards(ctx, user), newArgs)
+    const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+
+    if(ourCards.length === 0)
+        return ctx.reply(user, `you don't have any cards matching this request`, 'red')
+
+    if(otherCards.length === 0)
+        return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
+
+    const ids = ourCards.map(x => x.id)
+    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
+        .sort(newArgs.sort)
+
+    if(diff.length === 0)
+        return ctx.reply(user, `no different cards found`, 'red')
+
+    diff.map((c, i) => {
+        if (i % 15 == 0) pages.push("")
+        pages[Math.floor(i/15)] += `${formatName(c)}\n`
+    })
+
+    return await addPagination(ctx, user, `your difference with ${otherUser.username} (${user.cards.length} results)`, pages)
 })

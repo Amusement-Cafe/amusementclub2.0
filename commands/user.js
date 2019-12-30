@@ -69,15 +69,17 @@ cmd('profile', async (ctx, user, arg1) => {
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
 
     const resp = []
-    resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b)}**`)
+    resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
-    resp.push(`Roles: **${user.roles.join(" **|** ")}**`)
+
+    if(user.roles && user.roles.length > 0)
+        resp.push(`Roles: **${user.roles.join(" **|** ")}**`)
 
     return ctx.send(ctx.msg.channel.id, {
         description: resp.join('\n'),
         color: colors['yellow'],
         author: {
-            name: `**${user.username}** (${user.discord_id})`
+            name: `${user.username} (${user.discord_id})`
         },
         thumbnail: {
             url: ctx.msg.author.avatarURL
