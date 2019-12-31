@@ -20,16 +20,20 @@ const parseArgs = (ctx, args) => {
     date.setDate(date.getDate() - 1)
     const cols = [], levels = [], keywords = []
     const q = { 
-        id: false, 
+        ids: false, 
         sort: (a, b) => b.level - a.level,
         filters: [],
-        tags: []
+        tags: [],
+        lastcard: false
     }
 
     args.map(x => {
         let substr = x.substr(1)
         q.id = q.id || tryGetUserID(x)
-        if(x[0] === '<' || x[0] === '>') {
+        if(x === '.') {
+            q.lastcard = true
+
+        } else if(x[0] === '<' || x[0] === '>') {
             switch(x) {
                 case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
                 case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
@@ -105,10 +109,17 @@ const withCards = (callback) => async (ctx, user, ...args) => {
 
     /* join user cards to actual card types */
     const map = mapUserCards(ctx, user)
-    const cards = filter(map, parsedargs).sort(parsedargs.sort)
+    const cards = parsedargs.lastcard? 
+        map.filter(x => x.id === user.lastcard) : 
+        filter(map, parsedargs).sort(parsedargs.sort)
 
     if(cards.length == 0)
         return ctx.reply(user, `no cards found`, 'red')
+
+    if(!parsedargs.lastcard) {
+        user.lastcard = bestMatch(cards).id
+        await user.save()
+    }
 
     return callback(ctx, user, cards, parsedargs, args)
 }
