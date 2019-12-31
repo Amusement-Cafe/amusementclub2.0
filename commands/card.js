@@ -119,34 +119,62 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     return ctx.reply(user, `card ${formatName(card)} is worth **${price}** {currency}`)
 }))
 
-cmd('diff', async (ctx, user, ...args) => {
-    const pages = []
-    const newArgs = parseArgs(ctx, args)
+cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
+    const card = bestMatch(cards)
 
-    if(!newArgs.id)
-        return ctx.reply(user, `please, include ID of other user`, 'red')
+    if(card.fav)
+        return ctx.reply(user, `card ${formatName(card)} is already marked as favourite`, 'red')
 
-    const otherUser = await fetchOnly(newArgs.id)
-    const ourCards = filter(mapUserCards(ctx, user), newArgs)
-    const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+    user.cards[user.cards.findIndex(x => x.id == card.id)].fav = true
+    user.markModified('cards')
+    await user.save()
 
-    if(ourCards.length === 0)
-        return ctx.reply(user, `you don't have any cards matching this request`, 'red')
+    return ctx.reply(user, `marked ${formatName(card)} as favourite`)
+}))
 
-    if(otherCards.length === 0)
-        return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
+cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
+    addConfirmation(ctx, user, `do you want to mark **${cards.length}** cards as favourite?`, prm, 
+        async (x) => {
+            cards.map(c => {
+                 user.cards[user.cards.findIndex(x => x.id == c.id)].fav = true
+            })
 
-    const ids = ourCards.map(x => x.id)
-    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
-        .sort(newArgs.sort)
+            user.markModified('cards')
+            await user.save()
 
-    if(diff.length === 0)
-        return ctx.reply(user, `no different cards found`, 'red')
+            return ctx.reply(user, `marked **${cards.length}** cards as favourite`)
+        }, async (x) => {
+            return ctx.reply(user, `fav operation was declined`, 'red')
+        }, `Favourite cards can be accessed with -fav`)
+}))
 
-    diff.map((c, i) => {
-        if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += `${formatName(c)}\n`
-    })
+cmd('unfav', withCards(async (ctx, user, cards, parsedargs) => {
+    const card = bestMatch(cards)
 
-    return await addPagination(ctx, user, `your difference with ${otherUser.username} (${user.cards.length} results)`, pages)
-})
+    if(!card.fav)
+        return ctx.reply(user, `card ${formatName(card)} is not marked as favourite`, 'red')
+
+    user.cards[user.cards.findIndex(x => x.id == card.id)].fav = false
+    user.markModified('cards')
+    await user.save()
+
+    return ctx.reply(user, `removed ${formatName(card)} frome favourites`)
+}))
+
+cmd(['unfav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
+    addConfirmation(ctx, user, `do you want remove **${cards.length}** cards frome favourites?`, prm, 
+        async (x) => {
+            cards.map(c => {
+                 user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false
+            })
+
+            user.markModified('cards')
+            await user.save()
+
+            return ctx.reply(user, `removed **${cards.length}** cards frome favourites`)
+        }, async (x) => {
+            return ctx.reply(user, `fav operation was declined`, 'red')
+        })
+}))
