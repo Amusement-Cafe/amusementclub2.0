@@ -42,12 +42,12 @@ const parseArgs = (ctx, args) => {
                 case '<star': q.sort = (a, b) => a.level - b.level; break
             }
         } else if(x[0] === '-' || x[0] === '!') {
-            //let m = x[0] === '-'
+            const m = x[0] === '-'
             switch(substr) {
-                case 'gif': q.filters.push(c => c.animated = true); break
-                case 'multi': q.filters.push(c => c.amount > 1); break
-                case 'fav': q.filters.push(c => c.fav = true); break
-                case 'new': q.filters.push(c => c.obtained > date); break
+                case 'gif': q.filters.push(c => c.animated == m); break
+                case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); break
+                case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
+                case 'new': q.filters.push(c => m? c.obtained > date : c.obtained <= date); break
                 default: {
                     if(parseInt(substr)) levels.push(parseInt(substr))
                     else cols.push(bestColMatch(ctx, substr).id)
@@ -109,15 +109,16 @@ const withCards = (callback) => async (ctx, user, ...args) => {
 
     /* join user cards to actual card types */
     const map = mapUserCards(ctx, user)
-    const cards = parsedargs.lastcard? 
-        map.filter(x => x.id === user.lastcard) : 
-        filter(map, parsedargs).sort(parsedargs.sort)
+    let cards = filter(map, parsedargs).sort(parsedargs.sort)
+
+    if(parsedargs.lastcard)
+        cards = map.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
         return ctx.reply(user, `no cards found`, 'red')
 
-    if(!parsedargs.lastcard) {
-        user.lastcard = bestMatch(cards).id
+    if(!parsedargs.lastcard && cards.length === 1) {
+        user.lastcard = cards[0].id
         await user.save()
     }
 
