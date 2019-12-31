@@ -1,4 +1,5 @@
 const User = require('../collections/user')
+
 const {
     getAllUserIDs
 } = require('../utils/tools')

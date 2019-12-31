@@ -134,5 +134,6 @@ module.exports = {
     decline_trs,
     check_trs,
     format_listtrs,
-    paginate_trslist
+    paginate_trslist,
+    ch_map
 }

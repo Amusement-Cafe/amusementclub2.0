@@ -1,6 +1,9 @@
 const {cmd, pcmd}           = require('../utils/cmd')
 const {Transaction}         = require('../collections')
 const paginator             = require('../utils/paginator')
+const msToTime              = require('pretty-ms')
+const colors                = require('../utils/colors')
+
 const {
     equals, 
     formatName,
@@ -11,7 +14,8 @@ const {
     confirm_trs,
     decline_trs,
     check_trs,
-    paginate_trslist
+    paginate_trslist,
+    ch_map
 } = require('../modules/transaction')
 
 cmd(['trans', 'confirm'], 'confirm', 'cfm', (ctx, user, arg1) => {
@@ -75,15 +79,30 @@ cmd(['trans', 'sends'], 'sends', async (ctx, user) => {
         paginate_trslist(ctx, user, list))
 })
 
-cmd(['trans', 'info'], async (ctx, user, args1) => {
+cmd(['trans', 'info'], async (ctx, user, arg1) => {
     const trs = await Transaction.findOne({ id: arg1 })
 
     if(!trs)
-        return ctx.reply(user, `transaction with ID \`${args1}\` was not found`, 'red')
+        return ctx.reply(user, `transaction with ID \`${arg1}\` was not found`, 'red')
 
+    const card = ctx.cards[trs.card]
+    const timediff = msToTime(new Date() - trs.time, {compact: true})
 
-    //const format = `your transactions:\n${format_trs(ctx, user, list)}`
-    //return ctx.reply(user, format)
+    const resp = []
+    resp.push(`Card: ${formatName(card)}`)
+    resp.push(`Price: **${trs.price}**`)
+    resp.push(`From: **${trs.from}**`)
+    resp.push(`To: **${trs.to}**`)
+    resp.push(`On server: **${trs.guild}**`)
+    resp.push(`Status: **\`${ch_map[trs.status]}\` ${trs.status}**`)
+    resp.push(`Date: **${trs.time}**`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        title: `Transaction [${trs.id}] (${timediff})`,
+        image: { url: card.url },
+        description: resp.join('\n'),
+        color: colors['blue']
+    })
 })
 
 pcmd(['admin', 'mod'], ['trans', 'find'], withGlobalCards(async (ctx, user, cards) => {
