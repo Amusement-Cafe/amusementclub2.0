@@ -5,6 +5,7 @@ const main = async () => {
     const data = {
         cards: require('./data/cards.json'),
         collections: require('./data/collections.json'),
+        help: require('./data/help.json'),
     }
 
     const options  = Object.assign({sharded: false, data}, config)

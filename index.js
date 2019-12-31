@@ -66,6 +66,7 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
                 reply, /* quick reply function to the user */
                 cards: data.cards, /* data with cards */
                 collections: data.collections, /* data with collections */
+                help: data.help, /* help data */
             })
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
