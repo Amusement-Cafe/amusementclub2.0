@@ -34,14 +34,12 @@ const onUsersFromArgs = async (args, callback) => {
     const pa = getAllUserIDs(args)
 
     if(pa.ids.length === 0)
-        return `please specify at least one user ID`
+        throw new Error(`please specify at least one user ID`)
 
     await Promise.all(pa.ids.map(async x => {
        const target = await fetchOnly(x) 
        await callback(target, pa.args)
     }))
-
-    return false
 }
 
 module.exports = {

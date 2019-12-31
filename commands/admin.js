@@ -17,7 +17,7 @@ const {fetchOnly} = require('../modules/user')
 pcmd(['admin'], ['admin', 'add', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
 
-    const res = await onUsersFromArgs(args, async (target, newargs) => {
+    await onUsersFromArgs(args, async (target, newargs) => {
         const role = newargs[0]
         if(!target.roles)
             target.roles = []
@@ -34,16 +34,13 @@ pcmd(['admin'], ['admin', 'add', 'role'], async (ctx, user, ...args) => {
         }
     })
 
-    if(res)
-        return ctx.reply(user, res, 'red')
-
-     return ctx.reply(user, rpl.join('\n'))
+    return ctx.reply(user, rpl.join('\n'))
 })
 
 pcmd(['admin'], ['admin', 'rm', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
 
-    const res = await onUsersFromArgs(args, async (target, newargs) => {
+    await onUsersFromArgs(args, async (target, newargs) => {
         const role = newargs[0]
 
         if(!role)
@@ -58,40 +55,34 @@ pcmd(['admin'], ['admin', 'rm', 'role'], async (ctx, user, ...args) => {
         }
     })
 
-    if(res)
-        return ctx.reply(user, res, 'red')
-
-     return ctx.reply(user, rpl.join('\n'))
+    return ctx.reply(user, rpl.join('\n'))
 })
 
 pcmd(['admin', 'mod'], ['admin', 'award'], async (ctx, user, ...args) => {
     const rpl = ['']
 
-    const res = await onUsersFromArgs(args, async (target, newargs) => {
+    await onUsersFromArgs(args, async (target, newargs) => {
         const amount = parseInt(newargs[0])
 
         if(!amount)
-            return ctx.reply(user, `this command requires award amount`, 'red')
+            throw new Error(`this command requires award amount`)
 
         target.exp += amount
         await target.save()
         rpl.push(`\`✅\` added '${amount}' {currency} to **${target.username}** (${target.discord_id})`)
     })
 
-    if(res)
-        return ctx.reply(user, res, 'red')
-
-     return ctx.reply(user, rpl.join('\n'))
+    return ctx.reply(user, rpl.join('\n'))
 })
 
 pcmd(['admin', 'mod'], ['admin', 'add', 'card'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(!parsedargs.id)
-        return ctx.reply(user, `please specify user ID`, 'red')
+        throw new Error(`please specify user ID`)
 
     var target = await fetchOnly(parsedargs.id)
 
     if(!target)
-        return ctx.reply(user, `cannot find user with that ID`, 'red')
+        throw new Error(`cannot find user with that ID`)
 
     const card = bestMatch(cards)
     addUserCard(target, card.id)
