@@ -41,7 +41,6 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     const card = sample(colCards)
 
     const resp = []
-    resp.push(`__**${col.name}**__`)
     resp.push(`Overall cards: **${colCards.length}**`)
     resp.push(`You have: **${userCards.length} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
     resp.push(`Aliases: **${col.aliases.join(" **|** ")}**`)
@@ -52,6 +51,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     resp.push(`Sample card: ${formatName(card)}`)
 
     return ctx.send(ctx.msg.channel.id, {
+        title: col.name,
         image: { url: card.url },
         description: resp.join('\n')
     })

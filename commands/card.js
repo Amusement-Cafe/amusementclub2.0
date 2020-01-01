@@ -4,6 +4,9 @@ const {addConfirmation}     = require('../utils/confirmator')
 const sample                = require('lodash.sample');
 const {evalCard}            = require('../modules/eval')
 const {addPagination}       = require('../utils/paginator')
+const {bestColMatch}        = require('../modules/collection')
+const {fetchCardTags}       = require('../modules/tag')
+const colors                = require('../utils/colors')
 
 const {
     new_trs,
@@ -177,4 +180,25 @@ cmd(['unfav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         }, async (x) => {
             return ctx.reply(user, `fav operation was declined`, 'red')
         })
+}))
+
+cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const card = bestMatch(cards)
+    const price = await evalCard(ctx, card)
+    const tags = await fetchCardTags(card)
+    const col = bestColMatch(ctx, card.col)
+
+    const resp = []
+    resp.push(formatName(card))
+    resp.push(`Fandom: **${col.name}**`)
+    resp.push(`Price: **${price}** {currency}`)
+    resp.push(`Average Rating: **none**`)
+
+    if(tags && tags.length > 0)
+        resp.push(`Tags: **#${tags.join(' #')}**`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        description: resp.join('\n'),
+        color: colors['blue']
+    })
 }))
