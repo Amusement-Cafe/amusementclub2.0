@@ -86,7 +86,7 @@ cmd('profile', async (ctx, user, arg1) => {
             name: `${user.username} (${user.discord_id})`
         },
         thumbnail: {
-            url: ctx.msg.author.avatarURL
+            url: ctx.bot.users.filter(x => x.id === user.discord_id)[0].avatarURL
         }
     })
 })
