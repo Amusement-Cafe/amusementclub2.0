@@ -5,7 +5,8 @@ const {
     nameSort
 } = require('../utils/tools')
 
-const { bestColMatch }    = require('./collection')
+const { bestColMatch }          = require('./collection')
+const { fetchTaggedCards }      = require('./tag')
 
 const formatName = (x) => {
     return `[${new Array(x.level + 1).join('★')}] ${x.fav? '`❤`' : ''} [${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
@@ -104,12 +105,17 @@ const mapUserCards = (ctx, user) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withCards = (callback) => async (ctx, user, ...args) => {
+const withCards = (callback, blockTag) => async (ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
 
     /* join user cards to actual card types */
     const map = mapUserCards(ctx, user)
     let cards = filter(map, parsedargs).sort(parsedargs.sort)
+
+    if(!blockTag && parsedargs.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(parsedargs.tags)
+        cards = cards.filter(x => tgcards.includes(x.id))
+    }
 
     if(parsedargs.lastcard)
         cards = map.filter(x => x.id === user.lastcard)
@@ -130,9 +136,14 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withGlobalCards = (callback) => async(ctx, user, ...args) => {
+const withGlobalCards = (callback, blockTag) => async(ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
-    const cards = filter(ctx.cards, parsedargs).sort(parsedargs.sort)
+    let cards = filter(ctx.cards, parsedargs).sort(parsedargs.sort)
+
+    if(!blockTag && parsedargs.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(parsedargs.tags)
+        cards = cards.filter(x => tgcards.includes(x.id))
+    }
 
     if(cards.length == 0)
         return ctx.reply(user, `card wasn't found`, 'red')
