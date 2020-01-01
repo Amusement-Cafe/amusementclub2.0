@@ -20,6 +20,7 @@ const parseArgs = (ctx, args) => {
     const date = new Date()
     date.setDate(date.getDate() - 1)
     const cols = [], levels = [], keywords = []
+    const anticols = [], antilevels = []
     const q = { 
         ids: false, 
         sort: (a, b) => b.level - a.level,
@@ -50,8 +51,14 @@ const parseArgs = (ctx, args) => {
                 case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
                 case 'new': q.filters.push(c => m? c.obtained > date : c.obtained <= date); break
                 default: {
-                    if(parseInt(substr)) levels.push(parseInt(substr))
-                    else cols.push(bestColMatch(ctx, substr).id)
+                    const pcol = bestColMatch(ctx, substr)
+                    if(m) {
+                        if(parseInt(substr)) levels.push(parseInt(substr))
+                        else if(pcol) cols.push(pcol.id)
+                    } else {
+                        if(parseInt(substr)) antilevels.push(parseInt(substr))
+                        else if(pcol) anticols.push(pcol.id)
+                    }
                 }
             }
         } else if(x[0] === '#') {
@@ -63,6 +70,8 @@ const parseArgs = (ctx, args) => {
 
     if(cols.length > 0) q.filters.push(c => cols.includes(c.col))
     if(levels.length > 0) q.filters.push(c => levels.includes(c.level))
+    if(anticols.length > 0) q.filters.push(c => !anticols.includes(c.col))
+    if(antilevels.length > 0) q.filters.push(c => !antilevels.includes(c.level))
     if(keywords.length > 0) 
         q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
 
