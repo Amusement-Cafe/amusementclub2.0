@@ -17,6 +17,7 @@ module.exports = model('User', {
     lastmsg:            { type: String },
 
     roles:              [],
+    ban:                { type: Object },
 
     lastcard:           { type: Number, default: -1 },
 })

@@ -8,4 +8,5 @@ module.exports = model('Tag', {
 
     upvotes:        [],
     downvotes:      [],
+    status:         { type: String, default: "clear" },
 })
