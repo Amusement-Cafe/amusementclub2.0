@@ -1,6 +1,7 @@
 const {cmd, pcmd}           = require('../utils/cmd')
 const {Tag}                 = require('../collections')
 const {addConfirmation}     = require('../utils/confirmator')
+const colors                = require('../utils/colors')
 const Filter                = require('bad-words')
 const filter                = new Filter();
 
@@ -20,6 +21,23 @@ const {
     withGlobalCards,
     bestMatch
 } = require('../modules/card')
+
+cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
+    const author = await fetchOnly(tag.author)
+
+    const resp = []
+    resp.push(`Card: **${formatName(card)}**`)
+    resp.push(`Upvotes: **${tag.upvotes.length}**`)
+    resp.push(`Downvotes: **${tag.downvotes.length}**`)
+    resp.push(`Author: **${author.username}**`)
+    resp.push(`Status: **${tag.status}**`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        title: `#${tag.name}`,
+        description: resp.join('\n'),
+        color: colors['blue']
+    })
+}))
 
 cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {
     if(user.ban && user.ban.tags > 2)
@@ -47,11 +65,9 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {
         }, async (x) => {
             return ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
         })
-}))
+}, false))
 
 cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag) => {
-    if(!tag)
-        return ctx.reply(user, `tag #${tgTag} wasn't found for ${formatName(card)}`, 'red')
 
     if(tag.downvotes.includes(user.discord_id))
         return ctx.reply(user, `you already downvoted this tag`, 'red')
@@ -70,37 +86,28 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag) => {
         }, async (x) => {
             return ctx.reply(user, `tag downvote was declined`, 'red')
         }, `Please, use downvote to remove only irrelevant or incorrect tags`)
-}, true))
+}))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
-
-    if(!tag)
-        return ctx.reply(user, `tag #${tgTag} wasn't found for ${formatName(card)}`, 'red')
 
     tag.status = 'removed'
     await tag.save()
 
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
-}, true))
+}))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
-
-    if(!tag)
-        return ctx.reply(user, `tag #${tgTag} wasn't found for ${formatName(card)}`, 'red')
 
     tag.status = 'clear'
     await tag.save()
 
     return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
-}, true))
+}))
 
 pcmd(['admin', 'mod'], ['tag', 'ban'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
-
-    if(!tag)
-        return ctx.reply(user, `tag #${tgTag} wasn't found for ${formatName(card)}`, 'red')
 
     const target = await fetchOnly(tag.author)
     target.ban = target.ban || {}
@@ -112,4 +119,4 @@ pcmd(['admin', 'mod'], ['tag', 'ban'],
 
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}. 
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)
-}, true))
+}))

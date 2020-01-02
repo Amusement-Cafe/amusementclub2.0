@@ -66,7 +66,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 })
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
-    const card = bestMatch(cards)
+    const card = parsedargs.isEmpty()? sample(cards) : bestMatch(cards)
     return ctx.reply(user, {
         url: formatLink(card),
         description: `summons **${formatName(card)}**!`
@@ -85,6 +85,9 @@ cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.reply(user, `please specify a card`, 'red')
+
     const pending = await check_trs(ctx, user, parsedargs.id)
     if(pending)
         return ctx.reply(user, `you already have pending unconfirmed transaction to **${pending.to}**. 

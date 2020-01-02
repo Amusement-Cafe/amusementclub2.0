@@ -36,17 +36,27 @@ const check_tag = (tag) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withTag = (callback) => async(ctx, user, ...args) => {
+const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     const c = require('./card')
     const parsedargs = c.parseArgs(ctx, args)
+
+    if(parsedargs.isEmpty(false))
+        return ctx.reply(user, `please specify a card`, 'red')
+
+    if(parsedargs.tags.length === 0)
+        return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')
+
     const cards = c.filter(ctx.cards, parsedargs)
     const card = c.bestMatch(cards)
 
-    if(cards.length == 0)
+    if(cards.length === 0)
         return ctx.reply(user, `card ${c.formatName(card)} wasn't found`, 'red')
     
     const tgTag = parsedargs.tags[0]
     const tag = await Tag.findOne({name: tgTag, card: card.id})
+
+    if(forceFind && !tag)
+        return ctx.reply(user, `tag #${tgTag} wasn't found for ${c.formatName(card)}`, 'red')
 
     return callback(ctx, user, card, tag, tgTag)
 }

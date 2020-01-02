@@ -75,6 +75,10 @@ const parseArgs = (ctx, args) => {
     if(keywords.length > 0) 
         q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
 
+    q.isEmpty = (usetag = true) => {
+        return !q.ids && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
+    }
+
     return q
 }
 
@@ -114,14 +118,14 @@ const mapUserCards = (ctx, user) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withCards = (callback, blockTag) => async (ctx, user, ...args) => {
+const withCards = (callback) => async (ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
 
     /* join user cards to actual card types */
     const map = mapUserCards(ctx, user)
     let cards = filter(map, parsedargs).sort(parsedargs.sort)
 
-    if(!blockTag && parsedargs.tags.length > 0) {
+    if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
     }
@@ -145,11 +149,11 @@ const withCards = (callback, blockTag) => async (ctx, user, ...args) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withGlobalCards = (callback, blockTag) => async(ctx, user, ...args) => {
+const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
     let cards = filter(ctx.cards, parsedargs).sort(parsedargs.sort)
 
-    if(!blockTag && parsedargs.tags.length > 0) {
+    if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
     }
