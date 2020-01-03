@@ -28,10 +28,6 @@ const {
     mapUserCards
 } = require('../modules/card')
 
-const {
-    fetchOnly
-} = require('../modules/user')
-
 cmd('claim', 'cl', async (ctx, user, arg1) => {
     const cards = []
     const amount = parseInt(arg1) || 1

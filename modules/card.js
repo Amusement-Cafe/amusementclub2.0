@@ -1,6 +1,5 @@
 const {
     cap,
-    claimCost, 
     tryGetUserID,
     nameSort
 } = require('../utils/tools')
@@ -26,6 +25,7 @@ const parseArgs = (ctx, args) => {
         sort: (a, b) => b.level - a.level,
         filters: [],
         tags: [],
+        extra: [],
         lastcard: false
     }
 
@@ -63,6 +63,8 @@ const parseArgs = (ctx, args) => {
             }
         } else if(x[0] === '#') {
             q.tags.push(substr)
+        } else if(x[0] === ':') {
+            q.extra.push(substr)
         } else {
             keywords.push(x)
         }

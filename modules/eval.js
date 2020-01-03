@@ -10,7 +10,6 @@ const evalCard = async (ctx, card, modifier = 1) => {
     if(card.hasOwnProperty('eval'))
         return card.eval
 
-    //const col = ctx.collections.filter(x => x.id === card.col)[0]
     const userCount = await User.estimatedDocumentCount()
     const amount = await User.countDocuments({
         cards: { $elemMatch: { id: card.id }}, 
