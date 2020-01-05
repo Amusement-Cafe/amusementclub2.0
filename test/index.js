@@ -8,8 +8,15 @@ const main = async () => {
         help: require('./data/help.json'),
     }
 
-    const options  = Object.assign({sharded: false, data}, config)
+    const options  = Object.assign({sharded: false, userq: [], data}, config)
     const instance = await amusement.start(options)
+
+    const tick = () => {
+        const now = new Date();
+        options.userq = options.userq.filter(x => x.expires < now);
+    }
+
+    setInterval(tick.bind(this), 1000);
 
     instance.on('error', err => {
         console.error(err)

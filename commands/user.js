@@ -3,12 +3,12 @@ const {cmd}         = require('../utils/cmd')
 const {addPagination}     = require('../utils/paginator')
 const {claimCost}   = require('../utils/tools')
 const colors        = require('../utils/colors')
+const asdate        = require('add-subtract-date')
 
 const {
     formatName,
     withCards,
     withGlobalCards,
-    bestMatch,
     parseArgs,
     filter,
     mapUserCards
@@ -37,8 +37,7 @@ cmd('daily', async ({ reply }, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
     const now = new Date()
-    const future = user.lastdaily
-    future.setHours(user.lastdaily.getHours() + 20)
+    const future = asdate.add(user.lastdaily, 20, 'hours')
 
     if(future < now) {
         const amount = 300

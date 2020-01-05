@@ -5,8 +5,9 @@ const {trigger} = require('./utils/cmd')
 const {user}    = require('./modules')
 const commands  = require('./commands')
 const Emitter   = require('events')
+const asdate    = require('add-subtract-date')
 
-module.exports.start = async ({ shareded, database, token, prefix, baseurl, shorturl, data }) => {
+module.exports.start = async ({ shareded, userq, database, token, prefix, baseurl, shorturl, data }) => {
     console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
@@ -29,6 +30,8 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
     const send = (ch, content) => { 
         if(content.description)
             content.description = content.description.replace(/{currency}/gi, '`🍅`')
+
+        //userq = userq.filter(x => x != userID)
 
         return bot.createMessage(ch, { embed: content })
     }
@@ -53,6 +56,7 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
     bot.on('messageCreate', async (msg) => {
         if (!msg.content.startsWith(prefix)) return; /* skip not commands */
         if (msg.author.bot) return; /* skip bot users */
+        //if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
 
         try {
             /* create our player reply sending fn */
@@ -68,6 +72,9 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
                 collections: data.collections, /* data with collections */
                 help: data.help, /* help data */
             })
+
+            /* add user to cooldown q */
+            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const args = msg.content.trim().substring(prefix.length).split(' ')

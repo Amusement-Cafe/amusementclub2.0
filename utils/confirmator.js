@@ -2,6 +2,7 @@ var queue = []
 var bot;
 
 const colors = require('./colors')
+const asdate = require('add-subtract-date')
 
 const addConfirmation = async (ctx, user, question, permits, confirm, decline, footer) => {
     queue = queue.filter(x => x.userID != user.discord_id)
@@ -10,12 +11,11 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline, f
     const obj = {
         userID: user.discord_id,
         permits: permits,
-        expires: new Date(),
+        expires: asdate.add(new Date(), 1, 'minutes'),
         onConfirm: confirm,
         onDecline: decline
     }
 
-    obj.expires.setMinutes(obj.expires.getMinutes() + 1)
     queue.push(obj)
 
     const msg = await ctx.send(ctx.msg.channel.id, getEmbed(user, question, footer))

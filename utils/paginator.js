@@ -2,6 +2,7 @@ var pages = []
 var bot;
 
 const colors = require('./colors')
+const asdate = require('add-subtract-date')
 
 const addPagination = async (ctx, user, title, data) => {
     pages = pages.filter(x => x.userID != user.discord_id)
@@ -12,10 +13,8 @@ const addPagination = async (ctx, user, title, data) => {
         username: user.username,
         userID: user.discord_id,
         data: data,
-        expires: new Date()
+        expires: asdate.add(new Date(), 10, 'minutes'),
     }
-
-    obj.expires.setMinutes(obj.expires.getMinutes() + 10)
 
     pages.push(obj)
     const msg = await ctx.send(ctx.msg.channel.id, getEmbed(obj))
