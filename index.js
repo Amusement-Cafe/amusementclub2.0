@@ -34,7 +34,6 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
         if(content.description)
             content.description = content.description.replace(/{currency}/gi, '`🍅`')
 
-        //userq = userq.filter(x => x != userID)
         if(userid)
             _.remove(userq, (x) => x.id === userid)
 
@@ -53,9 +52,6 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
         //bot.setPresence({ game: { name: '->help' } })
 
         console.log('[info] bot is ready')
-        // await msg('Ready to roll')
-
-        //setInterval(tick.bind(this, ctx), 5000);
     })
 
     bot.on('messageCreate', async (msg) => {
@@ -64,15 +60,29 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
         if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
 
         try {
+            const toObj = (user, str, clr) => {
+                if(typeof str === 'object') {
+                    str.description = `**${user.username}**, ${str.description}`
+                    return str
+                }
+
+                return { description: `**${user.username}**, ${str}`, color: colors[clr] }
+            }
+
             /* create our player reply sending fn */
-            const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object'
-                ? { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] }
-                : { description: `**${user.username}**, ${str}`, color: colors[clr] }, user.discord_id)
+            const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
+
+            /* create direct reply fn */
+            const direct = async (user, str, clr = 'default') => {
+                const ch = await bot.getDMChannel(user.discord_id)
+                return send(ch, toObj(user, str, clr), user.discord_id)
+            }
 
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
                 reply, /* quick reply function to the user */
+                direct, /* DM reply function to the user */
                 cards: data.cards, /* data with cards */
                 collections: data.collections, /* data with collections */
                 help: data.help, /* help data */

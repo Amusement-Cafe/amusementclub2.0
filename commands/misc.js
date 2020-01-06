@@ -18,7 +18,7 @@ cmd('help', async (ctx, user, ...args) => {
         await ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`), user.discord_id)
 
     } else {
-       const ch = await ctx.bot.getDMChannel(user.discord_id)
+        const ch = await ctx.bot.getDMChannel(user.discord_id)
         await ctx.send(ch.id, getHelpEmbed(help, `->`), user.discord_id)
 
         if(ch.id != ctx.msg.channel.id)

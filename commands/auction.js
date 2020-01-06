@@ -5,7 +5,8 @@ const {addPagination}   = require('../utils/paginator')
 
 const {
     new_auc,
-    paginate_auclist
+    paginate_auclist,
+    bid_auc
 } = require('../modules/auction')
 
 const {
@@ -25,7 +26,12 @@ const {
 const {addConfirmation} = require('../utils/confirmator')
 
 cmd('auc', async (ctx, user) => {
-    const list = await Auction.find().limit(100).sort({ expires: -1 })
+    const now = new Date();
+    const list = (await Auction.find({finished: false}).limit(100).sort({ expires: -1 }))
+        .filter(x => x.expires > now)
+
+    if(list.length === 0)
+        return ctx.reply(user, `found 0 active auctions`, 'red')
 
     return await addPagination(ctx, user, 
         `found auctions (${list.length} results)`, 
@@ -66,3 +72,30 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
+cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
+    const now = new Date();
+    const bid = parseInt(args.filter(x => !isNaN(x))[0])
+    const id = args.filter(x => isNaN(x))[0]
+
+    if(!id)
+        return ctx.reply(user, `please specify auction ID`, 'red')
+
+    if(!bid)
+        return ctx.reply(user, `please bid amount`, 'red')
+
+    const auc = await Auction.findOne({id: id})
+
+    if(!auc)
+        return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
+
+    if(auc.expires < now || auc.finished)
+        return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
+
+    if(auc.author === user.discord_id)
+        return ctx.reply(user, `you cannot bid on your own auction`, 'red')
+
+    if(auc.price >= bid)
+        return ctx.reply(user, `you bid should be higher than ${auc.price}`, 'red')
+
+    await bid_auc(ctx, user, auc, bid)
+})

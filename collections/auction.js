@@ -3,8 +3,9 @@ const {model, Schema} = require('mongoose')
 module.exports = model('Auction', {
     id:             { type: String },
 
-    finished:       { type: Boolean },
+    finished:       { type: Boolean, default: false },
     price:          { type: Number, default: 0 },
+    highbid:        { type: Number, default: 0 },
 
     author:         { type: String },
     card:           { type: Number, default: -1 },
