@@ -41,7 +41,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
             You have **${Math.floor(user.exp)}** {currency}`, 'red')
 
     for (let i = 0; i < amount; i++) {
-        const col = sample(ctx.collections)
+        const col =  sample(ctx.collections.filter(x => !x.rarity))
         const item = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         addUserCard(user, item.id)
         cards.push(item)
@@ -199,5 +199,5 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     return ctx.send(ctx.msg.channel.id, {
         description: resp.join('\n'),
         color: colors['blue']
-    })
+    }, user.discord_id)
 }))

@@ -1,5 +1,8 @@
 const config    = require('./config')
 const amusement = require('../index.js')
+const _         = require('lodash')
+
+var userq       = require('../userq.js')
 
 const main = async () => {
     const data = {
@@ -8,12 +11,13 @@ const main = async () => {
         help: require('./data/help.json'),
     }
 
-    const options  = Object.assign({sharded: false, userq: [], data}, config)
+    const options  = Object.assign({sharded: false, data}, config)
     const instance = await amusement.start(options)
 
     const tick = () => {
-        const now = new Date();
-        options.userq = options.userq.filter(x => x.expires < now);
+        //console.log(userq)
+        const now = new Date()
+        _.remove(userq, (x) => x.expires < now)
     }
 
     setInterval(tick.bind(this), 1000);

@@ -17,7 +17,7 @@ const addPagination = async (ctx, user, title, data) => {
     }
 
     pages.push(obj)
-    const msg = await ctx.send(ctx.msg.channel.id, getEmbed(obj))
+    const msg = await ctx.send(ctx.msg.channel.id, getEmbed(obj), user.discord_id)
 
     obj.msg = msg.id
     obj.channel = msg.channel.id

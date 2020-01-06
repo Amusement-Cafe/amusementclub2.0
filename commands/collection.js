@@ -54,7 +54,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
         title: col.name,
         image: { url: card.url },
         description: resp.join('\n')
-    })
+    }, user.discord_id)
 })
 
 cmd(['col', 'reset'], async (ctx, user, ...args) => {

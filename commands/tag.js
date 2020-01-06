@@ -35,7 +35,7 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
         title: `#${tag.name}`,
         description: resp.join('\n'),
         color: colors['blue']
-    })
+    }, user.discord_id)
 }))
 
 cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {

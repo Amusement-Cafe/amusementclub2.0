@@ -102,7 +102,7 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
         image: { url: card.url },
         description: resp.join('\n'),
         color: colors['blue']
-    })
+    }, user.discord_id)
 })
 
 pcmd(['admin', 'mod'], ['trans', 'find'], withGlobalCards(async (ctx, user, cards) => {

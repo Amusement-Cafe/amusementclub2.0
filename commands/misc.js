@@ -15,11 +15,11 @@ cmd('help', async (ctx, user, ...args) => {
         return ctx.reply(user, `can't find help for \`${sbj}\``, 'red')
 
     if(sendHere){
-        await ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`))
+        await ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`), user.discord_id)
 
     } else {
        const ch = await ctx.bot.getDMChannel(user.discord_id)
-        await ctx.send(ch.id, getHelpEmbed(help, `->`))
+        await ctx.send(ch.id, getHelpEmbed(help, `->`), user.discord_id)
 
         if(ch.id != ctx.msg.channel.id)
             await ctx.reply(user, 'help was sent to you')

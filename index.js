@@ -6,8 +6,11 @@ const {user}    = require('./modules')
 const commands  = require('./commands')
 const Emitter   = require('events')
 const asdate    = require('add-subtract-date')
+const _         = require('lodash')
 
-module.exports.start = async ({ shareded, userq, database, token, prefix, baseurl, shorturl, data }) => {
+var userq       = require('./userq.js')
+
+module.exports.start = async ({ shareded, database, token, prefix, baseurl, shorturl, data }) => {
     console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
@@ -27,11 +30,13 @@ module.exports.start = async ({ shareded, userq, database, token, prefix, baseur
     const bot = new Eris(token)
 
     /* create our glorious sending fn */
-    const send = (ch, content) => { 
+    const send = (ch, content, userid) => { 
         if(content.description)
             content.description = content.description.replace(/{currency}/gi, '`🍅`')
 
         //userq = userq.filter(x => x != userID)
+        if(userid)
+            _.remove(userq, (x) => x.id === userid)
 
         return bot.createMessage(ch, { embed: content })
     }
@@ -56,13 +61,13 @@ module.exports.start = async ({ shareded, userq, database, token, prefix, baseur
     bot.on('messageCreate', async (msg) => {
         if (!msg.content.startsWith(prefix)) return; /* skip not commands */
         if (msg.author.bot) return; /* skip bot users */
-        //if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
+        if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
 
         try {
             /* create our player reply sending fn */
             const reply = (user, str, clr = 'default') => send(msg.channel.id, typeof str === 'object'
                 ? { description: `**${user.username}**, ${str.description}`, image: { url: str.url }, color: colors[clr] }
-                : { description: `**${user.username}**, ${str}`, color: colors[clr] })
+                : { description: `**${user.username}**, ${str}`, color: colors[clr] }, user.discord_id)
 
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
@@ -74,7 +79,7 @@ module.exports.start = async ({ shareded, userq, database, token, prefix, baseur
             })
 
             /* add user to cooldown q */
-            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
+            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const args = msg.content.trim().substring(prefix.length).split(' ')

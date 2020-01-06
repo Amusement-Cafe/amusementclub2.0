@@ -87,7 +87,7 @@ cmd('profile', async (ctx, user, arg1) => {
         thumbnail: {
             url: ctx.bot.users.filter(x => x.id === user.discord_id)[0].avatarURL
         }
-    })
+    }, user.discord_id)
 })
 
 cmd('diff', async (ctx, user, ...args) => {
