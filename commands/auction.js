@@ -88,6 +88,9 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(!auc)
         return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
 
+    if(user.exp < bid)
+        return ctx.reply(user, `you don't have \`${bid}\` {currency} to bid`, 'red')        
+
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
 

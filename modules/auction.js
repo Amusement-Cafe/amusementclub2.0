@@ -9,7 +9,8 @@ const {
 
 const {
     formatName,
-    removeUserCard
+    removeUserCard,
+    addUserCard
 } = require('../modules/card')
 
 const lockFile  = require('lockfile')
@@ -53,7 +54,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
 
     auc.bids.push({user: user.discord_id, bid: bid})
     
-    if(bid < auc.highbid) {
+    if(bid <= auc.highbid) {
         auc.price = bid
         await auc.save()
         return ctx.reply(user, `you were instantly outbid! Try bidding higher`, 'red')
@@ -63,12 +64,17 @@ const bid_auc = async (ctx, user, auc, bid) => {
     auc.lastbidder = user.discord_id
     await auc.save()
 
-    if(lastBidder)
+    if(lastBidder){
+        lastBidder.exp += auc.price
+        await lastBidder.save()
         ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
             To remain in the auction, try bidding higher than ${auc.price} {currency}
             Use \`->auc bid ${auc.id} [new bid]\`
             This auction will end in **${msToTime(diff)}**`)
+    }
 
+    user.exp -= bid
+    await user.save()
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** {currency}!`)
 }
 
@@ -79,12 +85,18 @@ const finish_auc = async (ctx, auc) => {
     const lastBidder = await fetchOnly(auc.lastbidder)
     const author = await fetchOnly(auc.author)
 
+    if(lastBidder) {
+        lastBidder.exp += auc.highbid - auc.price
+        addUserCard(lastBidder, auc.card)
+    } else 
+        addUserCard(author, auc.card)
+
     //ctx.direct
 }
 
 const paginate_auclist = (ctx, user, list) => {
     const pages = []
-    list.map((t, i) => {
+    list.map((auc, i) => {
         if (i % 10 == 0) 
             pages.push("")
 
