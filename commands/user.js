@@ -18,8 +18,8 @@ const {
     fetchOnly
 } = require('../modules/user')
 
-cmd('bal', ({ reply }, user) => {
-    return reply(user, `you have **${Math.floor(user.exp)}** {currency}\nYour next claim will cost **${claimCost(user, 1)}** {currency}`)
+cmd('bal', (ctx, user) => {
+    return ctx.reply(user, `you have **${Math.floor(user.exp)}** {currency}\nYour next claim will cost **${claimCost(user, 1)}** {currency}`)
 })
 
 cmd('inv', ['inventory', 'check'], ({ reply }, user, ...args) => {

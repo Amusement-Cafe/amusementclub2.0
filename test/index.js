@@ -11,11 +11,10 @@ const main = async () => {
         help: require('./data/help.json'),
     }
 
-    const options  = Object.assign({sharded: false, data}, config)
+    const options  = Object.assign({shard: 0, data}, config)
     const instance = await amusement.start(options)
 
     const tick = () => {
-        //console.log(userq)
         const now = new Date()
         _.remove(userq, (x) => x.expires < now)
     }

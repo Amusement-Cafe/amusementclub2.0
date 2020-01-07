@@ -2,15 +2,19 @@ const Eris      = require('eris')
 const mongoose  = require('mongoose')
 const colors    = require('./utils/colors')
 const {trigger} = require('./utils/cmd')
-const {user}    = require('./modules')
 const commands  = require('./commands')
 const Emitter   = require('events')
 const asdate    = require('add-subtract-date')
 const _         = require('lodash')
 
+const {
+    auction, 
+    user
+} = require('./modules')
+
 var userq       = require('./userq.js')
 
-module.exports.start = async ({ shareded, database, token, prefix, baseurl, shorturl, data }) => {
+module.exports.start = async ({ shard, database, token, prefix, baseurl, shorturl, data }) => {
     console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
@@ -40,12 +44,40 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
         return bot.createMessage(ch, { embed: content })
     }
 
+    const toObj = (user, str, clr) => {
+        if(typeof str === 'object') {
+            str.description = `**${user.username}**, ${str.description}`
+            return str
+        }
+
+        return { description: `**${user.username}**, ${str}`, color: colors[clr] }
+    }
+
+    /* create direct reply fn */
+    const direct = async (user, str, clr = 'default') => {
+        const ch = await bot.getDMChannel(user.discord_id)
+        return send(ch.id, toObj(user, str, clr), user.discord_id)
+    }
+
     /* create our context */
     const ctx = {
         mcn, /* mongoose database connection */
         bot, /* created and connected Eris bot instance */
         send, /* a sending function to send stuff to a specific channel */
+        cards: data.cards, /* data with cards */
+        collections: data.collections, /* data with collections */
+        help: data.help, /* help data */
+        direct, /* DM reply function to the user */
     }
+
+    /* service tick for checks */
+    const tick = (ctx) => {
+        const now = new Date()
+        auction.finish_aucs(ctx, now)
+    }
+
+    if(shard === 0)
+        setInterval(tick.bind({}, ctx), 2500);
 
     /* events */
     bot.on('ready', async event => {
@@ -60,32 +92,14 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
         if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
 
         try {
-            const toObj = (user, str, clr) => {
-                if(typeof str === 'object') {
-                    str.description = `**${user.username}**, ${str.description}`
-                    return str
-                }
-
-                return { description: `**${user.username}**, ${str}`, color: colors[clr] }
-            }
 
             /* create our player reply sending fn */
             const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
 
-            /* create direct reply fn */
-            const direct = async (user, str, clr = 'default') => {
-                const ch = await bot.getDMChannel(user.discord_id)
-                return send(ch, toObj(user, str, clr), user.discord_id)
-            }
-
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
-                reply, /* quick reply function to the user */
-                direct, /* DM reply function to the user */
-                cards: data.cards, /* data with cards */
-                collections: data.collections, /* data with collections */
-                help: data.help, /* help data */
+                reply, /* quick reply function to the channel */
             })
 
             /* add user to cooldown q */
@@ -130,4 +144,3 @@ module.exports.start = async ({ shareded, database, token, prefix, baseurl, shor
 
     return new Emitter()
 }
-

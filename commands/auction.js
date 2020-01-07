@@ -2,6 +2,9 @@ const {cmd, pcmd}       = require('../utils/cmd')
 const {evalCard}        = require('../modules/eval')
 const {Auction}         = require('../collections')
 const {addPagination}   = require('../utils/paginator')
+const {fetchOnly}       = require('../modules/user')
+const msToTime          = require('pretty-ms')
+const colors            = require('../utils/colors')
 
 const {
     new_auc,
@@ -11,16 +14,9 @@ const {
 
 const {
     formatName,
-    formatLink,
-    equals,
-    addUserCard,
     withCards,
     withGlobalCards,
     bestMatch,
-    parseArgs,
-    filter,
-    mapUserCards,
-    removeUserCard
 } = require('../modules/card')
 
 const {addConfirmation} = require('../utils/confirmator')
@@ -36,6 +32,35 @@ cmd('auc', async (ctx, user) => {
     return await addPagination(ctx, user, 
         `found auctions (${list.length} results)`, 
         paginate_auclist(ctx, user, list))
+})
+
+cmd(['auc', 'info'], async (ctx, user, arg1) => {
+    const auc = await Auction.findOne({ id: arg1 })
+
+    if(!auc)
+        return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
+
+    const author = await fetchOnly(auc.author)
+    const card = ctx.cards[auc.card]
+    const timediff = msToTime(auc.expires - new Date(), {compact: true})
+
+    const resp = []
+    resp.push(`Seller: **${author.username}**`)
+    resp.push(`Price: **${auc.price}** {currency}`)
+    resp.push(`Card: ${formatName(card)}`)
+    resp.push(`Card value: **${await evalCard(ctx, card)}** {currency}`)
+
+    if(auc.finished)
+        resp.push(`**This auction has finished**`)
+    else
+        resp.push(`Expires in **${timediff}**`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        title: `Auction [${auc.id}]`,
+        image: { url: card.url },
+        description: resp.join('\n'),
+        color: colors['blue']
+    }, user.discord_id)
 })
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {

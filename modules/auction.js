@@ -1,11 +1,6 @@
-const {cmd, pcmd}       = require('../utils/cmd')
 const {Auction}         = require('../collections')
 const {generateNextId}  = require('../utils/tools')
 const {fetchOnly}       = require('./user')
-
-const {
-    evalCard
-} = require('../modules/eval')
 
 const {
     formatName,
@@ -42,7 +37,8 @@ const new_auc = async (ctx, user, card, price, fee) => {
 
         unlock()
 
-        return ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** {currency}`)
+        return ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** {currency}
+            Auction ID: \`${auc.id}\``)
     })
 }
 
@@ -67,10 +63,10 @@ const bid_auc = async (ctx, user, auc, bid) => {
     if(lastBidder){
         lastBidder.exp += auc.price
         await lastBidder.save()
-        ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
+        await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
             To remain in the auction, try bidding higher than ${auc.price} {currency}
             Use \`->auc bid ${auc.id} [new bid]\`
-            This auction will end in **${msToTime(diff)}**`)
+            This auction will end in **${msToTime(diff)}**`, 'yellow')
     }
 
     user.exp -= bid
@@ -78,7 +74,10 @@ const bid_auc = async (ctx, user, auc, bid) => {
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** {currency}!`)
 }
 
-const finish_auc = async (ctx, auc) => {
+const finish_aucs = async (ctx, now) => {
+    const auc = (await Auction.find({ finished: false }).sort({ expires: -1 }))[0]
+    if(!auc || auc.expires > now) return;
+
     auc.finished = true
     await auc.save()
 
@@ -87,11 +86,19 @@ const finish_auc = async (ctx, auc) => {
 
     if(lastBidder) {
         lastBidder.exp += auc.highbid - auc.price
+        author.exp += auc.price
         addUserCard(lastBidder, auc.card)
-    } else 
-        addUserCard(author, auc.card)
+        await lastBidder.save()
+        await author.save()
 
-    //ctx.direct
+        await ctx.direct(author, `your sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** {currency}`)
+        return ctx.direct(lastBidder, `your won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
+    } else {
+        addUserCard(author, auc.card)
+        await author.save()
+        return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
+            You got your card back.`, 'yellow')
+    }
 }
 
 const paginate_auclist = (ctx, user, list) => {
@@ -113,18 +120,9 @@ const unlock = () => {
     })
 }
 
-const tick = async () => {
-    const now = new Date()
-    const lastAuc = (await Auction.find().sort({ expires: -1 }))[0]
-    if(lastAuc && lastAuc.expires < now) {
-        await finish_auc(lastAuc)
-    }
-}
-
-//setInterval(tick.bind(this), 2500);
-
 module.exports = {
     new_auc,
     paginate_auclist,
-    bid_auc
+    bid_auc,
+    finish_aucs
 }
