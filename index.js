@@ -9,7 +9,8 @@ const _         = require('lodash')
 
 const {
     auction, 
-    user
+    user,
+    guild
 } = require('./modules')
 
 var userq       = require('./userq.js')
@@ -68,6 +69,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         collections: data.collections, /* data with collections */
         help: data.help, /* help data */
         direct, /* DM reply function to the user */
+        shard, /* current shard */
     }
 
     /* service tick for checks */
@@ -88,7 +90,6 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
     bot.on('messageCreate', async (msg) => {
         if (!msg.content.startsWith(prefix)) return; /* skip not commands */
-        if (msg.author.bot) return; /* skip bot users */
         if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
 
         try {
@@ -106,7 +107,11 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+            const gld = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             const args = msg.content.trim().substring(prefix.length).split(' ')
+
+            if(gld)
+                isolatedCtx.guild = Object.assign({}, gld, msg.channel.guild)
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
         } catch (e) {
@@ -115,6 +120,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
                 : colors.red /* nice pure error color */
 
             send(msg.channel.id, { description: e.message, color })
+            console.error(e)
         }
     })
 

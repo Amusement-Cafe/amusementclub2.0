@@ -3,4 +3,5 @@ module.exports = {
     Transaction: require('./transaction'),
     Tag: require('./tag'),
     Auction: require('./auction'),
+    Guild: require('./guild'),
 }

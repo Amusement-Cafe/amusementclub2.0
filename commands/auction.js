@@ -89,7 +89,8 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     if(user.exp < fee)
         return ctx.reply(user, `you have to have at least **${fee}** {currency} to auction for that price`, 'red')
 
-    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} {currency}?`, null,
+    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} {currency}?
+        ${card.amount > 1? '' : 'This is the only copy that you have, so your favourite status and rating will be lost'}`, null,
         async (x) => {
         await new_auc(ctx, user, card, price, fee)
     }, async (x) => {

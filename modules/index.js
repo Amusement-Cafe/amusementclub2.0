@@ -3,6 +3,7 @@ module.exports = {
     card: require('./card'),
     eval: require('./eval'),
     tag: require('./tag'),
+    guild: require('./guild'),
     auction: require('./auction'),
     collection: require('./collection'),
     transaction: require('./transaction'),

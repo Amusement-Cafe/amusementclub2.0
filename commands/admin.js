@@ -14,7 +14,7 @@ const {
 
 const {fetchOnly} = require('../modules/user')
 
-pcmd(['admin'], ['admin', 'add', 'role'], async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
@@ -37,7 +37,7 @@ pcmd(['admin'], ['admin', 'add', 'role'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin'], ['admin', 'rm', 'role'], async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'rm', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
@@ -58,7 +58,7 @@ pcmd(['admin'], ['admin', 'rm', 'role'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin', 'mod'], ['admin', 'award'], async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'], ['sudo', 'award'], async (ctx, user, ...args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
@@ -75,7 +75,7 @@ pcmd(['admin', 'mod'], ['admin', 'award'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin', 'mod'], ['admin', 'add', 'card'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(!parsedargs.id)
         throw new Error(`please specify user ID`)
 
