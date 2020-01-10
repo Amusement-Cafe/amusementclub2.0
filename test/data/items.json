@@ -1,0 +1,110 @@
+[
+    {
+        "id": "castle",
+        "name": "Guild Castle",
+        "type": "blueprint",
+        "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
+        "desc": "must have building",
+        "fulldesc": "When built provides maintenance for other buildings. Holds guild funds, can gather taxes",
+        "levels": [
+            {
+                "price": 100,
+                "level": 1,
+                "maintenance": 10,
+                "desc": "Allows users to auction cards globally"
+            }, {
+                "price": 2000,
+                "level": 5,
+                "maintenance": 100,
+                "desc": "Allows to set claim tax up to 10%"
+            }, {
+                "price": 5000,
+                "level": 20,
+                "maintenance": 250,
+                "desc": "Reduces building maintenance by 10%"
+            }, {
+                "price": 10000,
+                "level": 30,
+                "maintenance": 300,
+                "desc": "Allows to set claim tax up to 25%"
+            }, {
+                "price": 25000,
+                "level": 50,
+                "maintenance": 500,
+                "desc": "Reduces building maintenance by 30%"
+            }
+        ]
+    }, {
+        "id": "herores",
+        "name": "Hero Residence",
+        "type": "blueprint",
+        "desc": "place for guild hero",
+        "fulldesc": "Allows hero to join the guild. Hero will be chosen depending on amount of followers in this guild. Leveling up makes other heroes to consider your guild more",
+        "levels": [
+            {
+                "price": 500,
+                "level": 3,
+                "maintenance": 100,
+                "desc": "Allows hero to join the guild"
+            }, {
+                "price": 1000,
+                "level": 5,
+                "maintenance": 500,
+                "desc": "Gives 3 days for hero to change their mind to change the guild if amound of followers increases"
+            }, {
+                "price": 30000,
+                "level": 10,
+                "maintenance": 100,
+                "desc": "Current hero will 20% less likely to consider other guilds"
+            }
+        ]
+    }, {
+        "id": "auchouse",
+        "name": "Auction House",
+        "type": "blueprint",
+        "desc": "sell and buy cards globally",
+        "fulldesc": "When built users will be able to use global card auction shared between all servers. This is the best place to find rare and unique cards",
+        "levels": [
+            {
+                "price": 100,
+                "level": 5,
+                "maintenance": 10,
+                "desc": "Allows users to auction cards globally"
+            }, {
+                "price": 2000,
+                "level": 5,
+                "maintenance": 20,
+                "desc": "Decreases auction fees from 10% to 5%"
+            }, {
+                "price": 10000,
+                "level": 10,
+                "maintenance": 100,
+                "desc": "Allows users to specify auction length (1 to 10 hours)"
+            }
+        ]
+    }, {
+        "id": "smithhub",
+        "name": "Smithing Hub",
+        "type": "blueprint",
+        "desc": "forge and draw cards",
+        "fulldesc": "When built users will be able to forge cards together and use vials to draw new cards. Details: `->help forge` and `->help draw`",
+        "levels": [
+            {
+                "price": 5000,
+                "level": 10,
+                "maintenance": 100,
+                "desc": "Allows users to forge two cards"
+            }, {
+                "price": 20000,
+                "level": 25,
+                "maintenance": 220,
+                "desc": "Allows users to draw a card using vials"
+            }, {
+                "price": 75000,
+                "level": 50,
+                "maintenance": 500,
+                "desc": "something OP thats a secret or maybe I dont even know what it does"
+            }
+        ]
+    }
+]

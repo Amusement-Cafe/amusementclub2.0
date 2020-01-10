@@ -59,6 +59,10 @@ const trigger = async (type, ctx, user, args) => {
             throw new Error(`Only users with roles **[${cursor._perm}]** can execute this command`)
     }
 
+    if(!ctx.guild) {
+        throw new Error(`This command is possible only in guild (server) channel`)
+    }
+
     const newArgs = [ctx, user || { }].concat(args)
 
     try {

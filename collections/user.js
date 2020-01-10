@@ -12,6 +12,7 @@ module.exports = model('User', {
 
     cards:              [],
     quests:             [],
+    inventory:          [],
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },

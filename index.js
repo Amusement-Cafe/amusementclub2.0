@@ -68,6 +68,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: data.help, /* help data */
+        items: data.items, /* game items */
         direct, /* DM reply function to the user */
         shard, /* current shard */
     }

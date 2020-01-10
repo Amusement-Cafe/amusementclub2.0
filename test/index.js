@@ -9,6 +9,7 @@ const main = async () => {
         cards: require('./data/cards.json'),
         collections: require('./data/collections.json'),
         help: require('./data/help.json'),
+        items: require('./data/items.json'),
     }
 
     const options  = Object.assign({shard: 0, data}, config)
