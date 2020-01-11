@@ -26,7 +26,7 @@ const {
 
 const {
     addGuildXP
-} = require('../modules/transaction')
+} = require('../modules/guild')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
     const cards = []

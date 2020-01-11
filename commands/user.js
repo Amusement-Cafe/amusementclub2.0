@@ -45,6 +45,7 @@ cmd('daily', async ({ reply }, user) => {
         user.lastdaily = now
         user.dailystats = {}
         user.exp += amount
+        user.markModified('dailystats')
         await user.save()
 
         return reply(user, `you recieved daily **${amount}** {currency} You now have **${user.exp}** {currency}`)

@@ -10,14 +10,14 @@ module.exports = model('User', {
     lastQueriedCard:    { type: Object },
     dailystats:         { type: Object, default: {} },
 
-    cards:              [],
-    quests:             [],
-    inventory:          [],
+    cards:              { type: Array, default: [] },
+    quests:             { type: Array, default: [] },
+    inventory:          { type: Array, default: [] },
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
 
-    roles:              [],
+    roles:              { type: Array, default: [] },
     ban:                { type: Object },
 
     lastcard:           { type: Number, default: -1 },
