@@ -1,6 +1,7 @@
 [
     {
         "id": "castle",
+        "price": 1000,
         "name": "Guild Castle",
         "type": "blueprint",
         "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
@@ -36,6 +37,7 @@
         ]
     }, {
         "id": "herores",
+        "price": 2500,
         "name": "Hero Residence",
         "type": "blueprint",
         "desc": "place for guild hero",
@@ -61,6 +63,7 @@
     }, {
         "id": "auchouse",
         "name": "Auction House",
+        "price": 500,
         "type": "blueprint",
         "desc": "sell and buy cards globally",
         "fulldesc": "When built users will be able to use global card auction shared between all servers. This is the best place to find rare and unique cards",
@@ -85,12 +88,13 @@
     }, {
         "id": "smithhub",
         "name": "Smithing Hub",
+        "price": 3000,
         "type": "blueprint",
         "desc": "forge and draw cards",
         "fulldesc": "When built users will be able to forge cards together and use vials to draw new cards. Details: `->help forge` and `->help draw`",
         "levels": [
             {
-                "price": 5000,
+                "price": 1000,
                 "level": 10,
                 "maintenance": 100,
                 "desc": "Allows users to forge two cards"

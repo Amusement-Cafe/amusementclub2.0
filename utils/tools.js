@@ -71,11 +71,14 @@ const generateNextId = (lastId, idLength = 4) => {
     return nextId;
 }
 
+const XPtoLEVEL = (xp) => Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp));
+
 module.exports = {
     cap,
     claimCost,
     nameSort,
     tryGetUserID,
     getAllUserIDs,
-    generateNextId
+    generateNextId,
+    XPtoLEVEL
 }

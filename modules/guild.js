@@ -31,18 +31,22 @@ const addGuildXP = async (ctx, user, xp) => {
     const rank = XPtoRANK(guildUser.xp)
 
     if(rank > guildUser.rank)
-        await ctx.reply(user, `you ranked up in **${ctx.guild.name}!**
+        await ctx.reply(user, `you ranked up in **${ctx.discord_guild.name}!**
             Your rank is now **${rank}**`)
 
     guildUser.rank = rank
     await ctx.guild.save()
 }
 
-const XPtoRANK = (xp) => [10, 100, 500, 2500, 10000].filter(x => xp > x).length
+const rankXP = [10, 100, 500, 2500, 10000]
+
+const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
 
 
 
 module.exports = {
 	fetchOrCreate,
-    addGuildXP
+    addGuildXP,
+    XPtoRANK,
+    rankXP
 }

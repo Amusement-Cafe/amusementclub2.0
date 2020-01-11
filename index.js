@@ -109,12 +109,8 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
             const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            isolatedCtx.discord_guild = msg.channel.guild
             const args = msg.content.trim().substring(prefix.length).split(' ')
-
-            if(isolatedCtx.guild){
-                isolatedCtx.guild.owner = msg.channel.guild.ownerID
-                isolatedCtx.guild.name = msg.channel.guild.name
-            }
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
         } catch (e) {
@@ -140,6 +136,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             })
 
             const usr  = await user.fetchOnly(userID)
+            isolatedCtx.guild = msg.channel.guild
 
             if(!usr) return
 
