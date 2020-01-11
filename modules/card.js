@@ -153,12 +153,15 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  */
 const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
-    let cards = filter(ctx.cards, parsedargs).sort(parsedargs.sort)
+    let cards = filter(ctx.cards.slice(), parsedargs).sort(parsedargs.sort)
 
     if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
     }
+
+    if(parsedargs.lastcard)
+        cards = cards.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
         return ctx.reply(user, `card wasn't found`, 'red')
