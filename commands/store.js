@@ -28,7 +28,7 @@ cmd('store', async (ctx, user, cat) => {
         })
 })
 
-cmd(['store', 'info'], async (ctx, user, itemid) => {
+cmd(['store', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, itemid) => {
     const item = ctx.items.filter(x => x.id === itemid)[0]
 
     if(!item)

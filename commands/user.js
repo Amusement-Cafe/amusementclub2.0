@@ -18,20 +18,30 @@ const {
     fetchOnly
 } = require('../modules/user')
 
+const {
+    withUserItems
+} = require('../modules/item')
+
 cmd('bal', (ctx, user) => {
     return ctx.reply(user, `you have **${Math.floor(user.exp)}** {currency}\nYour next claim will cost **${claimCost(user, 1)}** {currency}`)
 })
 
-cmd('inv', ['inventory', 'check'], ({ reply }, user, ...args) => {
-    if (user.inventory.length == 0) {
-        return reply(user, 'your inventory is empty')
-    }
+cmd('inv', withUserItems((ctx, user, items, args) => {
+    const title = `To view the item details use \`->item info [item id]\`
+                    To use the item \`->inv use [item id]\`\n\n`
 
-    const items = user.inventory
-        .map((item, index) => `${index+1}. ${item.name}`)
+    const pages = []
+    items.map((x, i) => {
+        if (i % 10 == 0) pages.push(title)
+        pages[Math.floor(i/10)] += `${i+1}. \`${x.id}\` **${x.name}**`
+    })
 
-    return reply(user, items.join(' '))
-})
+    return addPagination(ctx, user, `your inventory (${items.length} results)`, pages)
+}))
+
+cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
+    const item = items[0]
+}))
 
 cmd('daily', async ({ reply }, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
@@ -62,7 +72,7 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
         pages[Math.floor(i/15)] += (formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
     })
 
-    return await addPagination(ctx, user, `your cards (${user.cards.length} results)`, pages)
+    return await addPagination(ctx, user, `your cards (${cards.length} results)`, pages)
 }))
 
 cmd('profile', async (ctx, user, arg1) => {
@@ -116,7 +126,7 @@ cmd('diff', async (ctx, user, ...args) => {
         pages[Math.floor(i/15)] += `${formatName(c)}\n`
     })
 
-    return await addPagination(ctx, user, `your difference with ${otherUser.username} (${user.cards.length} results)`, pages)
+    return await addPagination(ctx, user, `your difference with ${otherUser.username} (${diff.length} results)`, pages)
 })
 
 cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -134,5 +144,5 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         pages[Math.floor(i/15)] += `${formatName(c)}\n`
     })
 
-    return await addPagination(ctx, user, `cards that you don't have (${user.cards.length} results)`, pages)
+    return await addPagination(ctx, user, `cards that you don't have (${cards.length} results)`, pages)
 }))
