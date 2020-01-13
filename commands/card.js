@@ -109,11 +109,9 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     }
 
     addConfirmation(ctx, user, question, prm, 
-        async (x) => {
-            await confirm_trs(ctx, x, trs.id)
-        }, async (x) => {
-            await decline_trs(ctx, x, trs.id)
-        }, footer)
+        (x) => confirm_trs(ctx, x, trs.id), 
+        (x) => decline_trs(ctx, x, trs.id), 
+        footer)
 }))
 
 cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {

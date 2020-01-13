@@ -5,7 +5,7 @@
         "name": "Guild Castle",
         "type": "blueprint",
         "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
-        "desc": "must have building",
+        "desc": "must-have building",
         "fulldesc": "When built provides maintenance for other buildings. Holds guild funds, can gather taxes",
         "levels": [
             {

@@ -38,15 +38,19 @@ const addGuildXP = async (ctx, user, xp) => {
     await ctx.guild.save()
 }
 
+const getGuildUser = (ctx, user) => ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+
+const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
+
 const rankXP = [10, 100, 500, 2500, 10000]
 
 const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
-
-
 
 module.exports = {
 	fetchOrCreate,
     addGuildXP,
     XPtoRANK,
-    rankXP
+    rankXP,
+    getGuildUser,
+    isUserOwner
 }

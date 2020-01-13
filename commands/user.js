@@ -1,6 +1,7 @@
 const msToTime      = require('pretty-ms')
 const {cmd}         = require('../utils/cmd')
 const {addPagination}     = require('../utils/paginator')
+const {addConfirmation}     = require('../utils/confirmator')
 const {claimCost}   = require('../utils/tools')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
@@ -19,7 +20,9 @@ const {
 } = require('../modules/user')
 
 const {
-    withUserItems
+    withUserItems,
+    useItem,
+    getQuestion
 } = require('../modules/item')
 
 cmd('bal', (ctx, user) => {
@@ -41,6 +44,10 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
 
 cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
     const item = items[0]
+
+    addConfirmation(ctx, user, getQuestion(ctx, user, item), null, 
+        (x) => useItem(ctx, user, item), 
+        (x) => ctx.reply(user, `**${item.name}** was not used`, 'red'))
 }))
 
 cmd('daily', async ({ reply }, user) => {

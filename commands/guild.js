@@ -21,7 +21,11 @@ cmd(['guild', 'info'], async (ctx, user) => {
     fields.push({ name: `Your guild stats`, value: userstat.join('\n') })
 
     if(ctx.guild.buildings.length > 0)
-        fields.push({ name: `Buildings`, value: ctx.guild.buildings.map(x => `**${x.name} level ${x.level}** (${x.desc})`).join('\n') })
+        fields.push({ name: `Buildings`, value: ctx.guild.buildings.map(x => {
+            const item = ctx.items.filter(y => y.id === x.id)[0]
+            return `\`${item.id}\` **${item.name} level ${x.level}** [\`❤️\` ${x.health}] (${item.desc})`
+        }).join('\n')
+    })
 
     return ctx.send(ctx.msg.channel.id, {
         author: { name: ctx.discord_guild.name },
