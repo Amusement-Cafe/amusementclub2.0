@@ -4,6 +4,7 @@ module.exports = model('Guild', {
     id:             { type: String },
     prefix:         { type: String, default: '->' },
     xp:             { type: Number, default: 0 },
+    tax:            { type: Number, default: 0 },
     buildperm:      { type: Number, default: 1 },
     botchannels:    [],
 

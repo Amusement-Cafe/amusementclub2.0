@@ -2,9 +2,13 @@ const msToTime      = require('pretty-ms')
 const {cmd}         = require('../utils/cmd')
 const {addPagination}     = require('../utils/paginator')
 const {addConfirmation}     = require('../utils/confirmator')
-const {claimCost}   = require('../utils/tools')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
+
+const {
+    claimCost,
+    XPtoLEVEL
+} = require('../utils/tools')
 
 const {
     formatName,
@@ -63,8 +67,12 @@ cmd('daily', async ({ reply }, user) => {
         user.lastdaily = now
         user.dailystats = {}
         user.exp += amount
+        user.xp += 10
         user.markModified('dailystats')
         await user.save()
+
+        addGuildXP(ctx, user, 10)
+        await user.guild.save()
 
         return reply(user, `you recieved daily **${amount}** {currency} You now have **${Math.round(user.exp)}** {currency}`)
     }
@@ -91,6 +99,7 @@ cmd('profile', async (ctx, user, arg1) => {
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
 
     const resp = []
+    resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 

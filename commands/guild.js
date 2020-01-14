@@ -41,6 +41,14 @@ cmd(['guild', 'info'], async (ctx, user) => {
     }, user.discord_id)
 })
 
+cmd(['guild', 'status'], async (ctx, user) => {
+    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+    if(!castle)
+        return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**', 'red')
+
+
+})
+
 cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     if(!arg1)
         return ctx.reply(user, 'please specify building ID', 'red')
@@ -62,9 +70,10 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${level.price}** {currency}?`
     addConfirmation(ctx, user, question, null, async (x) => {
 
-        const xp = level.price * .1
+        const xp = Math.floor(level.price * .04)
         building.level++
         user.exp -= level.price
+        user.xp += xp
         ctx.guild.markModified('buildings')
         addGuildXP(ctx, user, xp)
 

@@ -17,7 +17,6 @@ const {
 
 const {
     formatName,
-    formatLink,
     addUserCard,
     withCards,
     withGlobalCards,
@@ -48,6 +47,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     }
 
     user.exp -= price
+    user.xp += amount
     user.dailystats.claims = user.dailystats.claims + amount || amount
     user.markModified('dailystats')
 
@@ -58,7 +58,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     await ctx.guild.save()
 
     return ctx.reply(user, {
-        url: formatLink(cards[0]),
+        url: cards[0].url,
         description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, 1)}** {currency}`
     })
 })
@@ -66,7 +66,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     const card = parsedargs.isEmpty()? sample(cards) : bestMatch(cards)
     return ctx.reply(user, {
-        url: formatLink(card),
+        url: card.url,
         description: `summons **${formatName(card)}**!`
     })
 }))

@@ -21,4 +21,5 @@ module.exports = model('User', {
     ban:                { type: Object },
 
     lastcard:           { type: Number, default: -1 },
+    xp:                 { type: Number, default: 0 },
 })

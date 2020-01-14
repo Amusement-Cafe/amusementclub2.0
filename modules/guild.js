@@ -26,7 +26,7 @@ const addGuildXP = (ctx, user, xp) => {
         ctx.guild.userstats.push(guildUser)
     }
 
-    ctx.guild.xp += xp * .1
+    ctx.guild.xp += xp * .02
     guildUser.xp += xp
     const rank = XPtoRANK(guildUser.xp)
 

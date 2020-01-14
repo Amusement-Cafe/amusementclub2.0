@@ -20,7 +20,8 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
     /* prefill in the urls */
     data.cards = data.cards.map((x, i) => {
-        const basePath = `/cards/${data.collections.filter(y => y.id == x.col)[0].id}/${x.level}_${x.name}.${x.animated? 'gif' : 'jpg'}`
+        const col = data.collections.filter(y => y.id == x.col)[0]
+        const basePath = `/cards/${col.id}/${x.level}_${x.name}.${x.animated? 'gif' : (col.compressed? 'jpg' : 'png')}`
         x.url = baseurl + basePath
         x.shorturl = shorturl + basePath
         x.id = i
