@@ -3,9 +3,9 @@ const tree = {
     rct: {},
 }
 
-const cmd = (...args) => { buildTree(args) }
+const cmd = (...args) => buildTree(args)
 
-const pcmd = (perm, ...args) => { buildTree(args, perm) }
+const pcmd = (perm, ...args) => buildTree(args, perm)
 
 const rct = (...args) => {
     const callback = args.pop()
@@ -20,8 +20,9 @@ const rct = (...args) => {
     })
 }
 
-const buildTree = async(args, perm) => {
+const buildTree = (args, perm) => {
     const callback = args.pop()
+    const cursors = []
 
     args.map(alias => {
         let sequence = Array.isArray(alias) ? alias : [alias]
@@ -39,7 +40,20 @@ const buildTree = async(args, perm) => {
 
         if(perm)
             cursor._perm = perm
+
+        cursors.push(cursor)
     })
+
+    const chain = {
+        access: (arg) => {
+            cursors.map(x => {
+                x._access = arg
+            })
+            return chain
+        }
+    }
+
+    return chain
 }
 
 const trigger = async (type, ctx, user, args) => {
@@ -59,7 +73,7 @@ const trigger = async (type, ctx, user, args) => {
             throw new Error(`Only users with roles **[${cursor._perm}]** can execute this command`)
     }
 
-    if(!ctx.guild) {
+    if(!ctx.guild && cursor._access != 'dm') {
         throw new Error(`This command is possible only in guild (server) channel`)
     }
 

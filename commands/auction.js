@@ -64,6 +64,10 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
 })
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+    const auchouse = ctx.guild.buildings.filter(x => x.id === 'auchouse')[0]
+    if(!auchouse)
+        return ctx.reply(user, `you can sell cards only in the guild that has **Auction House** level 1 or higher!`, 'red')
+
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our communiy rules.
@@ -76,9 +80,18 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const ceval = await evalCard(ctx, card)
     const price = parsedargs.extra.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || Math.round(ceval)
 
-    const fee = price * .1
+    const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
+    const timenum = parseInt(parsedargs.extra[0])
+    const time = 6
+
+    if(timenum) {
+        if(auchouse.level < 3)
+            return ctx.reply(user, `you can specify auction time only in the guild that has **Auction House** level 3 or higher!`, 'red')
+
+        time = Math.min(Math.max(timenum, 1), 10);
+    }
 
     if(price < min)
         return ctx.reply(user, `you can't set price less than **${min}** {currency} for this card`, 'red')
@@ -89,16 +102,21 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     if(user.exp < fee)
         return ctx.reply(user, `you have to have at least **${fee}** {currency} to auction for that price`, 'red')
 
-    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} {currency}?
+    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} {currency}? ${timenum? `This auction will last **${time} hours**` : ''}
         ${card.amount > 1? '' : 'This is the only copy that you have, so your favourite status and rating will be lost'}`, null,
         async (x) => {
         await new_auc(ctx, user, card, price, fee)
     }, async (x) => {
         return ctx.reply(user, `operation was declined`, 'red')
-    })
+    }, `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)`)
 }))
 
 cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
+    if(user.ban && user.ban.embargo)
+        return ctx.reply(user, `you are not allowed to list cards at auction.
+                                Your dealings were found to be in violation of our communiy rules.
+                                You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
+
     const now = new Date();
     const bid = parseInt(args.filter(x => !isNaN(x))[0])
     const id = args.filter(x => isNaN(x))[0]
@@ -127,4 +145,4 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `you bid should be higher than ${auc.price}`, 'red')
 
     await bid_auc(ctx, user, auc, bid)
-})
+}).access('dm')

@@ -66,7 +66,7 @@
         "price": 500,
         "type": "blueprint",
         "desc": "sell and buy cards globally",
-        "fulldesc": "When built users will be able to use global card auction shared between all servers. This is the best place to find rare and unique cards",
+        "fulldesc": "When built users will be able to sell cards on global card auction shared between all servers",
         "levels": [
             {
                 "price": 100,
@@ -80,7 +80,7 @@
                 "desc": "Decreases auction fees from 10% to 5%"
             }, {
                 "price": 10000,
-                "level": 10,
+                "level": 5,
                 "maintenance": 100,
                 "desc": "Allows users to specify auction length (1 to 10 hours)"
             }

@@ -36,7 +36,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     const pages = []
     items.map((x, i) => {
         if (i % 10 == 0) pages.push(title)
-        pages[Math.floor(i/10)] += `${i+1}. \`${x.id}\` **${x.name}**`
+        pages[Math.floor(i/10)] += `${i+1}. \`${x.id}\` **${x.name}**\n`
     })
 
     return addPagination(ctx, user, `your inventory (${items.length} results)`, pages)
