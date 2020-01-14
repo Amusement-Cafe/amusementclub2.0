@@ -26,7 +26,8 @@ const {
 } = require('../modules/item')
 
 cmd('bal', (ctx, user) => {
-    return ctx.reply(user, `you have **${Math.floor(user.exp)}** {currency}\nYour next claim will cost **${claimCost(user, 1)}** {currency}`)
+    return ctx.reply(user, `you have **${Math.floor(user.exp)}** {currency}
+        Your next claim will cost **${claimCost(user, 1)}** {currency}`)
 })
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
@@ -65,7 +66,7 @@ cmd('daily', async ({ reply }, user) => {
         user.markModified('dailystats')
         await user.save()
 
-        return reply(user, `you recieved daily **${amount}** {currency} You now have **${user.exp}** {currency}`)
+        return reply(user, `you recieved daily **${amount}** {currency} You now have **${Math.round(user.exp)}** {currency}`)
     }
 
     return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)

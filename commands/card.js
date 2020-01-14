@@ -54,7 +54,8 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     await user.save()
 
     cards.sort((a, b) => b.level - a.level)
-    await addGuildXP(ctx, user, amount)
+    addGuildXP(ctx, user, amount)
+    await ctx.guild.save()
 
     return ctx.reply(user, {
         url: formatLink(cards[0]),

@@ -78,13 +78,13 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    const price = parsedargs.extra.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || Math.round(ceval)
+    const price = parsedargs.extra.filter(x => !isNaN(x) && parseInt(x) > 0).map(x => parseInt(x))[0] || Math.round(ceval)
 
     const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
-    const timenum = parseInt(parsedargs.extra[0])
-    const time = 6
+    const timenum = -parsedargs.extra.filter(x => x[0] === '-').map(x => parseInt(x))[0]
+    let time = 6
 
     if(timenum) {
         if(auchouse.level < 3)
@@ -105,7 +105,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} {currency}? ${timenum? `This auction will last **${time} hours**` : ''}
         ${card.amount > 1? '' : 'This is the only copy that you have, so your favourite status and rating will be lost'}`, null,
         async (x) => {
-        await new_auc(ctx, user, card, price, fee)
+        await new_auc(ctx, user, card, price, fee, time)
     }, async (x) => {
         return ctx.reply(user, `operation was declined`, 'red')
     }, `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)`)

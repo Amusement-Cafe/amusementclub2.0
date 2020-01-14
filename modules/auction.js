@@ -12,7 +12,7 @@ const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
 
-const new_auc = async (ctx, user, card, price, fee) => {
+const new_auc = async (ctx, user, card, price, fee, time) => {
     const target = await fetchOnly(user.discord_id)
     if(!target.cards.filter(x => x.id === card.id)[0])
         return ctx.reply(user, `seems like you don't have ${formatName(card)} card anymore`, 'red')
@@ -32,7 +32,7 @@ const new_auc = async (ctx, user, card, price, fee) => {
         auc.highbid = price
         auc.author = user.discord_id
         auc.card = card.id
-        auc.expires = asdate.add(new Date(), 1, 'hours')
+        auc.expires = asdate.add(new Date(), time, 'hours')
         await auc.save()
 
         unlock()

@@ -52,7 +52,8 @@ const uses = {
         const xp = item.levels[0].price * .1
 
         guild.buildings.push({ id: item.id, level: 1, health: 100 })
-        await addGuildXP(ctx, user, xp)
+        addGuildXP(ctx, user, xp)
+        await ctx.guild.save()
 
         user.exp -= item.levels[0].price
         const el = user.inventory.filter(x => x.id === item.id)[0]

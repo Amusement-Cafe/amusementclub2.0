@@ -1,7 +1,12 @@
-const {cmd}         = require('../utils/cmd')
-const {rankXP}      = require('../modules/guild')
-const {XPtoLEVEL}   = require('../utils/tools')
-const color         = require('../utils/colors')
+const {cmd}             = require('../utils/cmd')
+const {XPtoLEVEL}       = require('../utils/tools')
+const color             = require('../utils/colors')
+const {addConfirmation} = require('../utils/confirmator')
+
+const {
+    rankXP,
+    addGuildXP
+} = require('../modules/guild')
 
 cmd(['guild', 'info'], async (ctx, user) => {
     const resp = [], userstat = [], fields = []
@@ -13,7 +18,7 @@ cmd(['guild', 'info'], async (ctx, user) => {
     const curUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
     if(curUser){
         userstat.push(`Current rank: **${curUser.rank}**`)
-        userstat.push(`Progress to the next rank: **${(curUser.xp / rankXP[curUser.rank]) * 100}%**`)
+        userstat.push(`Progress to the next rank: **${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%**`)
     } else {
         userstat.push(`You don't have statistics in this guild`)
     }
@@ -36,6 +41,39 @@ cmd(['guild', 'info'], async (ctx, user) => {
     }, user.discord_id)
 })
 
-cmd(['guild', 'upgrade'], async (ctx, user, item) => {
-    
+cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
+    if(!arg1)
+        return ctx.reply(user, 'please specify building ID', 'red')
+
+    const building = ctx.guild.buildings.filter(x => x.id === arg1)[0]
+    const item = ctx.items.filter(x => x.id === arg1)[0]
+
+    if(!building)
+        return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
+
+    const level = item.levels[building.level]
+
+    if(!level)
+        return ctx.reply(user, `**${item.name}** is already max level`, 'red')
+
+    if(user.exp < level.price)
+        return ctx.reply(user, `you have to have at least **${level.price}** {currency} to upgrade this building`, 'red')
+
+    const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${level.price}** {currency}?`
+    addConfirmation(ctx, user, question, null, async (x) => {
+
+        const xp = level.price * .1
+        building.level++
+        user.exp -= level.price
+        ctx.guild.markModified('buildings')
+        addGuildXP(ctx, user, xp)
+
+        await user.save()
+        await ctx.guild.save()
+
+        return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${building.level}**!
+            This building now *${level.desc.toLowerCase()}*
+            You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+
+    }, (x) => ctx.reply(user, 'upgrade was cancelled', 'red'))
 })
