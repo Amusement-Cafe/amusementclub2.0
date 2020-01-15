@@ -40,6 +40,9 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         if(content.description)
             content.description = content.description.replace(/{currency}/gi, '`🍅`')
 
+        if(content.fields)
+            content.fields.map(x => x.value = x.value.replace(/{currency}/gi, '`🍅`'))
+
         if(userid)
             _.remove(userq, (x) => x.id === userid)
 

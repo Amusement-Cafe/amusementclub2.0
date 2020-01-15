@@ -2,10 +2,13 @@ const {cmd}             = require('../utils/cmd')
 const {XPtoLEVEL}       = require('../utils/tools')
 const color             = require('../utils/colors')
 const {addConfirmation} = require('../utils/confirmator')
+const msToTime          = require('pretty-ms')
 
 const {
     rankXP,
-    addGuildXP
+    addGuildXP,
+    getMaintenanceCost,
+    isUserOwner
 } = require('../modules/guild')
 
 cmd(['guild', 'info'], async (ctx, user) => {
@@ -13,6 +16,7 @@ cmd(['guild', 'info'], async (ctx, user) => {
     resp.push(`Level: **${XPtoLEVEL(ctx.guild.xp)}**`)
     resp.push(`Players: **${ctx.guild.userstats.length}/${ctx.discord_guild.memberCount}**`)
     resp.push(`Prefix: \`${ctx.guild.prefix}\``)
+    resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
 
     const curUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
@@ -41,12 +45,29 @@ cmd(['guild', 'info'], async (ctx, user) => {
     }, user.discord_id)
 })
 
-cmd(['guild', 'status'], async (ctx, user) => {
+cmd(['guild', 'status'], (ctx, user) => {
     const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
     if(!castle)
         return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**', 'red')
 
+    const resp = [], buildings = []
+    const cost = Math.round(getMaintenanceCost(ctx) * (castle.level < 3? 1 : (castle.level < 5? .9 : .75)))
 
+    resp.push(`Building maintenance: **${cost}** {currency}/day`)
+    resp.push(`Current finances: **${ctx.guild.balance}** {currency}`)
+    resp.push(`Ratio: **${cost / ctx.guild.balance}** (${cost / ctx.guild.balance < 0? 'positive' : 'negative'})`)
+    resp.push(`Maintenance charges in **${msToTime(60000, {compact: true})}**`)
+    resp.push(`> Make sure you have **positive** ratio when maintenance costs are charged`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        author: { name: ctx.discord_guild.name },
+        description: resp.join('\n'),
+        fields: [{name: `Maintenance breakdown`, value: ctx.guild.buildings.map(x => {
+            const item = ctx.items.filter(y => y.id === x.id)[0]
+            return `**${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** {currency}/day`
+        }).join('\n')}],
+        color: color.blue
+    }, user.discord_id)
 })
 
 cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
@@ -85,4 +106,32 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
             You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
 
     }, (x) => ctx.reply(user, 'upgrade was cancelled', 'red'))
+})
+
+cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
+    const tax = Math.abs(parseInt(arg1))
+    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+
+    if(!castle)
+        return ctx.reply(user, '**Guild Castle** is required to set claim tax', 'red')
+
+    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only server owner can modify guild tax`, 'red')
+
+    if(!tax)
+        return ctx.reply(user, `please specify a number that indicates % of claim tax`, 'red')
+
+    if(castle.level < 3 && tax > 5)
+        return ctx.reply(user, `maximum allowed tax for current level is **5%**`, 'red')
+
+    if(castle.level < 5 && tax > 10)
+        return ctx.reply(user, `maximum allowed tax for current level is **10%**`, 'red')
+
+    if(castle.level < 3 && tax > 25)
+        return ctx.reply(user, `maximum allowed tax for current level is **25%**`, 'red')
+
+    ctx.guild.tax = tax * .01
+    await ctx.guild.save()
+
+    return ctx.reply(user, `guild claim tax was set to **${tax}%**`)
 })

@@ -30,7 +30,8 @@ const {
 cmd('claim', 'cl', async (ctx, user, arg1) => {
     const cards = []
     const amount = parseInt(arg1) || 1
-    const price = claimCost(user, amount)
+    const price = claimCost(user, ctx.guild.tax, amount)
+    const normalprice = claimCost(user, 0, amount)
 
     if(amount > 10)
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
@@ -55,11 +56,12 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 
     cards.sort((a, b) => b.level - a.level)
     addGuildXP(ctx, user, amount)
+    ctx.guild.balance += Math.round(price - normalprice)
     await ctx.guild.save()
 
     return ctx.reply(user, {
         url: cards[0].url,
-        description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, 1)}** {currency}`
+        description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, ctx.guild.tax, 1)}** {currency}`
     })
 })
 

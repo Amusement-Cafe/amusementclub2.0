@@ -24,6 +24,12 @@ const addGuildXP = (ctx, user, xp) => {
     if(!guildUser) {
         guildUser = { id: user.discord_id, xp: 0, rank: 0 }
         ctx.guild.userstats.push(guildUser)
+
+        if(user.xp > 10) {
+            const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
+            ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
+                For more information run \`->guild info\``)
+        }
     }
 
     ctx.guild.xp += xp * .02
@@ -36,6 +42,9 @@ const addGuildXP = (ctx, user, xp) => {
 
     guildUser.rank = rank
 }
+
+const getMaintenanceCost = (ctx) => ctx.guild.buildings.map(x => 
+    ctx.items.filter(y => y.id === x.id)[0].levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0)
 
 const getGuildUser = (ctx, user) => ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
 
@@ -52,4 +61,5 @@ module.exports = {
     rankXP,
     getGuildUser,
     isUserOwner,
+    getMaintenanceCost,
 }

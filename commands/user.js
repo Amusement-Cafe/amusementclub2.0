@@ -24,6 +24,10 @@ const {
 } = require('../modules/user')
 
 const {
+    addGuildXP
+} = require('../modules/guild')
+
+const {
     withUserItems,
     useItem,
     getQuestion
@@ -31,7 +35,8 @@ const {
 
 cmd('bal', (ctx, user) => {
     return ctx.reply(user, `you have **${Math.floor(user.exp)}** {currency}
-        Your next claim will cost **${claimCost(user, 1)}** {currency}`)
+        Your next claim will cost **${claimCost(user, 0, 1)}** {currency}
+        Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** {currency}`)
 })
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
@@ -55,7 +60,7 @@ cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
         (x) => ctx.reply(user, `**${item.name}** was not used`, 'red'))
 }))
 
-cmd('daily', async ({ reply }, user) => {
+cmd('daily', async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
     const now = new Date()
@@ -72,12 +77,12 @@ cmd('daily', async ({ reply }, user) => {
         await user.save()
 
         addGuildXP(ctx, user, 10)
-        await user.guild.save()
+        await ctx.guild.save()
 
-        return reply(user, `you recieved daily **${amount}** {currency} You now have **${Math.round(user.exp)}** {currency}`)
+        return ctx.reply(user, `you recieved daily **${amount}** {currency} You now have **${Math.round(user.exp)}** {currency}`)
     }
 
-    return reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
+    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
 })
 
 cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {

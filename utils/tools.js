@@ -2,8 +2,9 @@ const cap = (str) => {
     return str.split(' ').map(s => s[0].toUpperCase() + s.slice(1).toLowerCase()).join(' ')
 }
 
-const claimCost = (user, amount) => {
-    return ((user.dailystats.claims || 0) * 50) + (50 * ((amount * (amount + 1)) / 2))
+const claimCost = (user, tax, amount) => {
+    const res = ((user.dailystats.claims || 0) * 50) + (50 * ((amount * (amount + 1)) / 2))
+    return Math.round(res + res * tax)
 }
 
 const tryGetUserID = (inp) => {
