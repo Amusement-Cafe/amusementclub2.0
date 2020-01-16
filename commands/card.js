@@ -55,12 +55,16 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     await user.save()
 
     cards.sort((a, b) => b.level - a.level)
-    addGuildXP(ctx, user, amount)
-    ctx.guild.balance += Math.round(price - normalprice)
-    await ctx.guild.save()
+
+    if(price != normalprice) {
+        addGuildXP(ctx, user, amount)
+        ctx.guild.balance += Math.round(price - normalprice)
+        await ctx.guild.save()
+    }
 
     return ctx.reply(user, {
         url: cards[0].url,
+        color: colors.blue,
         description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, ctx.guild.tax, 1)}** {currency}`
     })
 })

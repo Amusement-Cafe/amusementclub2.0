@@ -15,7 +15,6 @@ const {
 const {
     formatName,
     withCards,
-    withGlobalCards,
     bestMatch,
 } = require('../modules/card')
 
@@ -65,8 +64,8 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const auchouse = ctx.guild.buildings.filter(x => x.id === 'auchouse')[0]
-    if(!auchouse)
-        return ctx.reply(user, `you can sell cards only in the guild that has **Auction House** level 1 or higher!`, 'red')
+    if(!auchouse || auchouse.health < 50)
+        return ctx.reply(user, `you can sell cards only in the guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
 
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.

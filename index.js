@@ -81,10 +81,11 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
     const tick = (ctx) => {
         const now = new Date()
         auction.finish_aucs(ctx, now)
+        guild.bill_guilds(ctx, now)
     }
 
     if(shard === 0)
-        setInterval(tick.bind({}, ctx), 2500);
+        setInterval(tick.bind({}, ctx), 5000);
 
     /* events */
     bot.on('ready', async event => {

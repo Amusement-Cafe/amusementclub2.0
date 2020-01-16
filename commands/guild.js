@@ -8,7 +8,8 @@ const {
     rankXP,
     addGuildXP,
     getMaintenanceCost,
-    isUserOwner
+    isUserOwner,
+    getGuildUser
 } = require('../modules/guild')
 
 cmd(['guild', 'info'], async (ctx, user) => {
@@ -32,7 +33,7 @@ cmd(['guild', 'info'], async (ctx, user) => {
     if(ctx.guild.buildings.length > 0)
         fields.push({ name: `Buildings`, value: ctx.guild.buildings.map(x => {
             const item = ctx.items.filter(y => y.id === x.id)[0]
-            return `\`${item.id}\` **${item.name} level ${x.level}** [\`❤️\` ${x.health}] (${item.desc})`
+            return `\`${item.id}\` **${item.name} level ${x.level}** (${item.desc})`
         }).join('\n')
     })
 
@@ -50,13 +51,14 @@ cmd(['guild', 'status'], (ctx, user) => {
     if(!castle)
         return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**', 'red')
 
-    const resp = [], buildings = []
-    const cost = Math.round(getMaintenanceCost(ctx) * (castle.level < 3? 1 : (castle.level < 5? .9 : .75)))
+    const resp = []
+    const cost = getMaintenanceCost(ctx)
+    const ratio = cost / ctx.guild.balance
 
     resp.push(`Building maintenance: **${cost}** {currency}/day`)
     resp.push(`Current finances: **${ctx.guild.balance}** {currency}`)
-    resp.push(`Ratio: **${cost / ctx.guild.balance}** (${cost / ctx.guild.balance < 0? 'positive' : 'negative'})`)
-    resp.push(`Maintenance charges in **${msToTime(60000, {compact: true})}**`)
+    resp.push(`Ratio: **${ratio.toFixed(2)}** (${ratio < 1? 'positive' : 'negative'})`)
+    resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
     resp.push(`> Make sure you have **positive** ratio when maintenance costs are charged`)
 
     return ctx.send(ctx.msg.channel.id, {
@@ -64,15 +66,19 @@ cmd(['guild', 'status'], (ctx, user) => {
         description: resp.join('\n'),
         fields: [{name: `Maintenance breakdown`, value: ctx.guild.buildings.map(x => {
             const item = ctx.items.filter(y => y.id === x.id)[0]
-            return `**${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** {currency}/day`
+            const heart = x.health < 50? '💔' : '❤️'
+            return `[\`${heart}\` ${x.health}] **${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** {currency}/day`
         }).join('\n')}],
-        color: color.blue
+        color: (ratio < 1? color.green : color.red)
     }, user.discord_id)
 })
 
 cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     if(!arg1)
         return ctx.reply(user, 'please specify building ID', 'red')
+
+    if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < ctx.guild.buildperm)
+        return ctx.reply(user, `you have to be at least rank **${ctx.guild.buildperm}** to upgrade buildings in this guild`, 'red')
 
     const building = ctx.guild.buildings.filter(x => x.id === arg1)[0]
     const item = ctx.items.filter(x => x.id === arg1)[0]
@@ -81,6 +87,9 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
         return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
 
     const level = item.levels[building.level]
+
+    if(XPtoLEVEL(ctx.guild.xp) < level.level)
+        return ctx.reply(user, `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level ${level.level}**`, 'red')
 
     if(!level)
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
@@ -134,4 +143,40 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     await ctx.guild.save()
 
     return ctx.reply(user, `guild claim tax was set to **${tax}%**`)
+})
+
+cmd(['guild', 'set', 'report'], async (ctx, user) => {
+    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only owner can change guild's report channel`, 'red')
+
+    ctx.guild.reportchannel = ctx.msg.channel.id
+    await ctx.guild.save()
+
+    return ctx.reply(user, `marked this channel for guild reports`)
+})
+
+cmd(['guild', 'set', 'bot'], async (ctx, user) => {
+    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only owner can change guild's report channel`, 'red')
+
+    if(ctx.guild.botchannels.includes(ctx.msg.channel.id))
+        return ctx.reply(user, `this channel is already marked as bot channel`, 'red')
+
+    ctx.guild.botchannels.push(ctx.msg.channel.id)
+    await ctx.guild.save()
+
+    return ctx.reply(user, `marked this channel for bot`)
+})
+
+cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
+    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only owner can change guild's report channel`, 'red')
+
+    const pulled = ctx.guild.botchannels.pull(ctx.msg.channel.id)
+    if(pulled.length === 0)
+        return ctx.reply(user, `this channel was not marked as bot channel`, 'red')
+
+    await ctx.guild.save()
+
+    return ctx.reply(user, `removed this channel from bot channel list`)
 })

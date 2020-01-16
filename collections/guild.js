@@ -19,5 +19,8 @@ module.exports = model('Guild', {
         id:             { type: String },
         level:          { type: Number, default: 1 },
         health:         { type: Number, default: 100 },
-    }]
+    }],
+
+    nextcheck:      { type: Date, default: new Date() },
+    reportchannel:  { type: String },
 })
