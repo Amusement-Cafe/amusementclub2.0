@@ -41,7 +41,9 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
             You have **${Math.floor(user.exp)}** {currency}`, 'red')
 
     for (let i = 0; i < amount; i++) {
-        const col = sample(ctx.collections.filter(x => !x.rarity))
+        const rng = Math.random()
+        const spec = sample(ctx.collections.filter(x => x.rarity > rng))
+        const col = spec || sample(ctx.collections.filter(x => !x.rarity))
         const item = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         addUserCard(user, item.id)
         cards.push(item)
