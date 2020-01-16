@@ -103,5 +103,11 @@
     {"name":"did_someone_say_cheesecake","level":4,"animated":true,"col":"special"},
     {"name":"end_of_times","level":4,"animated":true,"col":"special"},
     {"name":"hai_domo","level":4,"animated":false,"col":"special"},
-    {"name":"poi_kai_ni","level":4,"animated":false,"col":"special"}
+    {"name":"poi_kai_ni","level":4,"animated":false,"col":"special"},
+
+    {"name":"angel_killer","level":1,"animated":false,"col":"gabrieldropout"},
+    {"name":"bad_to_the_bone","level":1,"animated":false,"col":"gabrieldropout"},
+    {"name":"class_president","level":1,"animated":false,"col":"gabrieldropout"},
+    {"name":"demon_duo","level":1,"animated":false,"col":"gabrieldropout"},
+    {"name":"legendary_laugh","level":5,"animated":true,"col":"gabrieldropout"}
 ]

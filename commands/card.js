@@ -41,7 +41,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
             You have **${Math.floor(user.exp)}** {currency}`, 'red')
 
     for (let i = 0; i < amount; i++) {
-        const col =  sample(ctx.collections.filter(x => !x.rarity))
+        const col = sample(ctx.collections.filter(x => !x.rarity))
         const item = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         addUserCard(user, item.id)
         cards.push(item)
@@ -63,7 +63,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     }
 
     return ctx.reply(user, {
-        url: cards[0].url,
+        image: { url: cards[0].url },
         color: colors.blue,
         description: `you got:\n ${cards.map(x => formatName(x)).join('\n')}\n\nYour next claim will cost **${claimCost(user, ctx.guild.tax, 1)}** {currency}`
     })
@@ -72,7 +72,8 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     const card = parsedargs.isEmpty()? sample(cards) : bestMatch(cards)
     return ctx.reply(user, {
-        url: card.url,
+        image: { url: card.url },
+        color: colors.blue,
         description: `summons **${formatName(card)}**!`
     })
 }))

@@ -1,10 +1,17 @@
 const {XPtoLEVEL}   = require('../utils/tools')
-const _ = require('lodash')
+const _             = require('lodash')
+const colors        = require('../utils/colors')
+
 const {
     getGuildUser,
     isUserOwner,
     addGuildXP
 } = require('./guild')
+
+const {
+    addUserCard,
+    formatName
+} = require('./card')
 
 const mapUserInventory = (ctx, user) => {
     return user.inventory.map(x => Object.assign({}, ctx.items.filter(y => y.id === x.id)[0], x))
@@ -56,20 +63,43 @@ const uses = {
         await ctx.guild.save()
 
         user.exp -= item.levels[0].price
-        const el = user.inventory.filter(x => x.id === item.id)[0]
-        _.pullAt(user.inventory, user.inventory.indexOf(el))
-        user.markModified('inventory')
+        pullInventoryItem(user, item.id)
         await user.save()
 
         return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**
             You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+    },
+
+    claim_ticket: async (ctx, user, item) => {
+        const col = item.col? ctx.collections.filter(x => x.id === item.col)[0] : _.sample(ctx.collections.filter(x => !x.rarity))
+        const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === item.level))
+
+        if(!card)
+            return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
+
+        addUserCard(user, card.id)
+        pullInventoryItem(user, item.id)
+        await user.save()
+
+        return ctx.reply(user, {
+            image: { url: card.url },
+            color: colors.blue,
+            description: `you got **${formatName(card)}**!`
+        })
     }
 }
 
 const getQuestion = (ctx, user, item) => {
     switch(item.type) {
         case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
+        case 'claim_ticket': return `Do you want to use **${item.name}** to get a **${item.level}★** card?`
     }
+}
+
+const pullInventoryItem = (user, itemid) => {
+    const el = user.inventory.filter(x => x.id === itemid)[0]
+    _.pullAt(user.inventory, user.inventory.indexOf(el))
+    user.markModified('inventory')
 }
 
 module.exports = {
