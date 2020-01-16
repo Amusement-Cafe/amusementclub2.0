@@ -7,7 +7,7 @@ const {
 } = require('../utils/confirmator')
 
 cmd('store', async (ctx, user, cat) => {
-    const cats = _.uniq(ctx.items.map(x => x.type))
+    const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
 
     if(!cat || !cats.includes(cat))
         return ctx.reply(user, {
@@ -50,10 +50,10 @@ cmd(['store', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, item
 })
 
 cmd(['store', 'buy'], async (ctx, user, itemid) => {
-    const item = ctx.items.filter(x => x.id === itemid)[0]
+    const item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
 
     if(!item)
-        return ctx.reply(user, `item with ID \`${itemid}\` not found`, 'red')
+        return ctx.reply(user, `item with ID \`${itemid}\` not found or cannot be purchased`, 'red')
 
     if(user.exp < item.price)
         return ctx.reply(user, `you have to have at least \`${item.price}\` {currency} to buy this item`, 'red')

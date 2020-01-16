@@ -13,6 +13,7 @@ module.exports = model('User', {
     cards:              { type: Array, default: [] },
     quests:             { type: Array, default: [] },
     inventory:          { type: Array, default: [] },
+    completedcols:      { type: Array, default: [] },
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
@@ -22,4 +23,5 @@ module.exports = model('User', {
 
     lastcard:           { type: Number, default: -1 },
     xp:                 { type: Number, default: 0 },
+    vials:              { type: Number, default: 0 },
 })

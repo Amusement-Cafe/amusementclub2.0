@@ -70,7 +70,7 @@ const bill_guilds = async (ctx, now) => {
         report.push(`> All costs were covered! Positive ratio healed buildings by **5%**`)
     }
 
-    guild.nextcheck = asdate.add(new Date(), 1, 'hours')
+    guild.nextcheck = asdate.add(new Date(), 12, 'hours')
     report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
     await guild.save()
 

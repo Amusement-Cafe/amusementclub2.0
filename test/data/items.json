@@ -102,13 +102,47 @@
                 "price": 20000,
                 "level": 25,
                 "maintenance": 220,
-                "desc": "Allows users to draw a card using vials"
+                "desc": "Allows users to liquify cards and draw a card using vials"
             }, {
-                "price": 75000,
+                "price": 50000,
                 "level": 50,
                 "maintenance": 500,
-                "desc": "something OP thats a secret or maybe I dont even know what it does"
+                "desc": "Allows users to forge effects using recipies"
             }
         ]
+    }, {
+        "id": "gbank",
+        "name": "Gacha Bank",
+        "price": 2500,
+        "type": "blueprint",
+        "desc": "get better cards and daily",
+        "fulldesc": "When built and upgraded, adds 4-star cards to a claim pool and increases default daily",
+        "levels": [
+            {
+                "price": 1000,
+                "level": 10,
+                "maintenance": 200,
+                "desc": "Increses user daily to **500** {currency}"
+            }, {
+                "price": 5000,
+                "level": 15,
+                "maintenance": 400,
+                "desc": "Enables 4-star drop when claiming in this guild"
+            }, {
+                "price": 12000,
+                "level": 30,
+                "maintenance": 800,
+                "desc": "Adds user level amount of {currency} to guild balance when user runs `->daily`"
+            }
+        ]
+    }, {
+        "id": "legendticket",
+        "name": "Legendary Card Claim Ticket",
+        "price": -1,
+        "type": "claim_ticket",
+        "desc": "gives legendary card",
+        "typedesc": "Claim tickets are used to claim cards of certain rarity or collection. They are usually awarded during events or for completing quests and collections",
+        "fulldesc": "When used gives you legendary card. The collection is determined when awarded",
+        "level": 5
     }
 ]
