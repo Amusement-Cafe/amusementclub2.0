@@ -64,6 +64,12 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         return send(ch.id, toObj(user, str, clr), user.discord_id)
     }
 
+    const symbols = {
+        tomato: '`🍅`',
+        vial: '`🍷`',
+        star: '★'
+    }
+
     /* create our context */
     const ctx = {
         mcn, /* mongoose database connection */
@@ -75,6 +81,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         items: data.items, /* game items */
         direct, /* DM reply function to the user */
         shard, /* current shard */
+        symbols
     }
 
     /* service tick for checks */

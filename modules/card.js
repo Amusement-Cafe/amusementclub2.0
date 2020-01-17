@@ -96,19 +96,20 @@ const equals = (card1, card2) => {
 const addUserCard = (user, cardID) => {
     const userCard = user.cards.filter(x => x.id == cardID)[0]
     if(userCard) {
-        user.cards[user.cards.findIndex(x => x.id == cardID)].amount++
+        userCard.amount++
         user.markModified('cards')
 
     } else user.cards.push({ id: cardID, amount: 1, obtained: new Date() });
+
+    return userCard? userCard.amount : 1
 }
 
 const removeUserCard = (user, cardID) => {
-    const userCard = user.cards.filter(x => x.id == cardID)[0]
-    if(userCard.amount > 1){
-        user.cards[user.cards.findIndex(x => x.id == cardID)].amount--
-        user.markModified('cards')
-
-    } else user.cards = user.cards.filter(x => x.id != cardID)
+    const card = user.cards.filter(x => x.id == cardID)[0]
+    card.amount--
+    user.cards = user.cards.filter(x => x.amount > 0)
+    user.markModified('cards')
+    return card.amount > 0
 }
 
 const mapUserCards = (ctx, user) => {

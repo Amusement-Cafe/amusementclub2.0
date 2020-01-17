@@ -1,10 +1,9 @@
-const User = require('../collections/user')
+const User      = require('../collections/user')
+const asdate    = require('add-subtract-date')
 
-const cardPrices = [ 0, 80, 150, 400, 1000 ]
+const cardPrices = [ 0, 80, 150, 400, 1000, 2500 ]
 const evalUserRate = 0.5
-const evalLastDaily = new Date();
-
-evalLastDaily.setMonth(evalLastDaily.getMonth() - 6);
+const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 
 const evalCard = async (ctx, card, modifier = 1) => {
     if(card.hasOwnProperty('eval'))
@@ -22,9 +21,18 @@ const evalCard = async (ctx, card, modifier = 1) => {
 const limitPriceGrowth = x => { 
     if(x<1) return x; 
     else if(x<10) return (Math.log(x)/1.3)+Math.sqrt(x)*(-0.013*Math.pow(x,2)+0.182*x+0.766); 
-    else return Math.pow(x,0.2) + 4.25;
+    else return Math.pow(x,0.25) + 4.25;
+}
+
+const getVialCost = async (ctx, card, cardeval) => {
+    if(!cardeval)
+        cardeval = await evalCard(ctx, card)
+
+    const diff = cardPrices[card.level] / cardeval
+    return Math.round(diff * 100)
 }
 
 module.exports = {
-	evalCard
+	evalCard,
+    getVialCost
 }
