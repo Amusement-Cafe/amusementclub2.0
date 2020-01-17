@@ -99,13 +99,13 @@
                 "maintenance": 100,
                 "desc": "Allows users to forge two cards"
             }, {
-                "price": 20000,
-                "level": 25,
+                "price": 5000,
+                "level": 17,
                 "maintenance": 220,
                 "desc": "Allows users to liquify cards and draw a card using vials"
             }, {
-                "price": 50000,
-                "level": 50,
+                "price": 10000,
+                "level": 33,
                 "maintenance": 500,
                 "desc": "Allows users to forge effects using recipies"
             }

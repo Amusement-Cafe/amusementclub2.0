@@ -1,9 +1,9 @@
-const msToTime      = require('pretty-ms')
-const {cmd}         = require('../utils/cmd')
-const {addPagination}     = require('../utils/paginator')
-const {addConfirmation}     = require('../utils/confirmator')
-const colors        = require('../utils/colors')
-const asdate        = require('add-subtract-date')
+const msToTime          = require('pretty-ms')
+const {cmd}             = require('../utils/cmd')
+const {addPagination}   = require('../utils/paginator')
+const {addConfirmation} = require('../utils/confirmator')
+const colors            = require('../utils/colors')
+const asdate            = require('add-subtract-date')
 
 const {
     claimCost,
@@ -34,9 +34,9 @@ const {
 } = require('../modules/item')
 
 cmd('bal', (ctx, user) => {
-    return ctx.reply(user, `you have **${Math.floor(user.exp)}** {currency}
-        Your next claim will cost **${claimCost(user, 0, 1)}** {currency}
-        Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** {currency}`)
+    return ctx.reply(user, `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
+        Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
+        Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato}`)
 })
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
@@ -79,7 +79,7 @@ cmd('daily', async (ctx, user) => {
         addGuildXP(ctx, user, 10)
         await ctx.guild.save()
 
-        return ctx.reply(user, `you recieved daily **${amount}** {currency} You now have **${Math.round(user.exp)}** {currency}`)
+        return ctx.reply(user, `you recieved daily **${amount}** ${ctx.symbols.tomato} You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato}`)
     }
 
     return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`)

@@ -138,7 +138,8 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)
     const price = await evalCard(ctx, card)
     const vials = await getVialCost(ctx, card, price)
-    return ctx.reply(user, `card ${formatName(card)} is worth: **${price}** ${ctx.symbols.tomato} and **${vials}** ${ctx.symbols.vial}`)
+    return ctx.reply(user, 
+        `card ${formatName(card)} is worth: **${price}** ${ctx.symbols.tomato} ${card.level < 4? `and **${vials}** ${ctx.symbols.vial}` : ``}`)
 }))
 
 cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
