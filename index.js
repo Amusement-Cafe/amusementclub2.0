@@ -37,11 +37,11 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
-        if(content.description)
+        /*if(content.description)
             content.description = content.description.replace(/{currency}/gi, '`🍅`')
 
         if(content.fields)
-            content.fields.map(x => x.value = x.value.replace(/{currency}/gi, '`🍅`'))
+            content.fields.map(x => x.value = x.value.replace(/{currency}/gi, '`🍅`'))*/
 
         if(userid)
             _.remove(userq, (x) => x.id === userid)
@@ -104,6 +104,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
     bot.on('messageCreate', async (msg) => {
         if (!msg.content.startsWith(prefix)) return; /* skip not commands */
         if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
+        msg.content = msg.content.toLowerCase()
 
         try {
 

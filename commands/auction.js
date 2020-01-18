@@ -16,14 +16,26 @@ const {
     formatName,
     withCards,
     bestMatch,
+    withGlobalCards
 } = require('../modules/card')
 
 const {addConfirmation} = require('../utils/confirmator')
 
-cmd('auc', async (ctx, user) => {
+cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
-    const list = (await Auction.find({finished: false}).limit(100).sort({ expires: -1 }))
+    const req = {finished: false}
+
+    if(parsedargs.me)
+        req.author = user.discord_id
+
+    let list = (await Auction.find(req).limit(100).sort({ expires: -1 }))
         .filter(x => x.expires > now)
+
+    if(parsedargs.diff)
+        list = list.filter(x => !user.cards.filter(y => x.card === y.id)[0])
+
+    if(!parsedargs.isEmpty())
+        list = list.filter(x => cards.filter(y => x.card === y.id)[0])
 
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
@@ -31,7 +43,7 @@ cmd('auc', async (ctx, user) => {
     return await addPagination(ctx, user, 
         `found auctions (${list.length} results)`, 
         paginate_auclist(ctx, user, list))
-})
+}))
 
 cmd(['auc', 'info'], async (ctx, user, arg1) => {
     const auc = await Auction.findOne({ id: arg1 })

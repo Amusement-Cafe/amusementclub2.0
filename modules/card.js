@@ -26,7 +26,9 @@ const parseArgs = (ctx, args) => {
         filters: [],
         tags: [],
         extra: [],
-        lastcard: false
+        lastcard: false,
+        diff: false,
+        me: false,
     }
 
     args.map(x => {
@@ -50,6 +52,8 @@ const parseArgs = (ctx, args) => {
                 case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); break
                 case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
                 case 'new': q.filters.push(c => m? c.obtained > date : c.obtained <= date); break
+                case 'diff': q.diff = m; break
+                case 'me': q.me = m; break
                 default: {
                     const pcol = bestColMatch(ctx, substr)
                     if(m) {

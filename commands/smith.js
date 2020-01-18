@@ -13,8 +13,8 @@ const {
 const { getVialCost }   = require('../modules/eval')
 const {addConfirmation} = require('../utils/confirmator')
 
-cmd(['forge'], async (ctx, user, ...args) => {
-
+cmd(['forge'], (ctx, user, ...args) => {
+    const argsplit = args.join(' ').split(',')
 })
 
 cmd(['liq'], withCards(async (ctx, user, cards, parsedargs) => {
