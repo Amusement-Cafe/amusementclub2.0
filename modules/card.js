@@ -31,6 +31,8 @@ const parseArgs = (ctx, args) => {
         me: false,
     }
 
+    args = args.filter(x => x != '')
+
     args.map(x => {
         let substr = x.substr(1)
         q.id = q.id || tryGetUserID(x)
@@ -174,7 +176,44 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     return callback(ctx, user, cards, parsedargs, args)
 }
 
-const bestMatch = cards => cards.sort((a, b) => a.name.length - b.name.length)[0]
+/**
+ * Helper function to enrich the comamnd with user cards
+ * @param  {Function} callback command handler
+ * @return {Promise}
+ */
+const withMultiQuery = (callback) => async (ctx, user, ...args) => {
+    const argsplit = args.join(' ').split(',')
+    const parsedargs = [], cards = []
+    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '))))
+
+    if(!parsedargs[0] || parsedargs[0].isEmpty())
+        return ctx.reply(user, `please specify at least one card query`, 'red')
+
+    const map = mapUserCards(ctx, user)
+    try {
+        await Promise.all(parsedargs.map(async (x, i) => {
+            if(parsedargs.lastcard)
+                cards.push(map.filter(x => x.id === user.lastcard))
+            else {
+                cards.push(filter(map, x).sort(x.sort))
+
+                if(x.tags.length > 0) {
+                    const tgcards = await fetchTaggedCards(x.tags)
+                    cards[i] = cards[i].filter(x => tgcards.includes(x.id))
+                }
+            }
+
+            if(cards[i].length == 0)
+                throw new Error(`${i + 1}`)
+        }))
+    } catch (e) {
+        return ctx.reply(user, `no cards found in request **#${e.message}**`, 'red')
+    }
+
+    return callback(ctx, user, cards, parsedargs, args)
+}
+
+const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
 module.exports = {
     formatName,
@@ -187,5 +226,6 @@ module.exports = {
     parseArgs,
     withCards,
     withGlobalCards,
-    mapUserCards
+    mapUserCards,
+    withMultiQuery
 }
