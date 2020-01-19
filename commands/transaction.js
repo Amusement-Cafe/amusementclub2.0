@@ -26,10 +26,13 @@ cmd(['trans', 'decline'], 'decline', 'dcl', (ctx, user, arg1) => {
     decline_trs(ctx, user, arg1)
 })
 
-cmd('trans', async (ctx, user) => {
-    const list = await Transaction.find({ 
+cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let list = await Transaction.find({ 
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }] 
     }).sort({ time: -1 })
+
+    if(!parsedargs.isEmpty())
+        list = list.filter(x => cards.filter(y => x.card === y.id)[0])
 
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent transactions`)
@@ -37,7 +40,7 @@ cmd('trans', async (ctx, user) => {
     return await paginator.addPagination(ctx, user, 
         `your transactions (${list.length} results)`, 
         paginate_trslist(ctx, user, list))
-})
+}))
 
 cmd(['trans', 'pending'], 'pending', async (ctx, user) => {
     const list = await Transaction.find({ 

@@ -77,7 +77,10 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
 cmd(['liq'], withCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)
-    const vials = Math.round((await getVialCost(ctx, card)) * .7)
+    const vials = Math.round((await getVialCost(ctx, card)) * .5)
+
+    if(parsedargs.isEmpty())
+        return ctx.reply(user, `please specify a card`, 'red')
 
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')

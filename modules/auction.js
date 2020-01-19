@@ -72,6 +72,8 @@ const bid_auc = async (ctx, user, auc, bid) => {
             To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
             Use \`->auc bid ${auc.id} [new bid]\`
             This auction will end in **${msToTime(diff)}**`, 'yellow')
+    } else {
+        await ctx.direct(auc.author, `A player has bid on your card ${formatName(ctx.cards[auc.card])}!`, 'green')
     }
 
     user.exp -= bid

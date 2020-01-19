@@ -51,6 +51,9 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {
     if(tag && tag.status != 'clear')
         return ctx.reply(user, `this tag has been banned by moderator`, 'red')
 
+    if(tgTag.length > 25)
+        return ctx.reply(user, `tag can't be longer than **25** characters`, 'red')
+
     addConfirmation(ctx, user, `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`, 
         { confirm: [user.discord_id], decline: [user.discord_id] },
         async (x) => {
