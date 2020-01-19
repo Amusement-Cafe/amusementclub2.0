@@ -120,10 +120,15 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
-            const usr  = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+            const usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             isolatedCtx.discord_guild = msg.channel.guild
             const args = msg.content.trim().substring(prefix.length).split(' ')
+
+            if(usr.lock) {
+                usr.lock = false
+                await usr.save()
+            }
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
         } catch (e) {

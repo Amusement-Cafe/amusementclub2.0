@@ -18,6 +18,8 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline, f
 
     queue.push(obj)
 
+    user.lock = true
+    await user.save()
     const msg = await ctx.send(ctx.msg.channel.id, getEmbed(user, question, footer), user.discord_id)
 
     obj.msg = msg.id
@@ -65,7 +67,14 @@ rct('✅', '❌', async (ctx, user) => {
 
     if(data && ctx.emoji.name === '✅' && data.onConfirm 
         && data.permits.confirm.filter(y => y === user.discord_id)[0]) {
-        data.onConfirm(user)
+        if(user.lock){
+            data.onConfirm(user)
+        } else {
+            ctx.send(ctx.msg.channel.id, { 
+                description: `A command was ran before confirmation. This is not allowed`,
+                color: colors.red
+            })
+        }
 
     } else if(data && ctx.emoji.name === '❌' && data.onDecline
         && data.permits.decline.filter(y => y === user.discord_id)[0]) {

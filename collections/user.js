@@ -24,4 +24,6 @@ module.exports = model('User', {
     lastcard:           { type: Number, default: -1 },
     xp:                 { type: Number, default: 0 },
     vials:              { type: Number, default: 0 },
+
+    lock:               { type: Boolean, default: false },
 })
