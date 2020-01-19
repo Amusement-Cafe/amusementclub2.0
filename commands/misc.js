@@ -42,7 +42,7 @@ const getHelpEmbed = (o, prefix) => {
     }
 
     o.fields.map((x) => {
-       e.fields.push({ name: x.title, value: x.description.replace(/->/g, prefix)})
+       e.fields.push({ name: x.title, value: x.description.replace(/->/g, prefix).replace(/{currency}/gi, '`🍅`')})
     })
 
     return e

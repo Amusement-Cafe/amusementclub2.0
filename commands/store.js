@@ -24,7 +24,7 @@ cmd('store', async (ctx, user, cat) => {
         color: colors.deepgreen,
         description: `${items[0].typedesc}\n To view the item details use \`->store info [item id]\`
             To buy the item use \`->store buy [item id]\`\n
-            ${items.map((x, i) => `${i + 1}. [${x.price} {currency}] \`${x.id}\` **${x.name}** (${x.desc})`).join('\n')}`
+            ${items.map((x, i) => `${i + 1}. [${x.price} ${ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`).join('\n')}`
         })
 })
 
@@ -40,8 +40,8 @@ cmd(['store', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, item
         color: colors.deepgreen,
         fields: item.levels.map((x, i) => { return {
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** {currency}
-                Maintenance: **${x.maintenance}** {currency}/day
+            value: `Price: **${x.price}** ${ctx.symbols.tomato}
+                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
                 > ${x.desc}`
             }
@@ -56,15 +56,15 @@ cmd(['store', 'buy'], async (ctx, user, itemid) => {
         return ctx.reply(user, `item with ID \`${itemid}\` not found or cannot be purchased`, 'red')
 
     if(user.exp < item.price)
-        return ctx.reply(user, `you have to have at least \`${item.price}\` {currency} to buy this item`, 'red')
+        return ctx.reply(user, `you have to have at least \`${item.price}\` ${ctx.symbols.tomato} to buy this item`, 'red')
 
     return addConfirmation(ctx, user, 
-        `Do you want to buy **${item.name} ${item.type}** for **${item.price}** {currency}?`, null, 
+        `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}?`, null, 
         async (x) => {
             user.inventory.push({ id: item.id, time: new Date() })
             user.exp -= item.price
             await user.save()
-            return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** {currency}
+            return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}
                 The item has been added to your inventory. See \`->inv info ${item.id}\` for details`, 'green')
         }, async (x) => {
             return ctx.reply(user, `the purchase was declined`, 'red')

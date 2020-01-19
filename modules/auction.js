@@ -37,7 +37,7 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
 
         unlock()
 
-        return ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** {currency}
+        return ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** ${ctx.symbols.tomato}
             Auction ID: \`${auc.id}\``)
     })
 }
@@ -65,14 +65,14 @@ const bid_auc = async (ctx, user, auc, bid) => {
         lastBidder.exp += auc.price
         await lastBidder.save()
         await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
-            To remain in the auction, try bidding higher than ${auc.price} {currency}
+            To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
             Use \`->auc bid ${auc.id} [new bid]\`
             This auction will end in **${msToTime(diff)}**`, 'yellow')
     }
 
     user.exp -= bid
     await user.save()
-    return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** {currency}!`)
+    return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
 
 const finish_aucs = async (ctx, now) => {
@@ -92,7 +92,7 @@ const finish_aucs = async (ctx, now) => {
         await lastBidder.save()
         await author.save()
 
-        await ctx.direct(author, `your sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** {currency}`)
+        await ctx.direct(author, `your sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
         return ctx.direct(lastBidder, `your won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
     } else {
         addUserCard(author, auc.card)
@@ -109,7 +109,7 @@ const paginate_auclist = (ctx, user, list) => {
             pages.push("")
 
         const timediff = msToTime(auc.expires - new Date(), {compact: true})
-        pages[Math.floor(i/10)] += `[${timediff}] \`${auc.id}\` [${auc.price}{currency}] ${formatName(ctx.cards[auc.card])}\n`
+        pages[Math.floor(i/10)] += `[${timediff}] \`${auc.id}\` [${auc.price}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
     })
 
     return pages;

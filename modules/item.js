@@ -48,7 +48,7 @@ const uses = {
             return ctx.reply(user, `this guild already has **${item.name}**`, 'red')
 
         if(user.exp < item.levels[0].price)
-            return ctx.reply(user, `you need at least **${item.levels[0].price}** {currency} to build **${item.name} level 1**`, 'red')
+            return ctx.reply(user, `you need at least **${item.levels[0].price}** ${ctx.symbols.tomato} to build **${item.name} level 1**`, 'red')
 
         if(XPtoLEVEL(guild.xp) < item.levels[0].level)
             return ctx.reply(user, `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`, 'red')

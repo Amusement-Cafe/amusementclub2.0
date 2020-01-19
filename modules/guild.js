@@ -58,8 +58,8 @@ const bill_guilds = async (ctx, now) => {
     const ratio = guild.balance / cost
     guild.balance = Math.max(0, guild.balance - cost)
 
-    report.push(`Maintenance cost: **${cost}** {currency}`)
-    report.push(`Remaining guild balance: **${guild.balance}** {currency}`)
+    report.push(`Maintenance cost: **${cost}** ${ctx.symbols.tomato}`)
+    report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
         const damage = Math.round(10 * (1 - ratio))

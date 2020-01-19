@@ -57,9 +57,9 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
 
     const resp = []
     resp.push(`Seller: **${author.username}**`)
-    resp.push(`Price: **${auc.price}** {currency}`)
+    resp.push(`Price: **${auc.price}** ${ctx.symbols.tomato}`)
     resp.push(`Card: ${formatName(card)}`)
-    resp.push(`Card value: **${await evalCard(ctx, card)}** {currency}`)
+    resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
 
     if(auc.finished)
         resp.push(`**This auction has finished**`)
@@ -105,15 +105,15 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     }
 
     if(price < min)
-        return ctx.reply(user, `you can't set price less than **${min}** {currency} for this card`, 'red')
+        return ctx.reply(user, `you can't set price less than **${min}** ${ctx.symbols.tomato} for this card`, 'red')
 
     if(price > max)
-        return ctx.reply(user, `you can't set price higher than **${max}** {currency} for this card`, 'red')
+        return ctx.reply(user, `you can't set price higher than **${max}** ${ctx.symbols.tomato} for this card`, 'red')
 
     if(user.exp < fee)
-        return ctx.reply(user, `you have to have at least **${fee}** {currency} to auction for that price`, 'red')
+        return ctx.reply(user, `you have to have at least **${fee}** ${ctx.symbols.tomato} to auction for that price`, 'red')
 
-    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} {currency}? ${timenum? `This auction will last **${time} hours**` : ''}
+    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? ${timenum? `This auction will last **${time} hours**` : ''}
         ${card.amount > 1? '' : 'This is the only copy that you have, so your favourite status and rating will be lost'}`, null,
         async (x) => {
         await new_auc(ctx, user, card, price, fee, time)
@@ -144,7 +144,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
 
     if(user.exp < bid)
-        return ctx.reply(user, `you don't have \`${bid}\` {currency} to bid`, 'red')        
+        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')        
 
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')

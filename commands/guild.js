@@ -13,7 +13,7 @@ const {
 } = require('../modules/guild')
 
 cmd(['guild', 'info'], async (ctx, user) => {
-    
+
 })
 
 cmd(['guild', 'info'], async (ctx, user) => {
@@ -59,8 +59,8 @@ cmd(['guild', 'status'], (ctx, user) => {
     const cost = getMaintenanceCost(ctx)
     const ratio = cost / ctx.guild.balance
 
-    resp.push(`Building maintenance: **${cost}** {currency}/day`)
-    resp.push(`Current finances: **${ctx.guild.balance}** {currency}`)
+    resp.push(`Building maintenance: **${cost}** ${ctx.symbols.tomato}/day`)
+    resp.push(`Current finances: **${ctx.guild.balance}** ${ctx.symbols.tomato}`)
     resp.push(`Ratio: **${ratio.toFixed(2)}** (${ratio < 1? 'positive' : 'negative'})`)
     resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
     resp.push(`> Make sure you have **positive** ratio when maintenance costs are charged`)
@@ -71,7 +71,7 @@ cmd(['guild', 'status'], (ctx, user) => {
         fields: [{name: `Maintenance breakdown`, value: ctx.guild.buildings.map(x => {
             const item = ctx.items.filter(y => y.id === x.id)[0]
             const heart = x.health < 50? '💔' : '❤️'
-            return `[\`${heart}\` ${x.health}] **${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** {currency}/day`
+            return `[\`${heart}\` ${x.health}] **${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** ${ctx.symbols.tomato}/day`
         }).join('\n')}],
         color: (ratio < 1? color.green : color.red)
     }, user.discord_id)
@@ -99,9 +99,9 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
 
     if(user.exp < level.price)
-        return ctx.reply(user, `you have to have at least **${level.price}** {currency} to upgrade this building`, 'red')
+        return ctx.reply(user, `you have to have at least **${level.price}** ${ctx.symbols.tomato} to upgrade this building`, 'red')
 
-    const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${level.price}** {currency}?`
+    const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${level.price}** ${ctx.symbols.tomato}?`
     addConfirmation(ctx, user, question, null, async (x) => {
 
         const xp = Math.floor(level.price * .04)
