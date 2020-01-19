@@ -93,8 +93,14 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
     resp.push(`Price: **${trs.price}** ${ctx.symbols.tomato}`)
     resp.push(`From: **${trs.from}**`)
     resp.push(`To: **${trs.to}**`)
-    resp.push(`On server: **${trs.guild}**`)
-    resp.push(`Status: **\`${ch_map[trs.status]}\` ${trs.status}**`)
+
+    if(trs.guild) {
+        resp.push(`On server: **${trs.guild}**`)
+        resp.push(`Status: **\`${ch_map[trs.status]}\` ${trs.status}**`)
+    } else {
+        resp.push(`${ch_map[trs.status]} This is an **auction** transaction`)
+    }
+    
     resp.push(`Date: **${trs.time}**`)
 
     return ctx.send(ctx.msg.channel.id, {

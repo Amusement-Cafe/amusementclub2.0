@@ -6,7 +6,11 @@ const {
     formatName,
     removeUserCard,
     addUserCard
-} = require('../modules/card')
+} = require('./card')
+
+const {
+    from_auc
+} = require('./transaction')
 
 const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
@@ -91,6 +95,7 @@ const finish_aucs = async (ctx, now) => {
         addUserCard(lastBidder, auc.card)
         await lastBidder.save()
         await author.save()
+        await from_auc(auc, author, lastBidder)
 
         await ctx.direct(author, `your sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
         return ctx.direct(lastBidder, `your won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)

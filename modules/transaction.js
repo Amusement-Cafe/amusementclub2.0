@@ -28,6 +28,25 @@ const new_trs = async (ctx, user, card, price, to_id) => {
     return transaction
 }
 
+const from_auc = async (auc, from, to) => {
+    const transaction = await new Transaction()
+    transaction.id = auc.id
+    transaction.from = from.username
+    transaction.from_id = from.discord_id
+
+    if(to) {
+        transaction.to = to.username
+        transaction.to_id = to.discord_id
+    }
+    
+    transaction.status = 'auction'
+    transaction.time = new Date()
+    transaction.card = auc.card
+    transaction.price = auc.price
+
+    return transaction.save()
+}
+
 const confirm_trs = async (ctx, user, trs_id) => {
     const transaction = await Transaction.findOne({ id: trs_id })
 
@@ -125,7 +144,8 @@ const getNewID = (last_trs) => {
 const ch_map = {
     confirmed: "\`✅\`",
     declined: "\`❌\`",
-    pending: "\`❗\`"
+    pending: "\`❗\`",
+    auction: "\`🔨\`"
 }
 
 module.exports = {
@@ -135,5 +155,6 @@ module.exports = {
     check_trs,
     format_listtrs,
     paginate_trslist,
-    ch_map
+    ch_map,
+    from_auc
 }
