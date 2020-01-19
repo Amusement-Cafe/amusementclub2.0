@@ -90,3 +90,12 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withGlobalCards(async (ctx, user
 
     return ctx.reply(user, `added ${formatName(card)} to **${target.username}**`)
 }))
+
+pcmd(['admin'], ['sudo', 'stress'], async (ctx, user, ...args) => {
+    if(isNaN(args[0]))
+        throw new Error(`please specify amount`)
+
+    for(i=0; i<parseInt(args[0]); i++) {
+        ctx.reply(user, `test message #${i}`)
+    }
+})

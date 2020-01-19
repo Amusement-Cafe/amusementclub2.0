@@ -5,6 +5,12 @@ const colors = require('./colors')
 const asdate = require('add-subtract-date')
 
 const addPagination = async (ctx, user, title, data) => {
+    bot = ctx.bot
+    const oldpage = pages.filter(x => x.userID === user.discord_id)[0]
+
+    if(oldpage)
+        await bot.removeMessageReactions(oldpage.channel, oldpage.msg)
+
     pages = pages.filter(x => x.userID != user.discord_id)
 
     const obj = {
@@ -28,8 +34,6 @@ const addPagination = async (ctx, user, title, data) => {
         await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '➡')
         await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '⏩')
     }
-
-    bot = ctx.bot
 }
 
 const tick = () => {

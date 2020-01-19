@@ -13,6 +13,10 @@ const {
 } = require('../modules/guild')
 
 cmd(['guild', 'info'], async (ctx, user) => {
+    
+})
+
+cmd(['guild', 'info'], async (ctx, user) => {
     const resp = [], userstat = [], fields = []
     resp.push(`Level: **${XPtoLEVEL(ctx.guild.xp)}**`)
     resp.push(`Players: **${ctx.guild.userstats.length}/${ctx.discord_guild.memberCount}**`)
@@ -130,13 +134,10 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(!tax)
         return ctx.reply(user, `please specify a number that indicates % of claim tax`, 'red')
 
-    if(castle.level < 3 && tax > 5)
+    if(castle.level < 2 && tax > 5)
         return ctx.reply(user, `maximum allowed tax for current level is **5%**`, 'red')
 
-    if(castle.level < 5 && tax > 10)
-        return ctx.reply(user, `maximum allowed tax for current level is **10%**`, 'red')
-
-    if(castle.level < 3 && tax > 25)
+    if(castle.level < 4 && tax > 25)
         return ctx.reply(user, `maximum allowed tax for current level is **25%**`, 'red')
 
     ctx.guild.tax = tax * .01

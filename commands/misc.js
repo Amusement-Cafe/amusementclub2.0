@@ -1,5 +1,6 @@
 const {cmd} = require('../utils/cmd')
 const colors = require('../utils/colors')
+const msToTime  = require('pretty-ms')
 
 cmd('help', async (ctx, user, ...args) => {
     let sbj = 'general'
@@ -24,6 +25,11 @@ cmd('help', async (ctx, user, ...args) => {
         if(ch.id != ctx.msg.channel.id)
             await ctx.reply(user, 'help was sent to you')
     }
+})
+
+cmd('baka', async (ctx, user, ...args) => {
+    const time = msToTime(Date.now() - new Date(ctx.msg.timestamp))
+    return ctx.reply(user, `you baka in \`${time}\``)
 })
 
 const getHelpEmbed = (o, prefix) => {

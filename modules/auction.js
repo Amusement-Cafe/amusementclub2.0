@@ -56,6 +56,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
         return ctx.reply(user, `you were instantly outbid! Try bidding higher`, 'red')
     }
 
+    auc.price = auc.highbid
     auc.highbid = bid
     auc.lastbidder = user.discord_id
     await auc.save()

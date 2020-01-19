@@ -5,6 +5,12 @@ const colors = require('./colors')
 const asdate = require('add-subtract-date')
 
 const addConfirmation = async (ctx, user, question, permits, confirm, decline, footer) => {
+    bot = ctx.bot
+    const old = queue.filter(x => x.userID === user.discord_id)[0]
+
+    if(old)
+        await bot.removeMessageReactions(old.channel, old.msg)
+
     queue = queue.filter(x => x.userID != user.discord_id)
     permits = permits || { confirm: [user.discord_id], decline: [user.discord_id] }
 
