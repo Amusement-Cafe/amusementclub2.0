@@ -58,7 +58,7 @@ pcmd(['admin'], ['sudo', 'rm', 'role'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin', 'mod'], ['sudo', 'award'], async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'], ['sudo', 'award'], ['sudo', 'add', 'balance'], async (ctx, user, ...args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
@@ -69,7 +69,24 @@ pcmd(['admin', 'mod'], ['sudo', 'award'], async (ctx, user, ...args) => {
 
         target.exp += amount
         await target.save()
-        rpl.push(`\`✅\` added '${amount}' {currency} to **${target.username}** (${target.discord_id})`)
+        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.tomato} to **${target.username}** (${target.discord_id})`)
+    })
+
+    return ctx.reply(user, rpl.join('\n'))
+})
+
+pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], async (ctx, user, ...args) => {
+    const rpl = ['']
+
+    await onUsersFromArgs(args, async (target, newargs) => {
+        const amount = parseInt(newargs[0])
+
+        if(!amount)
+            throw new Error(`this command requires award amount`)
+
+        target.vials += amount
+        await target.save()
+        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.vial} to **${target.username}** (${target.discord_id})`)
     })
 
     return ctx.reply(user, rpl.join('\n'))

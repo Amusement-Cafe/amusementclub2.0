@@ -123,7 +123,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             const usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             isolatedCtx.discord_guild = msg.channel.guild
-            const args = msg.content.trim().substring(prefix.length).split(' ')
+            const args = msg.content.trim().substring(prefix.length).split(' ').filter(x => x != '')
 
             if(usr.lock) {
                 usr.lock = false

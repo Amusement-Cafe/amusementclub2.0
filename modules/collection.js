@@ -25,6 +25,7 @@ const reset = async (ctx, user, col) => {
             x.amount--
     })
 
+    user.xp += ctx.cards.filter(x => x.col === col.id && x.level != 5).length
     user.cards = user.cards.filter(x => x.amount > 0)
     user.markModified('cards')
 

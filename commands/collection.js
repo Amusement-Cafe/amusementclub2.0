@@ -47,7 +47,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     resp.push(`You have: **${userCards.length} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
 
     if(clout)
-        resp.push(`Clout: **${new Array(clout.amount + 1).join('★')}**`)
+        resp.push(`Your clout: **${new Array(clout.amount + 1).join('★')}** (${clout.amount})`)
 
     resp.push(`Aliases: **${col.aliases.join(" **|** ")}**`)
 

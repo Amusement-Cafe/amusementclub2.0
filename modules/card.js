@@ -31,8 +31,6 @@ const parseArgs = (ctx, args) => {
         me: false,
     }
 
-    args = args.filter(x => x != '')
-
     args.map(x => {
         let substr = x.substr(1)
         q.id = q.id || tryGetUserID(x)
