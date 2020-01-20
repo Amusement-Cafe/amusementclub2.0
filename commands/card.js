@@ -57,6 +57,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     user.xp += amount
     user.dailystats.claims = user.dailystats.claims + amount || amount
     user.markModified('dailystats')
+    user.markModified('cards')
     await user.save()
 
     cards.sort((a, b) => b.card.level - a.card.level)
@@ -213,6 +214,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     resp.push(`Fandom: **${col.name}**`)
     resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
     resp.push(`Average Rating: **none**`)
+    resp.push(`ID: ${card.id}`)
 
     if(tags && tags.length > 0)
         resp.push(`Tags: **#${tags.join(' #')}**`)
