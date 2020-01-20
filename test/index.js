@@ -2,7 +2,7 @@ const config    = require('./config')
 const amusement = require('../index.js')
 const _         = require('lodash')
 
-var userq       = require('../userq.js')
+var userq       = require('../utils/userq')
 
 const main = async () => {
     const data = {
@@ -10,6 +10,7 @@ const main = async () => {
         collections: require('./data/collections.json'),
         help: require('./data/help.json'),
         items: require('./data/items.json'),
+        achievements: require('./data/achievements.js'),
     }
 
     const options  = Object.assign({shard: 0, data}, config)

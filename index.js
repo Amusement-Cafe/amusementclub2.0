@@ -8,12 +8,16 @@ const asdate    = require('add-subtract-date')
 const _         = require('lodash')
 
 const {
+    check_achievements
+} = require('./modules/achievement')
+
+const {
     auction, 
     user,
     guild
 } = require('./modules')
 
-var userq       = require('./userq.js')
+var userq = require('./utils/userq')
 
 module.exports.start = async ({ shard, database, token, prefix, baseurl, shorturl, data }) => {
     console.log('[info] intializing connection and starting bot...')
@@ -79,9 +83,11 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         collections: data.collections, /* data with collections */
         help: data.help, /* help data */
         items: data.items, /* game items */
+        achievements: data.achievements, /* game achievements */
         direct, /* DM reply function to the user */
         shard, /* current shard */
-        symbols
+        symbols,
+        baseurl
     }
 
     /* service tick for checks */
@@ -124,6 +130,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             isolatedCtx.discord_guild = msg.channel.guild
             const args = msg.content.trim().substring(prefix.length).split(' ').filter(x => x != '')
+            const action = args[0]
 
             if(usr.lock) {
                 usr.lock = false
@@ -131,12 +138,10 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             }
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
+            await check_achievements(isolatedCtx, usr, action)
+            
         } catch (e) {
-            const color = e.message.indexOf('Unknown command name') !== -1
-                ? colors.yellow /* nice 404 color */
-                : colors.red /* nice pure error color */
-
-            send(msg.channel.id, { description: e.message, color })
+            send(msg.channel.id, { description: e.message, color: colors.red })
             console.error(e)
         }
     })
@@ -160,7 +165,8 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
             await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
-            send(msg.channel.id, { description: e.message, color: colors.red })
+            //send(msg.channel.id, { description: e.message, color: colors.red })
+            console.error(e)
         }
     })
 

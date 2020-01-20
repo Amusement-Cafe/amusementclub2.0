@@ -14,6 +14,7 @@ module.exports = model('User', {
     quests:             { type: Array, default: [] },
     inventory:          { type: Array, default: [] },
     completedcols:      { type: Array, default: [] },
+    achievements:       { type: Array, default: [] },
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
