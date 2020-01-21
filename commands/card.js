@@ -47,18 +47,26 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = sample(ctx.collections.filter(x => x.rarity > rng))
-        const col = spec || sample(ctx.collections.filter(x => !x.rarity))
+        const lock = ctx.guild.overridelock || ctx.guild.lock
+        const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : sample(ctx.collections.filter(x => !x.rarity)))
         const card = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         const count = addUserCard(user, card.id)
         cards.push({count, card})
     }
+    
+    const newCards = cards.filter(x => x.count === 1)
+    const oldCards = cards.filter(x => x.count > 1)
 
     user.exp -= price
     user.xp += amount
     user.dailystats.claims = user.dailystats.claims + amount || amount
     user.markModified('dailystats')
-    user.markModified('cards')
     await user.save()
+    
+    if(newCards.length > 0 && oldCards.length > 0) {
+        user.markModified('cards')
+        await user.save()
+    }
 
     cards.sort((a, b) => b.card.level - a.card.level)
 
@@ -69,8 +77,8 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     }
 
     let fields = []
-    fields.push({name: `New cards`, value: cards.filter(x => x.count === 1).map(x => formatName(x.card)).join('\n')})
-    fields.push({name: `Duplicates`, value: cards.filter(x => x.count > 1).map(x => `${formatName(x.card)} #${x.count}`).join('\n')})
+    fields.push({name: `New cards`, value: newCards.map(x => formatName(x.card)).join('\n')})
+    fields.push({name: `Duplicates`, value: oldCards.map(x => `${formatName(x.card)} #${x.count}`).join('\n')})
     fields = fields.filter(x => x.value)
 
     return ctx.reply(user, {

@@ -23,4 +23,5 @@ module.exports = model('Guild', {
 
     nextcheck:      { type: Date, default: new Date() },
     reportchannel:  { type: String },
+    overridelock:   { type: String, default: '' },
 })

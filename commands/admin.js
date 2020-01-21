@@ -5,6 +5,10 @@ const {
 } = require('../modules/user')
 
 const {
+    byAlias
+} = require('../modules/collection')
+
+const {
     formatName,
     addUserCard,
     withGlobalCards,
@@ -115,4 +119,23 @@ pcmd(['admin'], ['sudo', 'stress'], async (ctx, user, ...args) => {
     for(i=0; i<parseInt(args[0]); i++) {
         ctx.reply(user, `test message #${i}`)
     }
+})
+
+pcmd(['admin'], ['sudo', 'guild', 'lock'], async (ctx, user, arg1) => {
+    const col = byAlias(ctx, arg1)[0]
+
+    if(!col)
+        throw new Error(`collection '${arg1}' not found`)
+
+    ctx.guild.overridelock = col.id
+    await ctx.guild.save()
+
+    return ctx.reply(user, `current guild was override-locked to **${col.name}** collection`)
+})
+
+pcmd(['admin'], ['sudo', 'guild', 'unlock'], async (ctx, user, arg1) => {
+    ctx.guild.overridelock = ''
+    await ctx.guild.save()
+
+    return ctx.reply(user, `guild override lock was removed. Guild locks (if any) will remain active`)
 })

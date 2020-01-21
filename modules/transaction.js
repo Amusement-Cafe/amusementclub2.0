@@ -10,7 +10,8 @@ const {
 
 const new_trs = async (ctx, user, card, price, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
-    const last_trs = (await Transaction.find({status: 'confirmed'}).sort({ _id: -1 }))[0]
+    const last_trs = (await Transaction.find({status: {$in: ['confirmed', 'declined']}})
+        .sort({ time: -1 }))[0]
     const transaction = new Transaction()
     transaction.id = getNewID(last_trs)
     transaction.from = user.username

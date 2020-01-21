@@ -23,14 +23,14 @@ const tryGetUserID = (inp) => {
 }
 
 const getAllUserIDs = (args) => {
-	const out = { ids: [], args: [] }
-	args.map(x => {
-		const id = tryGetUserID(x)
-		if(id) out.ids.push(id)
-		else out.args.push(x)
-	})
+    const out = { ids: [], args: [] }
+    args.map(x => {
+        const id = tryGetUserID(x)
+        if(id) out.ids.push(id)
+        else out.args.push(x)
+    })
 
-	return out
+    return out
 }
 
 const nameSort = (a, b, prop = "name") => {
@@ -40,6 +40,9 @@ const nameSort = (a, b, prop = "name") => {
 }
 
 const generateNextId = (lastId, idLength = 4) => {
+    if(lastId.length != idLength)
+        throw new Error(`Last ID '${lastId}' length should be same as requested length '${idLength}'`)
+
     // The digits in the space are aliased by these characters:
     const charPool = ['a','b','c','d','e','f','g','h','i','j','k','m',
             'n','o','p','q','r','s','t','u','v','w','x','y','z'];
