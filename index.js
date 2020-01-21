@@ -41,11 +41,11 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
-        /*if(content.description)
-            content.description = content.description.replace(/{currency}/gi, '`🍅`')
+        if(content.description)
+            content.description = content.description.replace(/  /gi, '')
 
         if(content.fields)
-            content.fields.map(x => x.value = x.value.replace(/{currency}/gi, '`🍅`'))*/
+            content.fields.map(x => x.value = x.value.replace(/  /gi, ''))
 
         if(userid)
             _.remove(userq, (x) => x.id === userid)

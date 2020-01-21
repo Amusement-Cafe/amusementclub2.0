@@ -17,9 +17,19 @@ const {
     getVialCost 
 } = require('../modules/eval')
 
+const {
+    addGuildXP,
+    getBuilding
+} = require('../modules/guild')
+
 const {addConfirmation} = require('../utils/confirmator')
 
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
+    const hub = getBuilding(ctx, 'smithhub')
+
+    if(!hub)
+        return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**`, 'red')
+
     const card1 = bestMatch(cards[0])
     let card2 = bestMatch(cards[1])
 
@@ -76,6 +86,11 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['liq'], withCards(async (ctx, user, cards, parsedargs) => {
+    const hub = getBuilding(ctx, 'smithhub')
+
+    if(!hub || hub.level < 2)
+        return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
+
     const card = bestMatch(cards)
     const vials = Math.round((await getVialCost(ctx, card)) * .5)
 
@@ -101,6 +116,11 @@ cmd(['liq'], withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const hub = getBuilding(ctx, 'smithhub')
+
+    if(!hub || hub.level < 2)
+        return ctx.reply(user, `drawing cards is possible only in the guild with **Smithing Hub level 2+**`, 'red')
+
     const card = bestMatch(cards)
     const vials = await getVialCost(ctx, card)
 

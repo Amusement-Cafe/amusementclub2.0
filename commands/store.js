@@ -8,6 +8,7 @@ const {
 
 cmd('store', async (ctx, user, cat) => {
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
+    cat = cat? cat.replace(/s$/i, '') : null
 
     if(!cat || !cats.includes(cat))
         return ctx.reply(user, {
