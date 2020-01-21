@@ -133,9 +133,21 @@ pcmd(['admin'], ['sudo', 'guild', 'lock'], async (ctx, user, arg1) => {
     return ctx.reply(user, `current guild was override-locked to **${col.name}** collection`)
 })
 
-pcmd(['admin'], ['sudo', 'guild', 'unlock'], async (ctx, user, arg1) => {
+pcmd(['admin'], ['sudo', 'guild', 'unlock'], async (ctx, user) => {
     ctx.guild.overridelock = ''
     await ctx.guild.save()
 
     return ctx.reply(user, `guild override lock was removed. Guild locks (if any) will remain active`)
+})
+
+pcmd(['admin'], ['sudo', 'daily', 'reset'], async (ctx, user, ...args) => {
+    const rpl = ['']
+
+    await onUsersFromArgs(args, async (target, newargs) => {
+        target.lastdaily = new Date(0)
+        await target.save()
+        rpl.push(`\`✅\` daily reset for **${target.username}** (${target.discord_id})`)
+    })
+
+    return ctx.reply(user, rpl.join('\n'))
 })

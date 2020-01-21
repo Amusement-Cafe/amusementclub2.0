@@ -28,7 +28,8 @@ const {
 } = require('../modules/card')
 
 const {
-    addGuildXP
+    addGuildXP,
+    getBuilding
 } = require('../modules/guild')
 
 cmd('claim', 'cl', async (ctx, user, arg1) => {
@@ -36,6 +37,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     const amount = parseInt(arg1) || 1
     const price = claimCost(user, ctx.guild.tax, amount)
     const normalprice = claimCost(user, 0, amount)
+    const gbank = getBuilding(ctx, 'gbank')
 
     if(amount > 10)
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
@@ -46,7 +48,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
-        const spec = sample(ctx.collections.filter(x => x.rarity > rng))
+        const spec = ((gbank && gbank.level > 1)? sample(ctx.collections.filter(x => x.rarity > rng)) : null)
         const lock = ctx.guild.overridelock || ctx.guild.lock
         const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : sample(ctx.collections.filter(x => !x.rarity)))
         const card = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))

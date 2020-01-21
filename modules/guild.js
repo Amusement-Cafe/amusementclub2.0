@@ -3,11 +3,19 @@ const color     = require('../utils/colors')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
 
+const cache = []
+
 const fetchOrCreate = async (ctx, user, discord_guild) => {
 	if(!discord_guild)
 		return null
 
-    let guild = await Guild.findOne({ id: discord_guild.id })
+    let fromcache = true
+    let guild = cache.filter(x => x.id === discord_guild.id)[0]
+
+    if(!guild) {
+        guild = await Guild.findOne({ id: discord_guild.id })
+        fromcache = false
+    }
 
     if (!guild) {
         guild = await new Guild()
@@ -17,8 +25,12 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
 
         await guild.save()
-        await ctx.reply(user, `new guild added. This channel was marked as bot and report channel`)
+        await ctx.reply(user, `new guild added. This channel was marked as bot and report channel.
+            Type \`->help guild -here\` to see more about guild setup`)
     }
+
+    if(!fromcache)
+        cache.push(guild)
 
     return guild
 }
@@ -91,6 +103,8 @@ const getMaintenanceCost = (ctx) => {
         ctx.items.filter(y => y.id === x.id)[0].levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0) * reduce)
 }
 
+const getBuilding = (ctx, id) => ctx.guild.buildings.filter(x => x.id === id && x.health > 50)[0]
+
 const getGuildUser = (ctx, user) => ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
@@ -107,5 +121,6 @@ module.exports = {
     getGuildUser,
     isUserOwner,
     getMaintenanceCost,
-    bill_guilds
+    bill_guilds,
+    getBuilding
 }

@@ -24,7 +24,8 @@ const {
 } = require('../modules/user')
 
 const {
-    addGuildXP
+    addGuildXP,
+    getBuilding
 } = require('../modules/guild')
 
 const {
@@ -67,7 +68,8 @@ cmd('daily', async (ctx, user) => {
     const future = asdate.add(user.lastdaily, 20, 'hours')
 
     if(future < now) {
-        const amount = 300
+        const gbank = getBuilding(ctx, 'gbank')
+        const amount = gbank? 500 : 300
 
         user.lastdaily = now
         user.dailystats = {}
@@ -77,6 +79,7 @@ cmd('daily', async (ctx, user) => {
         await user.save()
 
         addGuildXP(ctx, user, 10)
+        ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
         await ctx.guild.save()
 
         return ctx.reply(user, `you recieved daily **${amount}** ${ctx.symbols.tomato} You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato}`)

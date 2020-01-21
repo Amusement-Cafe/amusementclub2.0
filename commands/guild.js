@@ -12,8 +12,13 @@ const {
     getGuildUser
 } = require('../modules/guild')
 
-cmd(['guild', 'info'], async (ctx, user) => {
-
+cmd(['guild'], async (ctx, user) => {
+    const help = ctx.help.filter(x => x.type.includes('guild'))[0]
+    return ctx.send(ctx.msg.channel.id, {
+        author: { name: `Possible options:` },
+        fields: help.fields.map(x => ({ name: x.title, value: x.description })),
+        color: color.blue
+    }, user.discord_id)
 })
 
 cmd(['guild', 'info'], async (ctx, user) => {

@@ -43,7 +43,7 @@ cmd(['store', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, item
             value: `Price: **${x.price}** ${ctx.symbols.tomato}
                 Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
-                > ${x.desc}`
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
             }
         })
     })

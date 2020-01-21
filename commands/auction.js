@@ -19,6 +19,11 @@ const {
     withGlobalCards
 } = require('../modules/card')
 
+const {
+    addGuildXP,
+    getBuilding
+} = require('../modules/guild')
+
 const {addConfirmation} = require('../utils/confirmator')
 
 cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -75,7 +80,7 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
 })
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
-    const auchouse = ctx.guild.buildings.filter(x => x.id === 'auchouse')[0]
+    const auchouse = getBuilding(ctx, 'auchouse')
     if(!auchouse || auchouse.health < 50)
         return ctx.reply(user, `you can sell cards only in the guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
 
