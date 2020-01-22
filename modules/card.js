@@ -8,7 +8,7 @@ const { bestColMatch }          = require('./collection')
 const { fetchTaggedCards }      = require('./tag')
 
 const formatName = (x) => {
-    return `[${new Array(x.level + 1).join('★')}] ${x.fav? '`❤`' : ''} [${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
+    return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
 const formatLink = (x) => {

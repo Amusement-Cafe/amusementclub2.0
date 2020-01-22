@@ -58,6 +58,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
+    oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
     user.exp -= price
     user.xp += amount
