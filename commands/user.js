@@ -90,10 +90,12 @@ cmd('daily', async (ctx, user) => {
 
 cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     const pages = []
+    const now = new Date()
 
     cards.map((c, i) => {
         if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += (formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
+        const isnew = c.obtained > (user.lastdaily || now)
+        pages[Math.floor(i/15)] += ((isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
     })
 
     return await addPagination(ctx, user, `your cards (${cards.length} results)`, pages)

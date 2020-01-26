@@ -6,6 +6,7 @@ const {
 
 const { bestColMatch }          = require('./collection')
 const { fetchTaggedCards }      = require('./tag')
+const asdate                    = require('add-subtract-date')
 
 const formatName = (x) => {
     return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
@@ -15,9 +16,9 @@ const formatLink = (x) => {
     return x.url
 }
 
-const parseArgs = (ctx, args) => {
-    const date = new Date()
-    date.setDate(date.getDate() - 1)
+const parseArgs = (ctx, args, lastdaily) => {
+    lastdaily = lastdaily || asdate.substract(new Date(), 1, 'day')
+    
     const cols = [], levels = [], keywords = []
     const anticols = [], antilevels = []
     const q = { 
@@ -51,7 +52,7 @@ const parseArgs = (ctx, args) => {
                 case 'gif': q.filters.push(c => c.animated == m); break
                 case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); break
                 case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
-                case 'new': q.filters.push(c => m? c.obtained > date : c.obtained <= date); break
+                case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
                 case 'diff': q.diff = m; break
                 case 'me': q.me = m; break
                 default: {
@@ -127,7 +128,7 @@ const mapUserCards = (ctx, user) => {
  * @return {Promise}
  */
 const withCards = (callback) => async (ctx, user, ...args) => {
-    const parsedargs = parseArgs(ctx, args)
+    const parsedargs = parseArgs(ctx, args, user.lastdaily)
 
     /* join user cards to actual card types */
     const map = mapUserCards(ctx, user)
@@ -183,7 +184,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
 const withMultiQuery = (callback) => async (ctx, user, ...args) => {
     const argsplit = args.join(' ').split(',')
     const parsedargs = [], cards = []
-    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '))))
+    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '), user.lastdaily)))
 
     if(!parsedargs[0] || parsedargs[0].isEmpty())
         return ctx.reply(user, `please specify at least one card query`, 'red')
