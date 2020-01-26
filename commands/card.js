@@ -169,6 +169,11 @@ cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => !x.fav)
+
+    if(cards.length === 0)
+        return ctx.reply(user, `all cards from that request are already marked as favourite`, 'red')
+
     const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
     addConfirmation(ctx, user, `do you want to mark **${cards.length}** cards as favourite?`, prm, 
         async (x) => {
@@ -185,7 +190,7 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         }, `Favourite cards can be accessed with -fav`)
 }))
 
-cmd('unfav', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)
 
     if(!card.fav)
@@ -198,7 +203,12 @@ cmd('unfav', withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.reply(user, `removed ${formatName(card)} frome favourites`)
 }))
 
-cmd(['unfav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => x.fav)
+
+    if(cards.length === 0)
+        return ctx.reply(user, `no favourited cards found`, 'red')
+
     const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
     addConfirmation(ctx, user, `do you want remove **${cards.length}** cards frome favourites?`, prm, 
         async (x) => {
