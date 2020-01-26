@@ -13,9 +13,9 @@ const {
 const {
     confirm_trs,
     decline_trs,
-    check_trs,
     paginate_trslist,
-    ch_map
+    ch_map,
+    getPending
 } = require('../modules/transaction')
 
 cmd(['trans', 'confirm'], 'confirm', 'cfm', (ctx, user, arg1) => {
@@ -43,10 +43,7 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['trans', 'pending'], 'pending', async (ctx, user) => {
-    const list = await Transaction.find({ 
-        $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
-        status: 'pending'
-    }).sort({ time: 1 })
+    const list = await getPending(ctx, user)
 
     if(list.length == 0)
         return ctx.reply(user, `you don't have any pending transactions`)

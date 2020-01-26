@@ -34,10 +34,19 @@ const {
     getQuestion
 } = require('../modules/item')
 
+const {
+    getPending
+} = require('../modules/transaction')
+
 cmd('bal', (ctx, user) => {
+    let max = 1
+    while(claimCost(user, ctx.guild.tax, max) < user.exp)
+        max++
+
     return ctx.reply(user, `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
         Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
-        Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato}`)
+        Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)
+        You can claim **${max - 1} cards** in current guild with your balance`)
 })
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
@@ -82,10 +91,24 @@ cmd('daily', async (ctx, user) => {
         ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
         await ctx.guild.save()
 
-        return ctx.reply(user, `you recieved daily **${amount}** ${ctx.symbols.tomato} You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato}`)
+        const fields = []
+        const trs = (await getPending(ctx, user)).filter(x => x.from_id != user.discord_id)
+        if(trs.length > 0) {
+            const more = trs.splice(3, trs.length).length
+            fields.push({name: `Incoming pending transactions`, 
+                value: trs.map(x => `\`${x.id}\` ${formatName(ctx.cards[x.card])} from **${x.from}**`).join('\n') 
+                    + (more > 0? `\nand **${more}** more...` : '')})
+        }
+
+        return ctx.reply(user, {
+            description: `you recieved daily **${amount}** ${ctx.symbols.tomato} 
+                You have now **${Math.round(user.exp)}** ${ctx.symbols.tomato}`,
+            color: colors.green,
+            fields
+        })
     }
 
-    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`)
+    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`, 'red')
 })
 
 cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {

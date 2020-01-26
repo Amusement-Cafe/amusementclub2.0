@@ -119,9 +119,13 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `please specify a card`, 'red')
 
     const pending = await check_trs(ctx, user, parsedargs.id)
-    if(pending)
-        return ctx.reply(user, `you already have pending unconfirmed transaction to **${pending.to}**. 
-            You must resolve that transaction before setting up a new one`, 'red')
+    if(!parsedargs.id && pending.length > 0)
+        return ctx.reply(user, `you already have pending transaction to **BOT**. 
+            First resolve transaction \`${pending[0].id}\``, 'red')
+    else if(pending.length >= 5)
+        return ctx.reply(user, `you already have pending transactions to **${pending[0].to}**. 
+            You can have up to **5** pending transactions to the same user.
+            Type \`->pending\` to see them`, 'red')
 
     if(!ctx.msg.channel.guild)
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')

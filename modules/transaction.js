@@ -49,13 +49,10 @@ const from_auc = async (auc, from, to) => {
 }
 
 const confirm_trs = async (ctx, user, trs_id) => {
-    const transaction = await Transaction.findOne({ id: trs_id })
+    const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
         return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red')
-
-    if(transaction.status != 'pending')
-        return ctx.reply(user, `this transaction was already **${transaction.status}**`, 'red')
 
     const from_user = await User.findOne({ discord_id: transaction.from_id })
     const to_user = await User.findOne({ discord_id: transaction.to_id })
@@ -94,7 +91,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
 }
 
 const decline_trs = async (ctx, user, trs_id) => {
-    const transaction = await Transaction.findOne({ id: trs_id })
+    const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
         return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red')
@@ -109,7 +106,7 @@ const decline_trs = async (ctx, user, trs_id) => {
 }
 
 const check_trs = async (ctx, user, target) => {
-    return await Transaction.findOne({ from_id: user.discord_id, status: 'pending', to_id: target })
+    return await Transaction.find({ from_id: user.discord_id, status: 'pending', to_id: target })
 }
 
 const paginate_trslist = (ctx, user, list) => {
@@ -132,9 +129,10 @@ const format_listtrs = (ctx, user, trans) => {
     return resp;
 }
 
-const format_trs = (ctx, user, trans) => {
-
-}
+const getPending = (ctx, user, req) => Transaction.find({ 
+        $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
+        status: 'pending'
+    }).sort({ time: 1 })
 
 const getNewID = (last_trs) => {
     if(!last_trs)
@@ -157,5 +155,6 @@ module.exports = {
     format_listtrs,
     paginate_trslist,
     ch_map,
-    from_auc
+    from_auc,
+    getPending
 }
