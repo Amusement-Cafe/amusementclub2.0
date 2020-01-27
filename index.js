@@ -19,8 +19,9 @@ const {
 
 var userq = require('./utils/userq')
 
-module.exports.start = async ({ shard, database, token, prefix, baseurl, shorturl, data }) => {
-    console.log('[info] intializing connection and starting bot...')
+module.exports.start = async ({ shard, database, token, prefix, baseurl, shorturl, data, debug }) => {
+    const emitter = new Emitter()
+    //console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
     data.cards = data.cards.map((x, i) => {
@@ -102,10 +103,8 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
     /* events */
     bot.on('ready', async event => {
-        //bot.setPresence({ game: { name: '->help' } })
-
-        console.log('[info] bot is ready')
-        console.log(bot.guilds.map(x => x.name))
+        await bot.editStatus('online', { name: 'commands', type: 2})
+        emitter.emit('info', `Bot is ready on ${bot.guilds.size} guild(s) with ${bot.users.size} user(s)`)
     })
 
     bot.on('messageCreate', async (msg) => {
@@ -142,8 +141,9 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             await check_achievements(isolatedCtx, usr, action)
             
         } catch (e) {
-            send(msg.channel.id, { description: e.message, color: colors.red })
-            console.error(e)
+            if(debug)
+                send(msg.channel.id, { description: e.message, color: colors.red })
+            emitter.emit('error', e)
         }
     })
 
@@ -166,12 +166,11 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
             await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
-            //send(msg.channel.id, { description: e.message, color: colors.red })
-            console.error(e)
+            emitter.emit('error', e)
         }
     })
 
     bot.connect();
 
-    return new Emitter()
+    return emitter
 }
