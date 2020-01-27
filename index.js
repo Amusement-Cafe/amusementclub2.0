@@ -105,6 +105,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         //bot.setPresence({ game: { name: '->help' } })
 
         console.log('[info] bot is ready')
+        console.log(bot.guilds.map(x => x.name))
     })
 
     bot.on('messageCreate', async (msg) => {
@@ -129,7 +130,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
             const usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             isolatedCtx.discord_guild = msg.channel.guild
-            const args = msg.content.trim().substring(prefix.length).split(' ').filter(x => x != '')
+            const args = msg.content.trim().substring(prefix.length).split(/ +/)
             const action = args[0]
 
             if(usr.lock) {

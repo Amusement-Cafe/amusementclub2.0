@@ -701,5 +701,28 @@
                 "description": "Shows a list of all cards included in the specified boost."
             }
         ]
+    },
+    {
+        "type": ["rules"],
+        "title": "Bot rules",
+        "description": "Please follow these rules when trading and interacting with other players. Ignoring the rules can lead to embargo or ban",
+        "fields": [
+            {
+                "title": "Direct Trading",
+                "description": "There are no commands to gift another player tomatoes nor cards. This is on purpose. Behavior that aims to bypass these restrictions is prohibited."
+            },
+            {
+                "title": "Auction Bidding",
+                "description": "The only reason you should bid on an auction is if you want to collect that card or resell it to a collector."
+            },
+            {
+                "title": "Multiple Accounts",
+                "description": "This is only allowed if your accounts do not interact with each other."
+            },
+            {
+                "title": "Play nice",
+                "description": "Don’t be annoying or rude towards other players.\nUse ID instead of ping when possible."
+            }
+        ]
     }
 ]
