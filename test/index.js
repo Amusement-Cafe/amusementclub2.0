@@ -2,8 +2,6 @@ const config    = require('./config')
 const amusement = require('../index.js')
 const _         = require('lodash')
 
-var userq       = require('../utils/userq')
-
 const main = async () => {
     const debug = true
     const data = {
@@ -14,15 +12,8 @@ const main = async () => {
         achievements: require('./data/achievements.js'),
     }
 
-    const options  = Object.assign({shard: 0, data}, config, debug)
-    const instance = await amusement.start(options)
-
-    const tick = () => {
-        const now = new Date()
-        _.remove(userq, (x) => x.expires < now)
-    }
-
-    setInterval(tick.bind(this), 1000);
+    const options  = Object.assign({shards: 1, data}, config, debug)
+    const instance = (await amusement.start(options)).emitter
 
     instance.on('info', data => {
         console.log(data)

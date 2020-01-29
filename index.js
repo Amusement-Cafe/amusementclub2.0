@@ -19,7 +19,7 @@ const {
 
 var userq = require('./utils/userq')
 
-module.exports.start = async ({ shard, database, token, prefix, baseurl, shorturl, data, debug }) => {
+module.exports.start = async ({ shards, database, token, prefix, baseurl, shorturl, data, debug }) => {
     const emitter = new Emitter()
     //console.log('[info] intializing connection and starting bot...')
 
@@ -38,7 +38,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
     /* basics */
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
-    const bot = new Eris(token)
+    const bot = new Eris(token, { maxShards: shards })
 
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
@@ -86,7 +86,7 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         items: data.items, /* game items */
         achievements: data.achievements, /* game achievements */
         direct, /* DM reply function to the user */
-        shard, /* current shard */
+        shard: bot.shar, /* current shard */
         symbols,
         baseurl
     }
@@ -98,13 +98,19 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         guild.bill_guilds(ctx, now)
     }
 
-    if(shard === 0)
-        setInterval(tick.bind({}, ctx), 5000);
+    /* service tick for user checks */
+    const qtick = () => {
+        const now = new Date()
+        _.remove(userq, (x) => x.expires < now)
+    }
+
+    setInterval(tick.bind({}, ctx), 5000)
+    setInterval(qtick.bind({}, ctx), 1000)
 
     /* events */
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
-        emitter.emit('info', `Bot is ready on ${bot.guilds.size} guild(s) with ${bot.users.size} user(s)`)
+        emitter.emit('info', `Bot is ready on ${bot.guilds.size} guild(s) with ${bot.users.size} user(s) using ${bot.shards.size} shard(s)`)
     })
 
     bot.on('messageCreate', async (msg) => {
@@ -143,7 +149,9 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
         } catch (e) {
             if(debug)
                 send(msg.channel.id, { description: e.message, color: colors.red })
-            emitter.emit('error', e)
+
+            let sh = msg.channel.guild.shard
+            emitter.emit('error', e, sh.id)
         }
     })
 
@@ -166,11 +174,16 @@ module.exports.start = async ({ shard, database, token, prefix, baseurl, shortur
 
             await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
-            emitter.emit('error', e)
+            let sh = msg.channel.guild.shard
+            emitter.emit('error', e, sh.id)
         }
+    })
+
+    bot.on('error', async (err, sh) => {
+        emitter.emit('error', err, sh)
     })
 
     bot.connect();
 
-    return emitter
+    return {emitter, bot}
 }
