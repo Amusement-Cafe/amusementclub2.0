@@ -4,4 +4,5 @@ module.exports = {
     Tag: require('./tag'),
     Auction: require('./auction'),
     Guild: require('./guild'),
+    Promo: require('./promo'),
 }

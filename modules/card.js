@@ -17,7 +17,7 @@ const formatLink = (x) => {
 }
 
 const parseArgs = (ctx, args, lastdaily) => {
-    lastdaily = lastdaily || asdate.substract(new Date(), 1, 'day')
+    lastdaily = lastdaily || asdate.subtract(new Date(), 1, 'day')
     
     const cols = [], levels = [], keywords = []
     const anticols = [], antilevels = []
