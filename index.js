@@ -19,9 +19,8 @@ const {
 
 var userq = require('./utils/userq')
 
-module.exports.start = async ({ shards, database, token, prefix, baseurl, shorturl, data, debug }) => {
+module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, data, debug }) => {
     const emitter = new Emitter()
-    //console.log('[info] intializing connection and starting bot...')
 
     /* prefill in the urls */
     data.cards = data.cards.map((x, i) => {
@@ -42,11 +41,11 @@ module.exports.start = async ({ shards, database, token, prefix, baseurl, shortu
 
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
-        if(content.description)
+        /*if(content.description)
             content.description = content.description.replace(/\s\s+/gi, '')
 
         if(content.fields)
-            content.fields.map(x => x.value = x.value.replace(/\s\s+/gi, ''))
+            content.fields.map(x => x.value = x.value.replace(/\s\s+/gi, ''))*/
 
         if(userid)
             _.remove(userq, (x) => x.id === userid)
@@ -183,7 +182,10 @@ module.exports.start = async ({ shards, database, token, prefix, baseurl, shortu
         emitter.emit('error', err, sh)
     })
 
-    bot.connect();
-
-    return {emitter, bot}
+    return {
+        emitter,
+        connect: () => bot.connect(),
+        disconnect: () => bot.disconnect(),
+        reconnect: () => bot.disconnect({ reconnect: 'auto' })
+    }
 }

@@ -13,7 +13,9 @@ const main = async () => {
     }
 
     const options  = Object.assign({shards: 1, data}, config, debug)
-    const instance = (await amusement.start(options)).emitter
+    const instance = await amusement.create(options)
+
+    await instance.connect()
 
     instance.on('info', data => {
         console.log(data)
@@ -22,8 +24,6 @@ const main = async () => {
     instance.on('error', err => {
         console.error(err)
     })
-
-    // instance.stop()
 }
 
 main().catch(console.error)
