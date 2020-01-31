@@ -119,7 +119,7 @@ const removeUserCard = (user, cardID) => {
 }
 
 const mapUserCards = (ctx, user) => {
-    return user.cards.map(card => Object.assign({}, ctx.cards[card.id], card))
+    return user.cards.filter(x => x.id < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.id], x))
 }
 
 /**

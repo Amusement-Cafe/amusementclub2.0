@@ -17,11 +17,11 @@ const main = async () => {
 
     await instance.connect()
 
-    instance.on('info', data => {
+    instance.emitter.on('info', data => {
         console.log(data)
     })
 
-    instance.on('error', err => {
+    instance.emitter.on('error', err => {
         console.error(err)
     })
 }
