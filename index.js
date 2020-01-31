@@ -22,15 +22,19 @@ var userq = require('./utils/userq')
 module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, data, debug }) => {
     const emitter = new Emitter()
 
+    const fillCardData = (carddata) => {
+        data.cards = carddata.map((x, i) => {
+            const col = data.collections.filter(y => y.id == x.col)[0]
+            const basePath = `/cards/${col.id}/${x.level}_${x.name}.${x.animated? 'gif' : (col.compressed? 'jpg' : 'png')}`
+            x.url = baseurl + basePath
+            x.shorturl = shorturl + basePath
+            x.id = i
+            return x
+        })
+    }
+
     /* prefill in the urls */
-    data.cards = data.cards.map((x, i) => {
-        const col = data.collections.filter(y => y.id == x.col)[0]
-        const basePath = `/cards/${col.id}/${x.level}_${x.name}.${x.animated? 'gif' : (col.compressed? 'jpg' : 'png')}`
-        x.url = baseurl + basePath
-        x.shorturl = shorturl + basePath
-        x.id = i
-        return x
-    })
+    fillCardData(data.cards)
 
     const mongoUri = database
     const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
@@ -186,6 +190,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         emitter,
         connect: () => bot.connect(),
         disconnect: () => bot.disconnect(),
-        reconnect: () => bot.disconnect({ reconnect: 'auto' })
+        reconnect: () => bot.disconnect({ reconnect: 'auto' }),
+        updateCards: (carddata) => fillCardData(carddata),
+        updateCols: (coldata) => data.collections = coldata,
     }
 }
