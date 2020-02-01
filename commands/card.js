@@ -46,10 +46,10 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         return ctx.reply(user, `you need **${price}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
             You have **${Math.floor(user.exp)}** ${ctx.symbols.tomato}`, 'red')
 
+    const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = ((gbank && gbank.level > 1)? sample(ctx.collections.filter(x => x.rarity > rng)) : null)
-        const lock = ctx.guild.overridelock || ctx.guild.lock
         const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : sample(ctx.collections.filter(x => !x.rarity)))
         const card = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         const count = addUserCard(user, card.id)

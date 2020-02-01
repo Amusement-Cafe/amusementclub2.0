@@ -3,8 +3,14 @@ const cap = (str) => {
 }
 
 const claimCost = (user, tax, amount) => {
-    const res = ((user.dailystats.claims || 0) * 50) + (50 * ((amount * (amount + 1)) / 2))
-    return Math.round(res + res * tax)
+    let total = 0
+    let claims = user.dailystats.claims || 0
+    for (let i = 0; i < amount; i++) {
+        claims++
+        total += claims * 50
+    }
+
+    return total
 }
 
 const tryGetUserID = (inp) => {

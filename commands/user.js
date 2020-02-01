@@ -194,5 +194,5 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         pages[Math.floor(i/15)] += `${formatName(c)}\n`
     })
 
-    return await addPagination(ctx, user, `cards that you don't have (${cards.length} results)`, pages)
+    return await addPagination(ctx, user, `cards that you don't have (${diff.length} results)`, pages)
 }))

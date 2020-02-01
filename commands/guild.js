@@ -3,14 +3,29 @@ const {XPtoLEVEL}       = require('../utils/tools')
 const color             = require('../utils/colors')
 const {addConfirmation} = require('../utils/confirmator')
 const msToTime          = require('pretty-ms')
+const asdate            = require('add-subtract-date')
 
 const {
     rankXP,
     addGuildXP,
     getMaintenanceCost,
     isUserOwner,
-    getGuildUser
+    getGuildUser,
+    guildLock
 } = require('../modules/guild')
+
+const {
+    fetchOnly
+} = require('../modules/user')
+
+const {
+    parseArgs
+} = require('../modules/card')
+
+const {
+    byAlias,
+    bestColMatch
+} = require('../modules/collection')
 
 cmd(['guild'], async (ctx, user) => {
     const help = ctx.help.filter(x => x.type.includes('guild'))[0]
@@ -29,10 +44,18 @@ cmd(['guild', 'info'], async (ctx, user) => {
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
 
+    const lock = ctx.guild.overridelock || ctx.guild.lock
+    if(lock) {
+        const lockcol = byAlias(ctx, lock)[0]
+        resp.push(`Locked to: **${lockcol.name}**`)
+    }
+
     const curUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
     if(curUser){
         userstat.push(`Current rank: **${curUser.rank}**`)
         userstat.push(`Progress to the next rank: **${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%**`)
+        if(curUser.roles.length > 0)
+            userstat.push(`Roles: **${curUser.roles.join(' | ')}**`)
     } else {
         userstat.push(`You don't have statistics in this guild`)
     }
@@ -126,6 +149,38 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     }, (x) => ctx.reply(user, 'upgrade was cancelled', 'red'))
 })
 
+cmd(['guild', 'donate'], async (ctx, user, arg1) => {
+    const amount = parseInt(arg1)
+    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+
+    if(!castle)
+        return ctx.reply(user, '**Guild Castle** is required before you can donate', 'red')
+
+    if(!amount)
+        return ctx.reply(user, `please enter amount of ${ctx.symbols.tomato} you want to donate to this guild`, 'red')
+
+    if(user.exp < amount)
+        return ctx.reply(user, `you don't have **${amount}** ${ctx.symbols.tomato} to donate`, 'red')
+
+    const question = `Do you want to donate **${amount}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**?`
+    addConfirmation(ctx, user, question, null, async (x) => {
+
+        const xp = Math.floor(amount * .01)
+        user.exp -= amount
+        user.xp += xp
+        ctx.guild.balance += amount
+        addGuildXP(ctx, user, xp)
+
+        await user.save()
+        await ctx.guild.save()
+
+        return ctx.reply(user, `you donated **${amount}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
+            This now has **${ctx.guild.balance}** ${ctx.symbols.tomato}
+            You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+
+    }, (x) => ctx.reply(user, 'operation was cancelled', 'red'))
+})
+
 cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     const tax = Math.abs(parseInt(arg1))
     const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
@@ -185,4 +240,137 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
     await ctx.guild.save()
 
     return ctx.reply(user, `removed this channel from bot channel list`)
+})
+
+cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...args) => {
+    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only owner can add guild managers`, 'red')
+
+    const newArgs = parseArgs(ctx, args)
+    if(!newArgs.id)
+        return ctx.reply(user, `please include ID of a target user`, 'red')
+
+    const tgUser = await fetchOnly(newArgs.id)
+    if(!tgUser)
+        return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
+
+    const target = ctx.guild.userstats.filter(x => x.id === tgUser.discord_id)[0]
+    if(!target)
+        return ctx.reply(user, `it appears that **${tgUser.username}** is not a member of this guild`, 'red')
+
+    if(target.roles.includes('manager'))
+        return ctx.reply(user, `it appears that **${tgUser.username}** already has a manager role`, 'red')
+
+    target.roles.push('manager')
+    ctx.guild.markModified('userstats')
+    await ctx.guild.save()
+
+    return ctx.reply(user, `successfully assigned manager role to **${tgUser.username}**`)
+})
+
+cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], async (ctx, user, ...args) => {
+    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only owner can remove guild managers`, 'red')
+
+    const newArgs = parseArgs(ctx, args)
+    if(!newArgs.id)
+        return ctx.reply(user, `please, include ID of a target user`, 'red')
+
+    const tgUser = await fetchOnly(newArgs.id)
+    if(!tgUser)
+        return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
+
+    const target = ctx.guild.userstats.filter(x => x.id === tgUser.discord_id)[0]
+    if(!target)
+        return ctx.reply(user, `it appears that **${tgUser.username}** is not a member of this guild`, 'red')
+
+    if(!target.roles.includes('manager'))
+        return ctx.reply(user, `it appears that **${tgUser.username}** doesn't have a manager role`, 'red')
+
+    target.roles.pull('manager')
+    ctx.guild.markModified('userstats')
+    await ctx.guild.save()
+
+    return ctx.reply(user, `successfully removed manager role from **${tgUser.username}**`)
+})
+
+cmd(['guild', 'lock'], async (ctx, user, arg1) => {
+    const guildUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+        return ctx.reply(user, `only owner or guild manager can set guild lock`, 'red')
+
+    if(!arg1)
+        return ctx.reply(user, `please provide collection ID`, 'red')
+
+    const price = guildLock.price
+    if(ctx.guild.balance < price)
+        return ctx.reply(user, `this guild doesn't have **${price}** ${ctx.symbols.tomato} required for a lock`, 'red')
+
+    const col = bestColMatch(ctx, arg1)
+    if(ctx.guild.lock && ctx.guild.lock === col.id)
+        return ctx.reply(user, `this guild is already locked to **${col.name}**`, 'red')
+
+    const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 4)
+    if(colCards.length === 0)
+        return ctx.reply(user, `cannot lock this guild to **${col.name}**`, 'red')
+
+    if(ctx.guild.overridelock) {
+        const ocol = byAlias(ctx, ctx.guild.overridelock)[0]
+        return ctx.reply(user, `this guild is already locked to **${ocol.name}** using lock override.
+            Override can be removed only by bot moderator.
+            If you wish override to be removed, please ask in [Amusement Café](${ctx.cafe})`, 'red')
+    }
+
+    const now = new Date()
+    const future = asdate.add(new Date(ctx.guild.lastlock.getTime()), 7, 'days')
+    if(future > now)
+        return ctx.reply(user, `you can use lock in **${msToTime(future - now, { compact: true })}**`, 'red')
+
+    const question = `Do you want lock this guild to **${col.name}** using **${price}** ${ctx.symbols.tomato} ?
+        >>> This will add **${guildLock.maintenance}** ${ctx.symbols.tomato} to guild maintenance.
+        Lock will be paused if guild balance goes negative.
+        Locking to another collection will cost **${price}** ${ctx.symbols.tomato}
+        You won't be able to change lock for 7 days.
+        You can unlock any time.
+        Users will still be able to claim cards from general pool using \`->claim any\``
+
+    addConfirmation(ctx, user, question, null, async (x) => {
+
+        ctx.guild.balance -= price
+        ctx.guild.lock = col.id
+        ctx.guild.lastlock = now
+        ctx.guild.lockactive = true
+
+        await ctx.guild.save()
+
+        return ctx.reply(user, `you locked **${ctx.discord_guild.name}** to **${col.name}**
+            Claim pool now consists of **${colCards.length}** cards`)
+
+    }, (x) => ctx.reply(user, 'operation was cancelled. Guild lock was not applied', 'red'))
+})
+
+cmd(['guild', 'unlock'], async (ctx, user) => {
+    const guildUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+        return ctx.reply(user, `only owner or guild manager can remove guild lock`, 'red')
+
+    if(!ctx.guild.lock)
+        return ctx.reply(user, `this guild is not locked to any collection`, 'red')
+
+    const col = byAlias(ctx, ctx.guild.lock)[0]
+    const question = `Do you want to remove lock to **${col.name}**?
+        This cannot be undone and won't reset lock cooldown.
+        > This won't remove a lock override (if this guild has one)`
+
+    addConfirmation(ctx, user, question, null, async (x) => {
+
+        const colCards = ctx.cards.filter(x => x.level < 4)
+        ctx.guild.lock = ''
+
+        await ctx.guild.save()
+
+        return ctx.reply(user, `guild lock has been removed.
+            Claim pool now consists of **${colCards.length}** cards`)
+
+    }, (x) => ctx.reply(user, 'operation was cancelled', 'red'))
 })

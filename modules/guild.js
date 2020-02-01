@@ -76,10 +76,18 @@ const bill_guilds = async (ctx, now) => {
     if(ratio < 1) {
         const damage = Math.round(10 * (1 - ratio))
         guild.buildings.map(x => x.health -= damage)
+        guild.lockactive = false
         report.push(`> Negative ratio resulted all buildings taking **${damage}** points of damage. The building will stop functioning if health goes lower than 50%`)
+        if(guild.lock)
+            report.push(`> Lock has been disabled until next check`)
+        
     } else {
         guild.buildings.map(x => x.health = Math.min(x.health + (x.health < 50? 10 : 5), 100))
         report.push(`> All costs were covered! Positive ratio healed buildings by **5%**`)
+        if(guild.lock && !guild.lockactive) {
+           report.push(`> Guild lock is back!`)
+        }
+        guild.lockactive = true
     }
 
     guild.nextcheck = asdate.add(new Date(), 12, 'hours')
@@ -99,8 +107,9 @@ const getMaintenanceCost = (ctx) => {
     if(castle)
         reduce = (castle.level < 3? 1 : (castle.level < 5? .9 : .7))
 
-    return Math.round(ctx.guild.buildings.map(x => 
-        ctx.items.filter(y => y.id === x.id)[0].levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0) * reduce)
+    const buildings = ctx.guild.buildings.map(x => ctx.items.filter(y => y.id === x.id)[0].levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0)
+    const lockprice = ctx.guild.lock? guildLock.maintenance : 0
+    return Math.round((buildings + lockprice) * reduce)
 }
 
 const getBuilding = (ctx, id) => ctx.guild.buildings.filter(x => x.id === id && x.health > 50)[0]
@@ -113,6 +122,11 @@ const rankXP = [10, 100, 500, 2500, 10000]
 
 const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
 
+const guildLock = {
+    price: 100000,
+    maintenance: 3500
+}
+
 module.exports = {
 	fetchOrCreate,
     addGuildXP,
@@ -122,5 +136,6 @@ module.exports = {
     isUserOwner,
     getMaintenanceCost,
     bill_guilds,
-    getBuilding
+    getBuilding,
+    guildLock
 }

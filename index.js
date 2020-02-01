@@ -89,9 +89,9 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         items: data.items, /* game items */
         achievements: data.achievements, /* game achievements */
         direct, /* DM reply function to the user */
-        shard: bot.shar, /* current shard */
         symbols,
-        baseurl
+        baseurl,
+        cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 
     /* service tick for checks */

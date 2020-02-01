@@ -13,6 +13,7 @@ module.exports = model('Guild', {
         id:             { type: String },
         xp:             { type: Number, default: 0 },
         rank:           { type: Number, default: 0 },
+        roles:          { type: Array, default: [] },
     }],
 
     buildings:      [{
@@ -24,4 +25,7 @@ module.exports = model('Guild', {
     nextcheck:      { type: Date, default: new Date() },
     reportchannel:  { type: String },
     overridelock:   { type: String, default: '' },
+    lock:           { type: String, default: '' },
+    lockactive:     { type: Boolean, default: false },
+    lastlock:       { type: Date, default: new Date(0) },
 })
