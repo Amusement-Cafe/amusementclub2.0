@@ -85,7 +85,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
         (x) => ctx.reply(user, `forge operation was declined`, 'red'))
 }))
 
-cmd(['liq'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liq'], ['liquify'], withCards(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
     if(!hub || hub.level < 2)

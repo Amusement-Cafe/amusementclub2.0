@@ -94,6 +94,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
+    const usercard = user.cards.filter(x => x.id === card.id)[0]
     const price = parsedargs.extra.filter(x => !isNaN(x) && parseInt(x) > 0).map(x => parseInt(x))[0] || Math.round(ceval)
 
     const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
@@ -118,8 +119,13 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     if(user.exp < fee)
         return ctx.reply(user, `you have to have at least **${fee}** ${ctx.symbols.tomato} to auction for that price`, 'red')
 
-    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? ${timenum? `This auction will last **${time} hours**` : ''}
-        ${card.amount > 1? '' : 'This is the only copy that you have, so your favourite status and rating will be lost'}`, null,
+    if(usercard.fav && usercard.amount === 1)
+        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+
+    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? 
+        ${timenum? `This auction will last **${time} hours**` : ''}
+        ${card.amount > 1? '' : 'This is the only copy that you have, so your rating will be lost'}`, null,
         async (x) => {
         await new_auc(ctx, user, card, price, fee, time)
     }, async (x) => {

@@ -134,6 +134,11 @@ const getPending = (ctx, user, req) => Transaction.find({
         status: 'pending'
     }).sort({ time: 1 })
 
+const getPendingFrom = (ctx, user) => Transaction.find({ 
+        from_id: user.discord_id,
+        status: 'pending'
+    }).sort({ time: 1 })
+
 const getNewID = (last_trs) => {
     if(!last_trs)
         return generateNextId('aaaaaa', 6)
@@ -156,5 +161,6 @@ module.exports = {
     paginate_trslist,
     ch_map,
     from_auc,
-    getPending
+    getPending,
+    getPendingFrom
 }

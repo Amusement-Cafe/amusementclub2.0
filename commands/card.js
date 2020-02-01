@@ -16,7 +16,8 @@ const {
     new_trs,
     confirm_trs,
     decline_trs,
-    check_trs
+    check_trs,
+    getPendingFrom
 } = require('../modules/transaction')
 
 const {
@@ -57,7 +58,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     }
     
     cards.sort((a, b) => b.card.level - a.card.level)
-    
+
     const newCards = cards.filter(x => x.count === 1).slice(0)
     const oldCards = cards.filter(x => x.count > 1).slice(0)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
@@ -125,21 +126,40 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify a card`, 'red')
 
-    const pending = await check_trs(ctx, user, parsedargs.id)
-    if(!parsedargs.id && pending.length > 0)
+    const card = bestMatch(cards)
+    const usercard = user.cards.filter(x => x.id === card.id)[0]
+    const pending = await getPendingFrom(ctx, user)
+    const pendingto = pending.filter(x => x.to === parsedargs.id)
+
+    if(!parsedargs.id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\``, 'red')
-    else if(pending.length >= 5)
+    else if(pendingto.length >= 5)
         return ctx.reply(user, `you already have pending transactions to **${pending[0].to}**. 
             You can have up to **5** pending transactions to the same user.
             Type \`->pending\` to see them`, 'red')
+
+    if(pending.length > 0) {
+        const cursales = pending.filter(x => x.card === card.id)
+        const diff = usercard.amount - cursales.length
+        if(diff <= 0)
+            return ctx.reply(user, `you cannot put up more sales of this card. 
+                You have **${cursales.length}** copies that are already on sale (${cursales.map(x => `\`${x.id}\``).join(' | ')})`, 'red')
+        else if(diff === 1 && usercard.fav)
+            return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+                Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+    }
+
+    if(usercard.fav && usercard.amount === 1) {
+        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+    }
 
     if(!ctx.msg.channel.guild)
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
     const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
 
-    const card = bestMatch(cards)
     const price = await evalCard(ctx, card, .4)
     const trs = await new_trs(ctx, user, card, price, parsedargs.id)
     const footer = `ID: \`${trs.id}\``
