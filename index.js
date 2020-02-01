@@ -151,10 +151,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             
         } catch (e) {
             //if(debug)
-                send(msg.channel.id, { description: e.message, color: colors.red })
-
-            let sh = msg.channel.guild.shard
-            emitter.emit('error', e, sh.id)
+            await send(msg.channel.id, { description: e.message, color: colors.red })
+            emitter.emit('error', e)
         }
     })
 

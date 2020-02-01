@@ -8,8 +8,9 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline, f
     bot = ctx.bot
     const old = queue.filter(x => x.userID === user.discord_id)[0]
 
-    if(old)
-        await bot.removeMessageReactions(old.channel, old.msg)
+    try {
+        if(old) await bot.removeMessageReactions(old.channel, old.msg)
+    } catch(e) { }
 
     queue = queue.filter(x => x.userID != user.discord_id)
     permits = permits || { confirm: [user.discord_id], decline: [user.discord_id] }
@@ -75,14 +76,14 @@ rct('✅', '❌', async (ctx, user) => {
 
     if(data && ctx.emoji.name === '✅' && data.onConfirm 
         && data.permits.confirm.filter(y => y === user.discord_id)[0]) {
-        if(user.lock){
+        //if(user.lock){
             data.onConfirm(user)
-        } else {
+        /*} else {
             ctx.send(ctx.msg.channel.id, { 
                 description: `A command was ran before confirmation. This is not allowed`,
                 color: colors.red
             })
-        }
+        }*/
 
     } else if(data && ctx.emoji.name === '❌' && data.onDecline
         && data.permits.decline.filter(y => y === user.discord_id)[0]) {

@@ -6,7 +6,7 @@ const {
     addConfirmation
 } = require('../utils/confirmator')
 
-cmd('store', async (ctx, user, cat) => {
+cmd('store', 'shop', async (ctx, user, cat) => {
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
     cat = cat? cat.replace(/s$/i, '') : null
 
@@ -29,28 +29,32 @@ cmd('store', async (ctx, user, cat) => {
         })
 })
 
-cmd(['store', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, itemid) => {
+cmd(['store', 'info'], ['shop', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, itemid) => {
     const item = ctx.items.filter(x => x.id === itemid)[0]
 
     if(!item)
         return ctx.reply(user, `item with ID \`${itemid}\` not found`, 'red')
 
-    return ctx.send(ctx.msg.channel.id, {
+    const embed = {
         author: { name: item.name },
         description: item.fulldesc,
         color: colors.deepgreen,
-        fields: item.levels.map((x, i) => { return {
+    }
+
+    if(item.levels) {
+        embed.fields = item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
             value: `Price: **${x.price}** ${ctx.symbols.tomato}
                 Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
-            }
-        })
-    })
+        }))
+    }
+
+    return ctx.send(ctx.msg.channel.id, embed)
 })
 
-cmd(['store', 'buy'], async (ctx, user, itemid) => {
+cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid) => {
     const item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
 
     if(!item)

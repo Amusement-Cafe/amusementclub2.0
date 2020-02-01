@@ -115,7 +115,7 @@ const removeUserCard = (user, cardID) => {
     user.cards[matched].amount--
     user.cards = user.cards.filter(x => x.amount > 0)
     user.markModified('cards')
-    return user.cards[matched]
+    return user.cards[matched]? user.cards[matched].amount : 0
 }
 
 const mapUserCards = (ctx, user) => {

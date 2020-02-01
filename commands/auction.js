@@ -33,7 +33,7 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.me)
         req.author = user.discord_id
 
-    let list = (await Auction.find(req).limit(100).sort({ expires: -1 }))
+    let list = (await Auction.find(req).limit(100).sort({ expires: 1 }))
         .filter(x => x.expires > now)
 
     if(parsedargs.diff)
@@ -158,7 +158,10 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `you cannot bid on your own auction`, 'red')
 
     if(auc.price >= bid)
-        return ctx.reply(user, `you bid should be higher than ${auc.price}`, 'red')
+        return ctx.reply(user, `your bid should be higher than **${auc.price}** ${ctx.symbols.tomato}`, 'red')
+
+    if(auc.lastbidder === user.discord_id)
+        return ctx.reply(user, `you already have the highest bid on this auction`, 'red')
 
     await bid_auc(ctx, user, auc, bid)
 }).access('dm')

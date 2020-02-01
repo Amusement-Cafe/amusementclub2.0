@@ -85,7 +85,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
 }
 
 const finish_aucs = async (ctx, now) => {
-    const auc = (await Auction.find({ finished: false }).sort({ expires: -1 }))[0]
+    const auc = (await Auction.find({ finished: false }).sort({ expires: 1 }))[0]
     if(!auc || auc.expires > now) return;
 
     auc.finished = true

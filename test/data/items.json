@@ -36,9 +36,9 @@
             }
         ]
     }, {
-        "id": "herores",
+        "id": "heroq",
         "price": 2500,
-        "name": "Hero Residence",
+        "name": "Hero's Quarters",
         "type": "blueprint",
         "desc": "place for guild hero",
         "fulldesc": "Allows hero to join the guild. Hero will be chosen depending on amount of followers in this guild. Leveling up makes other heroes to consider your guild more",

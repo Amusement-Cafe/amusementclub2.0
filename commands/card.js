@@ -56,8 +56,10 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         cards.push({count, card})
     }
     
-    const newCards = cards.filter(x => x.count === 1)
-    const oldCards = cards.filter(x => x.count > 1)
+    cards.sort((a, b) => b.card.level - a.card.level)
+    
+    const newCards = cards.filter(x => x.count === 1).slice(0)
+    const oldCards = cards.filter(x => x.count > 1).slice(0)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
     user.exp -= price
@@ -70,8 +72,6 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         user.markModified('cards')
         await user.save()
     }
-
-    cards.sort((a, b) => b.card.level - a.card.level)
 
     if(price != normalprice) {
         addGuildXP(ctx, user, amount)
