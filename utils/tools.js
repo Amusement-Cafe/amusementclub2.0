@@ -10,7 +10,7 @@ const claimCost = (user, tax, amount) => {
         total += claims * 50
     }
 
-    return total
+    return total + total * tax
 }
 
 const tryGetUserID = (inp) => {

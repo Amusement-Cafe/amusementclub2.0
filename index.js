@@ -150,7 +150,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             await check_achievements(isolatedCtx, usr, action)
             
         } catch (e) {
-            if(debug)
+            //if(debug)
                 send(msg.channel.id, { description: e.message, color: colors.red })
 
             let sh = msg.channel.guild.shard

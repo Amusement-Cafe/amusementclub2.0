@@ -31,8 +31,10 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline, f
     obj.msg = msg.id
     obj.channel = msg.channel.id
 
-    await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '✅')
-    await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '❌')
+    try {
+        await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '✅')
+        await ctx.bot.addMessageReaction(msg.channel.id, msg.id, '❌')
+    } catch(e) { }
 }
 
 const getEmbed = (user, text, footer) => {
