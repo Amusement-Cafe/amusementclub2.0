@@ -579,7 +579,7 @@
             {
                 "title": "Downvote a tag on a card",
                 "description": "->tag down [card] #tag"
-            },
+            }
 
         ]
     },
