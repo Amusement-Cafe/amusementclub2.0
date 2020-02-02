@@ -232,10 +232,6 @@
                 "description": "->diff @someuser -multi"
             },
             {
-                "title": "Show only special forge cards",
-                "description": "->diff @someuser -craft"
-            },
-            {
                 "title": "Show only cards from some collection",
                 "description": "->diff @someuser -[collection]]\n(e.g. `->diff @John -yuru`)"
             },
