@@ -83,11 +83,11 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const auchouse = getBuilding(ctx, 'auchouse')
     if(!auchouse || auchouse.health < 50)
-        return ctx.reply(user, `you can sell cards only in the guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
+        return ctx.reply(user, `you can sell cards only in a guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
 
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
-                                Your dealings were found to be in violation of our communiy rules.
+                                Your dealings were found to be in violation of our community rules.
                                 You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
 
     if(parsedargs.isEmpty())
@@ -106,7 +106,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     if(timenum) {
         if(auchouse.level < 3)
-            return ctx.reply(user, `you can specify auction time only in the guild that has **Auction House** level 3 or higher!`, 'red')
+            return ctx.reply(user, `you can specify auction time only in a guild that has **Auction House** level 3 or higher!`, 'red')
 
         time = Math.min(Math.max(timenum, 1), 10);
     }
@@ -137,7 +137,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
-                                Your dealings were found to be in violation of our communiy rules.
+                                Your dealings were found to be in violation of our community rules.
                                 You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
 
     const now = new Date();

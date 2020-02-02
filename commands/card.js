@@ -232,7 +232,7 @@ cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) =
     user.markModified('cards')
     await user.save()
 
-    return ctx.reply(user, `removed ${formatName(card)} frome favourites`)
+    return ctx.reply(user, `removed ${formatName(card)} from favourites`)
 }))
 
 cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
@@ -242,7 +242,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
         return ctx.reply(user, `no favourited cards found`, 'red')
 
     const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
-    addConfirmation(ctx, user, `do you want remove **${cards.length}** cards frome favourites?`, prm, 
+    addConfirmation(ctx, user, `do you want to remove **${cards.length}** cards from favourites?`, prm, 
         async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false
@@ -251,7 +251,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
             user.markModified('cards')
             await user.save()
 
-            return ctx.reply(user, `removed **${cards.length}** cards frome favourites`)
+            return ctx.reply(user, `removed **${cards.length}** cards from favourites`)
         }, async (x) => {
             return ctx.reply(user, `fav operation was declined`, 'red')
         })
