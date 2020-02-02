@@ -16,19 +16,30 @@ const {nameSort}            = require('../utils/tools')
 const sample                = require('lodash.sample');
 
 cmd('col', async (ctx, user, ...args) => {
-    const filtered = byAlias(ctx, args.join().replace('-', ''))
+    const completed = args.filter(x => x === '-completed' || x === '!completed')[0]
+    args = args.filter(x => x != '-completed' && x != '!completed')
+
+    let cols = byAlias(ctx, args.join().replace('-', ''))
         .sort((a, b) => nameSort(a, b, 'id'))
 
-    if(filtered.length === 0)
-        return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
+    if(completed) {
+        if(completed[0] === '-') 
+            cols = cols.filter(x => user.completedcols.some(y => y.id === x.id))
+        else
+            cols = cols.filter(x => !user.completedcols.some(y => y.id === x.id))
+    }
+
+    if(cols.length === 0)
+        return ctx.reply(user, `no collections found`, 'red')
 
     const pages = []
-    filtered.map((x, i) => {
+    cols.map((x, i) => {
         if (i % 10 == 0) pages.push("")
-        pages[Math.floor(i/10)] += `**${x.name}** (${x.id})\n`
+        const complete = user.completedcols.filter(y => x.id === y.id)[0]
+        pages[Math.floor(i/10)] += `${complete? `[${complete.amount}${ctx.symbols.star}]` : ''} **${x.name}** (${x.id})\n`
     })
 
-    return await addPagination(ctx, user, `found ${filtered.length} collections`, pages)
+    return await addPagination(ctx, user, `found ${cols.length} collections`, pages)
 })
 
 cmd(['col', 'info'], async (ctx, user, ...args) => {

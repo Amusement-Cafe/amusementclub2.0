@@ -5,6 +5,7 @@ const {addPagination}   = require('../utils/paginator')
 const {fetchOnly}       = require('../modules/user')
 const msToTime          = require('pretty-ms')
 const colors            = require('../utils/colors')
+const asdate            = require('add-subtract-date')
 
 const {
     new_auc,
@@ -48,7 +49,7 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     return await addPagination(ctx, user, 
         `found auctions (${list.length} results)`, 
         paginate_auclist(ctx, user, list))
-}))
+})).access('dm')
 
 cmd(['auc', 'info'], async (ctx, user, arg1) => {
     const auc = await Auction.findOne({ id: arg1 })
@@ -77,7 +78,7 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
         description: resp.join('\n'),
         color: colors['blue']
     }, user.discord_id)
-})
+}).access('dm')
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const auchouse = getBuilding(ctx, 'auchouse')
@@ -170,4 +171,37 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `you already have the highest bid on this auction`, 'red')
 
     await bid_auc(ctx, user, auc, bid)
+}).access('dm')
+
+cmd(['auc', 'cancel'], async (ctx, user, arg1) => {
+    let auc = await Auction.findOne({ id: arg1 })
+    const card = ctx.cards[auc.card]
+
+    if(!auc)
+        return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
+
+    if(auc.author != user.discord_id)
+        return ctx.reply(user, `you don't have rights to cancel this auction`, 'red')
+
+    if(auc.lastbidder)
+        return ctx.reply(user, `you cannot cancel this auction. A person has already bid on it`, 'red')
+
+    if(auc.expires < asdate.add(new Date(), 1, 'hour'))
+        return ctx.reply(user, `you cannot cancel auction that expires in less than one hour`, 'red')
+
+    addConfirmation(ctx, user, `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`, null,
+        async (x) => {
+        
+        auc = await Auction.findOne({ id: arg1 })
+        if(auc.lastbidder)
+            return ctx.reply(user, `you cannot cancel this auction. A person has already bid on it`, 'red')
+
+        auc.expires = new Date(0)
+        await auc.save()
+
+        return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)
+
+    }, (x) => {
+        return ctx.reply(user, `operation was declined`, 'red')
+    }, `Your won't get a fee refund`)
 }).access('dm')

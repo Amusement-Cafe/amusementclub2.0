@@ -161,7 +161,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
 
-    const price = await evalCard(ctx, card, .4)
+    const price = await evalCard(ctx, card, parsedargs.id? 1 : .4)
     const trs = await new_trs(ctx, user, card, price, parsedargs.id)
     const footer = `ID: \`${trs.id}\``
 

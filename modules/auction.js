@@ -76,7 +76,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
                 This auction will end in **${msToTime(diff)}**`, 'yellow')
     } else {
         const author = await fetchOnly(auc.author)
-        await ctx.direct(author, `A player has bid on your card ${formatName(ctx.cards[auc.card])}!`, 'green')
+        await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`, 'green')
     }
 
     user.exp -= bid
@@ -119,7 +119,16 @@ const paginate_auclist = (ctx, user, list) => {
             pages.push("")
 
         const timediff = msToTime(auc.expires - new Date(), {compact: true})
-        pages[Math.floor(i/10)] += `[${timediff}] \`${auc.id}\` [${auc.price}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
+        let char = ctx.symbols.auc_wss
+
+        if(auc.author === user.discord_id) {
+            if(auc.lastbidder) char = ctx.symbols.auc_lbd
+            else char = ctx.symbols.auc_sbd
+        } else if(auc.lastbidder === user.discord_id) {
+            char = ctx.symbols.auc_sod
+        }
+
+        pages[Math.floor(i/10)] += `${char} [${timediff}] \`${auc.id}\` [${auc.price}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
     })
 
     return pages;
