@@ -127,6 +127,7 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
 cmd('profile', async (ctx, user, arg1) => {
     if(arg1) user = await fetchOnly(arg1)
 
+    const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user._id.getTimestamp()
     const cards = mapUserCards(ctx, user)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
@@ -135,6 +136,11 @@ cmd('profile', async (ctx, user, arg1) => {
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
+
+    if(cloutsum > 0) {
+        resp.push(`Completed collections: **${user.completedcols.length}**`)
+        resp.push(`Overall clout: **${cloutsum}**`)
+    }
 
     if(user.roles && user.roles.length > 0)
         resp.push(`Roles: **${user.roles.join(" **|** ")}**`)

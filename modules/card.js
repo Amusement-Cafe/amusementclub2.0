@@ -42,6 +42,8 @@ const parseArgs = (ctx, args, lastdaily) => {
             switch(x) {
                 case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
                 case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '<amount': q.sort = (a, b) => a.amount - b.amount; break
+                case '>amount': q.sort = (a, b) => b.amount - a.amount; break
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
@@ -91,6 +93,7 @@ const parseArgs = (ctx, args, lastdaily) => {
 
 const filter = (cards, query) => {
     query.filters.map(f => cards = cards.filter(f))
+    //return cards.sort(nameSort)
     return cards
 }
 
@@ -182,7 +185,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
  * @return {Promise}
  */
 const withMultiQuery = (callback) => async (ctx, user, ...args) => {
-    const argsplit = args.join(' ').split(',')
+    const argsplit = args.join(' ').split(',').map(x => x.trim())
     const parsedargs = [], cards = []
     argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '), user.lastdaily)))
 

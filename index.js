@@ -75,7 +75,11 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     const symbols = {
         tomato: '`🍅`',
         vial: '`🍷`',
-        star: '★'
+        star: '★',
+        auc_sbd: '🔹',
+        auc_lbd: '🔷',
+        auc_sod: '🔸',
+        auc_wss: '▫️'
     }
 
     /* create our context */

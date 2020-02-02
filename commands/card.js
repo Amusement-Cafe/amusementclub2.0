@@ -1,11 +1,12 @@
 const {claimCost}           = require('../utils/tools')
 const {cmd}                 = require('../utils/cmd')
 const {addConfirmation}     = require('../utils/confirmator')
-const sample                = require('lodash.sample')
 const {addPagination}       = require('../utils/paginator')
 const {bestColMatch}        = require('../modules/collection')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
+
+const _ = require('lodash')
 
 const {
     evalCard, 
@@ -50,17 +51,17 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
-        const spec = ((gbank && gbank.level > 1)? sample(ctx.collections.filter(x => x.rarity > rng)) : null)
-        const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : sample(ctx.collections.filter(x => !x.rarity)))
-        const card = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
+        const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : _.sample(ctx.collections.filter(x => !x.rarity)))
+        const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         const count = addUserCard(user, card.id)
-        cards.push({count, card})
+        cards.push({count, card: _.clone(card)})
     }
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
-    const newCards = cards.filter(x => x.count === 1).slice(0)
-    const oldCards = cards.filter(x => x.count > 1).slice(0)
+    const newCards = cards.filter(x => x.count === 1)
+    const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
     user.exp -= price
@@ -103,7 +104,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 })
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
-    const card = parsedargs.isEmpty()? sample(cards) : bestMatch(cards)
+    const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,

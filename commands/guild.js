@@ -242,6 +242,21 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
     return ctx.reply(user, `removed this channel from bot channel list`)
 })
 
+cmd(['guild', 'set', 'buildrank'], async (ctx, user, arg1) => {
+    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+        return ctx.reply(user, `only owner or manager can change guild's required build rank`, 'red')
+
+    const rank = Math.abs(parseInt(arg1))
+
+    if(!rank || rank < 1 || rank > 5)
+        return ctx.reply(user, `please specify a number 1-5`, 'red')
+
+    ctx.guild.buildperm = rank
+    await ctx.guild.save()
+
+    return ctx.reply(user, `minimum rank for building in this guild has been set to **${rank}**`)
+})
+
 cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...args) => {
     if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can add guild managers`, 'red')
