@@ -16,9 +16,6 @@ const {
 
 const {
     formatName,
-    withCards,
-    withGlobalCards,
-    bestMatch
 } = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {

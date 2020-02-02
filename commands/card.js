@@ -64,6 +64,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
+    user.lastcard = cards[0].card.id
     user.exp -= price
     user.xp += amount
     user.dailystats.claims = user.dailystats.claims + amount || amount
@@ -105,6 +106,9 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
+    user.lastcard = card.id
+    await user.save()
+    
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,

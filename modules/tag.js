@@ -1,12 +1,5 @@
 const {Tag} = require('../collections')
 
-const {
-    formatName,
-    bestMatch,
-    filter,
-    parseArgs,
-} = require('./card')
-
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
     return res.filter(x => check_tag(x)).map(x => x.card)
@@ -47,10 +40,15 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
         return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')
 
     const cards = c.filter(ctx.cards, parsedargs)
-    const card = c.bestMatch(cards)
+    const card = parsedargs.lastcard? ctx.cards[user.lastcard] : c.bestMatch(cards)
 
-    if(cards.length === 0)
-        return ctx.reply(user, `card ${c.formatName(card)} wasn't found`, 'red')
+    if(!parsedargs.lastcard && card) {
+        user.lastcard = card.id
+        await user.save()
+    }
+
+    if(!card)
+        return ctx.reply(user, `card wasn't found`, 'red')
     
     const tgTag = parsedargs.tags[0]
     const tag = await Tag.findOne({name: tgTag, card: card.id})

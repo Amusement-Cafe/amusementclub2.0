@@ -85,7 +85,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
         (x) => ctx.reply(user, `forge operation was declined`, 'red'))
 }))
 
-cmd(['liq'], ['liquify'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
     if(!hub || hub.level < 2)
@@ -100,9 +100,15 @@ cmd(['liq'], ['liquify'], withCards(async (ctx, user, cards, parsedargs) => {
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
 
+    const usercard = user.cards.filter(x => x.id === card.id)[0]
+    if(usercard.fav && usercard.amount === 1)
+        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+
     addConfirmation(ctx, user, 
-        `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?`, null, 
-        async (x) => {
+        `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
+        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount}** card(s) left`}`, 
+        null, async (x) => {
             user.vials += vials
             removeUserCard(user, card.id)
             await user.save()

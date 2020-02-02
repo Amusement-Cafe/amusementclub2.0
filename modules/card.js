@@ -148,8 +148,8 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     if(cards.length == 0)
         return ctx.reply(user, `no cards found`, 'red')
 
-    if(!parsedargs.lastcard && cards.length === 1) {
-        user.lastcard = cards[0].id
+    if(!parsedargs.lastcard && cards.length > 0) {
+        user.lastcard = bestMatch(cards).id
         await user.save()
     }
 
