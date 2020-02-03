@@ -135,7 +135,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
 
     /* join user cards to actual card types */
     const map = mapUserCards(ctx, user)
-    let cards = filter(map, parsedargs).sort(parsedargs.sort)
+    let cards = filter(map, parsedargs)
 
     if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
@@ -153,6 +153,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
         await user.save()
     }
 
+    cards.sort(parsedargs.sort)
     return callback(ctx, user, cards, parsedargs, args)
 }
 
@@ -163,7 +164,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  */
 const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
-    let cards = filter(ctx.cards.slice(), parsedargs).sort(parsedargs.sort)
+    let cards = filter(ctx.cards.slice(), parsedargs)
 
     if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
@@ -176,6 +177,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     if(cards.length == 0)
         return ctx.reply(user, `card wasn't found`, 'red')
 
+    cards.sort(parsedargs.sort)
     return callback(ctx, user, cards, parsedargs, args)
 }
 

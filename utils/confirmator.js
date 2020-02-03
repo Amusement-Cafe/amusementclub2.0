@@ -25,8 +25,8 @@ const addConfirmation = async (ctx, user, question, permits, confirm, decline, f
 
     queue.push(obj)
 
-    user.lock = true
-    await user.save()
+    //user.lock = true
+    //await user.save()
     const msg = await ctx.send(ctx.msg.channel.id, getEmbed(user, question, footer), user.discord_id)
 
     obj.msg = msg.id
