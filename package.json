@@ -11,12 +11,11 @@
   "license": "MIT",
   "dependencies": {
     "add-subtract-date": "^1.0.14",
-    "aws-sdk": "^2.578.0",
     "bad-words": "^3.0.3",
-    "eris": "^0.11.1",
+    "discord-paginator": "^0.8.1",
+    "eris": "^0.11.2",
     "lockfile": "^1.0.4",
     "lodash": "^4.17.15",
-    "lodash.sample": "^4.2.1",
     "mongodb": "^3.3.4",
     "mongoose": "^5.7.12",
     "pretty-ms": "^5.1.0"
