@@ -1,11 +1,16 @@
-const Eris      = require('eris')
-const mongoose  = require('mongoose')
-const colors    = require('./utils/colors')
-const {trigger} = require('./utils/cmd')
-const commands  = require('./commands')
-const Emitter   = require('events')
-const asdate    = require('add-subtract-date')
-const _         = require('lodash')
+const Eris          = require('eris')
+const mongoose      = require('mongoose')
+const colors        = require('./utils/colors')
+const commands      = require('./commands')
+const Emitter       = require('events')
+const asdate        = require('add-subtract-date')
+const paginator     = require('discord-paginator')
+const _             = require('lodash')
+
+const {
+    trigger, 
+    rct
+} = require('./utils/cmd')
 
 const {
     check_achievements
@@ -19,7 +24,7 @@ const {
 
 var userq = require('./utils/userq')
 
-module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, data, debug }) => {
+module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, data }) => {
     const emitter = new Emitter()
 
     const fillCardData = (carddata) => {
@@ -82,6 +87,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         auc_wss: '▫️'
     }
 
+    const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
+
     /* create our context */
     const ctx = {
         mcn, /* mongoose database connection */
@@ -95,6 +102,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         direct, /* DM reply function to the user */
         symbols,
         baseurl,
+        pgn,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 
@@ -176,6 +184,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             isolatedCtx.guild = msg.channel.guild
 
             if(!usr) return
+
+            await pgn.trigger(userID, msg, emoji.name)
 
             await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {

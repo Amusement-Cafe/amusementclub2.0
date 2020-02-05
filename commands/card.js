@@ -83,7 +83,7 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     }
 
     let fields = []
-    let description = `you got:`
+    let description = `**${user.username}**, you got:`
     fields.push({name: `New cards`, value: newCards.map(x => formatName(x.card)).join('\n')})
     fields.push({name: `Duplicates`, value: oldCards.map(x => `${formatName(x.card)} #${x.count}`).join('\n')})
     fields.push({name: `External view`, value: `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
@@ -95,12 +95,18 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         description += `\n**${x.name}**\n${x.value}`
     }).filter(x => x && x.value)
 
-    return ctx.reply(user, {
-        image: { url: cards[0].card.url },
-        color: colors.blue,
-        description,
-        fields,
-        footer: { text: `Your next claim will cost ${claimCost(user, ctx.guild.tax, 1)} ${ctx.symbols.tomato.replace(/`/gi, '')}` }
+    const pages = cards.map(x => x.card.url)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.image.url = data.pages[data.pagenum],
+        embed: {
+            color: colors.blue,
+            description,
+            fields,
+            image: { url: '' },
+            footer: { text: `Your next claim will cost ${claimCost(user, ctx.guild.tax, 1)} ${ctx.symbols.tomato.replace(/`/gi, '')}` }
+        }
     })
 })
 
@@ -108,7 +114,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
     user.lastcard = card.id
     await user.save()
-    
+
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,

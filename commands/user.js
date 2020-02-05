@@ -112,16 +112,16 @@ cmd('daily', async (ctx, user) => {
 })
 
 cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
-    const pages = []
     const now = new Date()
-
-    cards.map((c, i) => {
-        if (i % 15 == 0) pages.push("")
+    const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        pages[Math.floor(i/15)] += ((isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? `(x${c.amount})` : '')
     })
 
-    return await addPagination(ctx, user, `your cards (${cards.length} results)`, pages)
+    return await ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cardstr, 15),
+        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+    })
 }))
 
 cmd('profile', async (ctx, user, arg1) => {

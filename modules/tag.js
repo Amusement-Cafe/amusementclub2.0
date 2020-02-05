@@ -56,7 +56,7 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     if(forceFind && !tag)
         return ctx.reply(user, `tag #${tgTag} wasn't found for ${c.formatName(card)}`, 'red')
 
-    return callback(ctx, user, card, tag, tgTag)
+    return callback(ctx, user, card, tag, tgTag, parsedargs)
 }
 
 module.exports = {

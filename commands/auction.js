@@ -203,5 +203,5 @@ cmd(['auc', 'cancel'], async (ctx, user, arg1) => {
 
     }, (x) => {
         return ctx.reply(user, `operation was declined`, 'red')
-    }, `Your won't get a fee refund`)
+    }, `You won't get a fee refund`)
 }).access('dm')

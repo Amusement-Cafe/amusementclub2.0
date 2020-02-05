@@ -13,7 +13,7 @@ const {addPagination}       = require('../utils/paginator')
 const {addConfirmation}     = require('../utils/confirmator')
 const {cmd}                 = require('../utils/cmd')
 const {nameSort}            = require('../utils/tools')
-const sample                = require('lodash.sample');
+const _                     = require('lodash')
 
 cmd('col', async (ctx, user, ...args) => {
     const completed = args.filter(x => x === '-completed' || x === '!completed')[0]
@@ -50,7 +50,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
 
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
     const userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
-    const card = sample(colCards)
+    const card = _.sample(colCards)
     const clout = user.completedcols.filter(x => x.id === col.id)[0]
 
     const resp = []

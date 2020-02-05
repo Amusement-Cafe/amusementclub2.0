@@ -35,7 +35,7 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     }, user.discord_id)
 }))
 
-cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {
+cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     if(user.ban && user.ban.tags > 2)
         return ctx.reply(user, `you were banned from adding tags. To address this issue use \`->help support\``, 'red')
 
@@ -51,19 +51,24 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {
     if(tgTag.length > 25)
         return ctx.reply(user, `tag can't be longer than **25** characters`, 'red')
 
-    addConfirmation(ctx, user, `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`, 
-        { confirm: [user.discord_id], decline: [user.discord_id] },
-        async (x) => {
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, { 
+        force: parsedargs.force,
+        question: `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`,
+
+        onConfirm: async (x) => {
             tag = tag || await new_tag(user, tgTag, card)
 
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
 
-            return ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
-        }, async (x) => {
-            return ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
-        })
+            ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
+        },
+
+        onDecline: async (x) => {
+            ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
+        }
+    })
 }, false))
 
 cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag) => {
