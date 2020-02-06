@@ -321,7 +321,11 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
     if(ctx.guild.balance < price)
         return ctx.reply(user, `this guild doesn't have **${price}** ${ctx.symbols.tomato} required for a lock`, 'red')
 
+    arg1 = arg1.replace('-', '')
     const col = bestColMatch(ctx, arg1)
+    if(!col)
+        return ctx.reply(user, `collection **${arg1}** not found`, 'red')
+
     if(ctx.guild.lock && ctx.guild.lock === col.id)
         return ctx.reply(user, `this guild is already locked to **${col.name}**`, 'red')
 
