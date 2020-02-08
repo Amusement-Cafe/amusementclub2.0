@@ -12,12 +12,12 @@
   "dependencies": {
     "add-subtract-date": "^1.0.14",
     "bad-words": "^3.0.3",
-    "discord-paginator": "^0.8.2",
+    "discord-paginator": "^0.8.3",
     "eris": "^0.11.2",
     "lockfile": "^1.0.4",
     "lodash": "^4.17.15",
-    "mongodb": "^3.3.4",
-    "mongoose": "^5.7.12",
+    "mongodb": "^3.5.2",
+    "mongoose": "^5.8.11",
     "pretty-ms": "^5.1.0"
   }
 }

@@ -46,13 +46,12 @@ const getHelpEmbed = (o, prefix) => {
     const e = {
         title: o.title, 
         description: o.description.replace(/->/g, prefix), fields: [],
-        thumbnail: { url: "https://cdn.discordapp.com/attachments/651612263622639648/651651426316976129/amuse2_logo_full.png" },
         footer: { text: `Amusement Club 2.0 | xQAxThF | v2.0 BETA | by NoxCaos#4905` },
         color: colors['green']
     }
 
     o.fields.map((x) => {
-       e.fields.push({ name: x.title, value: x.description.replace(/->/g, prefix).replace(/{currency}/gi, '`🍅`')})
+       e.fields.push({ name: x.title, inline: x.inline, value: x.description.replace(/->/g, prefix)})
     })
 
     return e
