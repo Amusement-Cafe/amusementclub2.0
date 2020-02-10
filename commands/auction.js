@@ -21,11 +21,8 @@ const {
 } = require('../modules/card')
 
 const {
-    addGuildXP,
     getBuilding
 } = require('../modules/guild')
-
-const {addConfirmation} = require('../utils/confirmator')
 
 cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
@@ -95,7 +92,6 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    const usercard = user.cards.filter(x => x.id === card.id)[0]
     const price = parsedargs.extra.filter(x => !isNaN(x) && parseInt(x) > 0).map(x => parseInt(x))[0] || Math.round(ceval)
 
     const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
@@ -111,27 +107,37 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
         time = Math.min(Math.max(timenum, 1), 10);
     }
 
-    if(price < min)
-        return ctx.reply(user, `you can't set price less than **${min}** ${ctx.symbols.tomato} for this card`, 'red')
+    const check = async () => {
+        user = await fetchOnly(user.discord_id)
+        const usercard = user.cards.filter(x => x.id === card.id)[0]
 
-    if(price > max)
-        return ctx.reply(user, `you can't set price higher than **${max}** ${ctx.symbols.tomato} for this card`, 'red')
+        if(!usercard)
+            return ctx.reply(user, `impossible to proceed with confirmation: ${formatName(card)} not found in your list`, 'red')
 
-    if(user.exp < fee)
-        return ctx.reply(user, `you have to have at least **${fee}** ${ctx.symbols.tomato} to auction for that price`, 'red')
+        if(price < min)
+            return ctx.reply(user, `you can't set price less than **${min}** ${ctx.symbols.tomato} for this card`, 'red')
 
-    if(usercard.fav && usercard.amount === 1)
-        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
-            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+        if(price > max)
+            return ctx.reply(user, `you can't set price higher than **${max}** ${ctx.symbols.tomato} for this card`, 'red')
 
-    addConfirmation(ctx, user, `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? 
+        if(user.exp < fee)
+            return ctx.reply(user, `you have to have at least **${fee}** ${ctx.symbols.tomato} to auction for that price`, 'red')
+
+        if(usercard.fav && usercard.amount === 1)
+            return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+                Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+    }
+
+    const question = `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? 
         ${timenum? `This auction will last **${time} hours**` : ''}
-        ${card.amount > 1? '' : 'This is the only copy that you have, so your rating will be lost'}`, null,
-        async (x) => {
-        await new_auc(ctx, user, card, price, fee, time)
-    }, async (x) => {
-        return ctx.reply(user, `operation was declined`, 'red')
-    }, `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)`)
+        ${card.amount > 1? '' : 'This is the only copy that you have, so your rating will be lost'}`
+
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        question,
+        check,
+        onConfirm: () => new_auc(ctx, user, card, price, fee, time),
+    })
 }))
 
 cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
@@ -177,31 +183,32 @@ cmd(['auc', 'cancel'], async (ctx, user, arg1) => {
     let auc = await Auction.findOne({ id: arg1 })
     const card = ctx.cards[auc.card]
 
-    if(!auc)
-        return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
-
-    if(auc.author != user.discord_id)
-        return ctx.reply(user, `you don't have rights to cancel this auction`, 'red')
-
-    if(auc.lastbidder)
-        return ctx.reply(user, `you cannot cancel this auction. A person has already bid on it`, 'red')
-
-    if(auc.expires < asdate.add(new Date(), 1, 'hour'))
-        return ctx.reply(user, `you cannot cancel auction that expires in less than one hour`, 'red')
-
-    addConfirmation(ctx, user, `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`, null,
-        async (x) => {
-        
+    const check = async () => {
         auc = await Auction.findOne({ id: arg1 })
+
+        if(!auc)
+            return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
+
+        if(auc.author != user.discord_id)
+            return ctx.reply(user, `you don't have rights to cancel this auction`, 'red')
+
         if(auc.lastbidder)
             return ctx.reply(user, `you cannot cancel this auction. A person has already bid on it`, 'red')
 
-        auc.expires = new Date(0)
-        await auc.save()
+        if(auc.expires < asdate.add(new Date(), 1, 'hour'))
+            return ctx.reply(user, `you cannot cancel auction that expires in less than one hour`, 'red')
+    }
 
-        return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)
+    const question = `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `You won't get a fee refund` } },
+        question,
+        check,
+        onConfirm: async () => {
+            auc.expires = new Date(0)
+            await auc.save()
 
-    }, (x) => {
-        return ctx.reply(user, `operation was declined`, 'red')
-    }, `You won't get a fee refund`)
+            return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)
+        }
+    })
 }).access('dm')
