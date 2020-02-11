@@ -130,23 +130,25 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
         return ctx.reply(user, `you have to have at least **${level.price}** ${ctx.symbols.tomato} to upgrade this building`, 'red')
 
     const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${level.price}** ${ctx.symbols.tomato}?`
-    addConfirmation(ctx, user, question, null, async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: async (x) => {
+            const xp = Math.floor(level.price * .04)
+            building.level++
+            user.exp -= level.price
+            user.xp += xp
+            ctx.guild.markModified('buildings')
+            addGuildXP(ctx, user, xp)
 
-        const xp = Math.floor(level.price * .04)
-        building.level++
-        user.exp -= level.price
-        user.xp += xp
-        ctx.guild.markModified('buildings')
-        addGuildXP(ctx, user, xp)
+            await user.save()
+            await ctx.guild.save()
 
-        await user.save()
-        await ctx.guild.save()
+            return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${building.level}**!
+                This building now *${level.desc.toLowerCase()}*
+                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
 
-        return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${building.level}**!
-            This building now *${level.desc.toLowerCase()}*
-            You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
-
-    }, (x) => ctx.reply(user, 'upgrade was cancelled', 'red'))
+        },
+    })
 })
 
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
@@ -163,22 +165,23 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
         return ctx.reply(user, `you don't have **${amount}** ${ctx.symbols.tomato} to donate`, 'red')
 
     const question = `Do you want to donate **${amount}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**?`
-    addConfirmation(ctx, user, question, null, async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: async (x) => {
+            const xp = Math.floor(amount * .01)
+            user.exp -= amount
+            user.xp += xp
+            ctx.guild.balance += amount
+            addGuildXP(ctx, user, xp)
 
-        const xp = Math.floor(amount * .01)
-        user.exp -= amount
-        user.xp += xp
-        ctx.guild.balance += amount
-        addGuildXP(ctx, user, xp)
+            await user.save()
+            await ctx.guild.save()
 
-        await user.save()
-        await ctx.guild.save()
-
-        return ctx.reply(user, `you donated **${amount}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
-            This now has **${ctx.guild.balance}** ${ctx.symbols.tomato}
-            You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
-
-    }, (x) => ctx.reply(user, 'operation was cancelled', 'red'))
+            return ctx.reply(user, `you donated **${amount}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
+                This now has **${ctx.guild.balance}** ${ctx.symbols.tomato}
+                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+        }
+    })
 })
 
 cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
@@ -353,19 +356,23 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
         You can unlock any time.
         Users will still be able to claim cards from general pool using \`->claim any\``
 
-    addConfirmation(ctx, user, question, null, async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: async (x) => {
 
-        ctx.guild.balance -= price
-        ctx.guild.lock = col.id
-        ctx.guild.lastlock = now
-        ctx.guild.lockactive = true
+            ctx.guild.balance -= price
+            ctx.guild.lock = col.id
+            ctx.guild.lastlock = now
+            ctx.guild.lockactive = true
 
-        await ctx.guild.save()
+            await ctx.guild.save()
 
-        return ctx.reply(user, `you locked **${ctx.discord_guild.name}** to **${col.name}**
-            Claim pool now consists of **${colCards.length}** cards`)
+            return ctx.reply(user, `you locked **${ctx.discord_guild.name}** to **${col.name}**
+                Claim pool now consists of **${colCards.length}** cards`)
 
-    }, (x) => ctx.reply(user, 'operation was cancelled. Guild lock was not applied', 'red'))
+        }, 
+        onDecline: (x) => ctx.reply(user, 'operation was cancelled. Guild lock was not applied', 'red')
+    })
 })
 
 cmd(['guild', 'unlock'], async (ctx, user) => {
@@ -381,15 +388,16 @@ cmd(['guild', 'unlock'], async (ctx, user) => {
         This cannot be undone and won't reset lock cooldown.
         > This won't remove a lock override (if this guild has one)`
 
-    addConfirmation(ctx, user, question, null, async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: async (x) => {
+            const colCards = ctx.cards.filter(x => x.level < 4)
+            ctx.guild.lock = ''
 
-        const colCards = ctx.cards.filter(x => x.level < 4)
-        ctx.guild.lock = ''
+            await ctx.guild.save()
 
-        await ctx.guild.save()
-
-        return ctx.reply(user, `guild lock has been removed.
-            Claim pool now consists of **${colCards.length}** cards`)
-
-    }, (x) => ctx.reply(user, 'operation was cancelled', 'red'))
+            return ctx.reply(user, `guild lock has been removed.
+                Claim pool now consists of **${colCards.length}** cards`)
+        }
+    })
 })

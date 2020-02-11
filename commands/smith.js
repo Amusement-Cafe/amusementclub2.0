@@ -22,8 +22,6 @@ const {
     getBuilding
 } = require('../modules/guild')
 
-const {addConfirmation} = require('../utils/confirmator')
-
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
@@ -54,10 +52,13 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     if(user.exp < cost)
         return ctx.reply(user, `you need at least **${cost}** ${ctx.symbols.tomato} to forge these cards`, 'red')
 
-    addConfirmation(ctx, user, 
-        `Do you want to forge ${formatName(card1)} and ${formatName(card2)} using **${cost}** ${ctx.symbols.tomato}?
-        You will get **${vialres}** ${ctx.symbols.vial} and a **${card1.level} ${ctx.symbols.star} card**`, null, 
-        async (x) => {
+    const question = `Do you want to forge ${formatName(card1)} and ${formatName(card2)} using **${cost}** ${ctx.symbols.tomato}?
+        You will get **${vialres}** ${ctx.symbols.vial} and a **${card1.level} ${ctx.symbols.star} card**`
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        force: parsedargs.force,
+        onConfirm: async (x) => {
             let res = ctx.cards.filter(x => x.level === card1.level && x.id != card1.id && x.id != card2.id)
 
             if(card1.col === card2.col)
@@ -73,6 +74,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
             removeUserCard(user, card1.id)
             removeUserCard(user, card2.id)
             addUserCard(user, newcard.id)
+            user.lastcard = newcard.id
             await user.save()
 
             return ctx.reply(user, {
@@ -81,8 +83,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 description: `you got ${formatName(newcard)}!
                     **${vialres}** ${ctx.symbols.vial} were added to your account`
             })
-        }, 
-        (x) => ctx.reply(user, `forge operation was declined`, 'red'))
+        }
+    })
 }))
 
 cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
@@ -105,20 +107,23 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
-    addConfirmation(ctx, user, 
-        `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
-        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount}** card(s) left`}`, 
-        null, async (x) => {
-            user.vials += vials
-            removeUserCard(user, card.id)
-            await user.save()
+    const question = `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
+        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount}** card(s) left`}`
 
-            ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
-                You have **${user.vials}** ${ctx.symbols.vial}
-                You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
-        }, 
-        (x) => ctx.reply(user, `liquifying operation was declined`, 'red'), 
-        `Resulting vials are not constant and can change depending on card popularity`)
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        force: parsedargs.force,
+        embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
+        onConfirm: async (x) => { 
+           user.vials += vials
+           removeUserCard(user, card.id)
+           await user.save()
+
+           ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
+               You have **${user.vials}** ${ctx.symbols.vial}
+               You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+        },
+    })
 }))
 
 cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -137,9 +142,11 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
             You need **${vials}** ${ctx.symbols.vial} but you have **${user.vials}** ${ctx.symbols.vial}`, 'red')
 
-    addConfirmation(ctx, user, 
-        `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}?`, null, 
-        async (x) => {
+    const question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}?`
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        force: parsedargs.force,
+        onConfirm: async (x) => {
             user.vials -= vials
             addUserCard(user, card.id)
             await user.save()
@@ -150,6 +157,6 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
                 description: `you got ${formatName(card)}!
                     You have **${user.vials}** ${ctx.symbols.vial} remaining`
             })
-        }, 
-        (x) => ctx.reply(user, `card draw was declined`, 'red'))
+        }
+    })
 }))

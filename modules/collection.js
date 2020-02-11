@@ -21,7 +21,7 @@ const reset = async (ctx, user, col) => {
     user.markModified('completedcols')
 
     user.cards.map(x => { 
-        if(ctx.cards[x.id].col === col.id && ctx.cards[x.id].level < 5) 
+        if(ctx.cards[x.id] && ctx.cards[x.id].col === col.id && ctx.cards[x.id].level < 5) 
             x.amount--
     })
 

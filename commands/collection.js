@@ -9,8 +9,6 @@ const {
     mapUserCards
 } = require('../modules/card')
 
-const {addPagination}       = require('../utils/paginator')
-const {addConfirmation}     = require('../utils/confirmator')
 const {cmd}                 = require('../utils/cmd')
 const {nameSort}            = require('../utils/tools')
 const _                     = require('lodash')
@@ -91,9 +89,12 @@ cmd(['col', 'reset'], async (ctx, user, ...args) => {
     if(userCards.length < colCards.length)
         return ctx.reply(user, `you have to have **100%** of the cards from collection (excluding legendaries) in order to reset it`, 'red')
 
-    addConfirmation(ctx, user, `Do you really want to reset **${col.name}**?
-        You will lose 1 copy of each card from that collection and gain 1 clout star${legendary? '+ legendary' : 
-        `\n> Please note that you won't get legendary card ticket because this collection doesn't have any legendaries` }`, null, 
-        (x) => reset(ctx, user, col),
-        (x) => ctx.reply(user, `collection reset has been declined`, 'red'))
+    const question = `Do you really want to reset **${col.name}**?
+        You will lose 1 copy of each card from that collection and gain 1 clout star${legendary? ' + legendary' : 
+        `\n> Please note that you won't get legendary card ticket because this collection doesn't have any legendaries`}`
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: (x) => reset(ctx, user, col),
+    })
 })
