@@ -92,8 +92,12 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    const price = parsedargs.extra.filter(x => !isNaN(x) && parseInt(x) > 0).map(x => parseInt(x))[0] || Math.round(ceval)
+    let price = parsedargs.extra.filter(x => !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
 
+    if(price <= 4)
+        price *= ceval
+
+    price = Math.round(price)
     const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
