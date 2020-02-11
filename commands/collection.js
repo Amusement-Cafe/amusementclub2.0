@@ -32,14 +32,18 @@ cmd('col', async (ctx, user, ...args) => {
     if(cols.length === 0)
         return ctx.reply(user, `no collections found`, 'red')
 
-    const pages = []
-    cols.map((x, i) => {
-        if (i % 10 == 0) pages.push("")
+    const pages = ctx.pgn.getPages(cols.map(x => {
         const complete = user.completedcols.filter(y => x.id === y.id)[0]
-        pages[Math.floor(i/10)] += `${complete? `[${complete.amount}${ctx.symbols.star}]` : ''} **${x.name}** (${x.id})\n`
-    })
+        return `${complete? `[${complete.amount}${ctx.symbols.star}]` : ''} **${x.name}** (${x.id})`
+    }))
 
-    return await addPagination(ctx, user, `found ${cols.length} collections`, pages)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `found ${cols.length} collections` }
+        }
+    })
 })
 
 cmd(['col', 'info'], async (ctx, user, ...args) => {

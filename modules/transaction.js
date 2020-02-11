@@ -49,6 +49,11 @@ const from_auc = async (auc, from, to) => {
 }
 
 const confirm_trs = async (ctx, user, trs_id) => {
+    if(typeof user === 'string')
+        user = await User.findOne({ discord_id: user })
+
+    if(!user) return;
+
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
@@ -91,6 +96,11 @@ const confirm_trs = async (ctx, user, trs_id) => {
 }
 
 const decline_trs = async (ctx, user, trs_id) => {
+    if(typeof user === 'string')
+        user = await User.findOne({ discord_id: user })
+
+    if(!user) return;
+
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)

@@ -134,6 +134,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        force: parsedargs.force,
         question,
         check,
         onConfirm: () => new_auc(ctx, user, card, price, fee, time),
@@ -179,7 +180,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     await bid_auc(ctx, user, auc, bid)
 }).access('dm')
 
-cmd(['auc', 'cancel'], async (ctx, user, arg1) => {
+cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
     let auc = await Auction.findOne({ id: arg1 })
     const card = ctx.cards[auc.card]
 
@@ -202,6 +203,7 @@ cmd(['auc', 'cancel'], async (ctx, user, arg1) => {
     const question = `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `You won't get a fee refund` } },
+        force: arg2 === '-f',
         question,
         check,
         onConfirm: async () => {

@@ -123,14 +123,12 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const pages = []
-
-    cards.map((c, i) => {
-        if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += (formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
+        embed: {
+            author: { name: `Matched cards from database (${cards.length} results)` },
+        }
     })
-
-    return await addPagination(ctx, user, `matched cards from database (${cards.length} results)`, pages)
 }))
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
@@ -169,24 +167,27 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(!ctx.msg.channel.guild)
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
-    const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
+    const perms = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
 
     const price = await evalCard(ctx, card, parsedargs.id? 1 : .4)
     const trs = await new_trs(ctx, user, card, price, parsedargs.id)
-    const footer = `ID: \`${trs.id}\``
 
     let question = ""
     if(parsedargs.id) {
         question = `**${trs.to}**, **${trs.from}** wants to sell you **${formatName(card)}** for **${price}** ${ctx.symbols.tomato}`
     } else {
         question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** ${ctx.symbols.tomato}?`
-        prm.confirm.push(user.discord_id)
+        perms.confirm.push(user.discord_id)
     }
 
-    addConfirmation(ctx, user, question, prm, 
-        (x) => confirm_trs(ctx, x, trs.id), 
-        (x) => decline_trs(ctx, x, trs.id), 
-        footer)
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `ID: \`${trs.id}\`` } },
+        force: parsedargs.force,
+        question,
+        perms,
+        onConfirm: (x) => confirm_trs(ctx, x, trs.id),
+        onDecline: (x) => decline_trs(ctx, x, trs.id)
+    })
 }))
 
 cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {

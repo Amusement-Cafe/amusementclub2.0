@@ -12,7 +12,7 @@
   "dependencies": {
     "add-subtract-date": "^1.0.14",
     "bad-words": "^3.0.3",
-    "discord-paginator": "^0.8.3",
+    "discord-paginator": "^0.8.4",
     "eris": "^0.11.2",
     "lockfile": "^1.0.4",
     "lodash": "^4.17.15",
