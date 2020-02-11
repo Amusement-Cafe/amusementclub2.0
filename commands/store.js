@@ -10,6 +10,9 @@ cmd('store', 'shop', async (ctx, user, cat) => {
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
     cat = cat? cat.replace(/s$/i, '') : null
 
+    if(parseInt(cat))
+        cat = cats[parseInt(cat) - 1]
+
     if(!cat || !cats.includes(cat))
         return ctx.reply(user, {
             title: `Welcome to the store!`,
@@ -30,7 +33,9 @@ cmd('store', 'shop', async (ctx, user, cat) => {
 })
 
 cmd(['store', 'info'], ['shop', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, itemid) => {
-    const item = ctx.items.filter(x => x.id === itemid)[0]
+    let item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
+    if(!item && parseInt(itemid))
+        item = ctx.items[parseInt(itemid) - 1]
 
     if(!item)
         return ctx.reply(user, `item with ID \`${itemid}\` not found`, 'red')
@@ -54,8 +59,10 @@ cmd(['store', 'info'], ['shop', 'info'], ['inv', 'info'], ['item', 'info'], asyn
     return ctx.send(ctx.msg.channel.id, embed)
 })
 
-cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid) => {
-    const item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
+cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid, force) => {
+    let item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
+    if(!item && parseInt(itemid))
+        item = ctx.items[parseInt(itemid) - 1]
 
     if(!item)
         return ctx.reply(user, `item with ID \`${itemid}\` not found or cannot be purchased`, 'red')
@@ -63,15 +70,15 @@ cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid) => {
     if(user.exp < item.price)
         return ctx.reply(user, `you have to have at least \`${item.price}\` ${ctx.symbols.tomato} to buy this item`, 'red')
 
-    return addConfirmation(ctx, user, 
-        `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}?`, null, 
-        async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}?`,
+        force: force === '-f',
+        onConfirm: async (x) => {
             user.inventory.push({ id: item.id, time: new Date() })
             user.exp -= item.price
             await user.save()
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}
                 The item has been added to your inventory. See \`->inv info ${item.id}\` for details`, 'green')
-        }, async (x) => {
-            return ctx.reply(user, `the purchase was declined`, 'red')
-        })
+        }
+    })
 })
