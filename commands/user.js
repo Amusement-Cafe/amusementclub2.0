@@ -1,7 +1,6 @@
 const msToTime          = require('pretty-ms')
 const {cmd}             = require('../utils/cmd')
 const {addPagination}   = require('../utils/paginator')
-const {addConfirmation} = require('../utils/confirmator')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
 
@@ -53,21 +52,23 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     const title = `To view the item details use \`->item info [item id]\`
                     To use the item \`->inv use [item id]\`\n\n`
 
-    const pages = []
-    items.map((x, i) => {
-        if (i % 10 == 0) pages.push(title)
-        pages[Math.floor(i/10)] += `${i+1}. \`${x.id}\` **${x.name}**\n`
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}**`)),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `**${user.username}**, your inventory (${items.length} results)` },
+            color: colors.blue,
+        }
     })
-
-    return addPagination(ctx, user, `your inventory (${items.length} results)`, pages)
 }))
 
 cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
     const item = items[0]
 
-    addConfirmation(ctx, user, getQuestion(ctx, user, item), null, 
-        (x) => useItem(ctx, user, item), 
-        (x) => ctx.reply(user, `**${item.name}** was not used`, 'red'))
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: getQuestion(ctx, user, item),
+        onConfirm: (x) => useItem(ctx, user, item)
+    })
 }))
 
 cmd('daily', async (ctx, user) => {
@@ -118,7 +119,7 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? `(x${c.amount})` : '')
     })
 
-    return await ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
     })
@@ -158,13 +159,12 @@ cmd('profile', async (ctx, user, arg1) => {
 })
 
 cmd('diff', async (ctx, user, ...args) => {
-    const pages = []
     const newArgs = parseArgs(ctx, args)
 
-    if(!newArgs.id)
-        return ctx.reply(user, `please, include ID of other user`, 'red')
+    if(!newArgs.ids[0])
+        return ctx.reply(user, `please include ID of other user`, 'red')
 
-    const otherUser = await fetchOnly(newArgs.id)
+    const otherUser = await fetchOnly(newArgs.ids[0])
     const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
 
     if(otherCards.length === 0)
@@ -177,17 +177,13 @@ cmd('diff', async (ctx, user, ...args) => {
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
 
-    diff.map((c, i) => {
-        if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += `${formatName(c)}\n`
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
+        embed: { author: { name: `${user.username}, your difference with ${otherUser.username} (${diff.length} results)` } }
     })
-
-    return await addPagination(ctx, user, `your difference with ${otherUser.username} (${diff.length} results)`, pages)
 })
 
 cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const pages = []
-
     const ids = user.cards.map(x => x.id)
     const diff = cards.filter(x => ids.indexOf(x.id) === -1)
         .sort(parsedargs.sort)
@@ -195,10 +191,8 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(diff.length === 0)
         return ctx.reply(user, `you have all cards matching this request!`)
 
-    diff.map((c, i) => {
-        if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += `${formatName(c)}\n`
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
+        embed: { author: { name: `${user.username}, cards that you don't have (${diff.length} results)` } }
     })
-
-    return await addPagination(ctx, user, `cards that you don't have (${diff.length} results)`, pages)
 }))

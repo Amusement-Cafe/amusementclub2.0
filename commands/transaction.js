@@ -1,6 +1,5 @@
 const {cmd, pcmd}           = require('../utils/cmd')
 const {Transaction}         = require('../collections')
-const paginator             = require('../utils/paginator')
 const msToTime              = require('pretty-ms')
 const colors                = require('../utils/colors')
 
@@ -37,9 +36,14 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent transactions`)
 
-    return await paginator.addPagination(ctx, user, 
-        `your transactions (${list.length} results)`, 
-        paginate_trslist(ctx, user, list))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, your transactions (${list.length} results)` },
+            color: colors.blue,
+        }
+    })
 }))
 
 cmd(['trans', 'pending'], 'pending', async (ctx, user) => {
@@ -48,9 +52,14 @@ cmd(['trans', 'pending'], 'pending', async (ctx, user) => {
     if(list.length == 0)
         return ctx.reply(user, `you don't have any pending transactions`)
 
-    return await paginator.addPagination(ctx, user, 
-        `your pending transactions (${list.length} results)`, 
-        paginate_trslist(ctx, user, list))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, your pending transactions (${list.length} results)` },
+            color: colors.yellow,
+        }
+    })
 })
 
 cmd(['trans', 'gets'], 'gets', async (ctx, user) => {
@@ -61,9 +70,14 @@ cmd(['trans', 'gets'], 'gets', async (ctx, user) => {
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent incoming transactions`)
 
-    return await paginator.addPagination(ctx, user, 
-        `your incoming (${list.length} results)`, 
-        paginate_trslist(ctx, user, list))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, your incoming transactions (${list.length} results)` },
+            color: colors.green,
+        }
+    })
 })
 
 cmd(['trans', 'sends'], 'sends', async (ctx, user) => {
@@ -74,9 +88,14 @@ cmd(['trans', 'sends'], 'sends', async (ctx, user) => {
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent outgoing transactions`)
 
-    return await paginator.addPagination(ctx, user, 
-        `your outgoing (${list.length} results)`, 
-        paginate_trslist(ctx, user, list))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, your outgoing transactions (${list.length} results)` },
+            color: colors.green,
+        }
+    })
 })
 
 cmd(['trans', 'info'], async (ctx, user, arg1) => {
@@ -119,7 +138,12 @@ pcmd(['admin', 'mod'], ['trans', 'find'], withGlobalCards(async (ctx, user, card
     if(list.length == 0)
         return ctx.reply(user, `matched ${cards.length} cards and 0 transactions`)
 
-    return await paginator.addPagination(ctx, user, 
-        `matched ${cards.length} cards and ${list.length} transactions`, 
-        paginate_trslist(ctx, user, list))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, matched ${cards.length} cards and ${list.length} transactions` },
+            color: colors.blue,
+        }
+    })
 }))

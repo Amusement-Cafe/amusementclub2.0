@@ -2,10 +2,6 @@ const {cmd}     = require('../utils/cmd')
 const _         = require('lodash')
 const colors    = require('../utils/colors')
 
-const {
-    addConfirmation
-} = require('../utils/confirmator')
-
 cmd('store', 'shop', async (ctx, user, cat) => {
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
     cat = cat? cat.replace(/s$/i, '') : null

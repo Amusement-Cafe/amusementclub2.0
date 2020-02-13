@@ -22,7 +22,7 @@ const parseArgs = (ctx, args, lastdaily) => {
     const cols = [], levels = [], keywords = []
     const anticols = [], antilevels = []
     const q = { 
-        ids: false, 
+        ids: [], 
         sort: (a, b) => b.level - a.level,
         filters: [],
         tags: [],
@@ -35,7 +35,7 @@ const parseArgs = (ctx, args, lastdaily) => {
 
     args.map(x => {
         let substr = x.substr(1)
-        q.id = q.id || tryGetUserID(x)
+
         if(x === '.') {
             q.lastcard = true
 
@@ -75,7 +75,9 @@ const parseArgs = (ctx, args, lastdaily) => {
         } else if(x[0] === ':') {
             q.extra.push(substr)
         } else {
-            keywords.push(x)
+            const tryid = tryGetUserID(x)
+            if(tryid) q.ids.push(tryid)
+            else keywords.push(x)
         }
     })
 
@@ -87,7 +89,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
-        return !q.ids && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
+        return q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
     }
 
     return q

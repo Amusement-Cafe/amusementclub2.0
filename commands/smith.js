@@ -94,7 +94,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
 
     const card = bestMatch(cards)
-    const vials = Math.round((await getVialCost(ctx, card)) * .5)
+    const vials = Math.round((await getVialCost(ctx, card)) * .25)
 
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify a card`, 'red')
