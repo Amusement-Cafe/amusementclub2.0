@@ -93,11 +93,11 @@ cmd('daily', async (ctx, user) => {
 
         if(tavern) {
             quests.push(_.sample(ctx.quests.daily.filter(x => x.tier < 2)))
-            user.dailyquests.push(quests[0])
+            user.dailyquests.push(quests[0].id)
 
             if(tavern.level > 1) {
                 quests.push(_.sample(ctx.quests.daily.filter(x => x.tier > 1)))
-                user.dailyquests.push(quests[1])
+                user.dailyquests.push(quests[1].id)
             }
         }
         user.markModified('dailyquests')
@@ -218,3 +218,15 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         embed: { author: { name: `${user.username}, cards that you don't have (${diff.length} results)` } }
     })
 }))
+
+cmd('quest', 'quests', async (ctx, user) => {
+    if(user.dailyquests.length === 0 && user.questlines.length === 0)
+        return ctx.reply(user, `you don't have any quests`, 'red')
+
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: `${user.username}, your quests:` },
+        description: ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y))
+            .map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n') 
+    }, user.discord_id)
+})

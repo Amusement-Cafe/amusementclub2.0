@@ -30,7 +30,7 @@ const check_daily = async (ctx, user, action) => {
     ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y && x.check(ctx, user)))
     .map(x => {
         const reward = x.resolve(ctx, user)
-        user.dailyquests = user.dailyquests.filter(y => x.id != x.id)
+        user.dailyquests = user.dailyquests.filter(y => y != x.id)
         rewards.push(x.reward(ctx))
         complete.push(x.name.replace('-star', ctx.symbols.star))
     })

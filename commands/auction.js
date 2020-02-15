@@ -159,7 +159,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `please specify auction ID`, 'red')
 
     if(!bid)
-        return ctx.reply(user, `please bid amount`, 'red')
+        return ctx.reply(user, `please specify bid amount`, 'red')
 
     const auc = await Auction.findOne({id: id})
 
