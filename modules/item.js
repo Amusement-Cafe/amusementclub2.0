@@ -60,11 +60,11 @@ const uses = {
 
         guild.buildings.push({ id: item.id, level: 1, health: 100 })
         addGuildXP(ctx, user, xp)
-        //await ctx.guild.save()
+        await ctx.guild.save()
 
         user.exp -= item.levels[0].price
         pullInventoryItem(user, item.id)
-        //await user.save()
+        await user.save()
 
         return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**
             You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
@@ -79,7 +79,7 @@ const uses = {
 
         addUserCard(user, card.id)
         pullInventoryItem(user, item.id)
-        //await user.save()
+        await user.save()
 
         return ctx.reply(user, {
             image: { url: card.url },

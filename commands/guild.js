@@ -1,7 +1,6 @@
 const {cmd}             = require('../utils/cmd')
 const {XPtoLEVEL}       = require('../utils/tools')
 const color             = require('../utils/colors')
-const {addConfirmation} = require('../utils/confirmator')
 const msToTime          = require('pretty-ms')
 const asdate            = require('add-subtract-date')
 

@@ -2,6 +2,7 @@ const msToTime          = require('pretty-ms')
 const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
+const _                 = require('lodash')
 
 const {
     claimCost,
@@ -55,7 +56,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}**`)),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `**${user.username}**, your inventory (${items.length} results)` },
+            author: { name: `${user.username}, your inventory (${items.length} results)` },
             color: colors.blue,
         }
     })
@@ -78,14 +79,28 @@ cmd('daily', async (ctx, user) => {
     const future = asdate.add(user.lastdaily, 20, 'hours')
 
     if(future < now) {
+        const quests = []
         const gbank = getBuilding(ctx, 'gbank')
+        const tavern = getBuilding(ctx, 'tavern')
         const amount = gbank? 500 : 300
 
         user.lastdaily = now
         user.dailystats = {}
         user.exp += amount
         user.xp += 10
+        user.dailyquests = []
         user.markModified('dailystats')
+
+        if(tavern) {
+            quests.push(_.sample(ctx.quests.daily.filter(x => x.tier < 2)))
+            user.dailyquests.push(quests[0])
+
+            if(tavern.level > 1) {
+                quests.push(_.sample(ctx.quests.daily.filter(x => x.tier > 1)))
+                user.dailyquests.push(quests[1])
+            }
+        }
+        user.markModified('dailyquests')
         await user.save()
 
         addGuildXP(ctx, user, 10)
@@ -99,6 +114,13 @@ cmd('daily', async (ctx, user) => {
             fields.push({name: `Incoming pending transactions`, 
                 value: trs.map(x => `\`${x.id}\` ${formatName(ctx.cards[x.card])} from **${x.from}**`).join('\n') 
                     + (more > 0? `\nand **${more}** more...` : '')})
+        }
+
+        if(quests.length > 0) {
+            fields.push({
+                name: `Daily quests`, 
+                value: quests.map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n')
+            })
         }
 
         return ctx.reply(user, {

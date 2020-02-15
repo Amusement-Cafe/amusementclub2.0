@@ -26,5 +26,6 @@ module.exports = model('User', {
     xp:                 { type: Number, default: 0 },
     vials:              { type: Number, default: 0 },
 
-    lock:               { type: Boolean, default: false },
+    dailyquests:        { type: Array, default: [] },
+    questlines:         { type: Array, default: [] },
 })

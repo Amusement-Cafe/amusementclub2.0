@@ -13,7 +13,7 @@ const {
 } = require('./utils/cmd')
 
 const {
-    check_achievements
+    check_all
 } = require('./modules/achievement')
 
 const {
@@ -99,6 +99,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         help: data.help, /* help data */
         items: data.items, /* game items */
         achievements: data.achievements, /* game achievements */
+        quests: data.quests, /* game quests */
         direct, /* DM reply function to the user */
         symbols,
         baseurl,
@@ -162,7 +163,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
 
-            args = args.filter(x => !(x.length === 2 && x[0] === '-'))
+            args = args.filter(x => !globalArgsMap.hasOwnProperty(x[1]))
 
             if(usr.lock) {
                 usr.lock = false
@@ -170,7 +171,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             }
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
-            await check_achievements(isolatedCtx, usr, action)
+            await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
             //if(debug)
@@ -185,20 +186,18 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
 
         try {
             const isolatedCtx = Object.assign({}, ctx, {
-                msg, /* current icoming message */
-                emoji, /* reaction data */
-                cards: data.cards, /* data with cards */
-                collections: data.collections, /* data with collections */
+                msg, 
+                emoji,
             })
 
             const usr  = await user.fetchOnly(userID)
-            isolatedCtx.guild = msg.channel.guild
-
+            //isolatedCtx.guild = msg.channel.guild
             if(!usr) return
 
             await pgn.trigger(userID, msg, emoji.name)
+            //await check_all(isolatedCtx, usr)
 
-            await trigger('rct', isolatedCtx, usr, [emoji.name])
+            //await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
             let sh = msg.channel.guild.shard
             emitter.emit('error', e, sh.id)

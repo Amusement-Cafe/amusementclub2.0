@@ -10,6 +10,7 @@ const main = async () => {
         help: require('./data/help.json'),
         items: require('./data/items.json'),
         achievements: require('./data/achievements.js'),
+        quests: require('./data/quests.js'),
     }
 
     const options  = Object.assign({shards: 1, data}, config, debug)
