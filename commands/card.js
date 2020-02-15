@@ -135,12 +135,13 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify a card`, 'red')
 
+    const id = parsedargs.ids[0]
     const card = bestMatch(cards)
     const usercard = user.cards.filter(x => x.id === card.id)[0]
     const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to === parsedargs.id)
+    const pendingto = pending.filter(x => x.to === id)
 
-    if(!parsedargs.id && pendingto.length > 0)
+    if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\``, 'red')
     else if(pendingto.length >= 5)
@@ -167,13 +168,13 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(!ctx.msg.channel.guild)
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
-    const perms = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
+    const perms = { confirm: [id], decline: [user.discord_id, id] }
 
     const price = await evalCard(ctx, card, parsedargs.id? 1 : .4)
-    const trs = await new_trs(ctx, user, card, price, parsedargs.id)
+    const trs = await new_trs(ctx, user, card, price, id)
 
     let question = ""
-    if(parsedargs.id) {
+    if(id) {
         question = `**${trs.to}**, **${trs.from}** wants to sell you **${formatName(card)}** for **${price}** ${ctx.symbols.tomato}`
     } else {
         question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** ${ctx.symbols.tomato}?`
@@ -182,7 +183,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `ID: \`${trs.id}\`` } },
-        force: parsedargs.force,
+        force: ctx.globals.force,
         question,
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id),

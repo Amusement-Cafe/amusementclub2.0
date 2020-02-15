@@ -138,7 +138,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
-        force: parsedargs.force,
+        force: ctx.globals.force,
         question,
         check,
         onConfirm: () => new_auc(ctx, user, card, price, fee, time),
@@ -207,7 +207,7 @@ cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
     const question = `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `You won't get a fee refund` } },
-        force: arg2 === '-f',
+        force: ctx.globals.force,
         question,
         check,
         onConfirm: async () => {

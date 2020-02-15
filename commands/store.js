@@ -68,7 +68,7 @@ cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid, force) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}?`,
-        force: force === '-f',
+        force: ctx.globals.force,
         onConfirm: async (x) => {
             user.inventory.push({ id: item.id, time: new Date() })
             user.exp -= item.price

@@ -1,6 +1,5 @@
 const msToTime          = require('pretty-ms')
 const {cmd}             = require('../utils/cmd')
-const {addPagination}   = require('../utils/paginator')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
 
@@ -66,6 +65,7 @@ cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
     const item = items[0]
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
         onConfirm: (x) => useItem(ctx, user, item)
     })

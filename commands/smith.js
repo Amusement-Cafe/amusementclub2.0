@@ -57,7 +57,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
-        force: parsedargs.force,
+        force: ctx.globals.force,
         onConfirm: async (x) => {
             let res = ctx.cards.filter(x => x.level === card1.level && x.id != card1.id && x.id != card2.id)
 
@@ -112,7 +112,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
-        force: parsedargs.force,
+        force: ctx.globals.force,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
            user.vials += vials
@@ -145,7 +145,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}?`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
-        force: parsedargs.force,
+        force: ctx.globals.force,
         onConfirm: async (x) => {
             user.vials -= vials
             addUserCard(user, card.id)

@@ -132,6 +132,7 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${level.price}** ${ctx.symbols.tomato}?`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
+        force: ctx.globals.force,
         onConfirm: async (x) => {
             const xp = Math.floor(level.price * .04)
             building.level++
@@ -167,6 +168,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     const question = `Do you want to donate **${amount}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**?`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
+        force: ctx.globals.force,
         onConfirm: async (x) => {
             const xp = Math.floor(amount * .01)
             user.exp -= amount
@@ -358,6 +360,7 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
+        force: ctx.globals.force,
         onConfirm: async (x) => {
 
             ctx.guild.balance -= price
@@ -390,6 +393,7 @@ cmd(['guild', 'unlock'], async (ctx, user) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
+        force: ctx.globals.force,
         onConfirm: async (x) => {
             const colCards = ctx.cards.filter(x => x.level < 4)
             ctx.guild.lock = ''

@@ -50,11 +50,11 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
 
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
-        /*if(content.description)
-            content.description = content.description.replace(/\s\s+/gi, '')
+        if(content.description)
+            content.description = content.description.replace(/\s\s+/gi, '\n')
 
         if(content.fields)
-            content.fields.map(x => x.value = x.value.replace(/\s\s+/gi, ''))*/
+            content.fields.map(x => x.value = x.value.replace(/\s\s+/gi, '\n'))
 
         if(userid)
             _.remove(userq, (x) => x.id === userid)
@@ -106,6 +106,10 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 
+    const globalArgsMap = {
+        f: 'force',
+    }
+
     /* service tick for checks */
     const tick = (ctx) => {
         const now = new Date()
@@ -142,16 +146,23 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
                 reply, /* quick reply function to the channel */
+                globals: {}, /* global parameters */
+                discord_guild: msg.channel.guild,  /* current discord guild */
             })
 
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
+            let args = msg.content.trim().substring(prefix.length).split(/ +/)
             const usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
-            isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
-            isolatedCtx.discord_guild = msg.channel.guild
-            const args = msg.content.trim().substring(prefix.length).split(/ +/)
             const action = args[0]
+
+            isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            args.filter(x => x.length === 2 && x[0] === '-').map(x => {
+                isolatedCtx.globals[globalArgsMap[x[1]]] = true
+            })
+
+            args = args.filter(x => !(x.length === 2 && x[0] === '-'))
 
             if(usr.lock) {
                 usr.lock = false

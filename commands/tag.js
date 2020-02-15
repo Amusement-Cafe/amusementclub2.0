@@ -55,7 +55,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
-        force: parsedargs.force,
+        force: ctx.globals.force,
         question: `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`,
 
         onConfirm: async (x) => {
@@ -85,7 +85,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
-        force: parsedargs.force,
+        force: ctx.globals.force,
         embed: { footer: { text: `Please, use downvote to remove only irrelevant or incorrect tags` } },
         question: `Do you want to downvote tag **#${tgTag}** for ${formatName(card)}?`,
         onConfirm: async (x) => {
