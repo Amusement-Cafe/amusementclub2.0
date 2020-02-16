@@ -6,15 +6,8 @@ const Emitter       = require('events')
 const asdate        = require('add-subtract-date')
 const paginator     = require('discord-paginator')
 const _             = require('lodash')
-
-const {
-    trigger, 
-    rct
-} = require('./utils/cmd')
-
-const {
-    check_all
-} = require('./modules/achievement')
+const {trigger}     = require('./utils/cmd')
+const {check_all}   = require('./modules/achievement')
 
 const {
     auction, 

@@ -27,7 +27,8 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
 
         removeUserCard(target, card.id)
         target.exp -= fee
-        target.dailystats.sells = target.dailystats.sells++ || 1
+        
+        target.dailystats.aucs = target.dailystats.aucs + 1 || 1
         target.markModified('dailystats')
         await target.save()
 
@@ -82,7 +83,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
     }
 
     user.exp -= bid
-    user.dailystats.bids = user.dailystats.bids++ || 1
+    user.dailystats.bids = user.dailystats.bids + 1 || 1
     user.markModified('dailystats')
     await user.save()
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
@@ -140,7 +141,7 @@ const paginate_auclist = (ctx, user, list) => {
 
 const unlock = () => {
     lockFile.unlock('auc.lock', err => {
-        console.log(err)
+        if(err) console.log(err)
     })
 }
 

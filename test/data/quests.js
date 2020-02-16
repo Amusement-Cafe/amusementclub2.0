@@ -45,7 +45,7 @@ module.exports = {
             },
             reward: (ctx) => `**1000** ${ctx.symbols.tomato}`
         }, {
-            id: 'sell2',
+            id: 'auc2',
             name: 'Sell 2 cards on auction today',
             desc: '',
             tier: 1,
@@ -55,17 +55,6 @@ module.exports = {
                 user.exp += 400
             },
             reward: (ctx) => `**400** ${ctx.symbols.tomato}`
-        }, {
-            id: 'sell5',
-            name: 'Sell 5 cards on auction today',
-            desc: '',
-            tier: 2,
-            actions: ['auc', 'auction'],
-            check: (ctx, user) => user.dailystats.aucs >= 5,
-            resolve: (ctx, user) => {
-                user.vials += 20
-            },
-            reward: (ctx) => `**20** ${ctx.symbols.vial}`
         }, {
             id: 'forge1',
             name: 'Forge 1-star card',
