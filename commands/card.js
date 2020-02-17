@@ -1,7 +1,5 @@
 const {claimCost}           = require('../utils/tools')
 const {cmd}                 = require('../utils/cmd')
-const {addConfirmation}     = require('../utils/confirmator')
-const {addPagination}       = require('../utils/paginator')
 const {bestColMatch}        = require('../modules/collection')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
@@ -120,7 +118,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
         color: colors.blue,
         description: `summons **${formatName(card)}**!`
     })
-}))
+})).access('dm')
 
 cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -129,7 +127,7 @@ cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             author: { name: `Matched cards from database (${cards.length} results)` },
         }
     })
-}))
+})).access('dm')
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
@@ -210,7 +208,7 @@ cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
     await user.save()
 
     return ctx.reply(user, `marked ${formatName(card)} as favourite`)
-}))
+})).access('dm')
 
 cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.fav)
@@ -218,9 +216,11 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already marked as favourite`, 'red')
 
-    const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
-    addConfirmation(ctx, user, `do you want to mark **${cards.length}** cards as favourite?`, prm, 
-        async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `Favourite cards can be accessed with -fav` } },
+        force: ctx.globals.force,
+        question: `do you want to mark **${cards.length}** cards as favourite?`,
+        onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = true
             })
@@ -229,10 +229,9 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
             await user.save()
 
             return ctx.reply(user, `marked **${cards.length}** cards as favourite`)
-        }, async (x) => {
-            return ctx.reply(user, `fav operation was declined`, 'red')
-        }, `Favourite cards can be accessed with -fav`)
-}))
+        }
+    })
+})).access('dm')
 
 cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)
@@ -245,7 +244,7 @@ cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) =
     await user.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from favourites`)
-}))
+})).access('dm')
 
 cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => x.fav)
@@ -253,9 +252,10 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
     if(cards.length === 0)
         return ctx.reply(user, `no favourited cards found`, 'red')
 
-    const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
-    addConfirmation(ctx, user, `do you want to remove **${cards.length}** cards from favourites?`, prm, 
-        async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
+        question: `do you want to mark **${cards.length}** cards as favourite?`,
+        onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false
             })
@@ -264,10 +264,9 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
             await user.save()
 
             return ctx.reply(user, `removed **${cards.length}** cards from favourites`)
-        }, async (x) => {
-            return ctx.reply(user, `fav operation was declined`, 'red')
-        })
-}))
+        }
+    })
+})).access('dm')
 
 cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)

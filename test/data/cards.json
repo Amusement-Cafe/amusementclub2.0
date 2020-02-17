@@ -109,5 +109,7 @@
     {"name":"bad_to_the_bone","level":1,"animated":false,"col":"gabrieldropout"},
     {"name":"class_president","level":1,"animated":false,"col":"gabrieldropout"},
     {"name":"demon_duo","level":1,"animated":false,"col":"gabrieldropout"},
-    {"name":"legendary_laugh","level":5,"animated":true,"col":"gabrieldropout"}
+    {"name":"legendary_laugh","level":5,"animated":true,"col":"gabrieldropout"},
+
+    {"name":"legendary_crab","level":5,"animated":true,"col":"special"}
 ]

@@ -43,9 +43,14 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
 
-    return await addPagination(ctx, user, 
-        `found auctions (${list.length} results)`, 
-        paginate_auclist(ctx, user, list))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_auclist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, found auctions (${list.length} results)` },
+            color: colors.blue,
+        }
+    })
 })).access('dm')
 
 cmd(['auc', 'info'], async (ctx, user, arg1) => {

@@ -46,7 +46,7 @@ cmd('bal', (ctx, user) => {
         Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
         Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)
         You can claim **${max - 1} cards** in current guild with your balance`)
-})
+}).access('dm')
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
     const title = `To view the item details use \`->item info [item id]\`
@@ -145,7 +145,7 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
     })
-}))
+})).access('dm')
 
 cmd('profile', async (ctx, user, arg1) => {
     if(arg1) user = await fetchOnly(arg1)
@@ -178,7 +178,7 @@ cmd('profile', async (ctx, user, arg1) => {
             url: ctx.bot.users.filter(x => x.id === user.discord_id)[0].avatarURL
         }
     }, user.discord_id)
-})
+}).access('dm')
 
 cmd('diff', async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args)

@@ -17,6 +17,8 @@ const {
 
 var userq = require('./utils/userq')
 
+module.exports.schemas = require('./collections')
+
 module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, data }) => {
     const emitter = new Emitter()
 
