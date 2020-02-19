@@ -83,6 +83,8 @@ cmd('daily', async (ctx, user) => {
         const gbank = getBuilding(ctx, 'gbank')
         const tavern = getBuilding(ctx, 'tavern')
         const amount = gbank? 500 : 300
+        const promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+        const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
 
         user.lastdaily = now
         user.dailystats = {}
@@ -108,18 +110,26 @@ cmd('daily', async (ctx, user) => {
         await ctx.guild.save()
 
         const fields = []
+        if(quests.length > 0) {
+            fields.push({
+                name: `Daily quests`, 
+                value: quests.map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n')
+            })
+        }
+
         const trs = (await getPending(ctx, user)).filter(x => x.from_id != user.discord_id)
         if(trs.length > 0) {
             const more = trs.splice(3, trs.length).length
             fields.push({name: `Incoming pending transactions`, 
                 value: trs.map(x => `\`${x.id}\` ${formatName(ctx.cards[x.card])} from **${x.from}**`).join('\n') 
-                    + (more > 0? `\nand **${more}** more...` : '')})
+                    + (more > 0? `\nand **${more}** more...` : '')
+            })
         }
 
-        if(quests.length > 0) {
-            fields.push({
-                name: `Daily quests`, 
-                value: quests.map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n')
+        if(promo || boosts.length > 0) {
+            fields.push({name: `Current events and boosts`,
+                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`->claim promo\`)` : ''}
+                ${boosts.map(x => `Increased drop rate for **${x.name}** (\`->claim ${x.id}\`)`).join('\n')}`
             })
         }
 

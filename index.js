@@ -25,7 +25,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     const fillCardData = (carddata) => {
         data.cards = carddata.map((x, i) => {
             const col = data.collections.filter(y => y.id == x.col)[0]
-            const basePath = `/cards/${col.id}/${x.level}_${x.name}.${x.animated? 'gif' : (col.compressed? 'jpg' : 'png')}`
+            const basePath = `/${col.promo? 'promo':'cards'}/${col.id}/${x.level}_${x.name}.${x.animated? 'gif' : (col.compressed? 'jpg' : 'png')}`
             x.url = baseurl + basePath
             x.shorturl = shorturl + basePath
             x.id = i
@@ -95,6 +95,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         items: data.items, /* game items */
         achievements: data.achievements, /* game achievements */
         quests: data.quests, /* game quests */
+        promos: data.promos,
+        boosts: data.boosts,
         direct, /* DM reply function to the user */
         symbols,
         baseurl,

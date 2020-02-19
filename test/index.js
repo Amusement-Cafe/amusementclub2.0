@@ -11,6 +11,12 @@ const main = async () => {
         items: require('./data/items.json'),
         achievements: require('./data/achievements.js'),
         quests: require('./data/quests.js'),
+        promos: require('./data/promos.json').map(
+            x => Object.assign({}, x, {
+            starts: Date.parse(x.starts),
+            expires: Date.parse(x.expires)
+        })),
+        boosts: []
     }
 
     const options  = Object.assign({shards: 1, data}, config, debug)

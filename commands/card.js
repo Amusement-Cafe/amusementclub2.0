@@ -32,12 +32,14 @@ const {
     getBuilding
 } = require('../modules/guild')
 
-cmd('claim', 'cl', async (ctx, user, arg1) => {
+cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
-    const amount = parseInt(arg1) || 1
+    const now = new Date()
+    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
     const price = claimCost(user, ctx.guild.tax, amount)
     const normalprice = claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
+    const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
 
     if(amount > 10)
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
@@ -46,11 +48,20 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         return ctx.reply(user, `you need **${price}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
             You have **${Math.floor(user.exp)}** ${ctx.symbols.tomato}`, 'red')
 
+    let promo
+    if(args.indexOf('promo') != -1) {
+        promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+        if(!promo)
+            return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
+    }
+
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
-        const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : _.sample(ctx.collections.filter(x => !x.rarity)))
+        const col = promo || spec || (lock? ctx.collections.filter(x => x.id === lock)[0] 
+            : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
+
         const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
         const count = addUserCard(user, card.id)
         cards.push({count, card: _.clone(card)})
@@ -254,7 +265,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
-        question: `do you want to mark **${cards.length}** cards as favourite?`,
+        question: `do you want to remove **${cards.length}** cards from favourites?`,
         onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false
