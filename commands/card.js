@@ -35,18 +35,6 @@ const {
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
-    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
-    const price = claimCost(user, ctx.guild.tax, amount)
-    const normalprice = claimCost(user, 0, amount)
-    const gbank = getBuilding(ctx, 'gbank')
-    const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
-
-    if(amount > 10)
-        return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
-
-    if(price > user.exp)
-        return ctx.reply(user, `you need **${price}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${Math.floor(user.exp)}** ${ctx.symbols.tomato}`, 'red')
 
     let promo
     if(args.indexOf('promo') != -1) {
@@ -54,6 +42,23 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         if(!promo)
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
+
+    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
+    const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
+    const normalprice = promo? price : claimCost(user, 0, amount)
+    const gbank = getBuilding(ctx, 'gbank')
+    const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
+
+    if(amount > 10)
+        return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
+
+    if(!promo && price > user.exp)
+        return ctx.reply(user, `you need **${price}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+            You have **${Math.floor(user.exp)}** ${ctx.symbols.tomato}`, 'red')
+
+    if(promo && price > user.promoexp)
+        return ctx.reply(user, `you need **${price}** \`${promo.currency}\` to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+            You have **${Math.floor(user.promoexp)}** \`${promo.currency}\``, 'red')
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
@@ -69,12 +74,19 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
+    const extra = Math.round(price * .2)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
+    if(promo) {
+        user.promoexp -= price
+    } else {
+        user.exp -= price
+        user.promoexp += extra
+    }
+
     user.lastcard = cards[0].card.id
-    user.exp -= price
     user.xp += amount
     user.dailystats.claims = user.dailystats.claims + amount || amount
     user.markModified('dailystats')
