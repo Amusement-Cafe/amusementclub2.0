@@ -1,4 +1,7 @@
-const Guild     = require('../collections/guild')
+const Guild         = require('../collections/guild')
+const Transaction   = require('../collections/transaction')
+const Auction       = require('../collections/auction')
+
 const color     = require('../utils/colors')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
@@ -93,6 +96,13 @@ const bill_guilds = async (ctx, now) => {
     guild.nextcheck = asdate.add(new Date(), 12, 'hours')
     report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
     await guild.save()
+
+    const transcleanup = asdate.subtract(new Date(), 15, 'days')
+    const auccleanup = asdate.subtract(new Date(), 5, 'days')
+    const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
+    const res2 = await Action.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
+    console.log(res1)
+    console.log(res2)
 
     return ctx.send(guild.reportchannel, {
         author: { name: `Receipt for ${now}` },

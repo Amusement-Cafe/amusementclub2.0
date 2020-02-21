@@ -9,11 +9,9 @@ const { fetchTaggedCards }      = require('./tag')
 const asdate                    = require('add-subtract-date')
 
 const formatName = (x) => {
+    //const promo = ctx.promos.filter(y => y.id === x.col)
+    //return `[${new Array(x.level + 1).join(promo? promo.currency : '★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
     return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
-}
-
-const formatLink = (x) => {
-    return x.url
 }
 
 const parseArgs = (ctx, args, lastdaily) => {
@@ -224,7 +222,6 @@ const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.le
 
 module.exports = {
     formatName,
-    formatLink,
     equals,
     bestMatch,
     addUserCard,

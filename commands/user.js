@@ -61,8 +61,8 @@ cmd('bal', (ctx, user) => {
         embed.fields = [{
             name: `Promo balance`,
             value: `You have **${Math.round(user.promoexp)}** ${promo.currency}
-                Your next claim will cost ${promoClaimCost(user, 1)} ${promo.currency}
-                You can claim **${max - 1} ${promo.name} cards** in current guild with your balance`
+                Your next claim will cost **${promoClaimCost(user, 1)}** ${promo.currency}
+                You can claim **${max - 1} ${promo.name} cards** with your balance`
         }]
     }
 

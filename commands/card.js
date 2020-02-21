@@ -334,7 +334,7 @@ cmd('boost', 'boosts', (ctx, user) => {
         .sort((a, b) => a.expires - b.expires)
 
     const description = boosts.map(x => 
-        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\``).join('\n')
+        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\` (${x.cards.length} cards in pool)`).join('\n')
 
     return ctx.send(ctx.msg.channel.id, {
         description,

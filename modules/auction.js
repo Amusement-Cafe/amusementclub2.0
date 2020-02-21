@@ -40,6 +40,8 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
         auc.author = user.discord_id
         auc.card = card.id
         auc.expires = asdate.add(new Date(), time, 'hours')
+        auc.time = new Date()
+        auc.guild = ctx.guild.id
         await auc.save()
 
         unlock()

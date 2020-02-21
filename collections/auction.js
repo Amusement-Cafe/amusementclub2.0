@@ -14,4 +14,6 @@ module.exports = model('Auction', {
     bids:           [],
 
     expires:        { type: Date },
+    time:           { type: Date },
+    guild:          { type: String },
 })
