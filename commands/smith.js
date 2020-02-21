@@ -63,7 +63,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
             if(card1.col === card2.col)
                 res = res.filter(x => x.col === card1.col)
-            else res = res.filter(x => !ctx.collections(y => y.id === x.col).promo)
+            else res = res.filter(x => !ctx.collections.filter(y => y.id === x.col)[0].promo)
 
             const newcard = _.sample(res)
             user.vials += vialres

@@ -16,7 +16,11 @@ const main = async () => {
             starts: Date.parse(x.starts),
             expires: Date.parse(x.expires)
         })),
-        boosts: []
+        boosts: require('./data/boosts.json').map(
+            x => Object.assign({}, x, {
+            starts: Date.parse(x.starts),
+            expires: Date.parse(x.expires)
+        }))
     }
 
     const options  = Object.assign({shards: 1, data}, config, debug)

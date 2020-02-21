@@ -150,7 +150,8 @@ cmd('daily', async (ctx, user) => {
         if(promo || boosts.length > 0) {
             fields.push({name: `Current events and boosts`,
                 value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`->claim promo\`)` : ''}
-                ${boosts.map(x => `Increased drop rate for **${x.name}** (\`->claim ${x.id}\`)`).join('\n')}`
+                ${boosts.map(x => 
+                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\``).join('\n')}`
             })
         }
 

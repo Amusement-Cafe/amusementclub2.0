@@ -2,6 +2,7 @@ const {cmd}                 = require('../utils/cmd')
 const {bestColMatch}        = require('../modules/collection')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
+const msToTime              = require('pretty-ms')
 
 const _ = require('lodash')
 
@@ -19,7 +20,6 @@ const {
     new_trs,
     confirm_trs,
     decline_trs,
-    check_trs,
     getPendingFrom
 } = require('../modules/transaction')
 
@@ -40,7 +40,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
 
-    let promo
+    let promo, boost
     if(args.indexOf('promo') != -1) {
         promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
         if(!promo)
@@ -64,6 +64,10 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         return ctx.reply(user, `you need **${price}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
+    if(!promo) {
+        boost = args.map(x => curboosts.filter(y => y.id === x)[0]).filter(x => x)[0]
+    }
+
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
@@ -71,9 +75,14 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         const col = promo || spec || (lock? ctx.collections.filter(x => x.id === lock)[0] 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
 
-        const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        let card, boostdrop = false
+        if(boost && rng < boost.rate) {
+            boostdrop = true
+            card = ctx.cards[_.sample(boost.cards)]
+        } else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+
         const count = addUserCard(user, card.id)
-        cards.push({count, card: _.clone(card)})
+        cards.push({count, boostdrop, card: _.clone(card)})
     }
     
     cards.sort((a, b) => b.card.level - a.card.level)
@@ -110,8 +119,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     let fields = []
     let description = `**${user.username}**, you got:`
-    fields.push({name: `New cards`, value: newCards.map(x => formatName(x.card)).join('\n')})
-    fields.push({name: `Duplicates`, value: oldCards.map(x => `${formatName(x.card)} #${x.count}`).join('\n')})
+    fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '> ' : ''}${formatName(x.card)}`).join('\n')})
+    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '> ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
     fields.push({name: `External view`, value: `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
 
     fields = fields.map(x => {
@@ -317,3 +326,19 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
         color: colors['blue']
     }, user.discord_id)
 }))
+
+cmd('boost', 'boosts', (ctx, user) => {
+    const now = new Date()
+    const boosts = ctx.boosts
+        .filter(x => x.starts < now && x.expires > now)
+        .sort((a, b) => a.expires - b.expires)
+
+    const description = boosts.map(x => 
+        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\``).join('\n')
+
+    return ctx.send(ctx.msg.channel.id, {
+        description,
+        color: colors.blue,
+        title: `Current boosts`
+    }, user.discord_id)
+})
