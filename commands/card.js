@@ -1,10 +1,14 @@
-const {claimCost}           = require('../utils/tools')
 const {cmd}                 = require('../utils/cmd')
 const {bestColMatch}        = require('../modules/collection')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
 
 const _ = require('lodash')
+
+const {
+    claimCost, 
+    promoClaimCost
+} = require('../utils/tools')
 
 const {
     evalCard, 
@@ -57,8 +61,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.exp)}** ${ctx.symbols.tomato}`, 'red')
 
     if(promo && price > user.promoexp)
-        return ctx.reply(user, `you need **${price}** \`${promo.currency}\` to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${Math.floor(user.promoexp)}** \`${promo.currency}\``, 'red')
+        return ctx.reply(user, `you need **${price}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+            You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
@@ -74,21 +78,22 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
-    const extra = Math.round(price * .2)
+    const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
     if(promo) {
         user.promoexp -= price
+        user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
     } else {
         user.exp -= price
         user.promoexp += extra
+        user.dailystats.claims = user.dailystats.claims + amount || amount
     }
 
     user.lastcard = cards[0].card.id
     user.xp += amount
-    user.dailystats.claims = user.dailystats.claims + amount || amount
     user.markModified('dailystats')
     await user.save()
     

@@ -6,6 +6,7 @@ const _                 = require('lodash')
 
 const {
     claimCost,
+    promoClaimCost,
     XPtoLEVEL
 } = require('../utils/tools')
 
@@ -39,13 +40,33 @@ const {
 
 cmd('bal', (ctx, user) => {
     let max = 1
+    const now = new Date()
+    const promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
     while(claimCost(user, ctx.guild.tax, max) < user.exp)
         max++
 
-    return ctx.reply(user, `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
-        Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
-        Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)
-        You can claim **${max - 1} cards** in current guild with your balance`)
+    const embed = {
+        color: colors.green,
+        description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
+            Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
+            Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)
+            You can claim **${max - 1} cards** in current guild with your balance`
+    }
+
+    if(promo) {
+        max = 1
+        while(promoClaimCost(user, max) < user.promoexp)
+            max++
+
+        embed.fields = [{
+            name: `Promo balance`,
+            value: `You have **${Math.round(user.promoexp)}** ${promo.currency}
+                Your next claim will cost ${promoClaimCost(user, 1)} ${promo.currency}
+                You can claim **${max - 1} ${promo.name} cards** in current guild with your balance`
+        }]
+    }
+
+    return ctx.reply(user, embed)
 }).access('dm')
 
 cmd('inv', withUserItems((ctx, user, items, args) => {

@@ -136,7 +136,6 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         msg.content = msg.content.toLowerCase()
 
         try {
-
             /* create our player reply sending fn */
             const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
 
