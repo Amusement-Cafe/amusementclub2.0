@@ -44,6 +44,7 @@ const from_auc = async (auc, from, to) => {
     transaction.time = new Date()
     transaction.card = auc.card
     transaction.price = auc.price
+    transaction.guild_id = auc.guild
 
     return transaction.save()
 }

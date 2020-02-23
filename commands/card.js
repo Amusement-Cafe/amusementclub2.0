@@ -119,8 +119,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     let fields = []
     let description = `**${user.username}**, you got:`
-    fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '> ' : ''}${formatName(x.card)}`).join('\n')})
-    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '> ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
+    fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
+    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
     fields.push({name: `External view`, value: `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
 
     fields = fields.map(x => {
