@@ -44,11 +44,17 @@ const from_auc = async (auc, from, to) => {
     transaction.time = new Date()
     transaction.card = auc.card
     transaction.price = auc.price
+    transaction.guild_id = auc.guild
 
     return transaction.save()
 }
 
 const confirm_trs = async (ctx, user, trs_id) => {
+    if(typeof user === 'string')
+        user = await User.findOne({ discord_id: user })
+
+    if(!user) return;
+
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
@@ -91,6 +97,11 @@ const confirm_trs = async (ctx, user, trs_id) => {
 }
 
 const decline_trs = async (ctx, user, trs_id) => {
+    if(typeof user === 'string')
+        user = await User.findOne({ discord_id: user })
+
+    if(!user) return;
+
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)

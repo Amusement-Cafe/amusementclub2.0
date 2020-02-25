@@ -97,10 +97,10 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
-    if(!parsedargs.id)
+    if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
 
-    var target = await fetchOnly(parsedargs.id)
+    var target = await fetchOnly(parsedargs.id[0])
 
     if(!target)
         throw new Error(`cannot find user with that ID`)

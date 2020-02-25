@@ -19,6 +19,9 @@ module.exports = model('User', {
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
 
+    hero:               { type: String },
+    herochanged:        { type: Date },
+
     roles:              { type: Array, default: [] },
     ban:                { type: Object },
 
@@ -26,5 +29,6 @@ module.exports = model('User', {
     xp:                 { type: Number, default: 0 },
     vials:              { type: Number, default: 0 },
 
-    lock:               { type: Boolean, default: false },
+    dailyquests:        { type: Array, default: [] },
+    questlines:         { type: Array, default: [] },
 })

@@ -5,12 +5,19 @@
         "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. You will get your first card and special card of the day if you are new player. Each claim will cost you more tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
         "fields": [
             {
-                "title": "Commands",
-                "description": "->help claim\n->help summon\n->help daily\n->help balance\n->help cards\n->help sell\n->help fav\n->help diff\n->help query\n->help draw\n->help liq\n->help store\n->help profile\n->help tag\n->help guild"
+                "title": "User",
+                "inline": true,
+                "description": "->help daily\n->help balance\n->help diff\n->help profile"
             },
             {
-                "title": "Modules",
-                "description": "->help collections\n->help transactions\n->help query"
+                "title": "Card Management",
+                "inline": true,
+                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq"
+            },
+            {
+                "title": "Other",
+                "inline": true,
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections"
             },
             {
                 "title": "Contacts",
@@ -579,7 +586,7 @@
             {
                 "title": "Downvote a tag on a card",
                 "description": "->tag down [card] #tag"
-            },
+            }
 
         ]
     },

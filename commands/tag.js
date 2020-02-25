@@ -16,9 +16,6 @@ const {
 
 const {
     formatName,
-    withCards,
-    withGlobalCards,
-    bestMatch
 } = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
@@ -38,56 +35,67 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     }, user.discord_id)
 }))
 
-cmd('tag', withTag(async (ctx, user, card, tag, tgTag) => {
-    if(user.ban && user.ban.tags > 2)
-        return ctx.reply(user, `you were banned from adding tags. To address this issue use \`->help support\``, 'red')
+cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+    const check = () => {
+       if(user.ban && user.ban.tags > 2)
+            return ctx.reply(user, `you were banned from adding tags. To address this issue use \`->help support\``, 'red')
 
-    if(filter.isProfane(tgTag))
-        return ctx.reply(user, `your tag contains excluded words`, 'red')
+        if(filter.isProfane(tgTag))
+            return ctx.reply(user, `your tag contains excluded words`, 'red')
 
-    if(tag && tag.upvotes.includes(user.discord_id))
-        return ctx.reply(user, `you already upvoted this tag`, 'red')
+        if(tag && tag.upvotes.includes(user.discord_id))
+            return ctx.reply(user, `you already upvoted this tag`, 'red')
 
-    if(tag && tag.status != 'clear')
-        return ctx.reply(user, `this tag has been banned by moderator`, 'red')
+        if(tag && tag.status != 'clear')
+            return ctx.reply(user, `this tag has been banned by moderator`, 'red')
 
-    if(tgTag.length > 25)
-        return ctx.reply(user, `tag can't be longer than **25** characters`, 'red')
+        if(tgTag.length > 25)
+            return ctx.reply(user, `tag can't be longer than **25** characters`, 'red') 
+    }
 
-    addConfirmation(ctx, user, `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`, 
-        { confirm: [user.discord_id], decline: [user.discord_id] },
-        async (x) => {
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        check,
+        force: ctx.globals.force,
+        question: `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`,
+
+        onConfirm: async (x) => {
             tag = tag || await new_tag(user, tgTag, card)
 
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
 
-            return ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
-        }, async (x) => {
-            return ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
-        })
+            ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
+        },
+
+        onDecline: async (x) => {
+            ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
+        }
+    })
 }, false))
 
-cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag) => {
+cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+    const check = () => {
+        if(tag.downvotes.includes(user.discord_id))
+            return ctx.reply(user, `you already downvoted this tag`, 'red')
 
-    if(tag.downvotes.includes(user.discord_id))
-        return ctx.reply(user, `you already downvoted this tag`, 'red')
+        if(tag.status != 'clear')
+            return ctx.reply(user, `this tag has been banned by moderator`, 'red')
+    }
 
-    if(tag.status != 'clear')
-        return ctx.reply(user, `this tag has been banned by moderator`, 'red')
-
-    addConfirmation(ctx, user, `Do you want to downvote tag **#${tgTag}** for ${formatName(card)}?`, 
-        { confirm: [user.discord_id], decline: [user.discord_id] },
-        async (x) => {
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        check,
+        force: ctx.globals.force,
+        embed: { footer: { text: `Please, use downvote to remove only irrelevant or incorrect tags` } },
+        question: `Do you want to downvote tag **#${tgTag}** for ${formatName(card)}?`,
+        onConfirm: async (x) => {
             tag.downvotes.push(user.discord_id)
             tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
             await tag.save()
 
             return ctx.reply(user, `downvoted tag **#${tgTag}** for ${formatName(card)}`)
-        }, async (x) => {
-            return ctx.reply(user, `tag downvote was declined`, 'red')
-        }, `Please, use downvote to remove only irrelevant or incorrect tags`)
+        }
+    })
 }))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 

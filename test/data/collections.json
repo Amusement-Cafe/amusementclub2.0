@@ -3,5 +3,6 @@
     {"id":"codegeass","name":"Code Geass","origin":null,"aliases":["codegeass"],"promo":false,"compressed":true},
     {"id":"darlinginthefranxx","name":"Darling In The FranXX","origin":null,"aliases":["darlinginthefranxx"],"promo":false,"compressed":false},
     {"id":"special","name":"s p e c i a l","origin":null,"aliases":["special"],"promo":false,"compressed":true,"rarity":0.02},
-    {"id":"gabrieldropout","name":"Gabriel Dropout","origin":null,"aliases":["gabrieldropout"],"compressed":true}
+    {"id":"gabrieldropout","name":"Gabriel Dropout","origin":null,"aliases":["gabrieldropout"],"compressed":true},
+    {"id": "christmas19","name": "Christmas 2019","aliases": ["christmas19", "promo", "xmas19"],"promo": true,"compressed": true}
 ]

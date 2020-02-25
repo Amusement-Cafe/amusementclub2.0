@@ -52,7 +52,7 @@
                 "price": 1000,
                 "level": 5,
                 "maintenance": 500,
-                "desc": "Gives 3 days for hero to change their mind to change the guild if amound of followers increases"
+                "desc": "Increases max loyalty level to 5"
             }, {
                 "price": 30000,
                 "level": 10,
@@ -133,6 +133,31 @@
                 "level": 30,
                 "maintenance": 800,
                 "desc": "Adds user level amount of {currency} to guild balance when user runs `->daily`"
+            }
+        ]
+    }, {
+        "id": "tavern",
+        "name": "Tavern",
+        "price": 1500,
+        "type": "blueprint",
+        "desc": "get quests",
+        "fulldesc": "When built and upgraded, gives players up to **2** daily quests and allows to purchase quest lines",
+        "levels": [
+            {
+                "price": 1000,
+                "level": 2,
+                "maintenance": 50,
+                "desc": "Adds 1 quest when users run daily in this guild"
+            }, {
+                "price": 2000,
+                "level": 5,
+                "maintenance": 200,
+                "desc": "Adds 2 quests when users run daily in this guild"
+            }, {
+                "price": 20000,
+                "level": 27,
+                "maintenance": 1000,
+                "desc": "Allows to purchase quest lines"
             }
         ]
     }, {

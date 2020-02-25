@@ -1,11 +1,15 @@
-const {claimCost}           = require('../utils/tools')
 const {cmd}                 = require('../utils/cmd')
-const {addConfirmation}     = require('../utils/confirmator')
-const sample                = require('lodash.sample')
-const {addPagination}       = require('../utils/paginator')
 const {bestColMatch}        = require('../modules/collection')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
+const msToTime              = require('pretty-ms')
+
+const _ = require('lodash')
+
+const {
+    claimCost, 
+    promoClaimCost
+} = require('../utils/tools')
 
 const {
     evalCard, 
@@ -16,7 +20,6 @@ const {
     new_trs,
     confirm_trs,
     decline_trs,
-    check_trs,
     getPendingFrom
 } = require('../modules/transaction')
 
@@ -33,39 +36,73 @@ const {
     getBuilding
 } = require('../modules/guild')
 
-cmd('claim', 'cl', async (ctx, user, arg1) => {
+cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
-    const amount = parseInt(arg1) || 1
-    const price = claimCost(user, ctx.guild.tax, amount)
-    const normalprice = claimCost(user, 0, amount)
+    const now = new Date()
+
+    let promo, boost
+    if(args.indexOf('promo') != -1) {
+        promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+        if(!promo)
+            return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
+    }
+
+    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
+    const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
+    const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
+    const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
 
     if(amount > 10)
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
 
-    if(price > user.exp)
+    if(!promo && price > user.exp)
         return ctx.reply(user, `you need **${price}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
             You have **${Math.floor(user.exp)}** ${ctx.symbols.tomato}`, 'red')
+
+    if(promo && price > user.promoexp)
+        return ctx.reply(user, `you need **${price}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
+            You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
+
+    if(!promo) {
+        boost = args.map(x => curboosts.filter(y => y.id === x)[0]).filter(x => x)[0]
+    }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
-        const spec = ((gbank && gbank.level > 1)? sample(ctx.collections.filter(x => x.rarity > rng)) : null)
-        const col = spec || (lock? ctx.collections.filter(x => x.id === lock)[0] : sample(ctx.collections.filter(x => !x.rarity)))
-        const card = sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
+        const col = promo || spec || (lock? ctx.collections.filter(x => x.id === lock)[0] 
+            : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
+
+        let card, boostdrop = false
+        if(boost && rng < boost.rate) {
+            boostdrop = true
+            card = ctx.cards[_.sample(boost.cards)]
+        } else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+
         const count = addUserCard(user, card.id)
-        cards.push({count, card})
+        cards.push({count, boostdrop, card: _.clone(card)})
     }
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
-    const newCards = cards.filter(x => x.count === 1).slice(0)
-    const oldCards = cards.filter(x => x.count > 1).slice(0)
+    const extra = Math.round(price * .25)
+    const newCards = cards.filter(x => x.count === 1)
+    const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
 
-    user.exp -= price
+    if(promo) {
+        user.promoexp -= price
+        user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
+    } else {
+        user.exp -= price
+        user.promoexp += extra
+        user.dailystats.claims = user.dailystats.claims + amount || amount
+    }
+
+    user.lastcard = cards[0].card.id
     user.xp += amount
-    user.dailystats.claims = user.dailystats.claims + amount || amount
     user.markModified('dailystats')
     await user.save()
     
@@ -81,9 +118,9 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
     }
 
     let fields = []
-    let description = `you got:`
-    fields.push({name: `New cards`, value: newCards.map(x => formatName(x.card)).join('\n')})
-    fields.push({name: `Duplicates`, value: oldCards.map(x => `${formatName(x.card)} #${x.count}`).join('\n')})
+    let description = `**${user.username}**, you got:`
+    fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
+    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
     fields.push({name: `External view`, value: `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
 
     fields = fields.map(x => {
@@ -93,45 +130,53 @@ cmd('claim', 'cl', async (ctx, user, arg1) => {
         description += `\n**${x.name}**\n${x.value}`
     }).filter(x => x && x.value)
 
-    return ctx.reply(user, {
-        image: { url: cards[0].card.url },
-        color: colors.blue,
-        description,
-        fields,
-        footer: { text: `Your next claim will cost ${claimCost(user, ctx.guild.tax, 1)} ${ctx.symbols.tomato.replace(/`/gi, '')}` }
+    const pages = cards.map(x => x.card.url)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.image.url = data.pages[data.pagenum],
+        embed: {
+            color: colors.blue,
+            description,
+            fields,
+            image: { url: '' },
+            footer: { text: `Your next claim will cost ${claimCost(user, ctx.guild.tax, 1)} ${ctx.symbols.tomato.replace(/`/gi, '')}` }
+        }
     })
 })
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
-    const card = parsedargs.isEmpty()? sample(cards) : bestMatch(cards)
+    const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
+    user.lastcard = card.id
+    await user.save()
+
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,
         description: `summons **${formatName(card)}**!`
     })
-}))
+})).access('dm')
 
 cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const pages = []
-
-    cards.map((c, i) => {
-        if (i % 15 == 0) pages.push("")
-        pages[Math.floor(i/15)] += (formatName(c) + (c.amount > 1? `(x${c.amount})\n` : '\n'))
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
+        embed: {
+            author: { name: `Matched cards from database (${cards.length} results)` },
+        }
     })
-
-    return await addPagination(ctx, user, `matched cards from database (${cards.length} results)`, pages)
-}))
+})).access('dm')
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify a card`, 'red')
 
+    const id = parsedargs.ids[0]
     const card = bestMatch(cards)
     const usercard = user.cards.filter(x => x.id === card.id)[0]
     const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to === parsedargs.id)
+    const pendingto = pending.filter(x => x.to === id)
 
-    if(!parsedargs.id && pendingto.length > 0)
+    if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\``, 'red')
     else if(pendingto.length >= 5)
@@ -158,24 +203,27 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(!ctx.msg.channel.guild)
         return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
-    const prm = { confirm: [parsedargs.id], decline: [user.discord_id, parsedargs.id] }
+    const perms = { confirm: [id], decline: [user.discord_id, id] }
 
-    const price = await evalCard(ctx, card, .4)
-    const trs = await new_trs(ctx, user, card, price, parsedargs.id)
-    const footer = `ID: \`${trs.id}\``
+    const price = await evalCard(ctx, card, parsedargs.id? 1 : .4)
+    const trs = await new_trs(ctx, user, card, price, id)
 
     let question = ""
-    if(parsedargs.id) {
+    if(id) {
         question = `**${trs.to}**, **${trs.from}** wants to sell you **${formatName(card)}** for **${price}** ${ctx.symbols.tomato}`
     } else {
         question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** ${ctx.symbols.tomato}?`
-        prm.confirm.push(user.discord_id)
+        perms.confirm.push(user.discord_id)
     }
 
-    addConfirmation(ctx, user, question, prm, 
-        (x) => confirm_trs(ctx, x, trs.id), 
-        (x) => decline_trs(ctx, x, trs.id), 
-        footer)
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `ID: \`${trs.id}\`` } },
+        force: ctx.globals.force,
+        question,
+        perms,
+        onConfirm: (x) => confirm_trs(ctx, x, trs.id),
+        onDecline: (x) => decline_trs(ctx, x, trs.id)
+    })
 }))
 
 cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -197,7 +245,7 @@ cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
     await user.save()
 
     return ctx.reply(user, `marked ${formatName(card)} as favourite`)
-}))
+})).access('dm')
 
 cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.fav)
@@ -205,9 +253,11 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already marked as favourite`, 'red')
 
-    const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
-    addConfirmation(ctx, user, `do you want to mark **${cards.length}** cards as favourite?`, prm, 
-        async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `Favourite cards can be accessed with -fav` } },
+        force: ctx.globals.force,
+        question: `do you want to mark **${cards.length}** cards as favourite?`,
+        onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = true
             })
@@ -216,10 +266,9 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
             await user.save()
 
             return ctx.reply(user, `marked **${cards.length}** cards as favourite`)
-        }, async (x) => {
-            return ctx.reply(user, `fav operation was declined`, 'red')
-        }, `Favourite cards can be accessed with -fav`)
-}))
+        }
+    })
+})).access('dm')
 
 cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)
@@ -232,7 +281,7 @@ cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) =
     await user.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from favourites`)
-}))
+})).access('dm')
 
 cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => x.fav)
@@ -240,9 +289,10 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
     if(cards.length === 0)
         return ctx.reply(user, `no favourited cards found`, 'red')
 
-    const prm = { confirm: [user.discord_id], decline: [user.discord_id] }
-    addConfirmation(ctx, user, `do you want to remove **${cards.length}** cards from favourites?`, prm, 
-        async (x) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
+        question: `do you want to remove **${cards.length}** cards from favourites?`,
+        onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false
             })
@@ -251,10 +301,9 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
             await user.save()
 
             return ctx.reply(user, `removed **${cards.length}** cards from favourites`)
-        }, async (x) => {
-            return ctx.reply(user, `fav operation was declined`, 'red')
-        })
-}))
+        }
+    })
+})).access('dm')
 
 cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards)
@@ -277,3 +326,19 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
         color: colors['blue']
     }, user.discord_id)
 }))
+
+cmd('boost', 'boosts', (ctx, user) => {
+    const now = new Date()
+    const boosts = ctx.boosts
+        .filter(x => x.starts < now && x.expires > now)
+        .sort((a, b) => a.expires - b.expires)
+
+    const description = boosts.map(x => 
+        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\` (${x.cards.length} cards in pool)`).join('\n')
+
+    return ctx.send(ctx.msg.channel.id, {
+        description,
+        color: colors.blue,
+        title: `Current boosts`
+    }, user.discord_id)
+})

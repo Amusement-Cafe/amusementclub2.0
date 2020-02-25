@@ -13,6 +13,17 @@ const claimCost = (user, tax, amount) => {
     return Math.round(total + total * tax)
 }
 
+const promoClaimCost = (user, amount) => {
+    let total = 0
+    let claims = user.dailystats.promoclaims || 0
+    for (let i = 0; i < amount; i++) {
+        claims++
+        total += claims * 50
+    }
+
+    return Math.round(total)
+}
+
 const tryGetUserID = (inp) => {
     inp = inp.trim()
 
@@ -81,11 +92,12 @@ const generateNextId = (lastId, idLength = 4) => {
     return nextId;
 }
 
-const XPtoLEVEL = (xp) => Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0);
+const XPtoLEVEL = (xp) => xp === 0? 0 : Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0);
 
 module.exports = {
     cap,
     claimCost,
+    promoClaimCost,
     nameSort,
     tryGetUserID,
     getAllUserIDs,

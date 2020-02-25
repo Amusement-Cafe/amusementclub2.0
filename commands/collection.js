@@ -9,26 +9,39 @@ const {
     mapUserCards
 } = require('../modules/card')
 
-const {addPagination}       = require('../utils/paginator')
-const {addConfirmation}     = require('../utils/confirmator')
 const {cmd}                 = require('../utils/cmd')
 const {nameSort}            = require('../utils/tools')
-const sample                = require('lodash.sample');
+const _                     = require('lodash')
 
 cmd('col', async (ctx, user, ...args) => {
-    const filtered = byAlias(ctx, args.join().replace('-', ''))
+    const completed = args.filter(x => x === '-completed' || x === '!completed')[0]
+    args = args.filter(x => x != '-completed' && x != '!completed')
+
+    let cols = byAlias(ctx, args.join().replace('-', ''))
         .sort((a, b) => nameSort(a, b, 'id'))
 
-    if(filtered.length === 0)
-        return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
+    if(completed) {
+        if(completed[0] === '-') 
+            cols = cols.filter(x => user.completedcols.some(y => y.id === x.id))
+        else
+            cols = cols.filter(x => !user.completedcols.some(y => y.id === x.id))
+    }
 
-    const pages = []
-    filtered.map((x, i) => {
-        if (i % 10 == 0) pages.push("")
-        pages[Math.floor(i/10)] += `**${x.name}** (${x.id})\n`
+    if(cols.length === 0)
+        return ctx.reply(user, `no collections found`, 'red')
+
+    const pages = ctx.pgn.getPages(cols.map(x => {
+        const complete = user.completedcols.filter(y => x.id === y.id)[0]
+        return `${complete? `[${complete.amount}${ctx.symbols.star}]` : ''} **${x.name}** (${x.id})`
+    }))
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `found ${cols.length} collections` }
+        }
     })
-
-    return await addPagination(ctx, user, `found ${filtered.length} collections`, pages)
 })
 
 cmd(['col', 'info'], async (ctx, user, ...args) => {
@@ -39,7 +52,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
 
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
     const userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
-    const card = sample(colCards)
+    const card = _.sample(colCards)
     const clout = user.completedcols.filter(x => x.id === col.id)[0]
 
     const resp = []
@@ -76,9 +89,12 @@ cmd(['col', 'reset'], async (ctx, user, ...args) => {
     if(userCards.length < colCards.length)
         return ctx.reply(user, `you have to have **100%** of the cards from collection (excluding legendaries) in order to reset it`, 'red')
 
-    addConfirmation(ctx, user, `Do you really want to reset **${col.name}**?
-        You will lose 1 copy of each card from that collection and gain 1 clout star${legendary? '+ legendary' : 
-        `\n> Please note that you won't get legendary card ticket because this collection doesn't have any legendaries` }`, null, 
-        (x) => reset(ctx, user, col),
-        (x) => ctx.reply(user, `collection reset has been declined`, 'red'))
+    const question = `Do you really want to reset **${col.name}**?
+        You will lose 1 copy of each card from that collection and gain 1 clout star${legendary? ' + legendary' : 
+        `\n> Please note that you won't get legendary card ticket because this collection doesn't have any legendaries`}`
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: (x) => reset(ctx, user, col),
+    })
 })
