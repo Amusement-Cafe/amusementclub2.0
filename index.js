@@ -12,7 +12,8 @@ const {check_all}   = require('./modules/achievement')
 const {
     auction, 
     user,
-    guild
+    guild,
+    hero
 } = require('./modules')
 
 var userq = require('./utils/userq')
@@ -121,8 +122,16 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         _.remove(userq, (x) => x.expires < now)
     }
 
+    /* service tick for hero checks */
+    const htick = (ctx) => {
+        const now = new Date()
+        hero.check_heroes(ctx, now)
+    }
+
     setInterval(tick.bind({}, ctx), 5000)
     setInterval(qtick.bind({}, ctx), 1000)
+    //setInterval(htick.bind({}, ctx), 60000 * 2)
+    setInterval(htick.bind({}, ctx), 6000)
 
     /* events */
     bot.on('ready', async event => {

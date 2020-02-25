@@ -1,5 +1,6 @@
 module.exports = {
     user: require('./user'),
+    hero: require('./hero'),
     card: require('./card'),
     eval: require('./eval'),
     tag: require('./tag'),

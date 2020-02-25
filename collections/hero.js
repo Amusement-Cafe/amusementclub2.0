@@ -4,6 +4,7 @@ module.exports = model('Hero', {
     id:             { type: String },
     name:           { type: String },
     user:           { type: String },
+    xp:             { type: Number, default: 0 },
 
     accepted:       { type: Boolean, default: false },
     active:         { type: Boolean, default: false },

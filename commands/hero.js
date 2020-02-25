@@ -2,21 +2,73 @@ const {cmd}     = require('../utils/cmd')
 const jikanjs   = require('jikanjs')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
+const colors    = require('../utils/colors')
+
+const {
+    XPtoLEVEL
+} = require('../utils/tools')
 
 const { 
     new_hero,
     get_hero,
-    get_userSumbissions
+    get_userSumbissions,
+    get_all,
+    withHeroes,
+    getInfo
 }   = require('../modules/hero')
 
-cmd(['hero'], (ctx, user) => {
+cmd(['hero'], async (ctx, user) => {
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet`, 'red')
+
+    const embed = await getInfo(ctx, user, user.hero)
+    embed.fields = [
+        { name: `Effect Card slot 1`, value: `Empty` },
+        { name: `Effect Card slot 2`, value: `Empty` },
+    ]
+
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
 
-cmd(['heroes'], ['hero', 'list'], (ctx, user) => {
-    
-})
+cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
+    const hero = heroes[0]
+    const past = asdate.subtract(new Date(), 7, 'days')
+    if(user.herochanged > past)
+        return ctx.reply(user, `you can get a new hero in **${msToTime(user.herochanged - past)}**`, 'red')
+
+    if(hero.id === user.hero)
+        return ctx.reply(user, `you already have **${hero.name}** as a hero`, 'red')
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to set **${hero.name}** as your current hero?`,
+        onConfirm: async (x) => {
+            user.hero = hero.id
+            user.herochanged = new Date()
+            await user.save()
+
+            return ctx.reply(user, `say hello to your new hero **${hero.name}**!`)
+        }
+    })
+}))
+
+cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes) => {
+    const hero = heroes[0]
+    const embed = await getInfo(ctx, user, hero.id)
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+}))
+
+cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
+    const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        embed: {
+            title: `Matching hero list`,
+            color: colors.blue,
+        }
+    })
+}))
 
 cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(!arg1)
@@ -43,9 +95,13 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(recent)
         return ctx.reply(user, `you can submit new hero in **${msToTime(recent.submitted - past, {compact: true})}**`, 'red')
 
-    const char = await jikanjs.loadCharacter(charID)
+    let char
+    try {
+        char = await jikanjs.loadCharacter(charID)
+    } catch { }
+
     if(!char)
-        return ctx.reply(user, `cannot find a character on this URL`, 'red')
+        return ctx.reply(user, `cannot find a valid character on this URL`, 'red')
 
     if(!char.animeography[0])
         return ctx.reply(user, `seems like this character doesn't have any asociated anime.

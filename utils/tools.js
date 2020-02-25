@@ -92,7 +92,7 @@ const generateNextId = (lastId, idLength = 4) => {
     return nextId;
 }
 
-const XPtoLEVEL = (xp) => Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0);
+const XPtoLEVEL = (xp) => xp === 0? 0 : Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0);
 
 module.exports = {
     cap,

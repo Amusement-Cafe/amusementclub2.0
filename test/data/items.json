@@ -52,7 +52,7 @@
                 "price": 1000,
                 "level": 5,
                 "maintenance": 500,
-                "desc": "Gives 3 days for hero to change their mind to change the guild if amound of followers increases"
+                "desc": "Increases max loyalty level to 5"
             }, {
                 "price": 30000,
                 "level": 10,
