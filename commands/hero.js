@@ -12,7 +12,6 @@ const {
     new_hero,
     get_hero,
     get_userSumbissions,
-    get_all,
     withHeroes,
     getInfo
 }   = require('../modules/hero')
@@ -58,6 +57,7 @@ cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes) => {
 }))
 
 cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
+    heroes.sort((a, b) => b.xp - a.xp)
     const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {

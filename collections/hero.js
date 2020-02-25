@@ -5,6 +5,7 @@ module.exports = model('Hero', {
     name:           { type: String },
     user:           { type: String },
     xp:             { type: Number, default: 0 },
+    followers:      { type: Number, default: -1 },
 
     accepted:       { type: Boolean, default: false },
     active:         { type: Boolean, default: false },

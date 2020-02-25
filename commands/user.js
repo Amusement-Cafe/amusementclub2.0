@@ -38,6 +38,11 @@ const {
     getPending
 } = require('../modules/transaction')
 
+const { 
+    get_hero,
+    withHeroes,
+}   = require('../modules/hero')
+
 cmd('bal', (ctx, user) => {
     let max = 1
     const now = new Date()
@@ -106,6 +111,7 @@ cmd('daily', async (ctx, user) => {
         const amount = gbank? 500 : 300
         const promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
+        const hero = await get_hero(ctx, user.hero)
 
         user.lastdaily = now
         user.dailystats = {}
@@ -129,6 +135,11 @@ cmd('daily', async (ctx, user) => {
         addGuildXP(ctx, user, 10)
         ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
         await ctx.guild.save()
+
+        if(hero) {
+            hero.xp += 3
+            await hero.save()
+        }
 
         const fields = []
         if(quests.length > 0) {
