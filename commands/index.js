@@ -8,6 +8,7 @@ require('./guild.js')
 require('./auction.js')
 require('./store.js')
 require('./smith.js')
+require('./hero.js')
 require('./transaction.js')
 require('./collection.js')
 

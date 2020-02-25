@@ -5,4 +5,5 @@ module.exports = {
     Auction: require('./auction'),
     Guild: require('./guild'),
     Promo: require('./promo'),
+    Hero: require('./hero'),
 }
