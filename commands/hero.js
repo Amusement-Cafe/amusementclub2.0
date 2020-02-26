@@ -30,7 +30,7 @@ cmd(['hero'], async (ctx, user) => {
 })
 
 cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
-    const hero = heroes[0]
+    const hero = await get_hero(ctx, heroes[0].id)
     const past = asdate.subtract(new Date(), 7, 'days')
     if(user.herochanged > past)
         return ctx.reply(user, `you can get a new hero in **${msToTime(user.herochanged - past)}**`, 'red')
@@ -38,12 +38,18 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
     if(hero.id === user.hero)
         return ctx.reply(user, `you already have **${hero.name}** as a hero`, 'red')
 
+    const lasthero = await get_hero(ctx, user.hero)
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question: `Do you want to set **${hero.name}** as your current hero?`,
         onConfirm: async (x) => {
             user.hero = hero.id
             user.herochanged = new Date()
             await user.save()
+
+            lasthero.followers--
+            hero.followers++
+            await hero.save()
+            await lasthero.save()
 
             return ctx.reply(user, `say hello to your new hero **${hero.name}**!`)
         }

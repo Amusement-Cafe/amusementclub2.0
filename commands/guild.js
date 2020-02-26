@@ -22,6 +22,10 @@ const {
 } = require('../modules/card')
 
 const {
+    get_hero
+} = require('../modules/hero')
+
+const {
     byAlias,
     bestColMatch
 } = require('../modules/collection')
@@ -47,6 +51,12 @@ cmd(['guild', 'info'], async (ctx, user) => {
     if(lock) {
         const lockcol = byAlias(ctx, lock)[0]
         resp.push(`Locked to: **${lockcol.name}**`)
+    }
+
+    if(ctx.guild.hero) {
+        const hero = await get_hero(ctx, ctx.guild.hero)
+        fields.push({ name: `Guild hero`, value: `**${hero.name}** level **${XPtoLEVEL(hero.xp)}**
+            Loyalty level **${ctx.guild.heroloyalty}**` })
     }
 
     const curUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]

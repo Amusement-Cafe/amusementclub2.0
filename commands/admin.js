@@ -9,11 +9,14 @@ const {
 } = require('../modules/collection')
 
 const {
+    checkGuildLoyalty
+} = require('../modules/hero')
+
+const {
     formatName,
     addUserCard,
     withGlobalCards,
     bestMatch,
-    equals
 } = require('../modules/card')
 
 const {fetchOnly} = require('../modules/user')
@@ -150,4 +153,9 @@ pcmd(['admin'], ['sudo', 'daily', 'reset'], async (ctx, user, ...args) => {
     })
 
     return ctx.reply(user, rpl.join('\n'))
+})
+
+pcmd(['admin'], ['sudo', 'guild', 'herocheck'], async (ctx, user) => {
+    await checkGuildLoyalty(ctx)
+    return ctx.reply(user, `current guild hero check done`)
 })
