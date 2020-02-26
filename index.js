@@ -73,6 +73,16 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         return send(ch.id, toObj(user, str, clr), user.discord_id)
     }
 
+    const qhelp = (ctx, user, cat) => {
+        const help = ctx.help.filter(x => x.type.includes(cat))[0]
+        return send(ctx.msg.channel.id, {
+            author: { name: `Possible options:` },
+            fields: help.fields.slice(0, 5).map(x => ({ name: x.title, value: x.description })),
+            color: colors.blue,
+            footer: { text: `For full information type ->help ${cat} -here` }
+        }, user.discord_id)
+    }
+
     const symbols = {
         tomato: '`🍅`',
         vial: '`🍷`',
@@ -102,6 +112,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         symbols,
         baseurl,
         pgn,
+        qhelp,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 

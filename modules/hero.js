@@ -7,7 +7,6 @@ const jikanjs       = require('jikanjs')
 const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
-const {getBuilding} = require('./guild')
 
 let hcache = []
 
@@ -20,7 +19,7 @@ const new_hero = async (ctx, user, char) => {
     hero.user = user.discord_id
     hero.submitted = new Date()
     hero.pictures = pics.pictures.map(x => x.large)
-    
+
     hero.accepted = true
 
     await hero.save()
@@ -89,7 +88,7 @@ const withHeroes = (callback) => async (ctx, user, ...args) => {
 }
 
 const checkGuildLoyalty = async (ctx) => {
-    const heroq = getBuilding(ctx, 'heroq')
+    const heroq = ctx.guild.buildings.filter(x => x.id === 'heroq' && x.health > 50)[0]
     if(!heroq) return;
 
     const now = new Date()
@@ -103,8 +102,6 @@ const checkGuildLoyalty = async (ctx) => {
         heroscores[x.hero] = heroscores[x.hero] + usr.rank || usr.rank
     })
 
-    console.log(heroscores)
-
     let highest = 0
     do {
         highest = Object.keys(heroscores).reduce((a, b) => heroscores[a] > heroscores[b]? a : b)
@@ -113,7 +110,7 @@ const checkGuildLoyalty = async (ctx) => {
         const ourScore = heroscores[highest]
         delete(heroscores[highest])
 
-        const otherGuild = await Guild.findOne({ hero: highest })
+        const otherGuild = await Guild.findOne({ hero: highest, id: { $ne: ctx.guild.id } })
         const otherScore = await getGuildScore(ctx, otherGuild, highest)
 
         if(ourScore >= otherScore) {

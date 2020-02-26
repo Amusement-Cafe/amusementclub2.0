@@ -5,6 +5,10 @@ const msToTime  = require('pretty-ms')
 const colors    = require('../utils/colors')
 
 const {
+    fetchOnly
+} = require('../modules/user')
+
+const {
     XPtoLEVEL
 } = require('../utils/tools')
 
@@ -58,7 +62,10 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
 
 cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes) => {
     const hero = heroes[0]
+    const usr = await fetchOnly(hero.user)
     const embed = await getInfo(ctx, user, hero.id)
+    embed.description += `\nSubmitted by: **${usr.username}**`
+
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 }))
 

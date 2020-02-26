@@ -6,6 +6,10 @@ const color     = require('../utils/colors')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
 
+const {
+    checkGuildLoyalty
+} = require('./hero')
+
 const cache = []
 
 const fetchOrCreate = async (ctx, user, discord_guild) => {
@@ -101,6 +105,8 @@ const bill_guilds = async (ctx, now) => {
     const auccleanup = asdate.subtract(new Date(), 5, 'days')
     const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
     const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
+
+    checkGuildLoyalty(isolatedCtx)
 
     return ctx.send(guild.reportchannel, {
         author: { name: `Receipt for ${now}` },

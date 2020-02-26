@@ -168,7 +168,7 @@ cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
-        return ctx.reply(user, `please specify a card`, 'red')
+        return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
     const card = bestMatch(cards)
@@ -235,6 +235,9 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'fav')
+
     const card = bestMatch(cards)
 
     if(card.fav)
@@ -271,6 +274,9 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 })).access('dm')
 
 cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'draw')
+
     const card = bestMatch(cards)
 
     if(!card.fav)

@@ -227,7 +227,7 @@ cmd('diff', async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args)
 
     if(!newArgs.ids[0])
-        return ctx.reply(user, `please include ID of other user`, 'red')
+        return ctx.qhelp(ctx, user, 'diff')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
     const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
