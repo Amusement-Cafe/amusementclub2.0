@@ -88,6 +88,28 @@ module.exports = {
                 user.vials += 20
             },
             reward: (ctx) => `**20** ${ctx.symbols.vial}`
+        }, {
+            id: 'tag3',
+            name: 'Tag 3 cards',
+            desc: '',
+            tier: 1,
+            actions: ['tag'],
+            check: (ctx, user) => user.dailystats.tags >= 3,
+            resolve: (ctx, user) => {
+                user.exp += 300
+            },
+            reward: (ctx) => `**300** ${ctx.symbols.tomato}`
+        }, {
+            id: 'tag5',
+            name: 'Tag 5 cards',
+            desc: '',
+            tier: 2,
+            actions: ['tag'],
+            check: (ctx, user) => user.dailystats.tags >= 5,
+            resolve: (ctx, user) => {
+                user.exp += 700
+            },
+            reward: (ctx) => `**700** ${ctx.symbols.tomato}`
         },
     ],
 

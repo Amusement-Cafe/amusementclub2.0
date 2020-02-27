@@ -1,6 +1,8 @@
 const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
+const asdate        = require('add-subtract-date')
+const msToTime      = require('pretty-ms')
 
 const {
     getGuildUser,
@@ -10,6 +12,7 @@ const {
 
 const {
     addUserCard,
+    removeUserCard,
     formatName
 } = require('./card')
 
@@ -44,7 +47,7 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
 }
 
 const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
-const itemInfo = (ctx, item) => infos[item.type](ctx, item)
+const itemInfo = (ctx, user, item) => infos[item.type](ctx, user, item)
 const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
 
 const uses = {
@@ -99,11 +102,33 @@ const uses = {
             return ctx.reply(user, `you already have this Effect Card`, 'red')
 
         const effect = ctx.effects.filter(x => x.id === item.effectid)
+        if(!item.cards.reduce((val, x) => val && user.cards.some(y => y.id === x), true))
+            return ctx.reply(user, `you don't have all required cards in order to use this item.
+                Type \`->inv info ${item.id}\` to see the list of required cards`, 'red')
+
+        const eobject = { id: item.effectid }
+        if(effect.passive) eobject.expires = asdate.add(new Date(), item.lasts, 'days')
+        else eobject.uses = item.lasts
+
+        item.cards.map(x => removeUserCard(user, x))
+        pullInventoryItem(user, item.id)
+        user.effects.push(eobject)
+        await user.save()
+        user.markModified('cards')
+        await user.save() //double for cards
+
+        return ctx.reply(user, {
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.png` },
+            color: colors.blue,
+            description: `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
+                ${effect.passive? `To use this passive effect equip it with \`->hero equip [slot] ${effect.id}\``:
+                `Use this effect by typing \`->hero use ${effect.id}\`. Amount of uses is limited to **${item.lasts}**`}`
+        })
     }
 }
 
 const infos = {
-    blueprint: (ctx, item) => ({
+    blueprint: (ctx, user, item) => ({
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
@@ -114,15 +139,18 @@ const infos = {
         }))
     }),
 
-    claim_ticket: (ctx, item) => ({
+    claim_ticket: (ctx, user, item) => ({
         description: item.fulldesc
     }),
 
-    recipe: (ctx, item) => {
+    recipe: (ctx, user, item) => {
         const effect = ctx.effects.filter(x => x.id === item.effectid)[0]
         let requires
         if(item.cards) {
-            requires = item.cards.map(x => formatName(ctx.cards[x])).join('\n')
+            requires = item.cards.map(x => {
+                const has = user.cards.some(y => y.id === x)
+                return `\`${has? ctx.symbols.accept : ctx.symbols.decline}\` ${formatName(ctx.cards[x])}`
+            }).join('\n')
 
         } else {
             const recipe = item.recipe.reduce((rv, x) => {
@@ -157,6 +185,7 @@ const getQuestion = (ctx, user, item) => {
     switch(item.type) {
         case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
         case 'claim_ticket': return `Do you want to use **${item.name}** to get a **${item.level}★** card?`
+        case 'recipe': return `Do you want to convert **${item.name}** into an Effect Card? The required cards will be consumed`
     }
 }
 

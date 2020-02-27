@@ -80,7 +80,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
                     To use the item \`->inv use [item id]\`\n\n`
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}**`)),
+        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`)),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, your inventory (${items.length} results)` },
@@ -102,9 +102,9 @@ cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
 cmd(['inv', 'info'], withUserItems((ctx, user, items, args) => {
     const item = items[0]
 
-    const embed = itemInfo(ctx, item)
+    const embed = itemInfo(ctx, user, item)
     embed.color = colors.blue
-    embed.author = { name: item.name }
+    embed.author = { name: `${item.name} (${item.type.replace(/_/, ' ')})` }
 
     if(item.col)
         embed.description += `\nThis ticket is for collection \`${item.col}\``

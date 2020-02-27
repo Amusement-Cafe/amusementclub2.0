@@ -90,7 +90,9 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         auc_sbd: '🔹',
         auc_lbd: '🔷',
         auc_sod: '🔸',
-        auc_wss: '▫️'
+        auc_wss: '▫️',
+        accept: '✅',
+        decline: '❌',
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
@@ -179,8 +181,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
-
-            args = args.filter(x => !globalArgsMap.hasOwnProperty(x[1]))
+            args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
 
             if(usr.lock) {
                 usr.lock = false

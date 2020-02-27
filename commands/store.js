@@ -51,7 +51,7 @@ cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], async (ctx, user, ...
     if(!item)
         return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
 
-    const embed = itemInfo(ctx, item)
+    const embed = itemInfo(ctx, user, item)
     embed.color = colors.deepgreen
     embed.author = { name: item.name }
 

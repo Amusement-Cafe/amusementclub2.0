@@ -11,7 +11,6 @@ module.exports = model('User', {
     dailystats:         { type: Object, default: {} },
 
     cards:              { type: Array, default: [] },
-    quests:             { type: Array, default: [] },
     inventory:          { type: Array, default: [] },
     completedcols:      { type: Array, default: [] },
     achievements:       { type: Array, default: [] },

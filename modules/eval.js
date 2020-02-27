@@ -1,9 +1,9 @@
 const User      = require('../collections/user')
 const asdate    = require('add-subtract-date')
 
-const cardPrices = [ 10, 80, 150, 400, 1000, 2500 ]
+const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
 const evalUserRate = 0.5
-const evalVailRate = 0.02
+const evalVialRate = 0.04
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 
 const evalCard = async (ctx, card, modifier = 1) => {
@@ -29,7 +29,7 @@ const getVialCost = async (ctx, card, cardeval) => {
     if(!cardeval)
         cardeval = await evalCard(ctx, card)
 
-    const diff = cardeval / (cardPrices.slice().reverse()[card.level] * evalVailRate)
+    const diff = cardeval / (cardPrices.slice().reverse()[card.level] * evalVialRate)
     return Math.round(5 + diff)
 }
 

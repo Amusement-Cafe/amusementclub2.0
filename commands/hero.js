@@ -83,6 +83,24 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
     })
 }))
 
+cmd(['effects'], ['hero', 'effects'], async (ctx, user) => {
+    if(!user.hero)
+        return ctx.reply(user, `you have to have a hero to use effect cards`, 'red')
+
+    if(user.effects.length === 0)
+        return ctx.reply(user, `you don't have any effects`, 'red')
+
+    const pages = ctx.pgn.getPages(user.effects.map((x, i) => `${i + 1}. **${x.id}**`), 5)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        embed: {
+            title: `Your Effect Cards`,
+            color: colors.blue,
+        }
+    })
+})
+
 cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(!arg1)
         return ctx.reply(user, `please specify MAL character URL`, 'red')

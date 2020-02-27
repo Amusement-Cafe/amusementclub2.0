@@ -321,6 +321,9 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
 })).access('dm')
 
 cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'info')
+
     const card = bestMatch(cards)
     const price = await evalCard(ctx, card)
     const tags = await fetchCardTags(card)
