@@ -108,6 +108,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         quests: data.quests, /* game quests */
         promos: data.promos,
         boosts: data.boosts,
+        effects: data.effects,
         direct, /* DM reply function to the user */
         symbols,
         baseurl,

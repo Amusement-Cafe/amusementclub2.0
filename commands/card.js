@@ -36,6 +36,10 @@ const {
     getBuilding
 } = require('../modules/guild')
 
+const {
+    check_effect
+} = require('../modules/effect')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
@@ -69,6 +73,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
+    const tohruEffect = check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
@@ -76,10 +81,14 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
 
         let card, boostdrop = false
-        if(boost && rng < boost.rate) {
+        if(i === 0 && tohruEffect) {
+            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3))
+        }
+        else if(boost && rng < boost.rate) {
             boostdrop = true
             card = ctx.cards[_.sample(boost.cards)]
-        } else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        }
+        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
 
         const count = addUserCard(user, card.id)
         cards.push({count, boostdrop, card: _.clone(card)})

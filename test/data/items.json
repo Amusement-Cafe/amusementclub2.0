@@ -169,5 +169,16 @@
         "typedesc": "Claim tickets are used to claim cards of certain rarity or collection. They are usually awarded during events or for completing quests and collections",
         "fulldesc": "When used gives you legendary card. The collection is determined when awarded",
         "level": 5
+    }, {
+        "id": "tohrugift",
+        "effectid": "tohrugift",
+        "name": "Gift From Tohru recipe",
+        "price": 1500,
+        "type": "recipe",
+        "desc": "3-star every day",
+        "typedesc": "Use Effect Card recipies to obtain usable or passive Effect Cards",
+        "fulldesc": "When used gives you Gift From Tohru effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [2, 2, 2],
+        "lasts": 30
     }
 ]

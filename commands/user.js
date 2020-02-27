@@ -31,7 +31,8 @@ const {
 const {
     withUserItems,
     useItem,
-    getQuestion
+    getQuestion,
+    itemInfo
 } = require('../modules/item')
 
 const {
@@ -96,6 +97,19 @@ cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
         question: getQuestion(ctx, user, item),
         onConfirm: (x) => useItem(ctx, user, item)
     })
+}))
+
+cmd(['inv', 'info'], withUserItems((ctx, user, items, args) => {
+    const item = items[0]
+
+    const embed = itemInfo(ctx, item)
+    embed.color = colors.blue
+    embed.author = { name: item.name }
+
+    if(item.col)
+        embed.description += `\nThis ticket is for collection \`${item.col}\``
+
+    return ctx.send(ctx.msg.channel.id, embed)
 }))
 
 cmd('daily', async (ctx, user) => {

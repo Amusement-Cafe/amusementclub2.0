@@ -116,6 +116,8 @@ const checkGuildLoyalty = async (ctx) => {
         if(ourScore >= otherScore) {
             if(highest === ctx.guild.hero) {
                 ctx.guild.heroloyalty = Math.min(ctx.guild.heroloyalty + 1, 3)
+                await ctx.guild.save()
+                
                 return ctx.send(ctx.guild.reportchannel, {
                     author: { name: `Guild hero status` },
                     description: `Hero **${targetHero.name}** is securing position in this guild with loyalty level **${ctx.guild.heroloyalty}**!`,

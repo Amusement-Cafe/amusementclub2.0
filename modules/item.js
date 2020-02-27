@@ -28,18 +28,24 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
 
     let items = mapUserInventory(ctx, user)
 
-    if(args[0]) {
-        const reg = new RegExp(args[0], 'gi')
+    if(!isNaN(args[0]))
+        items = [items[parseInt(args[0]) - 1]]
+    else if(args.length > 0) {
+        const reg = new RegExp(args.join('*.'), 'gi')
         items = items.filter(x => reg.test(x.id))
     }
 
-    if(items.length == 0)
-        return ctx.reply(user, `no items found`, 'red')
+    items = items.filter(x => x)
+
+    if(items.length === 0)
+        return ctx.reply(user, `found 0 items with that ID`, 'red')
 
     return callback(ctx, user, items, args)
 }
 
 const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
+const itemInfo = (ctx, item) => infos[item.type](ctx, item)
+const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
 
 const uses = {
     blueprint: async (ctx, user, item) => {
@@ -86,6 +92,64 @@ const uses = {
             color: colors.blue,
             description: `you got **${formatName(card)}**!`
         })
+    },
+
+    recipe: async (ctx, user, item) => {
+        if(user.effects.some(x => x.id === item.effectid))
+            return ctx.reply(user, `you already have this Effect Card`, 'red')
+
+        const effect = ctx.effects.filter(x => x.id === item.effectid)
+    }
+}
+
+const infos = {
+    blueprint: (ctx, item) => ({
+        description: item.fulldesc,
+        fields: item.levels.map((x, i) => ({
+            name: `Level ${i + 1}`, 
+            value: `Price: **${x.price}** ${ctx.symbols.tomato}
+                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+                Required guild level: **${x.level}**
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+        }))
+    }),
+
+    claim_ticket: (ctx, item) => ({
+        description: item.fulldesc
+    }),
+
+    recipe: (ctx, item) => {
+        const effect = ctx.effects.filter(x => x.id === item.effectid)[0]
+        let requires
+        if(item.cards) {
+            requires = item.cards.map(x => formatName(ctx.cards[x])).join('\n')
+
+        } else {
+            const recipe = item.recipe.reduce((rv, x) => {
+                rv[x] = rv[x] + 1 || 1
+                return rv
+            }, {})
+            requires = Object.keys(recipe).map(x => `${x}${ctx.symbols.star} card **x${recipe[x]}**`).join('\n')
+        }
+
+        return ({
+            description: item.fulldesc,
+            fields: [
+                { name: `Lasts`, value: `${item.lasts} ${effect.passive? 'days' : 'uses'} after being crafted` },
+                { name: `Effect`, value: effect.desc },
+                { name: `Requires`, value: requires }
+            ]
+        })
+    }
+    
+}
+
+const buys = {
+    blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
+    claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
+    recipe: (ctx, user, item) => {
+        const cards = item.recipe.map(x => _.sample(ctx.cards.filter(y => y.level === x)).id)
+        user.inventory.push({ id: item.id, cards, time: new Date() })
     }
 }
 
@@ -105,5 +169,7 @@ const pullInventoryItem = (user, itemid) => {
 module.exports = {
     withUserItems,
     useItem,
-    getQuestion
+    getQuestion,
+    itemInfo,
+    buyItem
 }
