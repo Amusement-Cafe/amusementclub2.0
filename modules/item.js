@@ -80,7 +80,7 @@ const uses = {
     },
 
     claim_ticket: async (ctx, user, item) => {
-        const col = item.col? ctx.collections.filter(x => x.id === item.col)[0] : _.sample(ctx.collections.filter(x => !x.rarity))
+        const col = item.col? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity))
         const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === item.level))
 
         if(!card)
@@ -101,7 +101,7 @@ const uses = {
         if(user.effects.some(x => x.id === item.effectid))
             return ctx.reply(user, `you already have this Effect Card`, 'red')
 
-        const effect = ctx.effects.filter(x => x.id === item.effectid)
+        const effect = ctx.effects.find(x => x.id === item.effectid)
         if(!item.cards.reduce((val, x) => val && user.cards.some(y => y.id === x), true))
             return ctx.reply(user, `you don't have all required cards in order to use this item.
                 Type \`->inv info ${item.id}\` to see the list of required cards`, 'red')
