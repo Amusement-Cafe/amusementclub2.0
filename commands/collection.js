@@ -14,7 +14,7 @@ const {nameSort}            = require('../utils/tools')
 const _                     = require('lodash')
 
 cmd('col', async (ctx, user, ...args) => {
-    const completed = args.filter(x => x === '-completed' || x === '!completed')[0]
+    const completed = args.find(x => x === '-completed' || x === '!completed')
     args = args.filter(x => x != '-completed' && x != '!completed')
 
     let cols = byAlias(ctx, args.join().replace('-', ''))
@@ -31,7 +31,7 @@ cmd('col', async (ctx, user, ...args) => {
         return ctx.reply(user, `no collections found`, 'red')
 
     const pages = ctx.pgn.getPages(cols.map(x => {
-        const complete = user.completedcols.filter(y => x.id === y.id)[0]
+        const complete = user.completedcols.find(y => x.id === y.id)
         return `${complete? `[${complete.amount}${ctx.symbols.star}]` : ''} **${x.name}** (${x.id})`
     }))
 
@@ -53,7 +53,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
     const userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
     const card = _.sample(colCards)
-    const clout = user.completedcols.filter(x => x.id === col.id)[0]
+    const clout = user.completedcols.find(x => x.id === col.id)
 
     const resp = []
     resp.push(`Overall cards: **${colCards.length}**`)
@@ -82,7 +82,7 @@ cmd(['col', 'reset'], async (ctx, user, ...args) => {
     if(!col)
         return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
 
-    const legendary = ctx.cards.filter(x => x.col === col.id && x.level === 5)[0]
+    const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
     let userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
 

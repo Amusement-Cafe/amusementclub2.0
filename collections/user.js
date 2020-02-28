@@ -11,13 +11,14 @@ module.exports = model('User', {
     dailystats:         { type: Object, default: {} },
 
     cards:              { type: Array, default: [] },
-    quests:             { type: Array, default: [] },
     inventory:          { type: Array, default: [] },
     completedcols:      { type: Array, default: [] },
     achievements:       { type: Array, default: [] },
+    effects:            { type: Array, default: [] },
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
+    heroslots:          { type: Array, default: [] },
 
     hero:               { type: String },
     herochanged:        { type: Date },

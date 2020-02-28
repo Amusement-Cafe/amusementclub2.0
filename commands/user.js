@@ -31,7 +31,8 @@ const {
 const {
     withUserItems,
     useItem,
-    getQuestion
+    getQuestion,
+    itemInfo
 } = require('../modules/item')
 
 const {
@@ -46,7 +47,7 @@ const {
 cmd('bal', (ctx, user) => {
     let max = 1
     const now = new Date()
-    const promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+    const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
     while(claimCost(user, ctx.guild.tax, max) < user.exp)
         max++
 
@@ -79,7 +80,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
                     To use the item \`->inv use [item id]\`\n\n`
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}**`)),
+        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`)),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, your inventory (${items.length} results)` },
@@ -98,6 +99,19 @@ cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
     })
 }))
 
+cmd(['inv', 'info'], withUserItems((ctx, user, items, args) => {
+    const item = items[0]
+
+    const embed = itemInfo(ctx, user, item)
+    embed.color = colors.blue
+    embed.author = { name: `${item.name} (${item.type.replace(/_/, ' ')})` }
+
+    if(item.col)
+        embed.description += `\nThis ticket is for collection \`${item.col}\``
+
+    return ctx.send(ctx.msg.channel.id, embed)
+}))
+
 cmd('daily', async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
@@ -109,7 +123,7 @@ cmd('daily', async (ctx, user) => {
         const gbank = getBuilding(ctx, 'gbank')
         const tavern = getBuilding(ctx, 'tavern')
         const amount = gbank? 500 : 300
-        const promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+        const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
 
@@ -218,7 +232,7 @@ cmd('profile', async (ctx, user, arg1) => {
             name: `${user.username} (${user.discord_id})`
         },
         thumbnail: {
-            url: ctx.bot.users.filter(x => x.id === user.discord_id)[0].avatarURL
+            url: ctx.bot.users.find(x => x.id === user.discord_id).avatarURL
         }
     }, user.discord_id)
 }).access('dm')
@@ -227,7 +241,7 @@ cmd('diff', async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args)
 
     if(!newArgs.ids[0])
-        return ctx.reply(user, `please include ID of other user`, 'red')
+        return ctx.qhelp(ctx, user, 'diff')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
     const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)

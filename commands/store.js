@@ -2,6 +2,11 @@ const {cmd}     = require('../utils/cmd')
 const _         = require('lodash')
 const colors    = require('../utils/colors')
 
+const { 
+    itemInfo,
+    buyItem
+} = require('../modules/item')
+
 cmd('store', 'shop', async (ctx, user, cat) => {
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
     cat = cat? cat.replace(/s$/i, '') : null
@@ -19,49 +24,48 @@ cmd('store', 'shop', async (ctx, user, cat) => {
             })
 
     const items = ctx.items.filter(x => x.type === cat)
-    return ctx.send(ctx.msg.channel.id, {
-        author: { name: `${cat}s` },
+    const embed = {
+        author: { name: `${cat}s`.toUpperCase() },
         color: colors.deepgreen,
-        description: `${items[0].typedesc}\n To view the item details use \`->store info [item id]\`
-            To buy the item use \`->store buy [item id]\`\n
-            ${items.map((x, i) => `${i + 1}. [${x.price} ${ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`).join('\n')}`
-        })
+        description: items[0].typedesc,
+        fields: [{
+            name: `Usage`,
+            value: `To view the item details use \`->store info [item id]\`
+                To buy the item use \`->store buy [item id]\``
+        }]}
+
+    const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${x.price} ${ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages, embed,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.fields[1] = { name: `Item list`, value: data.pages[data.pagenum] }
+    })
 })
 
-cmd(['store', 'info'], ['shop', 'info'], ['inv', 'info'], ['item', 'info'], async (ctx, user, itemid) => {
-    let item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
-    if(!item && parseInt(itemid))
-        item = ctx.items[parseInt(itemid) - 1]
+cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], async (ctx, user, ...args) => {
+    const reg = new RegExp(args.join('*.'), 'gi')
+    let item = ctx.items.find(x => reg.test(x.id))
+    if(!item && !isNaN(args[0]))
+        item = ctx.items[parseInt(args[0]) - 1]
 
     if(!item)
-        return ctx.reply(user, `item with ID \`${itemid}\` not found`, 'red')
+        return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
 
-    const embed = {
-        author: { name: item.name },
-        description: item.fulldesc,
-        color: colors.deepgreen,
-    }
-
-    if(item.levels) {
-        embed.fields = item.levels.map((x, i) => ({
-            name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
-                Required guild level: **${x.level}**
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
-        }))
-    }
+    const embed = itemInfo(ctx, user, item)
+    embed.color = colors.deepgreen
+    embed.author = { name: item.name }
 
     return ctx.send(ctx.msg.channel.id, embed)
 })
 
-cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid, force) => {
-    let item = ctx.items.filter(x => x.id === itemid && x.price >= 0)[0]
-    if(!item && parseInt(itemid))
-        item = ctx.items[parseInt(itemid) - 1]
+cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, ...args) => {
+    const reg = new RegExp(args.join('*.'), 'gi')
+    let item = ctx.items.find(x => reg.test(x.id))
+    if(!item && !isNaN(args[0]))
+        item = ctx.items[parseInt(args[0]) - 1]
 
     if(!item)
-        return ctx.reply(user, `item with ID \`${itemid}\` not found or cannot be purchased`, 'red')
+        return ctx.reply(user, `item with ID \`${args.join('')}\` not found or cannot be purchased`, 'red')
 
     if(user.exp < item.price)
         return ctx.reply(user, `you have to have at least \`${item.price}\` ${ctx.symbols.tomato} to buy this item`, 'red')
@@ -70,9 +74,10 @@ cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, itemid, force) => {
         question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}?`,
         force: ctx.globals.force,
         onConfirm: async (x) => {
-            user.inventory.push({ id: item.id, time: new Date() })
+            buyItem(ctx, user, item)
             user.exp -= item.price
             await user.save()
+
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${ctx.symbols.tomato}
                 The item has been added to your inventory. See \`->inv info ${item.id}\` for details`, 'green')
         }

@@ -34,7 +34,7 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     const parsedargs = c.parseArgs(ctx, args)
 
     if(parsedargs.isEmpty(false))
-        return ctx.reply(user, `please specify a card`, 'red')
+        return ctx.qhelp(ctx, user, 'tag')
 
     if(parsedargs.tags.length === 0)
         return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')

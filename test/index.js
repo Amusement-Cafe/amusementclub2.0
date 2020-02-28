@@ -11,6 +11,7 @@ const main = async () => {
         items: require('./data/items.json'),
         achievements: require('./data/achievements.js'),
         quests: require('./data/quests.js'),
+        effects: require('./data/effects.js'),
         promos: require('./data/promos.json').map(
             x => Object.assign({}, x, {
             starts: Date.parse(x.starts),
@@ -28,8 +29,8 @@ const main = async () => {
 
     await instance.connect()
 
-    instance.emitter.on('info', data => {
-        console.log(data)
+    instance.emitter.on('info', i => {
+        console.log(i)
     })
 
     instance.emitter.on('error', err => {

@@ -35,7 +35,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
         card2 = bestMatch(cards[0].filter(x => x.id != card1.id))
 
     if(!card1 || !card2)
-        return ctx.reply(user, `please specify **two cards** using \`,\` as separator`, 'red')
+        return ctx.reply(user, `not enough cards found matching this query.
+            You can specify one query that can get 2+ cards, or 2 queries using \`,\` as separator`, 'red')
 
     if(card1.level != card2.level)
         return ctx.reply(user, `you can forge only cards of the same star count`, 'red')
@@ -63,7 +64,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
             if(card1.col === card2.col)
                 res = res.filter(x => x.col === card1.col)
-            else res = res.filter(x => !ctx.collections.filter(y => y.id === x.col)[0].promo)
+            else res = res.find(x => !ctx.collections.filter(y => y.id === x.col).promo)
 
             const newcard = _.sample(res)
             user.vials += vialres
@@ -96,6 +97,9 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     if(!hub || hub.level < 2)
         return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
 
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'liq')
+
     const card = bestMatch(cards)
     const vials = Math.round((await getVialCost(ctx, card)) * .25)
 
@@ -105,7 +109,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
 
-    const usercard = user.cards.filter(x => x.id === card.id)[0]
+    const usercard = user.cards.find(x => x.id === card.id)
     if(usercard.fav && usercard.amount === 1)
         return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
@@ -134,6 +138,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     if(!hub || hub.level < 2)
         return ctx.reply(user, `drawing cards is possible only in the guild with **Smithing Hub level 2+**`, 'red')
+
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'draw')
 
     const card = bestMatch(cards)
     const vials = await getVialCost(ctx, card)

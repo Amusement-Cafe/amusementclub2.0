@@ -73,6 +73,16 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         return send(ch.id, toObj(user, str, clr), user.discord_id)
     }
 
+    const qhelp = (ctx, user, cat) => {
+        const help = ctx.help.filter(x => x.type.includes(cat))[0]
+        return send(ctx.msg.channel.id, {
+            author: { name: `Possible options:` },
+            fields: help.fields.slice(0, 5).map(x => ({ name: x.title, value: x.description })),
+            color: colors.blue,
+            footer: { text: `For full information type ->help ${cat} -here` }
+        }, user.discord_id)
+    }
+
     const symbols = {
         tomato: '`🍅`',
         vial: '`🍷`',
@@ -80,7 +90,9 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         auc_sbd: '🔹',
         auc_lbd: '🔷',
         auc_sod: '🔸',
-        auc_wss: '▫️'
+        auc_wss: '▫️',
+        accept: '✅',
+        decline: '❌',
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
@@ -98,10 +110,12 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         quests: data.quests, /* game quests */
         promos: data.promos,
         boosts: data.boosts,
+        effects: data.effects,
         direct, /* DM reply function to the user */
         symbols,
         baseurl,
         pgn,
+        qhelp,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 
@@ -167,8 +181,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
-
-            args = args.filter(x => !globalArgsMap.hasOwnProperty(x[1]))
+            args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
 
             if(usr.lock) {
                 usr.lock = false
@@ -196,13 +209,9 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             })
 
             const usr  = await user.fetchOnly(userID)
-            //isolatedCtx.guild = msg.channel.guild
             if(!usr) return
 
             await pgn.trigger(userID, msg, emoji.name)
-            //await check_all(isolatedCtx, usr)
-
-            //await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
             let sh = msg.channel.guild.shard
             emitter.emit('error', e, sh.id)

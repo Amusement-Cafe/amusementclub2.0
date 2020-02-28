@@ -9,11 +9,14 @@ const {
 } = require('../modules/collection')
 
 const {
+    checkGuildLoyalty
+} = require('../modules/hero')
+
+const {
     formatName,
     addUserCard,
     withGlobalCards,
     bestMatch,
-    equals
 } = require('../modules/card')
 
 const {fetchOnly} = require('../modules/user')
@@ -29,7 +32,7 @@ pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
         if(!role)
             return ctx.reply(user, `this command requires role`, 'red')
 
-        if(target.roles.filter(x => x === role)[0])
+        if(target.roles.find(x => x === role))
             rpl.push(`\`❌\` **${target.username}** (${target.discord_id}) already has role '${role}'`)
         else {
             target.roles.push(role)
@@ -50,7 +53,7 @@ pcmd(['admin'], ['sudo', 'rm', 'role'], async (ctx, user, ...args) => {
         if(!role)
             return ctx.reply(user, `this command requires role`, 'red')
 
-        if(!target.roles || !target.roles.filter(x => x === role)[0])
+        if(!target.roles || !target.roles.find(x => x === role))
             rpl.push(`\`❌\` **${target.username}** (${target.discord_id}) doesn't have role role '${role}'`)
         else {
             target.roles = target.roles.filter(x => x != role)
@@ -150,4 +153,9 @@ pcmd(['admin'], ['sudo', 'daily', 'reset'], async (ctx, user, ...args) => {
     })
 
     return ctx.reply(user, rpl.join('\n'))
+})
+
+pcmd(['admin'], ['sudo', 'guild', 'herocheck'], async (ctx, user) => {
+    await checkGuildLoyalty(ctx)
+    return ctx.reply(user, `current guild hero check done`)
 })

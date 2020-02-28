@@ -31,7 +31,7 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     }).sort({ time: -1 })
 
     if(!parsedargs.isEmpty())
-        list = list.filter(x => cards.filter(y => x.card === y.id)[0])
+        list = list.find(x => cards.filter(y => x.card === y.id))
 
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent transactions`)

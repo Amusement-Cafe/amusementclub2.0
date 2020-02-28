@@ -36,18 +36,22 @@ const {
     getBuilding
 } = require('../modules/guild')
 
+const {
+    check_effect
+} = require('../modules/effect')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
 
     let promo, boost
     if(args.indexOf('promo') != -1) {
-        promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+        promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         if(!promo)
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
+    const amount = args.find(x => !isNaN(x)).map(x => parseInt(x)) || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
@@ -65,21 +69,26 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     if(!promo) {
-        boost = args.map(x => curboosts.filter(y => y.id === x)[0]).filter(x => x)[0]
+        boost = args.map(x => curboosts.find(y => y.id === x)[0]).filter(x => x)
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
+    const tohruEffect = check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
-        const col = promo || spec || (lock? ctx.collections.filter(x => x.id === lock)[0] 
+        const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
 
         let card, boostdrop = false
-        if(boost && rng < boost.rate) {
+        if(i === 0 && tohruEffect) {
+            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3))
+        }
+        else if(boost && rng < boost.rate) {
             boostdrop = true
             card = ctx.cards[_.sample(boost.cards)]
-        } else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        }
+        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
 
         const count = addUserCard(user, card.id)
         cards.push({count, boostdrop, card: _.clone(card)})
@@ -90,7 +99,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
-    oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
+    oldCards.map(x => x.card.fav = user.cards.find(y => x.card.id === y.id).fav)
 
     if(promo) {
         user.promoexp -= price
@@ -168,11 +177,11 @@ cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
-        return ctx.reply(user, `please specify a card`, 'red')
+        return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
     const card = bestMatch(cards)
-    const usercard = user.cards.filter(x => x.id === card.id)[0]
+    const usercard = user.cards.find(x => x.id === card.id)
     const pending = await getPendingFrom(ctx, user)
     const pendingto = pending.filter(x => x.to === id)
 
@@ -235,6 +244,9 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'fav')
+
     const card = bestMatch(cards)
 
     if(card.fav)
@@ -271,6 +283,9 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 })).access('dm')
 
 cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'draw')
+
     const card = bestMatch(cards)
 
     if(!card.fav)
@@ -306,6 +321,9 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
 })).access('dm')
 
 cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'info')
+
     const card = bestMatch(cards)
     const price = await evalCard(ctx, card)
     const tags = await fetchCardTags(card)

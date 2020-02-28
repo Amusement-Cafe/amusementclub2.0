@@ -1,5 +1,4 @@
 const {cmd, pcmd}           = require('../utils/cmd')
-const {addConfirmation}     = require('../utils/confirmator')
 const colors                = require('../utils/colors')
 const Filter                = require('bad-words')
 const filter                = new Filter();
@@ -64,6 +63,10 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
+
+            user.dailystats.tags = user.dailystats.tags + 1 || 1
+            user.markModified('dailystats')
+            await user.save()
 
             ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
         },

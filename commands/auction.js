@@ -1,7 +1,6 @@
 const {cmd, pcmd}       = require('../utils/cmd')
 const {evalCard}        = require('../modules/eval')
 const {Auction}         = require('../collections')
-const {addPagination}   = require('../utils/paginator')
 const {fetchOnly}       = require('../modules/user')
 const msToTime          = require('pretty-ms')
 const colors            = require('../utils/colors')
@@ -35,10 +34,10 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         .filter(x => x.expires > now)
 
     if(parsedargs.diff)
-        list = list.filter(x => !user.cards.filter(y => x.card === y.id)[0])
+        list = list.find(x => !user.cards.filter(y => x.card === y.id))
 
     if(!parsedargs.isEmpty())
-        list = list.filter(x => cards.filter(y => x.card === y.id)[0])
+        list = list.find(x => cards.filter(y => x.card === y.id))
 
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
@@ -97,7 +96,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    let price = parsedargs.extra.filter(x => !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
+    let price = parsedargs.extra.find(x => !isNaN(x) && Number(x) > 0).map(x => Number(x)) || Math.round(ceval)
 
     if(price <= 4)
         price *= ceval
@@ -106,7 +105,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
-    const timenum = -parsedargs.extra.filter(x => x[0] === '-').map(x => parseInt(x))[0]
+    const timenum = -parsedargs.extra.find(x => x[0] === '-').map(x => parseInt(x))
     let time = 6
 
     if(timenum) {
@@ -118,7 +117,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const check = async () => {
         user = await fetchOnly(user.discord_id)
-        const usercard = user.cards.filter(x => x.id === card.id)[0]
+        const usercard = user.cards.find(x => x.id === card.id)
 
         if(!usercard)
             return ctx.reply(user, `impossible to proceed with confirmation: ${formatName(card)} not found in your list`, 'red')
@@ -157,8 +156,8 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
                                 You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
 
     const now = new Date();
-    const bid = parseInt(args.filter(x => !isNaN(x))[0])
-    const id = args.filter(x => isNaN(x))[0]
+    const bid = parseInt(args.find(x => !isNaN(x)))
+    const id = args.find(x => isNaN(x))
 
     if(!id)
         return ctx.reply(user, `please specify auction ID`, 'red')

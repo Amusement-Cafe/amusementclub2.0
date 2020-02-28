@@ -2,7 +2,7 @@ const colors    = require('../utils/colors')
 
 const check_achievements = async (ctx, user, action) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
-    const complete = possible.filter(x => x.check(ctx, user))[0]
+    const complete = possible.find(x => x.check(ctx, user))
 
     if(complete) {
         const reward = complete.resolve(ctx, user)

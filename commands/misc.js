@@ -11,7 +11,7 @@ cmd('help', async (ctx, user, ...args) => {
         else sbj = x
     })
 
-    const help = ctx.help.filter(x => x.type.includes(sbj))[0]
+    const help = ctx.help.find(x => x.type.includes(sbj))
     if(!help)
         return ctx.reply(user, `can't find help for \`${sbj}\``, 'red')
 
@@ -33,7 +33,7 @@ cmd('help', async (ctx, user, ...args) => {
 })
 
 cmd('rules', async (ctx, user) => {
-    const help = ctx.help.filter(x => x.type.includes('rules'))[0]
+    const help = ctx.help.find(x => x.type.includes('rules'))
     return ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`), user.discord_id)
 })
 

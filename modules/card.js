@@ -85,7 +85,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
-        return q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
+        return !q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
     }
 
     return q
