@@ -44,7 +44,7 @@ cmd('store', 'shop', async (ctx, user, cat) => {
 
 cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], async (ctx, user, ...args) => {
     const reg = new RegExp(args.join('*.'), 'gi')
-    let item = ctx.items.filter(x => reg.test(x.id))[0]
+    let item = ctx.items.find(x => reg.test(x.id))
     if(!item && !isNaN(args[0]))
         item = ctx.items[parseInt(args[0]) - 1]
 
@@ -60,7 +60,7 @@ cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], async (ctx, user, ...
 
 cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, ...args) => {
     const reg = new RegExp(args.join('*.'), 'gi')
-    let item = ctx.items.filter(x => reg.test(x.id))[0]
+    let item = ctx.items.find(x => reg.test(x.id))
     if(!item && !isNaN(args[0]))
         item = ctx.items[parseInt(args[0]) - 1]
 

@@ -64,7 +64,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
             if(card1.col === card2.col)
                 res = res.filter(x => x.col === card1.col)
-            else res = res.filter(x => !ctx.collections.filter(y => y.id === x.col)[0].promo)
+            else res = res.find(x => !ctx.collections.filter(y => y.id === x.col).promo)
 
             const newcard = _.sample(res)
             user.vials += vialres
@@ -109,7 +109,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
 
-    const usercard = user.cards.filter(x => x.id === card.id)[0]
+    const usercard = user.cards.find(x => x.id === card.id)
     if(usercard.fav && usercard.amount === 1)
         return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')

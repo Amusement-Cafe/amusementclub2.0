@@ -17,7 +17,7 @@ const {
 } = require('./card')
 
 const mapUserInventory = (ctx, user) => {
-    return user.inventory.map(x => Object.assign({}, ctx.items.filter(y => y.id === x.id)[0], x))
+    return user.inventory.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
 }
 
 /**
@@ -53,7 +53,7 @@ const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
 const uses = {
     blueprint: async (ctx, user, item) => {
         const guild = ctx.guild
-        if(guild.buildings.filter(x => x.id === item.id)[0])
+        if(guild.buildings.find(x => x.id === item.id))
             return ctx.reply(user, `this guild already has **${item.name}**`, 'red')
 
         if(user.exp < item.levels[0].price)
@@ -144,7 +144,7 @@ const infos = {
     }),
 
     recipe: (ctx, user, item) => {
-        const effect = ctx.effects.filter(x => x.id === item.effectid)[0]
+        const effect = ctx.effects.find(x => x.id === item.effectid)
         let requires
         if(item.cards) {
             requires = item.cards.map(x => {
@@ -190,7 +190,7 @@ const getQuestion = (ctx, user, item) => {
 }
 
 const pullInventoryItem = (user, itemid) => {
-    const el = user.inventory.filter(x => x.id === itemid)[0]
+    const el = user.inventory.find(x => x.id === itemid)
     _.pullAt(user.inventory, user.inventory.indexOf(el))
     user.markModified('inventory')
 }

@@ -54,7 +54,7 @@ cmd(['guild', 'info'], async (ctx, user) => {
             Loyalty level **${ctx.guild.heroloyalty}**` })
     }
 
-    const curUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+    const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(curUser){
         userstat.push(`Current rank: **${curUser.rank}**`)
         userstat.push(`Progress to the next rank: **${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%**`)
@@ -68,7 +68,7 @@ cmd(['guild', 'info'], async (ctx, user) => {
 
     if(ctx.guild.buildings.length > 0)
         fields.push({ name: `Buildings`, value: ctx.guild.buildings.map(x => {
-            const item = ctx.items.filter(y => y.id === x.id)[0]
+            const item = ctx.items.find(y => y.id === x.id)
             return `\`${item.id}\` **${item.name} level ${x.level}** (${item.desc})`
         }).join('\n')
     })
@@ -83,7 +83,7 @@ cmd(['guild', 'info'], async (ctx, user) => {
 })
 
 cmd(['guild', 'status'], (ctx, user) => {
-    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
     if(!castle)
         return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**', 'red')
 
@@ -101,7 +101,7 @@ cmd(['guild', 'status'], (ctx, user) => {
         author: { name: ctx.discord_guild.name },
         description: resp.join('\n'),
         fields: [{name: `Maintenance breakdown`, value: ctx.guild.buildings.map(x => {
-            const item = ctx.items.filter(y => y.id === x.id)[0]
+            const item = ctx.items.find(y => y.id === x.id)
             const heart = x.health < 50? '💔' : '❤️'
             return `[\`${heart}\` ${x.health}] **${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** ${ctx.symbols.tomato}/day`
         }).join('\n')}],
@@ -116,8 +116,8 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < ctx.guild.buildperm)
         return ctx.reply(user, `you have to be at least rank **${ctx.guild.buildperm}** to upgrade buildings in this guild`, 'red')
 
-    const building = ctx.guild.buildings.filter(x => x.id === arg1)[0]
-    const item = ctx.items.filter(x => x.id === arg1)[0]
+    const building = ctx.guild.buildings.find(x => x.id === arg1)
+    const item = ctx.items.find(x => x.id === arg1)
 
     if(!building)
         return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
@@ -158,7 +158,7 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
 
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     const amount = parseInt(arg1)
-    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
 
     if(!castle)
         return ctx.reply(user, '**Guild Castle** is required before you can donate', 'red')
@@ -192,7 +192,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
 
 cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     const tax = Math.abs(parseInt(arg1))
-    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
 
     if(!castle)
         return ctx.reply(user, '**Guild Castle** is required to set claim tax', 'red')
@@ -278,7 +278,7 @@ cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...a
     if(!tgUser)
         return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
 
-    const target = ctx.guild.userstats.filter(x => x.id === tgUser.discord_id)[0]
+    const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
     if(!target)
         return ctx.reply(user, `it appears that **${tgUser.username}** is not a member of this guild`, 'red')
 
@@ -304,7 +304,7 @@ cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], async (ctx, user
     if(!tgUser)
         return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
 
-    const target = ctx.guild.userstats.filter(x => x.id === tgUser.discord_id)[0]
+    const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
     if(!target)
         return ctx.reply(user, `it appears that **${tgUser.username}** is not a member of this guild`, 'red')
 
@@ -319,7 +319,7 @@ cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], async (ctx, user
 })
 
 cmd(['guild', 'lock'], async (ctx, user, arg1) => {
-    const guildUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
         return ctx.reply(user, `only owner or guild manager can set guild lock`, 'red')
 
@@ -383,7 +383,7 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
 })
 
 cmd(['guild', 'unlock'], async (ctx, user) => {
-    const guildUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
         return ctx.reply(user, `only owner or guild manager can remove guild lock`, 'red')
 

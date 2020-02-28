@@ -46,12 +46,12 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     let promo, boost
     if(args.indexOf('promo') != -1) {
-        promo = ctx.promos.filter(x => x.starts < now && x.expires > now)[0]
+        promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         if(!promo)
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
+    const amount = args.find(x => !isNaN(x)).map(x => parseInt(x)) || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
@@ -69,7 +69,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     if(!promo) {
-        boost = args.map(x => curboosts.filter(y => y.id === x)[0]).filter(x => x)[0]
+        boost = args.map(x => curboosts.find(y => y.id === x)[0]).filter(x => x)
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
@@ -77,7 +77,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
-        const col = promo || spec || (lock? ctx.collections.filter(x => x.id === lock)[0] 
+        const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
 
         let card, boostdrop = false
@@ -99,7 +99,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
-    oldCards.map(x => x.card.fav = user.cards.filter(y => x.card.id === y.id)[0].fav)
+    oldCards.map(x => x.card.fav = user.cards.find(y => x.card.id === y.id).fav)
 
     if(promo) {
         user.promoexp -= price
@@ -181,7 +181,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     const id = parsedargs.ids[0]
     const card = bestMatch(cards)
-    const usercard = user.cards.filter(x => x.id === card.id)[0]
+    const usercard = user.cards.find(x => x.id === card.id)
     const pending = await getPendingFrom(ctx, user)
     const pendingto = pending.filter(x => x.to === id)
 

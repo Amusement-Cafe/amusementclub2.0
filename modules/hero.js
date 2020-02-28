@@ -29,7 +29,7 @@ const get_hero = async (ctx, id) => {
     if(hcache.length === 0)
         await reloadCache()
 
-    const hero = hcache.filter(x => x.id === id)[0]
+    const hero = hcache.find(x => x.id === id)
     if(hero && hero.followers === -1) {
         hero.followers = await User.countDocuments({ hero: id })
         await hero.save()
@@ -88,7 +88,7 @@ const withHeroes = (callback) => async (ctx, user, ...args) => {
 }
 
 const checkGuildLoyalty = async (ctx) => {
-    const heroq = ctx.guild.buildings.filter(x => x.id === 'heroq' && x.health > 50)[0]
+    const heroq = ctx.guild.buildings.find(x => x.id === 'heroq' && x.health > 50)
     if(!heroq) return;
 
     const now = new Date()
@@ -98,7 +98,7 @@ const checkGuildLoyalty = async (ctx) => {
 
     const heroscores = {}
     guildheroes.filter(x => x.hero).map(x => {
-        const usr = ctx.guild.userstats.filter(y => y.id === x.discord_id)[0]
+        const usr = ctx.guild.userstats.find(y => y.id === x.discord_id)
         heroscores[x.hero] = heroscores[x.hero] + usr.rank || usr.rank
     })
 
@@ -228,7 +228,7 @@ const getGuildScore = async (ctx, guild, heroID) => {
 
     let score = 0
     guildheroes.filter(x => x.hero === heroID).map(x => {
-        const usr = guild.userstats.filter(y => y.id === x.discord_id)[0]
+        const usr = guild.userstats.find(y => y.id === x.discord_id)
         score += usr.xp
     })
 

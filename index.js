@@ -209,13 +209,9 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             })
 
             const usr  = await user.fetchOnly(userID)
-            //isolatedCtx.guild = msg.channel.guild
             if(!usr) return
 
             await pgn.trigger(userID, msg, emoji.name)
-            //await check_all(isolatedCtx, usr)
-
-            //await trigger('rct', isolatedCtx, usr, [emoji.name])
         } catch (e) {
             let sh = msg.channel.guild.shard
             emitter.emit('error', e, sh.id)

@@ -1,5 +1,4 @@
 const {cmd, pcmd}           = require('../utils/cmd')
-const {addConfirmation}     = require('../utils/confirmator')
 const colors                = require('../utils/colors')
 const Filter                = require('bad-words')
 const filter                = new Filter();

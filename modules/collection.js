@@ -2,7 +2,7 @@
 
 const byAlias = (ctx, name) => {
     const regex = new RegExp(name, 'gi')
-    return ctx.collections.filter(x => x.aliases.filter(y => regex.test(y))[0])
+    return ctx.collections.find(x => x.aliases.filter(y => regex.test(y)))
 }
 
 const bestColMatch = (ctx, name) => {
@@ -11,8 +11,8 @@ const bestColMatch = (ctx, name) => {
 }
 
 const reset = async (ctx, user, col) => {
-    const completed = user.completedcols.filter(x => x.id === col.id)[0]
-    const legendary = ctx.cards.filter(x => x.col === col.id && x.level === 5)[0]
+    const completed = user.completedcols.find(x => x.id === col.id)
+    const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
 
     if(completed)
         completed.amount++

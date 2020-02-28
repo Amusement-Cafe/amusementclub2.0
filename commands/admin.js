@@ -32,7 +32,7 @@ pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
         if(!role)
             return ctx.reply(user, `this command requires role`, 'red')
 
-        if(target.roles.filter(x => x === role)[0])
+        if(target.roles.find(x => x === role))
             rpl.push(`\`❌\` **${target.username}** (${target.discord_id}) already has role '${role}'`)
         else {
             target.roles.push(role)
@@ -53,7 +53,7 @@ pcmd(['admin'], ['sudo', 'rm', 'role'], async (ctx, user, ...args) => {
         if(!role)
             return ctx.reply(user, `this command requires role`, 'red')
 
-        if(!target.roles || !target.roles.filter(x => x === role)[0])
+        if(!target.roles || !target.roles.find(x => x === role))
             rpl.push(`\`❌\` **${target.username}** (${target.discord_id}) doesn't have role role '${role}'`)
         else {
             target.roles = target.roles.filter(x => x != role)

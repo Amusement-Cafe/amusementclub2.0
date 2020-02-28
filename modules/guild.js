@@ -17,7 +17,7 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
 		return null
 
     let fromcache = true
-    let guild = cache.filter(x => x.id === discord_guild.id)[0]
+    let guild = cache.find(x => x.id === discord_guild.id)
 
     if(!guild) {
         guild = await Guild.findOne({ id: discord_guild.id })
@@ -43,7 +43,7 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
 }
 
 const addGuildXP = (ctx, user, xp) => {
-    let guildUser = ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+    let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     
     if(!guildUser) {
         guildUser = { id: user.discord_id, xp: 0, rank: 0 }
@@ -121,18 +121,18 @@ const bill_guilds = async (ctx, now) => {
 
 const getMaintenanceCost = (ctx) => { 
     let reduce = 1
-    const castle = ctx.guild.buildings.filter(x => x.id === 'castle')[0]
+    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
     if(castle)
         reduce = (castle.level < 3? 1 : (castle.level < 5? .9 : .7))
 
-    const buildings = ctx.guild.buildings.map(x => ctx.items.filter(y => y.id === x.id)[0].levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0)
+    const buildings = ctx.guild.buildings.map(x => ctx.items.find(y => y.id === x.id).levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0)
     const lockprice = ctx.guild.lock? guildLock.maintenance : 0
     return Math.round((buildings + lockprice) * reduce)
 }
 
-const getBuilding = (ctx, id) => ctx.guild.buildings.filter(x => x.id === id && x.health > 50)[0]
+const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)
 
-const getGuildUser = (ctx, user) => ctx.guild.userstats.filter(x => x.id === user.discord_id)[0]
+const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.discord_id)
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
 

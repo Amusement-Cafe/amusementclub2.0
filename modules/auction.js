@@ -18,7 +18,7 @@ const msToTime  = require('pretty-ms')
 
 const new_auc = async (ctx, user, card, price, fee, time) => {
     const target = await fetchOnly(user.discord_id)
-    if(!target.cards.filter(x => x.id === card.id)[0])
+    if(!target.cards.find(x => x.id === card.id))
         return ctx.reply(user, `seems like you don't have ${formatName(card)} card anymore`, 'red')
 
     lockFile.lock('auc.lock', { wait: 5000, stale: 10000 }, async err => {

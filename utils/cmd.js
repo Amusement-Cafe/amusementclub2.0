@@ -69,7 +69,7 @@ const trigger = async (type, ctx, user, args) => {
     }
 
     if (cursor._perm) {
-        if(!user.roles || !cursor._perm.filter(x => user.roles.filter(y => x === y)[0])[0])
+        if(!user.roles || !cursor._perm.find(x => user.roles.some(y => x === y)))
             throw new Error(`Only users with roles **[${cursor._perm}]** can execute this command`)
     }
 

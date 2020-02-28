@@ -122,7 +122,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(submissions.some(x => !x.accepted))
         return ctx.reply(user, `you already have a hero pending approval. You cannot add another`, 'red')
 
-    const recent = submissions.filter(x => x.submitted > past)[0]
+    const recent = submissions.find(x => x.submitted > past)
     if(recent)
         return ctx.reply(user, `you can submit new hero in **${msToTime(recent.submitted - past, {compact: true})}**`, 'red')
 

@@ -6,6 +6,7 @@ module.exports = {
     tag: require('./tag'),
     guild: require('./guild'),
     auction: require('./auction'),
+    effect: require('./effect'),
     collection: require('./collection'),
     transaction: require('./transaction'),
 }

@@ -62,7 +62,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
     const from_user = await User.findOne({ discord_id: transaction.from_id })
     const to_user = await User.findOne({ discord_id: transaction.to_id })
-    const card = from_user.cards.filter(x => x.id == transaction.card)[0]
+    const card = from_user.cards.find(x => x.id == transaction.card)
 
     if(!card){
         transaction.status = 'declined'
