@@ -71,7 +71,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
             user.exp -= cost
 
             if(!newcard)
-                return ctx.reply(user, `and error occured, please try again`, 'red')
+                return ctx.reply(user, `an error occured, please try again`, 'red')
 
             removeUserCard(user, card1.id)
             removeUserCard(user, card2.id)

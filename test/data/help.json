@@ -2,7 +2,7 @@
     {
         "type": ["general"],
         "title": "\u2B50 Amusement Club \u2B50 RPG Gacha",
-        "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. You will get your first card and special card of the day if you are new player. Each claim will cost you more tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
+        "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. You will get your first card and special card of the day if you are a new player. Each claim will cost you more tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
         "fields": [
             {
                 "title": "User",
@@ -75,7 +75,7 @@
     {
         "type": ["bal", "balance", "economy", "currency", "tomatoes"],
         "title": "About currencies",
-        "description": "This command will show your amount of 🍅 Tomatoes, 🍷Vials and ★ Stars.\n**Tomatoes** are a main currency in game, that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs\n**Stars** show you an overall (clean) sum of card stars that you have. This is used mostly for rating and some benefits, like *heroes*",
+        "description": "This command will show your amount of 🍅 Tomatoes, 🍷Vials and ★ Stars.\n**Tomatoes** are the main currency in game, that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs\n**Stars** show you an overall (clean) sum of card stars that you have. This is used mostly for rating and some benefits, like *heroes*",
         "fields": [
             {
                 "title": "Useful to know",
@@ -174,16 +174,16 @@
         "description": "Collections or 'fandoms' are sets of cards that have same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command",
         "fields": [
             {
-                "title": "->col",
-                "description": "List of all collections"
+                "title": "List all collections",
+                "description": "->col"
             },
             {
-                "title": "->col [name]",
-                "description": "List collections that match name"
+                "title": "List collections that match name",
+                "description": "->col [name]"
             },
             {
-                "title": "->col info [name]",
-                "description": "Information about collection"
+                "title": "Information about collection",
+                "description": "->col info [name]"
             }
         ]
     },
@@ -268,6 +268,27 @@
         ]
     },
     {
+        "type": ["effect", "effects"],
+        "title": "Effect cards",
+        "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such each time you go to craft one you are likely to get different card requirements for it.",
+        "fields": [
+            {
+                "title": "List all useable effects",
+                "description": "->effects"
+            },
+            {
+                "title": "List all passive effects",
+                "description": "->hero slots"
+            },
+            {
+                "title": "Equip a passive effect",
+                "description": "->hero equip [slot] [passive]"
+            }
+
+
+        ]
+    },
+    {
         "type": ["eval", "evaluate"],
         "title": "About card pricing",
         "description": "Bot evaluates card value depending on amount of stars, type and amount of users that already have it. This is really useful to know the market price of item when trading it.",
@@ -323,52 +344,52 @@
         "description": "You can set custom prefix/bot channels for Amusement Club",
         "fields": [
         	{
-            	"title": "->guild",
-            	"description": "Returns a list of possible commands for ->guild [arg]"
+            	"title": "List possible commands for ->guild [arg]",
+            	"description": "->guild"
             },
             {
-                "title": "->guild info",
-                "description": "Shows basic information about current guild"
+                "title": "Show basic information about current guild",
+                "description": "->guild info"
             },
             {
-                "title": "->guild status",
-                "description": "Status of finances and buildings. Possible only if guild has **Castle**"
+                "title": "Status of finances and buildings. Possible only if guild has **Castle**",
+                "description": "->guild status"
             },
             {
-                "title": "->guild upgrade [building ID]",
-                "description": "Upgrades a building. Grants guild XP to the user who did the upgrade"
+                "title": "Upgrade a building. Grants guild XP to the user who did the upgrade",
+                "description": "->guild upgrade [building ID]"
             },
             {
-            	"title": "->guild donate",
-            	"description": "Using `->guild donate [amount]` allows you to donate your own 🍅 Tomatoes to the guild's balance (Requires a castle be built first)"
+            	"title": "Allows you to donate your own 🍅 Tomatoes to the guild's balance (Requires a castle be built first)",
+            	"description": "->guild donate [amount]"
             },
             {
-                "title": "->guild set tax",
-                "description": "Sets claim tax of the guild (owner/manager only)"
+                "title": "Set the claim tax of the guild (owner/manager only)",
+                "description": "->guild set tax [percentage]"
             },
             {
-                "title": "->guild set report",
-                "description": "Sets current channel to report channel of the guild. Only one report channel can be set (owner/manager only)"
+                "title": "Set current channel to report channel of the guild. Only one report channel can be set (owner/manager only)",
+                "description": "->guild set report"
             },
             {
-                "title": "->guild set bot",
-                "description": "Sets current channel as bot. `->guild unset bot` will give an opposite effect (owner/manager only)"
+                "title": "Set current channel as bot. `->guild unset bot` will give an opposite effect (owner/manager only)",
+                "description": "->guild set bot"
             },
             {
-                "title": "->guild set prefix",
-                "description": "Changes prefix of bot on current server (owner/manager only)"
+                "title": "Change prefix of bot on current server (owner/manager only)",
+                "description": "->guild set prefix"
             },
             {
-            	"title": "->guild add manager @someuser",
-            	"description": "Sets @user as guild manager, allowing them to set guild lock. `->guild remove manager` does the opposite (owner only)"
+            	"title": "Set @user as guild manager, allowing them to set guild lock. `->guild remove manager` does the opposite (owner only)",
+            	"description": "->guild add manager @someuser"
             },
             {
-            	"title": "->guild lock [collection]",
-            	"description": "Sets current guild lock to specified collection, requires 100,000 🍅 Tomatoes to lock, 3,500 🍅 Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)"
+            	"title": "Set current guild lock to specified collection, requires 100,000 🍅 Tomatoes to lock, 3,500 🍅 Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)",
+            	"description": "->guild lock [collection]"
             },
             {
-            	"title": "->guild set buildrank",
-            	"description": "Sets the minimum rank within the guild needed to build and upgrade buildings (owner/manager only)"
+            	"title": "Set the minimum rank within the guild needed to build and upgrade buildings (owner/manager only)",
+            	"description": "->guild set buildrank"
             }
         ]
     },
@@ -380,6 +401,44 @@
             {
                 "title": "Use command",
                 "description": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)"
+            }
+        ]
+    },
+    {
+        "type": ["hero", "heroes"],
+        "title": "About Heroes",
+        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Changing heroes costs 5000 🍅 Tomatoes, while submitting heroes for review will cost 1000 🍅 Tomatoes. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
+        "fields": [
+            {
+                "title": "Display your current hero",
+                "description": "->hero"
+            },
+            {
+                "title": "List all heroes available",
+                "description": "->hero list"
+            },
+            {
+                "title": "Get a hero",
+                "description": "->hero get [name]"
+            },
+            {
+                "title": "Equip a passive effect to a hero",
+                "description": "->hero equip [slot number] [effect number], or ->hero equip [slot number] [effect name]"
+            },
+            {
+                "title": "Submit a hero for review",
+                "description": "->hero submit [MAL link]"
+            }
+        ]
+    },
+    {
+        "type": ["info", "information"],
+        "title": "About info",
+        "description": "Info allows you to see more information about a card, such as Price, Global Average Rating, Source, and Tags",
+        "fields": [
+            {
+                "title": "Get more information about a card",
+                "description": "->info [card name]"
             }
         ]
     },
@@ -437,6 +496,22 @@
             {
                 "title": "Liquify a card of your choosing",
                 "description": "->liquify [card]"
+            }
+        ]
+    },
+    {
+
+        "type": ["miss"],
+        "title": "About Miss",
+        "description": "Miss allows you to view your overall missing cards. If an argument is added you can search within cards you don't have",
+        "fields": [
+            {
+                "title": "Display all missing cards",
+                "description": "->miss"
+            },
+            {
+                "title": "Display all missing cards within a certain argument(ex: -col, -rating, -gif)",
+                "description": "->miss [arg]"
             }
         ]
     },
@@ -503,6 +578,21 @@
         ]
     },
     {
+        "type": ["rate","rating"],
+        "title": "Card Ratings",
+        "description": "Players can rate their cards and view those ratings or even sort by them. Players' ratings are averaged into a global average rating that can be seen with ->info [card]",
+        "fields": [
+            {
+                "title": "Rate one of your cards from 1 to 10.",
+                "description": "->rate [rating] [card]"
+            },
+            {
+                "title": "Order your cards by rating.",
+                "description": "->cards >rating"
+            }
+        ]
+    },
+    {
         "type": ["rules"],
         "title": "Bot rules",
         "description": "Please follow these rules when trading and interacting with other players. Ignoring the rules can lead to embargo or ban",
@@ -547,7 +637,7 @@
     {
         "type": ["store", "st"],
         "title": "About store",
-        "description": "The store is where you can buy blueprints for guilds, and recipies for effects. To browse the store use the `category` name, not number,  with the commands below.",
+        "description": "The store is where you can buy blueprints for guilds, and recipes for effects. To browse the store use the `category` name or number,  with the commands below.",
         "fields": [
         	{
                 "title": "List the Store Categories",
@@ -596,24 +686,24 @@
         "description": "You can review your transaction history; this includes sells and auctions. Transactions older than a week will be erased.\nIf transaction was done via auction, you can also get auction details using TransactionID `->auc info [transaction_id]`",
         "fields": [
             {
-                "title": "->trans",
-                "description": "List of all recent transactions"
+                "title": "List all recent transactions",
+                "description": "->trans"
             },
             {
-                "title": "->gets",
-                "description": "List of the transactions where you got a card"
+                "title": "List of the transactions where you get a card",
+                "description": "->trans gets"
             },
             {
-                "title": "->sends",
-                "description": "List of the transactions where you sent a card"
+                "title": "List of the transactions where you sent a card",
+                "description": "->sends"
             },
             {
-                "title": "->pending",
-                "description": "List of the transactions that are waiting for confirmations"
+                "title": "List of the transactions that are waiting for confirmations",
+                "description": "->pending"
             },
             {
-                "title": "->trans info [id]",
-                "description": "Gets detailed info about transaction using TransactionID"
+                "title": "Gets detailed info about transaction using TransactionID",
+                "description": "->trans info [ID]"
             }
         ]
     }
