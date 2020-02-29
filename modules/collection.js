@@ -2,7 +2,7 @@
 
 const byAlias = (ctx, name) => {
     const regex = new RegExp(name, 'gi')
-    return ctx.collections.find(x => x.aliases.filter(y => regex.test(y)))
+    return ctx.collections.filter(x => x.aliases.some(y => regex.test(y)))
 }
 
 const bestColMatch = (ctx, name) => {

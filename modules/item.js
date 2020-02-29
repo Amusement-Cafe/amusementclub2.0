@@ -169,14 +169,16 @@ const infos = {
             ]
         })
     }
-    
 }
 
 const buys = {
     blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
     claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
     recipe: (ctx, user, item) => {
-        const cards = item.recipe.map(x => _.sample(ctx.cards.filter(y => y.level === x)).id)
+        const cards = item.recipe.reduce((arr, x) => {
+            arr.push(_.sample(ctx.cards.filter(y => y.level === x && !arr.includes(y.id))).id)
+            return arr
+        }, [])
         user.inventory.push({ id: item.id, cards, time: new Date() })
     }
 }

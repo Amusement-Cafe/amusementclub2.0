@@ -51,7 +51,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.find(x => !isNaN(x)).map(x => parseInt(x)) || 1
+    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
@@ -69,7 +69,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     if(!promo) {
-        boost = args.map(x => curboosts.find(y => y.id === x)[0]).filter(x => x)
+        boost = args.map(x => curboosts.some(y => y.id === x)).find(x => x)
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)

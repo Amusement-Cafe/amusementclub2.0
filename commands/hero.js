@@ -12,6 +12,11 @@ const {
     XPtoLEVEL
 } = require('../utils/tools')
 
+const {
+    formatUserEffect,
+    withUserEffects
+} = require('../modules/effect')
+
 const { 
     new_hero,
     get_hero,
@@ -83,23 +88,92 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
     })
 }))
 
-cmd(['effects'], ['hero', 'effects'], async (ctx, user) => {
-    if(!user.hero)
-        return ctx.reply(user, `you have to have a hero to use effect cards`, 'red')
+cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects, ...args) => {
 
-    if(user.effects.length === 0)
-        return ctx.reply(user, `you don't have any effects`, 'red')
+    if(!effects.some(x => !x.passive))
+        return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
 
-    const pages = ctx.pgn.getPages(user.effects.map((x, i) => `${i + 1}. **${x.id}**`), 5)
+    const pages = ctx.pgn.getPages(effects.filter(x => x.uses)
+        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
-            title: `Your Effect Cards`,
+            author: { name: `Your Effect Cards` },
             color: colors.blue,
         }
     })
-})
+}))
+
+cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
+
+    const hero = await get_hero(ctx, user.hero)
+    const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
+        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.fields[2].value = data.pages[data.pagenum],
+        embed: {
+            description: `**${hero.name}** card slots:
+                (\`->hero equip [slot] [passive]\` to equip passive Effect Card)`,
+            color: colors.blue,
+            fields: [
+                { name: `Slot 1`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty' },
+                { name: `Slot 2`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty' },
+                { name: `All passives`, value: '' }
+            ]
+        }
+    })
+}))
+
+cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
+    if(!user.hero)
+        return ctx.reply(user, `you have to have a hero to use hero effects`, 'red')
+
+    const passives = effects.filter(x => x.passive)
+
+    let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+    const slotNum = intArgs.shift()
+    if(!slotNum || slotNum < 1 || slotNum > 2)
+        return ctx.reply(user, `please specify valid slot number`, 'red')
+
+    args = args.filter(x => x != slotNum)
+
+    let effect
+    if(intArgs[0]) {
+        effect = passives[intArgs[0] - 1]
+    } else {
+        const reg = new RegExp(args.join(''), 'gi')
+        effect = passives.find(x => reg.test(x.id))
+    }
+
+    if(!effect)
+        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not a passive`, 'red')
+
+    if(user.heroslots.includes(effect.id))
+        return ctx.reply(user, `passive **${effect.name}** is already equipped`, 'red')
+
+    const equip = () => {
+        user.heroslots[slotNum - 1] = effect.id
+        user.markModified('heroslots')
+        return user.save()
+    }
+
+    if(user.heroslots[slotNum - 1]) {
+        const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            force: ctx.globals.force,
+            question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
+            onConfirm: (x) => equip(),
+        })
+    }
+
+    await equip()
+    return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`)
+}))
 
 cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(!arg1)
