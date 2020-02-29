@@ -407,7 +407,7 @@
     {
         "type": ["hero", "heroes"],
         "title": "About Heroes",
-        "description": "This is a placeholder for a hero description. Ping @Mj11jM#1111 if this somehow isn't fixed by the time 2.0 is live",
+        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Changing heroes costs 5000 🍅 Tomatoes, while submitting heroes for review will cost 1000 🍅 Tomatoes. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
         "fields": [
             {
                 "title": "Display your current hero",
