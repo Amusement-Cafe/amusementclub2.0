@@ -268,6 +268,27 @@
         ]
     },
     {
+        "type": ["effect", "effects"],
+        "title": "Effect cards",
+        "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such each time you go to craft one you are likely to get different card requirements for it.",
+        "fields": [
+            {
+                "title": "List all useable effects",
+                "description": "->effects"
+            },
+            {
+                "title": "List all passive effects",
+                "description": "->hero slots"
+            },
+            {
+                "title": "Equip a passive effect",
+                "description": "->hero equip [slot] [passive]"
+            }
+
+
+        ]
+    },
+    {
         "type": ["eval", "evaluate"],
         "title": "About card pricing",
         "description": "Bot evaluates card value depending on amount of stars, type and amount of users that already have it. This is really useful to know the market price of item when trading it.",
@@ -401,8 +422,8 @@
                 "description": "->hero get [name]"
             },
             {
-                "title": "Equip an effect to a hero",
-                "description": "->hero equip [effect number] [slot number]"
+                "title": "Equip a passive effect to a hero",
+                "description": "->hero equip [slot number] [effect number], or ->hero equip [slot number] [effect name]"
             },
             {
                 "title": "Submit a hero for review",
