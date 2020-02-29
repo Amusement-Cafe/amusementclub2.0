@@ -666,7 +666,7 @@
         "fields": [
             {
                 "title": "List all recent transactions",
-                "description": "`->trans`"
+                "description": "->trans"
             },
             {
                 "title": "List of the transactions where you get a card",
