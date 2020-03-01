@@ -25,18 +25,18 @@ const {
     getInfo
 }   = require('../modules/hero')
 
-cmd(['hero'], async (ctx, user) => {
+cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet`, 'red')
 
     const embed = await getInfo(ctx, user, user.hero)
     embed.fields = [
-        { name: `Effect Card slot 1`, value: `Empty` },
-        { name: `Effect Card slot 2`, value: `Empty` },
+        { name: `Effect Card slot 1`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty' },
+        { name: `Effect Card slot 2`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty' },
     ]
 
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
-})
+}))
 
 cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
     const hero = await get_hero(ctx, heroes[0].id)
@@ -94,7 +94,11 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
         return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
 
     const pages = ctx.pgn.getPages(effects.filter(x => x.uses)
-        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+        .sort((a, b) => a.cooldownends - b.cooldownends)
+        .map((x, i) => {
+            const remaining = x.cooldownends - new Date()
+            return `${i + 1}. [${remaining > 0? msToTime(remaining, {compact:true}):'ready'}] ${formatUserEffect(ctx, user, x)}`
+        }), 5)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
@@ -111,6 +115,9 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
     const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
         .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+
+    if(pages.length === 0)
+        pages.push(`You don't have any passive Effect Cards`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
@@ -129,10 +136,44 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
     })
 }))
 
-cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
-    if(!user.hero)
-        return ctx.reply(user, `you have to have a hero to use hero effects`, 'red')
+cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
+    const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
+    const intArg = parseInt(args.find(x => !isNaN(x)))
 
+    let effect
+    if(intArg) {
+        effect = usables[intArg - 1]
+    } else {
+        const reg = new RegExp(args.join(''), 'gi')
+        effect = usables.find(x => reg.test(x.id))
+    }
+
+    if(!effect)
+        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not usable`, 'red')
+
+    const userEffect = user.effects.find(x => x.id === effect.id)
+    const now = new Date()
+    if(effect.cooldownends > now)
+        return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
+
+    const res = await effect.use(ctx, user)
+    if(!res.used)
+        return ctx.reply(user, res.msg, 'red')
+
+    const count = user.effects.length
+    userEffect.uses--
+    userEffect.cooldownends = asdate.add(new Date(), effect.cooldown, 'hours')
+    user.effects = user.effects.filter(x => x.expires || x.uses > 0)
+    user.markModified('effects')
+    await user.save()
+
+    if(count > user.effects.length)
+        return ctx.reply(user, `${res.msg}\nEffect Card has expired. Please make a new one`)
+
+    return ctx.reply(user, `${res.msg}\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`)
+}))
+
+cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
     const passives = effects.filter(x => x.passive)
 
     let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
@@ -176,8 +217,15 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
 }))
 
 cmd(['hero', 'submit'], async (ctx, user, arg1) => {
+    if(XPtoLEVEL(user.xp) < 25)
+        return ctx.reply(user, `you have to be level **25** or higher to submit a hero`, 'red')
+
     if(!arg1)
         return ctx.reply(user, `please specify MAL character URL`, 'red')
+
+    const price = 512 * (2 ** user.herosubmits)
+    if(user.exp < price)
+        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbils.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)
@@ -223,7 +271,11 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed,
         onConfirm: async (x) => {
+            user.herosubmits++
+            user.exp -= price
+            await user.save()
             await new_hero(ctx, user, char)
+
             return ctx.reply(user, `your hero suggestion has been submitted and will be reviewed by moderators soon`)
         }
     })

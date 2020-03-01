@@ -22,6 +22,7 @@ module.exports = model('User', {
 
     hero:               { type: String },
     herochanged:        { type: Date },
+    herosubmits:        { type: Number, default: 0 },
 
     roles:              { type: Array, default: [] },
     ban:                { type: Object },
