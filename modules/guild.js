@@ -2,9 +2,10 @@ const Guild         = require('../collections/guild')
 const Transaction   = require('../collections/transaction')
 const Auction       = require('../collections/auction')
 
-const color     = require('../utils/colors')
-const asdate    = require('add-subtract-date')
-const msToTime  = require('pretty-ms')
+const color         = require('../utils/colors')
+const asdate        = require('add-subtract-date')
+const msToTime      = require('pretty-ms')
+const {itemInfo}    = require('./item')
 
 const {
     checkGuildLoyalty
@@ -130,6 +131,27 @@ const getMaintenanceCost = (ctx) => {
     return Math.round((buildings + lockprice) * reduce)
 }
 
+const getBuildingInfo = (ctx, user, args) => {
+    const reg = new RegExp(args.join(''), 'gi')
+    const item = ctx.items.filter(x => x.type === 'blueprint').find(x => reg.test(x.id))
+    if(!item)
+        return ctx.reply(user, `building with ID \`${args.join('')}\` was not found`, 'red')
+
+    const building = ctx.guild.buildings.find(x => x.id === item.id)
+    if(!building)
+        return ctx.reply(user, `**${item.name}** is not built in this guild`, 'red')
+
+    const embed = itemInfo(ctx, user, item)
+    const heart = building.health < 50? '💔' : '❤️'
+    embed.color = color.blue
+    embed.author = { name: item.name }
+    embed.fields = embed.fields.slice(building.level - 1)
+    embed.fields.push({ name: `Health`, value: `**${building.health}** ${heart}` })
+    embed.fields[0].name += ` (current)`
+
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+}
+
 const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)
 
 const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.discord_id)
@@ -155,5 +177,6 @@ module.exports = {
     getMaintenanceCost,
     bill_guilds,
     getBuilding,
-    guildLock
+    guildLock,
+    getBuildingInfo
 }

@@ -96,18 +96,24 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
+    let curr = ctx.symbols.tomato, max = 1
     const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.find(y => x.card.id === y.id).fav)
 
     if(promo) {
+        curr = promo.currency
         user.promoexp -= price
         user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
+        while(promoClaimCost(user, max) < user.promoexp)
+            max++
     } else {
         user.exp -= price
         user.promoexp += extra
         user.dailystats.claims = user.dailystats.claims + amount || amount
+        while(claimCost(user, ctx.guild.tax, max) < user.exp)
+            max++
     }
 
     user.lastcard = cards[0].card.id
@@ -130,7 +136,12 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     let description = `**${user.username}**, you got:`
     fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
     fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
-    fields.push({name: `External view`, value: `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
+    fields.push({name: `Receipt`, value: `You spent **${price}** ${curr} in total
+        You have **${Math.round(promo? user.promoexp : user.exp)}** ${curr} left
+        You can claim **${max - 1}** more cards
+        Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}`})
+    fields.push({name: `External view`, value: 
+        `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
 
     fields = fields.map(x => {
         if(x.value.length < 1024)
@@ -148,8 +159,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             color: colors.blue,
             description,
             fields,
-            image: { url: '' },
-            footer: { text: `Your next claim will cost ${claimCost(user, ctx.guild.tax, 1)} ${ctx.symbols.tomato.replace(/`/gi, '')}` }
+            image: { url: '' }
         }
     })
 })

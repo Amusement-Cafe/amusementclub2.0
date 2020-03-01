@@ -287,3 +287,12 @@ cmd('quest', 'quests', async (ctx, user) => {
             .map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n') 
     }, user.discord_id)
 })
+
+cmd('stats', async (ctx, user) => {
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: `${user.username}, your daily stats:` },
+        description: Object.keys(user.dailystats)
+            .map(x => `${x}: **${user.dailystats[x]}**`).join('\n')
+    }, user.discord_id)
+})

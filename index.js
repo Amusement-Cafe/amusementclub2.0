@@ -7,7 +7,7 @@ const asdate        = require('add-subtract-date')
 const paginator     = require('discord-paginator')
 const _             = require('lodash')
 const {trigger}     = require('./utils/cmd')
-const {check_all}   = require('./modules/achievement')
+const {check_all}   = require('./modules/secondarycheck')
 
 const {
     auction, 

@@ -187,7 +187,9 @@ const buys = {
     claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
     recipe: (ctx, user, item) => {
         const cards = item.recipe.reduce((arr, x) => {
-            arr.push(_.sample(ctx.cards.filter(y => y.level === x && !arr.includes(y.id))).id)
+            arr.push(_.sample(ctx.cards.filter(y => y.level === x 
+                && !ctx.collections.find(z => z.id === y.col).promo 
+                && !arr.includes(y.id))).id)
             return arr
         }, [])
         user.inventory.push({ id: item.id, cards, time: new Date() })
