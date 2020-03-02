@@ -104,13 +104,13 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         send, /* a sending function to send stuff to a specific channel */
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
-        help: data.help, /* help data */
-        items: data.items, /* game items */
-        achievements: data.achievements, /* game achievements */
-        quests: data.quests, /* game quests */
+        help: require('./staticdata/help'),
+        items: require('./staticdata/items'),
+        achievements: require('./staticdata/achievements'),
+        quests: require('./staticdata/quests'),
+        effects: require('./staticdata/effects'),
         promos: data.promos,
         boosts: data.boosts,
-        effects: data.effects,
         direct, /* DM reply function to the user */
         symbols,
         baseurl,

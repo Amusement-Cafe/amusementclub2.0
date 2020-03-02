@@ -7,11 +7,6 @@ const main = async () => {
     const data = {
         cards: require('./data/cards.json'),
         collections: require('./data/collections.json'),
-        help: require('./data/help.json'),
-        items: require('./data/items.json'),
-        achievements: require('./data/achievements.js'),
-        quests: require('./data/quests.js'),
-        effects: require('./data/effects.js'),
         promos: require('./data/promos.json').map(
             x => Object.assign({}, x, {
             starts: Date.parse(x.starts),

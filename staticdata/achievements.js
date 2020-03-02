@@ -1,8 +1,7 @@
 const {
     formatName,
     addUserCard,
-    bestMatch,
-} = require('../../modules/card')
+} = require('../modules/card')
 
 const _ = require('lodash')
 
