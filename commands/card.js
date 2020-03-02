@@ -82,13 +82,13 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
         let card, boostdrop = false
         if(i === 0 && tohruEffect) {
-            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3))
+            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3 && !x.excluded))
         }
         else if(boost && rng < boost.rate) {
             boostdrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
-        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5 && !x.excluded))
 
         const count = addUserCard(user, card.id)
         cards.push({count, boostdrop, card: _.clone(card)})
@@ -177,6 +177,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
 })).access('dm')
 
 cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => !x.excluded)
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
         embed: {

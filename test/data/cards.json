@@ -111,7 +111,7 @@
     {"name":"demon_duo","level":1,"animated":false,"col":"gabrieldropout"},
     {"name":"legendary_laugh","level":5,"animated":true,"col":"gabrieldropout"},
     
-    {"name":"legendary_crab","level":5,"animated":true,"col":"special"},
+    {"name":"legendary_crab","level":5,"animated":true,"col":"special","excluded":true},
     
     {"name":"santa_medic","level": 1,"animated": false,"col": "christmas19"},
     {"name":"santa_of_death","level": 1,"animated": false,"col": "christmas19"},
@@ -156,5 +156,7 @@
     {"name":"third_santa","level": 1,"animated": false,"col": "christmas19"},
     {"name":"threeway_christmas","level": 1,"animated": false,"col": "christmas19"},
     {"name":"toga_dare","level": 1,"animated": false,"col": "christmas19"},
-    {"name":"toradora_holiday","level": 1,"animated": false,"col": "christmas19"}
+    {"name":"toradora_holiday","level": 1,"animated": false,"col": "christmas19"},
+
+    {"name":"doki_doki","level":3,"animated":true,"col":"gabrieldropout"}
 ]

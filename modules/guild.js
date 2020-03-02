@@ -109,6 +109,9 @@ const bill_guilds = async (ctx, now) => {
 
     checkGuildLoyalty(isolatedCtx)
 
+    const index = cache.findIndex(x => x.id === guild.id)
+    cache[index] = guild
+
     return ctx.send(guild.reportchannel, {
         author: { name: `Receipt for ${now}` },
         description: report.join('\n'),
@@ -164,7 +167,7 @@ const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
 
 const guildLock = {
     price: 100000,
-    maintenance: 3500
+    maintenance: 5000
 }
 
 module.exports = {

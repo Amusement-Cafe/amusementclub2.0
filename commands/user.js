@@ -40,9 +40,12 @@ const {
 } = require('../modules/transaction')
 
 const { 
-    get_hero,
-    withHeroes,
+    get_hero
 }   = require('../modules/hero')
+
+const {
+    check_effect
+} = require('../modules/effect')
 
 cmd('bal', (ctx, user) => {
     let max = 1
@@ -121,11 +124,14 @@ cmd('daily', async (ctx, user) => {
     if(future < now) {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
+        let amount = gbank? 500 : 300
         const tavern = getBuilding(ctx, 'tavern')
-        const amount = gbank? 500 : 300
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
+
+        if(check_effect(ctx, user, 'cakeday'))
+            amount += 100 * (user.dailystats.claims || 0)
 
         user.lastdaily = now
         user.dailystats = {}

@@ -148,6 +148,10 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     setInterval(htick.bind({}, ctx), 6000)
 
     /* events */
+    mongoose.connection.on('error', err => {
+        emitter.emit('error', err)
+    })
+
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on ${bot.guilds.size} guild(s) with ${bot.users.size} user(s) using ${bot.shards.size} shard(s)`)

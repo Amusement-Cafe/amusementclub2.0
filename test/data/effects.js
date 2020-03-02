@@ -10,6 +10,32 @@ module.exports = [
             return !user.dailystats.claims || user.dailystats.claims === 0
         }
     }, {
+        id: 'cakeday',
+        name: 'Cake Day',
+        desc: 'Get +100 tomatoes in your daily for every claim you did',
+        passive: true,
+        check: (ctx, user) => {
+            return true
+        }
+    }, {
+        id: 'holygrail',
+        name: 'The Holy Grail',
+        desc: 'Get +25% of vials when liquifying 1 and 2-star cards',
+        passive: true,
+        check: (ctx, user) => {
+            return true
+        }
+    }, {
+        id: 'skyfriend',
+        name: 'Skies Of Friendship',
+        desc: 'Get 10% tomatoes back from wins on auction',
+        passive: true,
+        check: (ctx, user) => {
+            return true
+        }
+    }, 
+
+    {
         id: 'enayano',
         name: 'Enlightened Ayano',
         desc: 'Completes tier 1 quest when used',
@@ -40,6 +66,17 @@ module.exports = [
             await user.save()
 
             return { msg: `received **${quest.name}**`, used: true }
+        }
+    }, {
+        id: 'spaceunity',
+        name: 'The Space Unity',
+        desc: 'Gives random unique card from non-promo collection',
+        passive: false,
+        cooldown: 40,
+        use: async (ctx, user) => {
+            //const card = 
+
+            //return { msg: `received **${quest.name}**`, used: true }
         }
     }
 ]

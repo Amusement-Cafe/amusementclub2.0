@@ -181,6 +181,38 @@
         "recipe": [2, 2, 2],
         "lasts": 30
     }, {
+        "id": "cakeday",
+        "effectid": "cakeday",
+        "name": "Cake Day",
+        "price": 4000,
+        "type": "recipe",
+        "desc": "bigger daily for claims",
+        "fulldesc": "When used gives you **Cake Day** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [2, 2, 2, 2, 2],
+        "lasts": 15
+    }, {
+        "id": "holygrail",
+        "effectid": "holygrail",
+        "name": "The Holy Grail",
+        "price": 10000,
+        "type": "recipe",
+        "desc": "get more vials",
+        "fulldesc": "When used gives you **The Holy Grail** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [3, 3, 3],
+        "lasts": 5
+    }, {
+        "id": "skyfriend",
+        "effectid": "skyfriend",
+        "name": "Skies Of Friendship",
+        "price": 6000,
+        "type": "recipe",
+        "desc": "auction cashback",
+        "fulldesc": "When used gives you **Skies Of Friendship** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [1, 2, 3, 3],
+        "lasts": 40
+    }, 
+
+    {
         "id": "enayano",
         "effectid": "enayano",
         "name": "Enlightened Ayano",
@@ -200,5 +232,15 @@
         "fulldesc": "When used gives you **Powerful Bocchi** effect card. This is a usable card",
         "recipe": [2, 2, 3, 3],
         "lasts": 20
+    }, {
+        "id": "spaceunity",
+        "effectid": "spaceunity",
+        "name": "The Space Unity",
+        "price": 4000,
+        "type": "recipe",
+        "desc": "get free card",
+        "fulldesc": "When used gives you **The Space Unity** effect card. This is a usable card",
+        "recipe": [2, 2, 2, 2, 3],
+        "lasts": 25
     }
 ]
