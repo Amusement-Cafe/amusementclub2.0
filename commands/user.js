@@ -130,8 +130,9 @@ cmd('daily', async (ctx, user) => {
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
 
-        if(check_effect(ctx, user, 'cakeday'))
+        if(check_effect(ctx, user, 'cakeday')) {
             amount += 100 * (user.dailystats.claims || 0)
+        }
 
         user.lastdaily = now
         user.dailystats = {}

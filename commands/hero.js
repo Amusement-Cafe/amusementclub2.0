@@ -113,6 +113,7 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
 cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
 
     const hero = await get_hero(ctx, user.hero)
+    const now = new Date()
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
         .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
 
@@ -128,8 +129,12 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
                 (\`->hero equip [slot] [passive]\` to equip passive Effect Card)`,
             color: colors.blue,
             fields: [
-                { name: `Slot 1`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty' },
-                { name: `Slot 2`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty' },
+                { name: `Slot 1`, value: `[${user.herocooldown[0] > now? msToTime(user.herocooldown[0] - now, {compact:true}) : '--' }] ${
+                    formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty'
+                }`},
+                { name: `Slot 2`, value: `[${user.herocooldown[1] > now? msToTime(user.herocooldown[1] - now, {compact:true}) : '--' }] ${
+                    formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty'
+                }`},
                 { name: `All passives`, value: '' }
             ]
         }
@@ -197,9 +202,15 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     if(user.heroslots.includes(effect.id))
         return ctx.reply(user, `passive **${effect.name}** is already equipped`, 'red')
 
+    const now = new Date()
+    if(user.herocooldown[slotNum - 1] && user.herocooldown[slotNum - 1] > now)
+        return ctx.reply(user, `you can use this slot in **${msToTime(user.herocooldown[slotNum - 1] - now)}**`, 'red')
+
     const equip = () => {
         user.heroslots[slotNum - 1] = effect.id
+        user.herocooldown[slotNum - 1] = asdate.add(new Date(), 1, 'day')
         user.markModified('heroslots')
+        user.markModified('herocooldown')
         return user.save()
     }
 
