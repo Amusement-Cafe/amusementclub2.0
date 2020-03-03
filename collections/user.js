@@ -19,9 +19,11 @@ module.exports = model('User', {
     lastdaily:          { type: Date },
     lastmsg:            { type: String },
     heroslots:          { type: Array, default: [] },
+    herocooldown:       { type: Array, default: [] },
 
     hero:               { type: String },
     herochanged:        { type: Date },
+    herosubmits:        { type: Number, default: 0 },
 
     roles:              { type: Array, default: [] },
     ban:                { type: Object },

@@ -4,5 +4,15 @@
     {"id":"darlinginthefranxx","name":"Darling In The FranXX","origin":null,"aliases":["darlinginthefranxx"],"promo":false,"compressed":false},
     {"id":"special","name":"s p e c i a l","origin":null,"aliases":["special"],"promo":false,"compressed":true,"rarity":0.02},
     {"id":"gabrieldropout","name":"Gabriel Dropout","origin":null,"aliases":["gabrieldropout"],"compressed":true},
-    {"id": "christmas19","name": "Christmas 2019","aliases": ["christmas19", "promo", "xmas19"],"promo": true,"compressed": true}
+    {"id": "christmas19","name": "Christmas 2019","aliases": ["christmas19", "promo", "xmas19"],"promo": true,"compressed": true},
+    {"id":"mahoutsukai","name":"Mahoutsukai","origin":null,"aliases":["mahoutsukai"],"promo":false,"compressed":true},
+    {"id":"gochiusa","name":"Gochiusa","origin":null,"aliases":["gochiusa"],"promo":false,"compressed":true},
+    {"id":"steinsgate","name":"Steins;Gate","origin":null,"aliases":["steinsgate"],"promo":false,"compressed":true},
+    {"id":"luckystar","name":"Luckystar","origin":null,"aliases":["luckystar"],"promo":false,"compressed":true},
+    {"id":"newgame","name":"Newgame","origin":null,"aliases":["newgame"],"promo":false,"compressed":true},
+    {"id":"rezero","name":"RE:Zero","origin":null,"aliases":["rezero"],"promo":false,"compressed":true},
+    {"id":"nonnonbiyori","name":"NonNonBiyori","origin":null,"aliases":["nonnonbiyori"],"promo":false,"compressed":true},
+    {"id":"nichijou","name":"Nichijou","origin":null,"aliases":["nichijou"],"promo":false,"compressed":false},
+    {"id":"kakegurui","name":"Kakegurui","origin":null,"aliases":["kakegurui"],"promo":false,"compressed":true},
+    {"id":"madeinabyss","name":"Made in Abyss","origin":null,"aliases":["madeinabyss"],"promo":false,"compressed":true}
 ]

@@ -12,6 +12,11 @@ const {
     XPtoLEVEL
 } = require('../utils/tools')
 
+const {
+    formatUserEffect,
+    withUserEffects
+} = require('../modules/effect')
+
 const { 
     new_hero,
     get_hero,
@@ -20,18 +25,18 @@ const {
     getInfo
 }   = require('../modules/hero')
 
-cmd(['hero'], async (ctx, user) => {
+cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet`, 'red')
 
     const embed = await getInfo(ctx, user, user.hero)
     embed.fields = [
-        { name: `Effect Card slot 1`, value: `Empty` },
-        { name: `Effect Card slot 2`, value: `Empty` },
+        { name: `Effect Card slot 1`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty' },
+        { name: `Effect Card slot 2`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty' },
     ]
 
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
-})
+}))
 
 cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
     const hero = await get_hero(ctx, heroes[0].id)
@@ -83,27 +88,155 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
     })
 }))
 
-cmd(['effects'], ['hero', 'effects'], async (ctx, user) => {
-    if(!user.hero)
-        return ctx.reply(user, `you have to have a hero to use effect cards`, 'red')
+cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects, ...args) => {
 
-    if(user.effects.length === 0)
-        return ctx.reply(user, `you don't have any effects`, 'red')
+    if(!effects.some(x => !x.passive))
+        return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
 
-    const pages = ctx.pgn.getPages(user.effects.map((x, i) => `${i + 1}. **${x.id}**`), 5)
+    const pages = ctx.pgn.getPages(effects.filter(x => x.uses)
+        .sort((a, b) => a.cooldownends - b.cooldownends)
+        .map((x, i) => {
+            const remaining = x.cooldownends - new Date()
+            return `${i + 1}. [${remaining > 0? msToTime(remaining, {compact:true}):'ready'}] ${formatUserEffect(ctx, user, x)}`
+        }), 5)
+
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
-            title: `Your Effect Cards`,
+            author: { name: `Your Effect Cards` },
             color: colors.blue,
         }
     })
-})
+}))
+
+cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
+
+    const hero = await get_hero(ctx, user.hero)
+    const now = new Date()
+    const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
+        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+
+    if(pages.length === 0)
+        pages.push(`You don't have any passive Effect Cards`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.fields[2].value = data.pages[data.pagenum],
+        embed: {
+            description: `**${hero.name}** card slots:
+                (\`->hero equip [slot] [passive]\` to equip passive Effect Card)`,
+            color: colors.blue,
+            fields: [
+                { name: `Slot 1`, value: `[${user.herocooldown[0] > now? msToTime(user.herocooldown[0] - now, {compact:true}) : '--' }] ${
+                    formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty'
+                }`},
+                { name: `Slot 2`, value: `[${user.herocooldown[1] > now? msToTime(user.herocooldown[1] - now, {compact:true}) : '--' }] ${
+                    formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty'
+                }`},
+                { name: `All passives`, value: '' }
+            ]
+        }
+    })
+}))
+
+cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
+    const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
+    const intArg = parseInt(args.find(x => !isNaN(x)))
+
+    let effect
+    if(intArg) {
+        effect = usables[intArg - 1]
+    } else {
+        const reg = new RegExp(args.join(''), 'gi')
+        effect = usables.find(x => reg.test(x.id))
+    }
+
+    if(!effect)
+        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not usable`, 'red')
+
+    const userEffect = user.effects.find(x => x.id === effect.id)
+    const now = new Date()
+    if(effect.cooldownends > now)
+        return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
+
+    const res = await effect.use(ctx, user)
+    if(!res.used)
+        return ctx.reply(user, res.msg, 'red')
+
+    const count = user.effects.length
+    userEffect.uses--
+    userEffect.cooldownends = asdate.add(new Date(), effect.cooldown, 'hours')
+    user.effects = user.effects.filter(x => x.expires || x.uses > 0)
+    user.markModified('effects')
+    await user.save()
+
+    if(count > user.effects.length)
+        return ctx.reply(user, `${res.msg}\nEffect Card has expired. Please make a new one`)
+
+    return ctx.reply(user, `${res.msg}\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`)
+}))
+
+cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
+    const passives = effects.filter(x => x.passive)
+
+    let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+    const slotNum = intArgs.shift()
+    if(!slotNum || slotNum < 1 || slotNum > 2)
+        return ctx.reply(user, `please specify valid slot number`, 'red')
+
+    args = args.filter(x => x != slotNum)
+
+    let effect
+    if(intArgs[0]) {
+        effect = passives[intArgs[0] - 1]
+    } else {
+        const reg = new RegExp(args.join(''), 'gi')
+        effect = passives.find(x => reg.test(x.id))
+    }
+
+    if(!effect)
+        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not a passive`, 'red')
+
+    if(user.heroslots.includes(effect.id))
+        return ctx.reply(user, `passive **${effect.name}** is already equipped`, 'red')
+
+    const now = new Date()
+    if(user.herocooldown[slotNum - 1] && user.herocooldown[slotNum - 1] > now)
+        return ctx.reply(user, `you can use this slot in **${msToTime(user.herocooldown[slotNum - 1] - now)}**`, 'red')
+
+    const equip = () => {
+        user.heroslots[slotNum - 1] = effect.id
+        user.herocooldown[slotNum - 1] = asdate.add(new Date(), 1, 'day')
+        user.markModified('heroslots')
+        user.markModified('herocooldown')
+        return user.save()
+    }
+
+    if(user.heroslots[slotNum - 1]) {
+        const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            force: ctx.globals.force,
+            question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
+            onConfirm: (x) => equip(),
+        })
+    }
+
+    await equip()
+    return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`)
+}))
 
 cmd(['hero', 'submit'], async (ctx, user, arg1) => {
+    if(XPtoLEVEL(user.xp) < 25)
+        return ctx.reply(user, `you have to be level **25** or higher to submit a hero`, 'red')
+
     if(!arg1)
         return ctx.reply(user, `please specify MAL character URL`, 'red')
+
+    const price = 512 * (2 ** user.herosubmits)
+    if(user.exp < price)
+        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbils.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)
@@ -149,7 +282,11 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed,
         onConfirm: async (x) => {
+            user.herosubmits++
+            user.exp -= price
+            await user.save()
             await new_hero(ctx, user, char)
+
             return ctx.reply(user, `your hero suggestion has been submitted and will be reviewed by moderators soon`)
         }
     })

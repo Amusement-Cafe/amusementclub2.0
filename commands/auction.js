@@ -1,4 +1,4 @@
-const {cmd, pcmd}       = require('../utils/cmd')
+const {cmd}             = require('../utils/cmd')
 const {evalCard}        = require('../modules/eval')
 const {Auction}         = require('../collections')
 const {fetchOnly}       = require('../modules/user')
@@ -96,7 +96,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    let price = parsedargs.extra.find(x => !isNaN(x) && Number(x) > 0).map(x => Number(x)) || Math.round(ceval)
+    let price = parsedargs.extra.filter(x => !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
 
     if(price <= 4)
         price *= ceval
@@ -105,7 +105,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
-    const timenum = -parsedargs.extra.find(x => x[0] === '-').map(x => parseInt(x))
+    const timenum = -parsedargs.extra.filter(x => x[0] === '-').map(x => parseInt(x))[0]
     let time = 6
 
     if(timenum) {

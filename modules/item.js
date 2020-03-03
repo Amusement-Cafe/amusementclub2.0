@@ -108,7 +108,10 @@ const uses = {
 
         const eobject = { id: item.effectid }
         if(effect.passive) eobject.expires = asdate.add(new Date(), item.lasts, 'days')
-        else eobject.uses = item.lasts
+        else { 
+            eobject.uses = item.lasts
+            eobject.cooldownends = new Date()
+        }
 
         item.cards.map(x => removeUserCard(user, x))
         pullInventoryItem(user, item.id)
@@ -160,23 +163,35 @@ const infos = {
             requires = Object.keys(recipe).map(x => `${x}${ctx.symbols.star} card **x${recipe[x]}**`).join('\n')
         }
 
+        const fields = [
+            { name: `Effect`, value: effect.desc },
+            { name: `Requires`, value: requires }
+        ]
+
+        if(effect.passive) {
+            fields.push({ name: `Lasts`, value: `**${item.lasts}** days after being crafted` })
+        } else {
+            fields.push({ name: `Can be used`, value: `**${item.lasts}** times` })
+            fields.push({ name: `Cooldown`, value: `**${effect.cooldown}** hours` })
+        }
+
         return ({
             description: item.fulldesc,
-            fields: [
-                { name: `Lasts`, value: `${item.lasts} ${effect.passive? 'days' : 'uses'} after being crafted` },
-                { name: `Effect`, value: effect.desc },
-                { name: `Requires`, value: requires }
-            ]
+            fields
         })
     }
-    
 }
 
 const buys = {
     blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
     claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
     recipe: (ctx, user, item) => {
-        const cards = item.recipe.map(x => _.sample(ctx.cards.filter(y => y.level === x)).id)
+        const cards = item.recipe.reduce((arr, x) => {
+            arr.push(_.sample(ctx.cards.filter(y => y.level === x 
+                && !ctx.collections.find(z => z.id === y.col).promo 
+                && !arr.includes(y.id))).id)
+            return arr
+        }, [])
         user.inventory.push({ id: item.id, cards, time: new Date() })
     }
 }

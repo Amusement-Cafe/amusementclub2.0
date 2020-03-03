@@ -7,7 +7,7 @@ const asdate        = require('add-subtract-date')
 const paginator     = require('discord-paginator')
 const _             = require('lodash')
 const {trigger}     = require('./utils/cmd')
-const {check_all}   = require('./modules/achievement')
+const {check_all}   = require('./modules/secondarycheck')
 
 const {
     auction, 
@@ -104,13 +104,13 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         send, /* a sending function to send stuff to a specific channel */
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
-        help: data.help, /* help data */
-        items: data.items, /* game items */
-        achievements: data.achievements, /* game achievements */
-        quests: data.quests, /* game quests */
+        help: require('./staticdata/help'),
+        items: require('./staticdata/items'),
+        achievements: require('./staticdata/achievements'),
+        quests: require('./staticdata/quests'),
+        effects: require('./staticdata/effects'),
         promos: data.promos,
         boosts: data.boosts,
-        effects: data.effects,
         direct, /* DM reply function to the user */
         symbols,
         baseurl,
@@ -148,6 +148,10 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     setInterval(htick.bind({}, ctx), 6000)
 
     /* events */
+    mongoose.connection.on('error', err => {
+        emitter.emit('error', err)
+    })
+
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on ${bot.guilds.size} guild(s) with ${bot.users.size} user(s) using ${bot.shards.size} shard(s)`)

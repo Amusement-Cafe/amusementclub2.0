@@ -10,7 +10,8 @@ const {
     getMaintenanceCost,
     isUserOwner,
     getGuildUser,
-    guildLock
+    guildLock,
+    getBuildingInfo
 } = require('../modules/guild')
 
 const {
@@ -34,7 +35,10 @@ cmd(['guild'], async (ctx, user) => {
     return ctx.qhelp(ctx, user, 'guild')
 })
 
-cmd(['guild', 'info'], async (ctx, user) => {
+cmd(['guild', 'info'], async (ctx, user, ...args) => {
+    if(args.length > 0)
+        return getBuildingInfo(ctx, user, args)
+
     const resp = [], userstat = [], fields = []
     resp.push(`Level: **${XPtoLEVEL(ctx.guild.xp)}**`)
     resp.push(`Players: **${ctx.guild.userstats.length}/${ctx.discord_guild.memberCount}**`)

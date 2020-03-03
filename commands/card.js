@@ -51,7 +51,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.find(x => !isNaN(x)).map(x => parseInt(x)) || 1
+    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
@@ -69,7 +69,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     if(!promo) {
-        boost = args.map(x => curboosts.find(y => y.id === x)[0]).filter(x => x)
+        boost = args.map(x => curboosts.some(y => y.id === x)).find(x => x)
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
@@ -82,13 +82,13 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
         let card, boostdrop = false
         if(i === 0 && tohruEffect) {
-            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3))
+            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3 && !x.excluded))
         }
         else if(boost && rng < boost.rate) {
             boostdrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
-        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5))
+        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5 && !x.excluded))
 
         const count = addUserCard(user, card.id)
         cards.push({count, boostdrop, card: _.clone(card)})
@@ -96,18 +96,24 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
+    let curr = ctx.symbols.tomato, max = 1
     const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
     oldCards.map(x => x.card.fav = user.cards.find(y => x.card.id === y.id).fav)
 
     if(promo) {
+        curr = promo.currency
         user.promoexp -= price
         user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
+        while(promoClaimCost(user, max) < user.promoexp)
+            max++
     } else {
         user.exp -= price
         user.promoexp += extra
         user.dailystats.claims = user.dailystats.claims + amount || amount
+        while(claimCost(user, ctx.guild.tax, max) < user.exp)
+            max++
     }
 
     user.lastcard = cards[0].card.id
@@ -130,7 +136,12 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     let description = `**${user.username}**, you got:`
     fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
     fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
-    fields.push({name: `External view`, value: `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
+    fields.push({name: `Receipt`, value: `You spent **${price}** ${curr} in total
+        You have **${Math.round(promo? user.promoexp : user.exp)}** ${curr} left
+        You can claim **${max - 1}** more cards
+        Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}`})
+    fields.push({name: `External view`, value: 
+        `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
 
     fields = fields.map(x => {
         if(x.value.length < 1024)
@@ -148,8 +159,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             color: colors.blue,
             description,
             fields,
-            image: { url: '' },
-            footer: { text: `Your next claim will cost ${claimCost(user, ctx.guild.tax, 1)} ${ctx.symbols.tomato.replace(/`/gi, '')}` }
+            image: { url: '' }
         }
     })
 })
@@ -167,6 +177,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
 })).access('dm')
 
 cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => !x.excluded)
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
         embed: {

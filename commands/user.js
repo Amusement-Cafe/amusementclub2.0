@@ -40,9 +40,12 @@ const {
 } = require('../modules/transaction')
 
 const { 
-    get_hero,
-    withHeroes,
+    get_hero
 }   = require('../modules/hero')
+
+const {
+    check_effect
+} = require('../modules/effect')
 
 cmd('bal', (ctx, user) => {
     let max = 1
@@ -121,11 +124,15 @@ cmd('daily', async (ctx, user) => {
     if(future < now) {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
+        let amount = gbank? 500 : 300
         const tavern = getBuilding(ctx, 'tavern')
-        const amount = gbank? 500 : 300
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
+
+        if(check_effect(ctx, user, 'cakeday')) {
+            amount += 100 * (user.dailystats.claims || 0)
+        }
 
         user.lastdaily = now
         user.dailystats = {}
@@ -285,5 +292,14 @@ cmd('quest', 'quests', async (ctx, user) => {
         author: { name: `${user.username}, your quests:` },
         description: ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y))
             .map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n') 
+    }, user.discord_id)
+})
+
+cmd('stats', async (ctx, user) => {
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: `${user.username}, your daily stats:` },
+        description: Object.keys(user.dailystats)
+            .map(x => `${x}: **${user.dailystats[x]}**`).join('\n')
     }, user.discord_id)
 })

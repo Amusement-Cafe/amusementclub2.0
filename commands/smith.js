@@ -22,6 +22,10 @@ const {
     getBuilding
 } = require('../modules/guild')
 
+const {
+    check_effect
+} = require('../modules/effect')
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
@@ -64,7 +68,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
             if(card1.col === card2.col)
                 res = res.filter(x => x.col === card1.col)
-            else res = res.find(x => !ctx.collections.filter(y => y.id === x.col).promo)
+            else res = res.filter(x => !ctx.collections.find(y => y.id === x.col).promo)
 
             const newcard = _.sample(res)
             user.vials += vialres
@@ -101,7 +105,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'liq')
 
     const card = bestMatch(cards)
-    const vials = Math.round((await getVialCost(ctx, card)) * .25)
+    let vials = Math.round((await getVialCost(ctx, card)) * .25)
 
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify a card`, 'red')
@@ -110,6 +114,9 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
 
     const usercard = user.cards.find(x => x.id === card.id)
+    if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+        vials += vials * .25
+
     if(usercard.fav && usercard.amount === 1)
         return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
@@ -124,6 +131,8 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         onConfirm: async (x) => { 
            user.vials += vials
            removeUserCard(user, card.id)
+           user.dailystats.liquify = user.dailystats.liquify + 1 || 1
+           user.markModified('dailystats')
            await user.save()
 
            ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
@@ -159,6 +168,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
         onConfirm: async (x) => {
             user.vials -= vials
             addUserCard(user, card.id)
+            user.dailystats.draw = user.dailystats.draw + 1 || 1
+            user.markModified('dailystats')
             await user.save()
 
             return ctx.reply(user, {

@@ -99,7 +99,7 @@ const checkGuildLoyalty = async (ctx) => {
     const heroscores = {}
     guildheroes.filter(x => x.hero).map(x => {
         const usr = ctx.guild.userstats.find(y => y.id === x.discord_id)
-        heroscores[x.hero] = heroscores[x.hero] + usr.rank || usr.rank
+        heroscores[x.hero] = heroscores[x.hero] + usr.xp || usr.xp
     })
 
     let highest = 0
