@@ -72,7 +72,7 @@ const bill_guilds = async (ctx, now) => {
     if(!guild) return;
 
     const report = []
-    const isolatedCtx = Object.assign({}, ctx, { guild })
+    const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.find(x => x.id === guild.id) })
     const cost = getMaintenanceCost(isolatedCtx)
     const ratio = guild.balance / cost
     guild.balance = Math.max(0, guild.balance - cost)

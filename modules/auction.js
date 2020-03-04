@@ -110,7 +110,7 @@ const finish_aucs = async (ctx, now) => {
         await from_auc(auc, author, lastBidder)
 
         await ctx.direct(author, `your sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
-        return ctx.direct(lastBidder, `your won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
+        return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
     } else {
         addUserCard(author, auc.card)
         await author.save()
