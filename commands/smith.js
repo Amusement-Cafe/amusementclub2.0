@@ -153,6 +153,10 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const vials = await getVialCost(ctx, card)
+    const col = ctx.collections.find(x => x.id === card.col)
+
+    if(col.promo)
+        return ctx.reply(user, `you cannot draw promo cards`, 'red')
 
     if(card.level > 3)
         return ctx.reply(user, `you cannot draw card higher than 3 ${ctx.symbols.star}`, 'red')

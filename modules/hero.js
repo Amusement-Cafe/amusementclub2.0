@@ -63,6 +63,7 @@ const check_heroes = async (ctx, now) => {
 
 const getInfo = async (ctx, user, id) => {
     const hero = await get_hero(ctx, id)
+    hero.followers = await User.countDocuments({ hero: id })
     return { 
         author: { name: hero.name },
         description: `Level **${XPtoLEVEL(hero.xp)}**\nFollowers: **${hero.followers}**`,

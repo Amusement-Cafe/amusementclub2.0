@@ -55,10 +55,13 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
             user.herochanged = new Date()
             await user.save()
 
-            lasthero.followers--
             hero.followers++
             await hero.save()
-            await lasthero.save()
+
+            if(lasthero) {
+                lasthero.followers--
+                await lasthero.save()
+            }
 
             return ctx.reply(user, `say hello to your new hero **${hero.name}**!`)
         }

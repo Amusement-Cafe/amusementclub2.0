@@ -51,7 +51,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
+    const amount = args.filter(x => !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')

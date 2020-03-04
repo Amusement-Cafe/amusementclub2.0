@@ -164,7 +164,7 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
 })
 
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
-    const amount = parseInt(arg1)
+    let amount = parseInt(arg1)
     const castle = ctx.guild.buildings.find(x => x.id === 'castle')
 
     if(!castle)
@@ -173,6 +173,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     if(!amount)
         return ctx.reply(user, `please enter amount of ${ctx.symbols.tomato} you want to donate to this guild`, 'red')
 
+    amount = Math.abs(amount)
     if(user.exp < amount)
         return ctx.reply(user, `you don't have **${amount}** ${ctx.symbols.tomato} to donate`, 'red')
 
@@ -259,6 +260,7 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
 })
 
 cmd(['guild', 'set', 'buildrank'], async (ctx, user, arg1) => {
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
         return ctx.reply(user, `only owner or manager can change guild's required build rank`, 'red')
 

@@ -20,7 +20,7 @@ const mapUserEffects = (ctx, user) => user.effects.map(x => Object.assign({}, ct
 
 const withUserEffects = (callback) => (ctx, user, ...args) => {
     if(!user.hero)
-        return ctx.reply(user, `you have to have a hero to use hero effects`, 'red')
+        return ctx.reply(user, `you don't have a hero yet`, 'red')
 
     const map = mapUserEffects(ctx, user)
     return callback(ctx, user, map, ...args)

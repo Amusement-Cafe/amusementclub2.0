@@ -25,7 +25,8 @@ const {
 
 const {
     addGuildXP,
-    getBuilding
+    getBuilding,
+    rankXP
 } = require('../modules/guild')
 
 const {
@@ -234,6 +235,11 @@ cmd('profile', async (ctx, user, ...args) => {
     if(cloutsum > 0) {
         resp.push(`Completed collections: **${user.completedcols.length}**`)
         resp.push(`Overall clout: **${cloutsum}**`)
+    }
+
+    const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    if(curUser){
+        resp.push(`Current guild rank: **${curUser.rank}** (${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%)`)
     }
 
     if(user.roles && user.roles.length > 0)
