@@ -36,7 +36,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         if(x === '.') {
             q.lastcard = true
 
-        } else if(x[0] === '<' || x[0] === '>') {
+        } else if((x[0] === '<' || x[0] === '>') && x[1] != '@') {
             switch(x) {
                 case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
                 case '>date': q.sort = (a, b) => b.obtained - a.obtained; break

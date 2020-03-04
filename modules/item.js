@@ -121,7 +121,7 @@ const uses = {
         await user.save() //double for cards
 
         return ctx.reply(user, {
-            image: { url: `${ctx.baseurl}/effects/${effect.id}.png` },
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
             color: colors.blue,
             description: `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
                 ${effect.passive? `To use this passive effect equip it with \`->hero equip [slot] ${effect.id}\``:
@@ -177,7 +177,8 @@ const infos = {
 
         return ({
             description: item.fulldesc,
-            fields
+            fields,
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
         })
     }
 }

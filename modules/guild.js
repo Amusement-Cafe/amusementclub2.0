@@ -5,7 +5,6 @@ const Auction       = require('../collections/auction')
 const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
-const {itemInfo}    = require('./item')
 
 const {
     checkGuildLoyalty
@@ -144,7 +143,16 @@ const getBuildingInfo = (ctx, user, args) => {
     if(!building)
         return ctx.reply(user, `**${item.name}** is not built in this guild`, 'red')
 
-    const embed = itemInfo(ctx, user, item)
+    const embed = {
+        description: item.fulldesc,
+        fields: item.levels.map((x, i) => ({
+            name: `Level ${i + 1}`, 
+            value: `Price: **${x.price}** ${ctx.symbols.tomato}
+                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+                Required guild level: **${x.level}**
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+    }))}
+
     const heart = building.health < 50? '💔' : '❤️'
     embed.color = color.blue
     embed.author = { name: item.name }

@@ -211,8 +211,15 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd('profile', async (ctx, user, arg1) => {
-    if(arg1) user = await fetchOnly(arg1)
+cmd('profile', async (ctx, user, ...args) => {
+    const pargs = parseArgs(ctx, args)
+    if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0])
+
+    if(!user)
+        return ctx.send(ctx.msg.channel.id, {
+            description: `Cannot find user with ID ${pargs.ids[0]}`,
+            color: colors.red
+        })
 
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user._id.getTimestamp()

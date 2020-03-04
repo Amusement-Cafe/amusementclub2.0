@@ -26,6 +26,7 @@ const promoClaimCost = (user, amount) => {
 
 const tryGetUserID = (inp) => {
     inp = inp.trim()
+    console.log(inp)
 
     try {
         if (/^\d+$/.test(inp) && inp > (1000 * 60 * 60 * 24 * 30 * 2 ** 22)){
@@ -34,7 +35,7 @@ const tryGetUserID = (inp) => {
             return inp.slice(0, -1).split('@')[1].replace('!', '');
         }
     }
-    catch(err) { }
+    catch(err) { console.log(err) }
 
     return false
 }

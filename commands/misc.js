@@ -30,12 +30,12 @@ cmd('help', async (ctx, user, ...args) => {
                 You can do it in any server that you share with bot`, 'red')
         }
     }
-})
+}).access('dm')
 
 cmd('rules', async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
     return ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`), user.discord_id)
-})
+}).access('dm')
 
 cmd('baka', async (ctx, user, ...args) => {
     const time = msToTime(Date.now() - new Date(ctx.msg.timestamp))

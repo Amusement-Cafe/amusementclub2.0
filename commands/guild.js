@@ -117,6 +117,9 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     if(!arg1)
         return ctx.reply(user, 'please specify building ID', 'red')
 
+    if(!getGuildUser(ctx, user))
+        return ctx.reply(user, 'you are not a part of this guild', 'red')
+
     if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < ctx.guild.buildperm)
         return ctx.reply(user, `you have to be at least rank **${ctx.guild.buildperm}** to upgrade buildings in this guild`, 'red')
 
@@ -275,12 +278,12 @@ cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...a
         return ctx.reply(user, `only owner can add guild managers`, 'red')
 
     const newArgs = parseArgs(ctx, args)
-    if(!newArgs.id)
+    if(!newArgs.ids[0])
         return ctx.reply(user, `please include ID of a target user`, 'red')
 
-    const tgUser = await fetchOnly(newArgs.id)
+    const tgUser = await fetchOnly(newArgs.ids[0])
     if(!tgUser)
-        return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
+        return ctx.reply(user, `user with ID \`${newArgs.ids[0]}\` was not found`, 'red')
 
     const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
     if(!target)
@@ -301,12 +304,12 @@ cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], async (ctx, user
         return ctx.reply(user, `only owner can remove guild managers`, 'red')
 
     const newArgs = parseArgs(ctx, args)
-    if(!newArgs.id)
+    if(!newArgs.ids[0])
         return ctx.reply(user, `please, include ID of a target user`, 'red')
 
-    const tgUser = await fetchOnly(newArgs.id)
+    const tgUser = await fetchOnly(newArgs.ids[0])
     if(!tgUser)
-        return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
+        return ctx.reply(user, `user with ID \`${newArgs.ids[0]}\` was not found`, 'red')
 
     const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
     if(!target)
