@@ -26,10 +26,8 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
             return ctx.reply(user, `failed to create auction. Please try again`, 'red')
 
         removeUserCard(target, card.id)
-        target.exp -= fee
         
-        target.dailystats.aucs = target.dailystats.aucs + 1 || 1
-        target.markModified('dailystats')
+        await target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}})
         await target.save()
 
         const last_auc = (await Auction.find().sort({ _id: -1 }))[0]
@@ -85,9 +83,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
     }
 
     user.exp -= bid
-    user.dailystats.bids = user.dailystats.bids + 1 || 1
-    user.markModified('dailystats')
-    await user.save()
+    await user.updateOne({$inc: {exp: -bid, 'dailystats.bids': 1}})
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
 

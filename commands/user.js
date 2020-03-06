@@ -52,15 +52,20 @@ cmd('bal', (ctx, user) => {
     let max = 1
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
-    while(claimCost(user, ctx.guild.tax, max) < user.exp)
-        max++
+    if(ctx.guild) {
+        while(claimCost(user, ctx.guild.tax, max) < user.exp)
+            max++
+    } else {
+        while(claimCost(user, 0, max) < user.exp)
+            max++
+    }
 
     const embed = {
         color: colors.green,
         description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
             Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
-            Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)
-            You can claim **${max - 1} cards** in current guild with your balance`
+            ${ctx.guild? `Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
+            You can claim **${max - 1} cards** ${ctx.guild? `in current guild `:''}with your balance`
     }
 
     if(promo) {

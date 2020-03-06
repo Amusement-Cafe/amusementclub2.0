@@ -106,12 +106,14 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     if(promo) {
         curr = promo.currency
         user.promoexp -= price
+        await user.updateOne({$inc: {'dailystats.promoclaims': amount}})
         user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
         while(promoClaimCost(user, max) < user.promoexp)
             max++
     } else {
         user.exp -= price
         user.promoexp += extra
+        await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
             max++
@@ -119,7 +121,6 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     user.lastcard = cards[0].card.id
     user.xp += amount
-    user.markModified('dailystats')
     await user.save()
     
     if(newCards.length > 0 && oldCards.length > 0) {

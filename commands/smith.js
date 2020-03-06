@@ -122,7 +122,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
-        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount}** card(s) left`}`
+        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount - 1}** card(s) left`}`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
