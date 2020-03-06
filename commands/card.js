@@ -81,14 +81,15 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
 
         let card, boostdrop = false
-        if(i === 0 && tohruEffect) {
-            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3 && !x.excluded))
+        const colCards = ctx.cards.filter(x => x.col === col.id)
+        if(i === 0 && tohruEffect && colCards.some(x => x.level === 3)) {
+            card = _.sample(colCards.filter(x => x.level === 3 && !x.excluded))
         }
         else if(boost && rng < boost.rate) {
             boostdrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
-        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5 && !x.excluded))
+        else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const count = addUserCard(user, card.id)
         cards.push({count, boostdrop, card: _.clone(card)})
@@ -279,7 +280,7 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `Favourite cards can be accessed with -fav` } },
         force: ctx.globals.force,
-        question: `do you want to mark **${cards.length}** cards as favourite?`,
+        question: `**${user.username}**, do you want to mark **${cards.length}** cards as favourite?`,
         onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = true
@@ -317,7 +318,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
-        question: `do you want to remove **${cards.length}** cards from favourites?`,
+        question: `**${user.username}**, do you want to remove **${cards.length}** cards from favourites?`,
         onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false

@@ -72,7 +72,7 @@ const bill_guilds = async (ctx, now) => {
     if(!guild) return;
 
     const report = []
-    const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.find(x => x.id === guild.id) })
+    const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.guilds.find(x => x.id === guild.id) })
     const cost = getMaintenanceCost(isolatedCtx)
     const ratio = guild.balance / cost
     guild.balance = Math.max(0, guild.balance - cost)
@@ -169,6 +169,11 @@ const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
 
+const isUserManager = (ctx, user) => {
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    return (guildUser && guildUser.roles.includes('manager'))
+}
+
 const rankXP = [10, 100, 500, 2500, 10000]
 
 const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
@@ -189,5 +194,6 @@ module.exports = {
     bill_guilds,
     getBuilding,
     guildLock,
-    getBuildingInfo
+    getBuildingInfo,
+    isUserManager
 }

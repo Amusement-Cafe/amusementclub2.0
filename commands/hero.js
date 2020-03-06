@@ -68,7 +68,9 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
     })
 }))
 
-cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes) => {
+cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
+    if(isEmpty) return ctx.qhelp(ctx, user, 'hero')
+
     const hero = heroes[0]
     const usr = await fetchOnly(hero.user)
     const embed = await getInfo(ctx, user, hero.id)
@@ -239,7 +241,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
-        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbils.tomato} to submit a hero`, 'red')
+        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)

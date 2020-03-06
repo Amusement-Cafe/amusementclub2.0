@@ -11,7 +11,8 @@ const {
     isUserOwner,
     getGuildUser,
     guildLock,
-    getBuildingInfo
+    getBuildingInfo,
+    isUserManager
 } = require('../modules/guild')
 
 const {
@@ -205,7 +206,7 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(!castle)
         return ctx.reply(user, '**Guild Castle** is required to set claim tax', 'red')
 
-    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only server owner can modify guild tax`, 'red')
 
     if(!tax)
@@ -261,7 +262,7 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
 
 cmd(['guild', 'set', 'buildrank'], async (ctx, user, arg1) => {
     const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user))
         return ctx.reply(user, `only owner or manager can change guild's required build rank`, 'red')
 
     const rank = Math.abs(parseInt(arg1))

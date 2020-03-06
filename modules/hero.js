@@ -85,7 +85,7 @@ const withHeroes = (callback) => async (ctx, user, ...args) => {
     if(list.length === 0)
         return ctx.reply(user, `no heroes found matching that request`, 'red')
     
-    return callback(ctx, user, list)
+    return callback(ctx, user, list, args.length === 0)
 }
 
 const checkGuildLoyalty = async (ctx) => {
