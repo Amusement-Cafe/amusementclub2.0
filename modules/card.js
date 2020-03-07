@@ -220,7 +220,7 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
     formatName,
     equals,
     bestMatch,
@@ -232,4 +232,4 @@ module.exports = {
     withGlobalCards,
     mapUserCards,
     withMultiQuery
-}
+})

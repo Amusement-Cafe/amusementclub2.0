@@ -1,5 +1,9 @@
 const {Tag} = require('../collections')
 
+const {
+    parseArgs, filter
+} = require('./card')
+
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
     return res.filter(x => check_tag(x)).map(x => x.card)
@@ -30,8 +34,7 @@ const check_tag = (tag) => {
  * @return {Promise}
  */
 const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
-    const c = require('./card')
-    const parsedargs = c.parseArgs(ctx, args)
+    const parsedargs = parseArgs(ctx, args)
 
     if(parsedargs.isEmpty(false))
         return ctx.qhelp(ctx, user, 'tag')
@@ -39,7 +42,7 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     if(parsedargs.tags.length === 0)
         return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')
 
-    const cards = c.filter(ctx.cards, parsedargs)
+    const cards = filter(ctx.cards, parsedargs)
     const card = parsedargs.lastcard? ctx.cards[user.lastcard] : c.bestMatch(cards)
 
     if(!parsedargs.lastcard && card) {
@@ -59,10 +62,10 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     return callback(ctx, user, card, tag, tgTag, parsedargs)
 }
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
     new_tag,
     check_tag,
     withTag,
-}
+})
