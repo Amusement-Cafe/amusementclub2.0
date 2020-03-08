@@ -4,7 +4,8 @@ const Filter                = require('bad-words')
 const filter                = new Filter();
 
 const {
-    fetchOnly
+    fetchOnly,
+    updateUser
 } = require('../modules/user')
 
 const { 
@@ -63,10 +64,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
-
-            user.dailystats.tags = user.dailystats.tags + 1 || 1
-            user.markModified('dailystats')
-            await user.save()
+            await updateUser(user, {$inc: {'dailystats.tags': 1}})
 
             ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
         },
@@ -95,6 +93,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             tag.downvotes.push(user.discord_id)
             tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
             await tag.save()
+            await updateUser(user, {$inc: {'dailystats.tags': -1}})
 
             return ctx.reply(user, `downvoted tag **#${tgTag}** for ${formatName(card)}`)
         }

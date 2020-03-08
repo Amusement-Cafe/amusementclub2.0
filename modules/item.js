@@ -98,6 +98,10 @@ const uses = {
     },
 
     recipe: async (ctx, user, item) => {
+        const hub = getBuilding(ctx, 'smithhub')
+        if(!hub || hub.level < 3)
+            return ctx.reply(user, `you can create effect cards only in guild with **Smithing Hub level 3** or higher`, 'red')
+
         if(user.effects.some(x => x.id === item.effectid))
             return ctx.reply(user, `you already have this Effect Card`, 'red')
 

@@ -35,6 +35,8 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     if(parsedargs.diff)
         list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    else if(parsedargs.bid) 
+        list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
 
     if(!parsedargs.isEmpty())
         list = list.filter(x => cards.some(y => x.card === y.id))
