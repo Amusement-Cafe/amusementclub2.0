@@ -28,6 +28,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         lastcard: false,
         diff: false,
         me: false,
+        bid: false,
     }
 
     args.map(x => {
@@ -55,6 +56,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
                 case 'diff': q.diff = m; break
                 case 'me': q.me = m; break
+                case 'bid': q.bid = m; break
                 default: {
                     const pcol = bestColMatch(ctx, substr)
                     if(m) {
@@ -220,7 +222,7 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
     formatName,
     equals,
     bestMatch,
@@ -232,4 +234,4 @@ module.exports = {
     withGlobalCards,
     mapUserCards,
     withMultiQuery
-}
+})

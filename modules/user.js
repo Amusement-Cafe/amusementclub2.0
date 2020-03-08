@@ -15,7 +15,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.reply(user, 'welcome to **amoosement clup**')
+        await ctx.reply(user, `welcome to **Amusement Club!** Please read \`->rules\` and use \`->help\` to learn more about the game`)
     }
 
     if(user.username != username) {
@@ -26,8 +26,12 @@ const fetchOrCreate = async (ctx, userid, username) => {
     return user
 }
 
-const fetchOnly = async (userid) => {
-    return await User.findOne({ discord_id: userid })
+const fetchOnly = (userid) => {
+    return User.findOne({ discord_id: userid })
+}
+
+const updateUser = (user, query) => {
+    return User.findOneAndUpdate({discord_id: user.id}, query, { new: true })
 }
 
 const onUsersFromArgs = async (args, callback) => {
@@ -45,5 +49,6 @@ const onUsersFromArgs = async (args, callback) => {
 module.exports = {
     fetchOrCreate,
     fetchOnly,
-    onUsersFromArgs
+    onUsersFromArgs,
+    updateUser
 }
