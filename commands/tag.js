@@ -1,7 +1,7 @@
-const {cmd, pcmd}           = require('../utils/cmd')
-const colors                = require('../utils/colors')
-const Filter                = require('bad-words')
-const filter                = new Filter();
+const {cmd, pcmd}   = require('../utils/cmd')
+const colors        = require('../utils/colors')
+const Filter        = require('bad-words')
+const filter        = new Filter();
 
 const {
     fetchOnly,
@@ -64,7 +64,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
-            await updateUser(user, {$inc: {'dailystats.tags': 1}})
+            user = await updateUser(user, {$inc: {'dailystats.tags': 1}})
 
             ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
         },
@@ -93,7 +93,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             tag.downvotes.push(user.discord_id)
             tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
             await tag.save()
-            await updateUser(user, {$inc: {'dailystats.tags': -1}})
+            user = await updateUser(user, {$inc: {'dailystats.tags': (user.dailystats.tags <= 0? 0 : -1)}})
 
             return ctx.reply(user, `downvoted tag **#${tgTag}** for ${formatName(card)}`)
         }

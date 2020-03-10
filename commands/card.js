@@ -69,7 +69,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     if(!promo) {
-        boost = args.map(x => curboosts.some(y => y.id === x)).find(x => x)
+        boost = curboosts.find(x => args.some(y => y === x.id))
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)

@@ -1,8 +1,5 @@
 const {Tag} = require('../collections')
-
-const {
-    parseArgs, filter
-} = require('./card')
+const cardMod = require('./card')
 
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
@@ -34,7 +31,7 @@ const check_tag = (tag) => {
  * @return {Promise}
  */
 const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
-    const parsedargs = parseArgs(ctx, args)
+    const parsedargs = cardMod.parseArgs(ctx, args)
 
     if(parsedargs.isEmpty(false))
         return ctx.qhelp(ctx, user, 'tag')
@@ -42,8 +39,8 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     if(parsedargs.tags.length === 0)
         return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')
 
-    const cards = filter(ctx.cards, parsedargs)
-    const card = parsedargs.lastcard? ctx.cards[user.lastcard] : c.bestMatch(cards)
+    const cards = cardMod.filter(ctx.cards, parsedargs)
+    const card = parsedargs.lastcard? ctx.cards[user.lastcard] : cardMod.bestMatch(cards)
 
     if(!parsedargs.lastcard && card) {
         user.lastcard = card.id
@@ -57,7 +54,7 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     const tag = await Tag.findOne({name: tgTag, card: card.id})
 
     if(forceFind && !tag)
-        return ctx.reply(user, `tag #${tgTag} wasn't found for ${c.formatName(card)}`, 'red')
+        return ctx.reply(user, `tag #${tgTag} wasn't found for ${cardMod.formatName(card)}`, 'red')
 
     return callback(ctx, user, card, tag, tgTag, parsedargs)
 }

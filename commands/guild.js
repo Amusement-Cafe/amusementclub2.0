@@ -348,6 +348,9 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
     if(ctx.guild.lock && ctx.guild.lock === col.id)
         return ctx.reply(user, `this guild is already locked to **${col.name}**`, 'red')
 
+    if(col.promo)
+        return ctx.reply(user, `you cannot lock guild to promo collections`, 'red')
+
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 4)
     if(colCards.length === 0)
         return ctx.reply(user, `cannot lock this guild to **${col.name}**`, 'red')

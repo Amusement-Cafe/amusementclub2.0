@@ -38,7 +38,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     fillCardData(data.cards)
 
     const mongoUri = database
-    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
+    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}
 
     /* basics */
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
@@ -225,6 +225,15 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     bot.on('error', async (err, sh) => {
         emitter.emit('error', err, sh)
     })
+
+    /*pgn.emitter.on('resolve', async (res, obj) => {
+        if(!res) return;
+
+        const isolatedCtx = Object.assign({}, ctx)
+
+        const usr = await fetchOnly(obj.userID)
+        await check_all(isolatedCtx, usr, action)
+    })*/
 
     return {
         emitter,

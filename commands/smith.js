@@ -26,6 +26,10 @@ const {
     check_effect
 } = require('../modules/effect')
 
+const {
+    updateUser
+} = require('../modules/user')
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
@@ -129,15 +133,14 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         force: ctx.globals.force,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
-           user.vials += vials
-           removeUserCard(user, card.id)
-           user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-           user.markModified('dailystats')
-           await user.save()
+            user.vials += vials
+            removeUserCard(user, card.id)
+            await user.save()
+            user = await updateUser(user, {$inc: {'dailystats.liquify': 1}})
 
-           ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
-               You have **${user.vials}** ${ctx.symbols.vial}
-               You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+            ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
+                You have **${user.vials}** ${ctx.symbols.vial}
+                You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
         },
     })
 }))

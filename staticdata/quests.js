@@ -118,7 +118,7 @@ module.exports = {
             tier: 2,
             building: 'smithhub2',
             actions: ['liq', 'liquify'],
-            check: (ctx, user) => user.dailystats.liq >= 2,
+            check: (ctx, user) => user.dailystats.liquify >= 2,
             resolve: (ctx, user) => {
                 user.vials += 25
                 user.xp += 3

@@ -31,7 +31,7 @@ const fetchOnly = (userid) => {
 }
 
 const updateUser = (user, query) => {
-    return User.findOneAndUpdate({discord_id: user.id}, query, { new: true })
+    return User.findOneAndUpdate({discord_id: user.discord_id}, query, { returnNewDocument: true })
 }
 
 const onUsersFromArgs = async (args, callback) => {
