@@ -8,7 +8,8 @@ const fetchTaggedCards = async (tags) => {
 
 const fetchCardTags = async (card) => {
     const res = await Tag.find({ card: card.id })
-    return res.filter(x => check_tag(x)).map(x => x.name)
+    return res.filter(x => check_tag(x))
+        .sort((a, b) => (b.upvotes.length - b.downvotes.length) - (a.upvotes.length - a.downvotes.length))
 }
 
 const new_tag = async (user, name, card) => {

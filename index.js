@@ -178,7 +178,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
             let args = msg.content.trim().substring(prefix.length).split(/ +/)
-            const usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+            let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
 
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
@@ -187,12 +187,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             })
             args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
 
-            if(usr.lock) {
-                usr.lock = false
-                await usr.save()
-            }
-
             await trigger('cmd', isolatedCtx, usr, args, prefix)
+            usr = await user.fetchOnly(msg.author.id)
             await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
@@ -231,8 +227,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
 
         const isolatedCtx = Object.assign({}, ctx)
 
-        const usr = await fetchOnly(obj.userID)
-        await check_all(isolatedCtx, usr, action)
+        const usr = await user.fetchOnly(obj.userID)
+        await check_all(isolatedCtx, usr, '')
     })*/
 
     return {

@@ -343,19 +343,20 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const col = bestColMatch(ctx, card.col)
 
     const resp = []
+    const embed = { color: colors.blue, fields: [] }
+
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
     resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
     resp.push(`Average Rating: **none**`)
     resp.push(`ID: ${card.id}`)
+    embed.description = resp.join('\n')
 
-    if(tags && tags.length > 0)
-        resp.push(`Tags: **#${tags.join(' #')}**`)
+    if(tags && tags.length > 0) {
+        embed.fields.push({name: `Tags`, value: `#${tags.slice(0, 4).map(x => x.name).join('\n#')}${tags.length > 4? '\n...' : ''}`})
+    }
 
-    return ctx.send(ctx.msg.channel.id, {
-        description: resp.join('\n'),
-        color: colors['blue']
-    }, user.discord_id)
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 }))
 
 cmd('boost', 'boosts', (ctx, user) => {

@@ -183,7 +183,7 @@ const guildLock = {
     maintenance: 5000
 }
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
 	fetchOrCreate,
     addGuildXP,
     XPtoRANK,
@@ -196,4 +196,4 @@ module.exports = {
     guildLock,
     getBuildingInfo,
     isUserManager
-}
+})

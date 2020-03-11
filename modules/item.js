@@ -2,12 +2,12 @@ const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
-const msToTime      = require('pretty-ms')
 
 const {
     getGuildUser,
     isUserOwner,
-    addGuildXP
+    addGuildXP,
+    getBuilding
 } = require('./guild')
 
 const {

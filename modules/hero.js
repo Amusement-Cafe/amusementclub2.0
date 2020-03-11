@@ -2,7 +2,8 @@ const Hero          = require('../collections/hero')
 const User          = require('../collections/user')
 const Guild         = require('../collections/guild')
 
-const { fetchOnly } = require('./user')
+const {fetchOnly}   = require('./user')
+const {getBuilding} = require('./guild')
 const jikanjs       = require('jikanjs')
 const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
@@ -116,7 +117,8 @@ const checkGuildLoyalty = async (ctx) => {
 
         if(ourScore >= otherScore) {
             if(highest === ctx.guild.hero) {
-                ctx.guild.heroloyalty = Math.min(ctx.guild.heroloyalty + 1, 3)
+                const heroq = getBuilding(ctx, 'heroq')
+                ctx.guild.heroloyalty = Math.min(ctx.guild.heroloyalty + 1, heroq.level >= 2? 5 : 3)
                 await ctx.guild.save()
                 
                 return ctx.send(ctx.guild.reportchannel, {
@@ -236,7 +238,7 @@ const getGuildScore = async (ctx, guild, heroID) => {
     return score
 }
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
     new_hero,
     get_hero,
     get_userSumbissions,
@@ -244,4 +246,4 @@ module.exports = {
     withHeroes,
     getInfo,
     checkGuildLoyalty
-}
+})

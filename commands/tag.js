@@ -5,17 +5,19 @@ const filter        = new Filter();
 
 const {
     fetchOnly,
-    updateUser
+    updateUser,
 } = require('../modules/user')
 
 const { 
     new_tag,
-    check_tag,
-    withTag
+    withTag,
+    fetchCardTags,
 } = require('../modules/tag')
 
 const {
     formatName,
+    withGlobalCards,
+    bestMatch,
 } = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
@@ -96,6 +98,26 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             user = await updateUser(user, {$inc: {'dailystats.tags': (user.dailystats.tags <= 0? 0 : -1)}})
 
             return ctx.reply(user, `downvoted tag **#${tgTag}** for ${formatName(card)}`)
+        }
+    })
+}))
+
+cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'tag')
+
+    const card = bestMatch(cards)
+    const tags = await fetchCardTags(card)
+
+    if(tags.length === 0)
+        return ctx.reply(user, `this card doesn't have any tags`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(tags.map(x => `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\`  **${x.name}**`)),
+        switchPage: (data) => data.embed.description = `**Tags for** ${formatName(card)}:\n\n${data.pages[data.pagenum]}`,
+        buttons: ['back', 'forward'],
+        embed: {
+            color: colors.blue,
         }
     })
 }))
