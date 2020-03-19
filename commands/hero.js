@@ -23,7 +23,11 @@ const {
     get_userSumbissions,
     withHeroes,
     getInfo
-}   = require('../modules/hero')
+} = require('../modules/hero')
+
+const { 
+    itemInfo
+} = require('../modules/item')
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     if(!user.hero)
@@ -92,6 +96,23 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
         }
     })
 }))
+
+cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
+    const reg = new RegExp(args.join('*.'), 'gi')
+    let item = ctx.items.find(x => reg.test(x.id))
+
+    if(!item)
+        return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
+
+    const embed = itemInfo(ctx, user, item)
+    embed.author = { name: item.name }
+    embed.description = embed.fields[0].value
+    embed.fields = embed.fields.slice(1)
+    embed.image = { url: `${ctx.baseurl}/effects/${item.effectid}.gif` }
+    embed.color = colors.blue
+
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
 
 cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects, ...args) => {
 

@@ -215,7 +215,10 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(castle.level < 2 && tax > 5)
         return ctx.reply(user, `maximum allowed tax for current level is **5%**`, 'red')
 
-    if(castle.level < 4 && tax > 25)
+    if(castle.level < 4 && tax > 10)
+        return ctx.reply(user, `maximum allowed tax for current level is **10%**`, 'red')
+
+    if(tax > 25)
         return ctx.reply(user, `maximum allowed tax for current level is **25%**`, 'red')
 
     ctx.guild.tax = tax * .01

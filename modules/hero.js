@@ -3,7 +3,7 @@ const User          = require('../collections/user')
 const Guild         = require('../collections/guild')
 
 const {fetchOnly}   = require('./user')
-const {getBuilding} = require('./guild')
+const m_guild       = require('./guild')
 const jikanjs       = require('jikanjs')
 const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
@@ -117,7 +117,7 @@ const checkGuildLoyalty = async (ctx) => {
 
         if(ourScore >= otherScore) {
             if(highest === ctx.guild.hero) {
-                const heroq = getBuilding(ctx, 'heroq')
+                const heroq = m_guild.getBuilding(ctx, 'heroq')
                 ctx.guild.heroloyalty = Math.min(ctx.guild.heroloyalty + 1, heroq.level >= 2? 5 : 3)
                 await ctx.guild.save()
                 
@@ -170,7 +170,7 @@ const checkGuildLoyalty = async (ctx) => {
                 const curHero = await get_hero(ctx, ctx.guild.hero)
                 return ctx.send(ctx.guild.reportchannel, {
                     author: { name: `Hero replacement` },
-                    description: `Hero **${targetHero.name}** has more followers than current hero **${curHero.name}**.
+                    description: `Hero **${targetHero.name}** has more high ranking followers than current hero **${curHero.name}**.
                         Loyalty points of current hero started to decrease and are now at **${ctx.guild.heroloyalty}**
                         Once points reach 0 guild hero will be changed to **${targetHero.name}**`,
                     color: colors.yellow

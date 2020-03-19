@@ -6,9 +6,7 @@ const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
 
-const {
-    checkGuildLoyalty
-} = require('./hero')
+const m_hero = require('./hero')
 
 const cache = []
 
@@ -106,7 +104,7 @@ const bill_guilds = async (ctx, now) => {
     const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
     const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
 
-    checkGuildLoyalty(isolatedCtx)
+    m_hero.checkGuildLoyalty(isolatedCtx)
 
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild

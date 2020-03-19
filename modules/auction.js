@@ -56,11 +56,20 @@ const bid_auc = async (ctx, user, auc, bid) => {
         auc.expires = asdate.add(auc.expires, 1, 'minutes')
 
     auc.bids.push({user: user.discord_id, bid: bid})
+    let bidsLeft = 5, cur = auc.bids.length - 1
+    while(cur >= 0 && auc.bids[cur].user === user.discord_id) {
+        cur--
+        bidsLeft--
+    }
+
+    if(bidsLeft < 0)
+        return ctx.reply(user, `you have exceeded the amount of bid attempts for this auction`, 'red')
     
     if(bid <= auc.highbid) {
         auc.price = bid
         await auc.save()
-        return ctx.reply(user, `you were instantly outbid! Try bidding higher`, 'red')
+        return ctx.reply(user, `you were instantly outbid! Try bidding higher
+            You have **${bidsLeft}** bid attempts left`, 'red')
     }
 
     auc.price = auc.highbid
