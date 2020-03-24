@@ -55,6 +55,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
                 case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
                 case 'diff': q.diff = m; break
+                case 'miss': q.diff = m; break
                 case 'me': q.me = m; break
                 case 'bid': q.bid = m; break
                 default: {
@@ -172,6 +173,9 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
     }
+
+    if(parsedargs.diff) 
+        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
 
     if(parsedargs.lastcard)
         cards = cards.filter(x => x.id === user.lastcard)

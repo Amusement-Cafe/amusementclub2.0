@@ -167,7 +167,7 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
     })
 }))
 
-cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
     const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
     const intArg = parseInt(args[0])
 
@@ -200,7 +200,8 @@ cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args
 
     const embed = { 
         description: res.msg,
-        image: { url: res.img }
+        image: { url: res.img },
+        color: colors.green
     }
 
     if(count > user.effects.length) {

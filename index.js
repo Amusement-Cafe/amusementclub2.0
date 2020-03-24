@@ -203,18 +203,17 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             return
 
         try {
-            const isolatedCtx = Object.assign({}, ctx, {
+            /*const isolatedCtx = Object.assign({}, ctx, {
                 msg, 
                 emoji,
-            })
+            })*/
 
-            const usr  = await user.fetchOnly(userID)
-            if(!usr) return
+            //const usr  = await user.fetchOnly(userID)
+            //if(!usr) return
 
             await pgn.trigger(userID, msg, emoji.name)
         } catch (e) {
-            let sh = msg.channel.guild.shard
-            emitter.emit('error', e, sh.id)
+            emitter.emit('error', e)
         }
     })
 
@@ -222,14 +221,14 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         emitter.emit('error', err, sh)
     })
 
-    /*pgn.emitter.on('resolve', async (res, obj) => {
-        if(!res) return;
+    pgn.emitter.on('resolve', async (res, obj) => {
+        if(!res || !obj.channel || !obj.onConfirm) return;
 
         const isolatedCtx = Object.assign({}, ctx)
 
         const usr = await user.fetchOnly(obj.userID)
-        await check_all(isolatedCtx, usr, '')
-    })*/
+        await check_all(isolatedCtx, usr, obj.action, obj.channel)
+    })
 
     return {
         emitter,

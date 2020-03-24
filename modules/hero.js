@@ -30,7 +30,7 @@ const get_hero = async (ctx, id) => {
     if(hcache.length === 0)
         await reloadCache()
 
-    const hero = hcache.find(x => x.id === id)
+    const hero = hcache.find(x => x.id == id)
     if(hero && hero.followers === -1) {
         hero.followers = await User.countDocuments({ hero: id })
         await hero.save()
@@ -67,7 +67,7 @@ const getInfo = async (ctx, user, id) => {
     hero.followers = await User.countDocuments({ hero: id })
     return { 
         author: { name: hero.name },
-        description: `Level **${XPtoLEVEL(hero.xp)}**\nFollowers: **${hero.followers}**`,
+        description: `Level **${XPtoLEVEL(hero.xp)}**\nFollowers: **${hero.followers}**\nID: ${hero.id}`,
         image: { url: _.sample(hero.pictures) },
         color: colors.blue
     }
@@ -245,5 +245,6 @@ module.exports = Object.assign(module.exports, {
     check_heroes,
     withHeroes,
     getInfo,
-    checkGuildLoyalty
+    checkGuildLoyalty,
+    getGuildScore
 })

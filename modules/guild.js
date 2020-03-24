@@ -58,9 +58,12 @@ const addGuildXP = (ctx, user, xp) => {
     guildUser.xp += xp
     const rank = XPtoRANK(guildUser.xp)
 
-    if(rank > guildUser.rank)
+    if(rank > guildUser.rank) {
         ctx.reply(user, `you ranked up in **${ctx.discord_guild.name}!**
             Your rank is now **${rank}**`)
+
+        guildUser.xp -= rankXP[rank - 2]
+    }
 
     guildUser.rank = rank
 }

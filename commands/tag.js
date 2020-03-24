@@ -113,7 +113,10 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
         return ctx.reply(user, `this card doesn't have any tags`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(tags.map(x => `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\`  **${x.name}**`)),
+        pages: ctx.pgn.getPages(tags.map(x => 
+            `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\`  **${x.name}** ${
+                (x.upvotes.includes(user.discord_id) || x.downvotes.includes(user.discord_id))? '*' : ''
+            }`)),
         switchPage: (data) => data.embed.description = `**Tags for** ${formatName(card)}:\n\n${data.pages[data.pagenum]}`,
         buttons: ['back', 'forward'],
         embed: {

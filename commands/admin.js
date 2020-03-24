@@ -9,7 +9,9 @@ const {
 } = require('../modules/collection')
 
 const {
-    checkGuildLoyalty
+    checkGuildLoyalty,
+    get_hero,
+    getGuildScore
 } = require('../modules/hero')
 
 const {
@@ -158,4 +160,13 @@ pcmd(['admin'], ['sudo', 'daily', 'reset'], async (ctx, user, ...args) => {
 pcmd(['admin'], ['sudo', 'guild', 'herocheck'], async (ctx, user) => {
     await checkGuildLoyalty(ctx)
     return ctx.reply(user, `current guild hero check done`)
+})
+
+pcmd(['admin'], ['sudo', 'hero', 'score'], async (ctx, user, arg) => {
+    const hero = await get_hero(ctx, arg)
+    if(!hero)
+        return ctx.reply(user, `cannot find hero with ID '${arg}'`, 'red')
+
+    const score = await getGuildScore(ctx, ctx.guild, hero.id)
+    return ctx.reply(user, `${hero.name} has **${Math.round(score)}** points in current guild`)
 })
