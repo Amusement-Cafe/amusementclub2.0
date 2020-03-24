@@ -1,4 +1,6 @@
 const _ = require('lodash')
+const { byAlias } = require('../modules/collection')
+const { addUserCard, formatName } = require('../modules/card')
 
 module.exports = [
     {
@@ -73,10 +75,21 @@ module.exports = [
         desc: 'Gives random unique card from non-promo collection',
         passive: false,
         cooldown: 40,
-        use: async (ctx, user) => {
-            //const card = 
+        use: async (ctx, user, args) => {
+            const name = args.join('').replace(/^-/, '')
+            const col = byAlias(ctx, name)[0]
+            if(!col)
+                return { msg: `collection with ID \`${args.join('')}\` wasn't found`, used: false }
 
-            //return { msg: `received **${quest.name}**`, used: true }
+            const card = _.sample(ctx.cards.filter(x => x.col === col.id && !user.cards.find(y => y.id === x.id)))
+            if(!card)
+                return { msg: `cannot fetch unique card from **${col.name}** collection`, used: false }
+
+            addUserCard(user, card.id)
+            user.markModified('cards')
+            await user.save()
+
+            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
         }
     }
 ]

@@ -232,7 +232,7 @@ const getGuildScore = async (ctx, guild, heroID) => {
     let score = 0
     guildheroes.filter(x => x.hero === heroID).map(x => {
         const usr = guild.userstats.find(y => y.id === x.discord_id)
-        score += usr.xp
+        score += Math.sqrt(usr.xp)
     })
 
     return score

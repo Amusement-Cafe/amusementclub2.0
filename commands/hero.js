@@ -169,25 +169,25 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
 
 cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
     const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
-    const intArg = parseInt(args.find(x => !isNaN(x)))
+    const intArg = parseInt(args[0])
 
     let effect
     if(intArg) {
         effect = usables[intArg - 1]
     } else {
-        const reg = new RegExp(args.join(''), 'gi')
+        const reg = new RegExp(args[0], 'gi')
         effect = usables.find(x => reg.test(x.id))
     }
 
     if(!effect)
-        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not usable`, 'red')
+        return ctx.reply(user, `effect with ID \`${args[0]}\` was not found or it is not usable`, 'red')
 
     const userEffect = user.effects.find(x => x.id === effect.id)
     const now = new Date()
     if(effect.cooldownends > now)
         return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
 
-    const res = await effect.use(ctx, user)
+    const res = await effect.use(ctx, user, args.slice(1))
     if(!res.used)
         return ctx.reply(user, res.msg, 'red')
 
@@ -198,10 +198,18 @@ cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args
     user.markModified('effects')
     await user.save()
 
-    if(count > user.effects.length)
-        return ctx.reply(user, `${res.msg}\nEffect Card has expired. Please make a new one`)
+    const embed = { 
+        description: res.msg,
+        image: { url: res.img }
+    }
 
-    return ctx.reply(user, `${res.msg}\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`)
+    if(count > user.effects.length) {
+        embed.description += `\nEffect Card has expired. Please make a new one`
+    } else {
+        embed.description += `\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`
+    }
+
+    return ctx.reply(user, embed)
 }))
 
 cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
