@@ -55,7 +55,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const eval1 = await evalCard(ctx, card1)
     const eval2 = await evalCard(ctx, card2)
     const vialavg = (await getVialCost(ctx, card1, eval1) + await getVialCost(ctx, card2, eval2)) * .5
-    const cost = Math.round((eval1 + eval2) * .25)
+    const cost = Math.round(((eval1 + eval2) * .25) * (check_effect(ctx, user, 'cherrybloss')? .5 : 1))
     const vialres = Math.round(vialavg * .5)
 
     if(user.exp < cost)

@@ -6,6 +6,10 @@ const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
 
+const {
+    check_effect
+} = require('./effect')
+
 const m_hero = require('./hero')
 
 const cache = []
@@ -55,7 +59,7 @@ const addGuildXP = (ctx, user, xp) => {
     }
 
     ctx.guild.xp += xp * .02
-    guildUser.xp += xp
+    guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
     if(rank > guildUser.rank) {

@@ -46,7 +46,7 @@ const getHelpEmbed = (o, prefix) => {
     const e = {
         title: o.title, 
         description: o.description.replace(/->/g, prefix), fields: [],
-        footer: { text: `Amusement Club Alexandrite | xQAxThF | v0.0.6 BETA | by NoxCaos#4905` },
+        footer: { text: `Amusement Club Alexandrite | xQAxThF | v0.1.0 BETA | by NoxCaos#4905` },
         color: colors['green']
     }
 

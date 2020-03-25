@@ -101,8 +101,13 @@ const checkGuildLoyalty = async (ctx) => {
     const heroscores = {}
     guildheroes.filter(x => x.hero).map(x => {
         const usr = ctx.guild.userstats.find(y => y.id === x.discord_id)
-        heroscores[x.hero] = heroscores[x.hero] + usr.xp || usr.xp
+        const usrscore = guildUserScore(usr)
+        heroscores[x.hero] = heroscores[x.hero] + usrscore || usrscore
     })
+
+    if(ctx.guild.hero && heroq.level > 2) {
+        heroscores[ctx.guild.hero] += heroscores[ctx.guild.hero] * .2
+    }
 
     let highest = 0
     do {
@@ -117,6 +122,25 @@ const checkGuildLoyalty = async (ctx) => {
 
         if(ourScore >= otherScore) {
             if(highest === ctx.guild.hero) {
+                const otherGuilds = await Guild.find({ id: { $ne: ctx.guild.id } })
+                const otherScores = (await Promise.all(otherGuilds.map(async x => { 
+                    const score = await getGuildScore(ctx, x, highest)
+                    return score
+                }))).sort((a, b) => b - a)
+
+                console.log(ourScore)
+                console.log(otherScores)
+
+                if(otherScores[0] && otherScores[0] > ourScore) {
+                    return ctx.send(ctx.guild.reportchannel, {
+                        author: { name: `Hero alert` },
+                        description: `Another guild has larger amount of **${targetHero.name}** follower score.
+                            Hero loyalty might start going down when that guild does the hero check.
+                            To keep current guild hero increase amount of followers and their rank or upgrade hero residence.`,
+                        color: colors.yellow
+                    })
+                }
+
                 const heroq = m_guild.getBuilding(ctx, 'heroq')
                 ctx.guild.heroloyalty = Math.min(ctx.guild.heroloyalty + 1, heroq.level >= 2? 5 : 3)
                 await ctx.guild.save()
@@ -149,7 +173,7 @@ const checkGuildLoyalty = async (ctx) => {
                     color: colors.green
                 })
 
-            } else if(otherGuild && otherGuild.heroloyalty < 0) {
+            } else if(otherGuild && otherGuild.heroloyalty <= 0) {
                 otherGuild.heroloyalty = 0
                 otherGuild.hero = ''
                 await otherGuild.save()
@@ -189,27 +213,15 @@ const checkGuildLoyalty = async (ctx) => {
                 color: colors.green
             })
 
-        } else {
-            if(ctx.guild.hero === highest) {
-                return ctx.send(otherGuild.reportchannel, {
-                    author: { name: `Hero alert` },
-                    description: `Another guild has larger amount of **${targetHero.name}** follower score.
-                        This will not change hero loyalty, but it might start draining it one day.
-                        To keep current guild hero increase amount of followers or upgrade hero residence.`,
-                    color: colors.yellow
-                })
-            }
-
-            if(ctx.guild.hero) {
-                const curHero = await get_hero(ctx, ctx.guild.hero)
-                return ctx.send(ctx.guild.reportchannel, {
-                    author: { name: `Guild hero status` },
-                    description: `Hero **${targetHero.name}** has higher follower score than current hero **${curHero.name}**.
-                        However, there is not enough influence for **${targetHero.name}** to change current guild.
-                        Loyalty points will not change`,
-                    color: colors.yellow
-                })
-            }
+        } else if(ctx.guild.hero) {
+            const curHero = await get_hero(ctx, ctx.guild.hero)
+            return ctx.send(ctx.guild.reportchannel, {
+                author: { name: `Guild hero status` },
+                description: `Hero **${targetHero.name}** has higher follower score than current hero **${curHero.name}**.
+                    However, there is not enough influence for **${targetHero.name}** to change current guild.
+                    Loyalty points will not change`,
+                color: colors.yellow
+            })
         }
 
     } while(Object.keys(heroscores).length > 0)
@@ -232,11 +244,13 @@ const getGuildScore = async (ctx, guild, heroID) => {
     let score = 0
     guildheroes.filter(x => x.hero === heroID).map(x => {
         const usr = guild.userstats.find(y => y.id === x.discord_id)
-        score += Math.sqrt(usr.xp)
+        score += guildUserScore(usr)
     })
 
     return score
 }
+
+const guildUserScore = (guildUser) => Math.sqrt(m_guild.rankXP[guildUser.rank - 1] + guildUser.xp || 1)
 
 module.exports = Object.assign(module.exports, {
     new_hero,

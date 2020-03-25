@@ -125,12 +125,13 @@ cmd('daily', async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
     const now = new Date()
-    const future = asdate.add(user.lastdaily, 20, 'hours')
+    const future = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
 
     if(future < now) {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
-        let amount = gbank? 500 : 300
+        //let amount = gbank? 500 : 300
+        let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)

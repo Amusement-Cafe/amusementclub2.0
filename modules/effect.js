@@ -5,7 +5,7 @@ const check_effect = (ctx, user, id) => {
         return false
 
     const effect = ctx.effects.find(x => x.id === id)
-    return effect && user.heroslots.some(x => x === id) && effect.check(ctx, user)
+    return effect && user.heroslots.some(x => x === id)
 }
 
 const formatUserEffect = (ctx, user, x) => {

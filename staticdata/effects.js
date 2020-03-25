@@ -7,35 +7,38 @@ module.exports = [
         id: 'tohrugift',
         name: 'Gift From Tohru',
         desc: 'Get 3-star card every first claim per day',
-        passive: true,
-        check: (ctx, user) => {
-            return !user.dailystats.claims || user.dailystats.claims === 0
-        }
+        passive: true
     }, {
         id: 'cakeday',
         name: 'Cake Day',
         desc: 'Get +100 tomatoes in your daily for every claim you did',
-        passive: true,
-        check: (ctx, user) => {
-            return true
-        }
+        passive: true
     }, {
         id: 'holygrail',
         name: 'The Holy Grail',
         desc: 'Get +25% of vials when liquifying 1 and 2-star cards',
-        passive: true,
-        check: (ctx, user) => {
-            return true
-        }
+        passive: true
     }, {
         id: 'skyfriend',
         name: 'Skies Of Friendship',
         desc: 'Get 10% tomatoes back from wins on auction',
-        passive: true,
-        check: (ctx, user) => {
-            return true
-        }
-    }, 
+        passive: true
+    }, {
+        id: 'cherrybloss',
+        name: 'Cherry Blossoms',
+        desc: 'Any card forge is 50% cheaper',
+        passive: true
+    }, {
+        id: 'onvictory',
+        name: 'Onwards To Victory',
+        desc: 'Get guild rank points 25% faster',
+        passive: true
+    }, {
+        id: 'rulerjeanne',
+        name: 'The Ruler Jeanne',
+        desc: 'Get `->daily` every 17 hours instead of 20',
+        passive: true
+    },
 
     {
         id: 'enayano',
@@ -96,6 +99,25 @@ module.exports = [
             await user.save()
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+        }
+    }, {
+        id: 'judgeday',
+        name: 'The Judgment Day',
+        desc: 'Grants effect of any useable card',
+        passive: false,
+        cooldown: 42,
+        use: async (ctx, user, args) => {
+            const reg = new RegExp(args[0], 'gi')
+            effect = ctx.effects.filter(x => !x.passive).find(x => reg.test(x.id))
+
+            if(!effect)
+                return { msg: `effect with ID \`${args[0]}\` was not found or it is not usable`, used: false }
+
+            if(effect.id === 'judgeday')
+                return { msg: `you cannot use that effect card`, used: false }
+
+            const res = await effect.use(ctx, user, args.slice(1))
+            return res
         }
     }
 ]
