@@ -134,7 +134,7 @@ const checkGuildLoyalty = async (ctx) => {
 
                 ctx.send(otherGuild.reportchannel, {
                     author: { name: `Hero alert` },
-                    description: `Another guild is changing loyalty of **${targetHero.name}** by having more followers!
+                    description: `Another guild is changing loyalty of **${targetHero.name}** by having higher follower score!
                         To keep current guild hero increase amount of followers or upgrade hero residence.
                         Loyalty points left: **${otherGuild.heroloyalty}**`,
                     color: colors.yellow
@@ -142,7 +142,7 @@ const checkGuildLoyalty = async (ctx) => {
 
                 return ctx.send(ctx.guild.reportchannel, {
                     author: { name: `Guild hero status` },
-                    description: `This guild is successfully changing loyalty of **${targetHero.name}** in other guild by having more followers.
+                    description: `This guild is successfully changing loyalty of **${targetHero.name}** in other guild by having higher follower score.
                         When loyalty points reach **0** this hero will transition to **${ctx.discord_guild.name}**.
                         This will also replace current guild hero (if any).
                         Only **${otherGuild.heroloyalty}** more point(s) left!`,
@@ -170,7 +170,7 @@ const checkGuildLoyalty = async (ctx) => {
                 const curHero = await get_hero(ctx, ctx.guild.hero)
                 return ctx.send(ctx.guild.reportchannel, {
                     author: { name: `Hero replacement` },
-                    description: `Hero **${targetHero.name}** has more high ranking followers than current hero **${curHero.name}**.
+                    description: `Hero **${targetHero.name}** has higher follower score than current hero **${curHero.name}**.
                         Loyalty points of current hero started to decrease and are now at **${ctx.guild.heroloyalty}**
                         Once points reach 0 guild hero will be changed to **${targetHero.name}**`,
                     color: colors.yellow
@@ -185,7 +185,7 @@ const checkGuildLoyalty = async (ctx) => {
                 author: { name: `New hero has arrived` },
                 description: `**${targetHero.name}** is now part of **${ctx.discord_guild.name}**!
                     This hero automatically gets one point of loyalty.
-                    Loyalty will increase if amount of followers in this guild will be higher than in others.`,
+                    Loyalty will increase if amount of followers in this guild and their rank will be higher than in others.`,
                 color: colors.green
             })
 
@@ -193,7 +193,7 @@ const checkGuildLoyalty = async (ctx) => {
             if(ctx.guild.hero === highest) {
                 return ctx.send(otherGuild.reportchannel, {
                     author: { name: `Hero alert` },
-                    description: `Another guild has larger amount of **${targetHero.name}** followers.
+                    description: `Another guild has larger amount of **${targetHero.name}** follower score.
                         This will not change hero loyalty, but it might start draining it one day.
                         To keep current guild hero increase amount of followers or upgrade hero residence.`,
                     color: colors.yellow
@@ -202,9 +202,9 @@ const checkGuildLoyalty = async (ctx) => {
 
             if(ctx.guild.hero) {
                 const curHero = await get_hero(ctx, ctx.guild.hero)
-                return ctx.send(otherGuild.reportchannel, {
-                    author: { name: `Hero status` },
-                    description: `Hero **${targetHero.name}** has more followers than current hero **${curHero.name}**.
+                return ctx.send(ctx.guild.reportchannel, {
+                    author: { name: `Guild hero status` },
+                    description: `Hero **${targetHero.name}** has higher follower score than current hero **${curHero.name}**.
                         However, there is not enough influence for **${targetHero.name}** to change current guild.
                         Loyalty points will not change`,
                     color: colors.yellow
@@ -216,8 +216,8 @@ const checkGuildLoyalty = async (ctx) => {
 
     return ctx.send(ctx.guild.reportchannel, {
         author: { name: `Failed to find guild hero` },
-        description: `All heroes that have followers in this guild have more followers in other guilds.
-            To get a guild hero, increase amount of followers for certain hero and upgrade **Hero Quaters**`,
+        description: `All heroes that have followers in this guild have higher follower score in other guilds.
+            To get a guild hero, increase amount of followers for certain hero or get another free hero`,
         color: colors.red
     })
 }

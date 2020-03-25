@@ -44,8 +44,8 @@ const addGuildXP = (ctx, user, xp) => {
     let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     
     if(!guildUser) {
-        guildUser = { id: user.discord_id, xp: 0, rank: 0 }
-        ctx.guild.userstats.push(guildUser)
+        ctx.guild.userstats.push({ id: user.discord_id, xp: 0, rank: 0 })
+        guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
 
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
@@ -62,7 +62,7 @@ const addGuildXP = (ctx, user, xp) => {
         ctx.reply(user, `you ranked up in **${ctx.discord_guild.name}!**
             Your rank is now **${rank}**`)
 
-        guildUser.xp -= rankXP[rank - 2]
+        guildUser.xp -= rankXP[rank - 1]
     }
 
     guildUser.rank = rank

@@ -65,7 +65,7 @@ const trigger = async (type, ctx, user, args) => {
     }
 
     if (!cursor.hasOwnProperty('_callback')) {
-        throw new Error(`Unknown command. Possibly it wasn't implemented yet...`)
+        throw new Error(`Unknown command. Please check you spelling or use help`)
     }
 
     if (cursor._perm) {

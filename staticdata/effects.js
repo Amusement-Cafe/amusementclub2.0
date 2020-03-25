@@ -81,13 +81,13 @@ module.exports = [
             if(!col)
                 return { msg: `collection with ID \`${args.join('')}\` wasn't found`, used: false }
 
-            if(!col.promo)
+            if(col.promo)
                 return { msg: `cannot use this effect on promo collections`, used: false }
 
             const card = _.sample(ctx.cards.filter(x => x.col === col.id 
                 && x.level < 4
                 && !user.cards.some(y => y.id === x.id)))
-            
+
             if(!card)
                 return { msg: `cannot fetch unique card from **${col.name}** collection`, used: false }
 

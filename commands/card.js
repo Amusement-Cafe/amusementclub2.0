@@ -129,10 +129,11 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     if(price != normalprice) {
-        addGuildXP(ctx, user, amount)
         ctx.guild.balance += Math.round(price - normalprice)
-        await ctx.guild.save()
     }
+
+    addGuildXP(ctx, user, amount)
+    await ctx.guild.save()
 
     let fields = []
     let description = `**${user.username}**, you got:`

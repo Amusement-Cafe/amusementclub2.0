@@ -1,6 +1,6 @@
 const colors    = require('../utils/colors')
 
-const check_achievements = async (ctx, user, action) => {
+const check_achievements = async (ctx, user, action, channelID) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
     const complete = possible.find(x => x.check(ctx, user))
 
