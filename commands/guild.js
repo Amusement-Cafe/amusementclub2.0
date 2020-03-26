@@ -131,12 +131,11 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
         return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
 
     const level = item.levels[building.level]
-
-    if(XPtoLEVEL(ctx.guild.xp) < level.level)
-        return ctx.reply(user, `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level ${level.level}**`, 'red')
-
     if(!level)
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
+
+    if(XPtoLEVEL(ctx.guild.xp) < level.level)
+        return ctx.reply(user, `this guild has to be at least level **${level.level}** to have **${item.name} level ${building.level + 1}**`, 'red')
 
     if(user.exp < level.price)
         return ctx.reply(user, `you have to have at least **${level.price}** ${ctx.symbols.tomato} to upgrade this building`, 'red')

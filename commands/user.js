@@ -20,7 +20,8 @@ const {
 } = require('../modules/card')
 
 const {
-    fetchOnly
+    fetchOnly,
+    getQuest
 } = require('../modules/user')
 
 const {
@@ -149,11 +150,11 @@ cmd('daily', async (ctx, user) => {
         user.markModified('dailystats')
 
         if(tavern) {
-            quests.push(_.sample(ctx.quests.daily.filter(x => x.tier < 2)))
+            quests.push(getQuest(ctx, user, 1))
             user.dailyquests.push(quests[0].id)
 
             if(tavern.level > 1) {
-                quests.push(_.sample(ctx.quests.daily.filter(x => x.tier > 1)))
+                quests.push(getQuest(ctx, user, 2))
                 user.dailyquests.push(quests[1].id)
             }
         }
