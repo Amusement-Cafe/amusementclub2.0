@@ -22,6 +22,7 @@ const {
 } = require('../modules/card')
 
 const {fetchOnly} = require('../modules/user')
+const colors = require('../utils/colors')
 
 pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
@@ -170,3 +171,13 @@ pcmd(['admin'], ['sudo', 'hero', 'score'], async (ctx, user, arg) => {
     const score = await getGuildScore(ctx, ctx.guild, hero.id)
     return ctx.reply(user, `${hero.name} has **${Math.round(score)}** points in current guild`)
 })
+
+pcmd(['admin'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
+
+    return ctx.reply(user, {
+        image: { url: card.url },
+        color: colors.blue,
+        description: `summons **${formatName(card)}**!`
+    })
+}))

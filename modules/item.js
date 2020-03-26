@@ -102,6 +102,14 @@ const uses = {
         if(!hub || hub.level < 3)
             return ctx.reply(user, `you can create effect cards only in guild with **Smithing Hub level 3** or higher`, 'red')
 
+        const userEffect = user.effects.find(x => x.id === item.effectid)
+        if(userEffect && userEffect.expires < new Date()) {
+            user.heroslots = user.heroslots.filter(x => x != userEffect.id)
+            user.effects = user.effects.filter(x => x.id != userEffect.id)
+            user.markModified('heroslots')
+            user.markModified('effects')
+        }
+
         if(user.effects.some(x => x.id === item.effectid))
             return ctx.reply(user, `you already have this Effect Card`, 'red')
 

@@ -291,6 +291,7 @@ cmd('diff', async (ctx, user, ...args) => {
 cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const ids = user.cards.map(x => x.id)
     const diff = cards.filter(x => ids.indexOf(x.id) === -1)
+        .filter(x => !x.excluded)
         .sort(parsedargs.sort)
 
     if(diff.length === 0)

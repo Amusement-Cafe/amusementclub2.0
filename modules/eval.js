@@ -29,7 +29,7 @@ const getVialCost = async (ctx, card, cardeval) => {
     if(!cardeval)
         cardeval = await evalCard(ctx, card)
 
-    const diff = cardeval / (cardPrices.slice().reverse()[card.level] * evalVialRate)
+    let diff = cardeval / (cardPrices.slice().reverse()[card.level] * evalVialRate)
     if(diff === Infinity) 
         diff = 0
 

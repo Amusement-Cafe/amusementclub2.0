@@ -105,7 +105,7 @@ module.exports = [
         name: 'The Judgment Day',
         desc: 'Grants effect of any useable card',
         passive: false,
-        cooldown: 42,
+        cooldown: 1,
         use: async (ctx, user, args) => {
             const reg = new RegExp(args[0], 'gi')
             effect = ctx.effects.filter(x => !x.passive).find(x => reg.test(x.id))

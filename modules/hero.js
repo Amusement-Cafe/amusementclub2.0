@@ -128,9 +128,6 @@ const checkGuildLoyalty = async (ctx) => {
                     return score
                 }))).sort((a, b) => b - a)
 
-                console.log(ourScore)
-                console.log(otherScores)
-
                 if(otherScores[0] && otherScores[0] > ourScore) {
                     return ctx.send(ctx.guild.reportchannel, {
                         author: { name: `Hero alert` },
