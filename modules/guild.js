@@ -67,9 +67,8 @@ const addGuildXP = (ctx, user, xp) => {
             Your rank is now **${rank}**`)
 
         guildUser.xp -= rankXP[rank - 1]
+        guildUser.rank = rank
     }
-
-    guildUser.rank = rank
 }
 
 const bill_guilds = async (ctx, now) => {

@@ -74,7 +74,7 @@ const trigger = async (type, ctx, user, args) => {
     }
 
     if(!ctx.guild && cursor._access != 'dm') {
-        throw new Error(`This command is possible only in guild (server) channel`)
+        return ctx.reply(user, `this command is possible only in guild (server) channel`, 'red')
     }
 
     const newArgs = [ctx, user || { }].concat(args)

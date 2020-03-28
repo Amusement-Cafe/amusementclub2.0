@@ -30,6 +30,8 @@ const {
 } = require('../modules/item')
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
+    const now = new Date()
+    effects = effects.filter(x => x.expires > now)
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet`, 'red')
 
@@ -225,6 +227,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     args = args.filter(x => x != slotNum)
 
     let effect
+    const now = new Date()
     if(intArgs[0]) {
         effect = passives[intArgs[0] - 1]
     } else {
@@ -235,10 +238,12 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     if(!effect)
         return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not a passive`, 'red')
 
+    if(effect.expires < now)
+        return ctx.reply(user, `passive **${effect.name}** has expired. Please purchase a new recipe and use it to make a new effect`, 'red')
+
     if(user.heroslots.includes(effect.id))
         return ctx.reply(user, `passive **${effect.name}** is already equipped`, 'red')
-
-    const now = new Date()
+    
     if(user.herocooldown[slotNum - 1] && user.herocooldown[slotNum - 1] > now)
         return ctx.reply(user, `you can use this slot in **${msToTime(user.herocooldown[slotNum - 1] - now)}**`, 'red')
 

@@ -312,7 +312,7 @@ cmd('quest', 'quests', async (ctx, user) => {
         color: colors.blue,
         author: { name: `${user.username}, your quests:` },
         description: ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y))
-            .map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n') 
+            .map((x, i) => `${i + 1}. \`${new Array(x.tier + 1).join('★')}\` ${x.name} (${x.reward(ctx)})`).join('\n')
     }, user.discord_id)
 })
 
