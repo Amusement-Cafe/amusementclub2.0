@@ -41,9 +41,30 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
     items = items.filter(x => x)
 
     if(items.length === 0)
-        return ctx.reply(user, `found 0 items with that ID`, 'red')
+        return ctx.reply(user, `found 0 items with ID \`${args.join('')}\``, 'red')
 
     return callback(ctx, user, items, args)
+}
+
+const withItem = (callback) => (ctx, user, ...args) => {
+    const intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+    let item
+    if(intArgs.length > 0) {
+        if(intArgs.length < 2)
+            return ctx.reply(user, `please use category **and** item number (e.g. \`2 1\`)
+                You can also use \`itemID\` `, 'red')
+
+        const cat = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))[intArgs[0] - 1]
+        item = ctx.items.filter(x => x.type === cat)[intArgs[1] - 1]
+    } else {
+        const reg = new RegExp(args.join('*.'), 'gi')
+        item = ctx.items.find(x => reg.test(x.id))
+    }
+
+    if(!item)
+        return ctx.reply(user, `item with ID \`${args.join('')}\` not found or cannot be purchased`, 'red')
+
+    return callback(ctx, user, item, args)
 }
 
 const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
@@ -228,5 +249,6 @@ module.exports = {
     useItem,
     getQuestion,
     itemInfo,
-    buyItem
+    buyItem,
+    withItem
 }

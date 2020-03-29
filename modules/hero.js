@@ -157,7 +157,7 @@ const checkGuildLoyalty = async (ctx) => {
                     author: { name: `Hero alert` },
                     description: `Another guild is changing loyalty of **${targetHero.name}** by having higher follower score!
                         To keep current guild hero increase amount of followers or upgrade hero residence.
-                        Loyalty points left: **${otherGuild.heroloyalty}**`,
+                        Loyalty points left: **${otherGuild.heroloyalty + 1}**`,
                     color: colors.yellow
                 })
 
@@ -166,7 +166,7 @@ const checkGuildLoyalty = async (ctx) => {
                     description: `This guild is successfully changing loyalty of **${targetHero.name}** in other guild by having higher follower score.
                         When loyalty points reach **0** this hero will transition to **${ctx.discord_guild.name}**.
                         This will also replace current guild hero (if any).
-                        Only **${otherGuild.heroloyalty}** more point(s) left!`,
+                        Only **${otherGuild.heroloyalty + 1}** more point(s) left!`,
                     color: colors.green
                 })
 
