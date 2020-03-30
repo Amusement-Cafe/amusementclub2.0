@@ -154,6 +154,8 @@ pcmd(['admin', 'mod'], ['tag', 'ban'],
     await tag.save()
     await target.save()
 
+    // TODO: dm warning
+
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}. 
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)
 }))

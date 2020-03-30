@@ -81,17 +81,34 @@ const bill_guilds = async (ctx, now) => {
     const ratio = guild.balance / cost
     guild.balance = Math.max(0, guild.balance - cost)
 
+    if(ratio == Infinity)
+        ratio = 0
+
     report.push(`Maintenance cost: **${cost}** ${ctx.symbols.tomato}`)
     report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
-        const damage = Math.round(10 * (1 - ratio))
-        guild.buildings.map(x => x.health -= damage)
         guild.lockactive = false
-        report.push(`> Negative ratio resulted all buildings taking **${damage}** points of damage. The building will stop functioning if health goes lower than 50%`)
+        report.push(`> Negative ratio resulted all buildings taking damage. The building will stop functioning if health goes lower than 50%.
+            Use \`->guild status\` to check building health\n`)
+
         if(guild.lock)
             report.push(`> Lock has been disabled until next check`)
+
+        guild.buildings.map(x => {
+            const damage = Math.round(10 * (1 - ratio) * Math.min(Math.random() * x.level, 2))
+            const info = ctx.items.find(y => y.id === x.id)
+            x.health -= damage
+            if(x.health <= 0 && x.level > 1) {
+                x.level--
+                x.health = 49
+                report.push(`${ctx.symbols.red_circle} **${info.name}** has dropped down to level **${x.level}**!`)
+            } else if(x.id != 'castle' && x.health <= 0 && x.level <= 1) {
+                report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
+            }
+        })
         
+        guild.buildings = guild.buildings.filter(x => x.health > 0)
     } else {
         guild.buildings.map(x => x.health = Math.min(x.health + (x.health < 50? 10 : 5), 100))
         report.push(`> All costs were covered! Positive ratio healed buildings by **5%**`)

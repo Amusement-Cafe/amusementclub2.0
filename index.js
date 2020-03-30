@@ -93,6 +93,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         auc_wss: '▫️',
         accept: '✅',
         decline: '❌',
+        red_circle: '`🔴`'
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })

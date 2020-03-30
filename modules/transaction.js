@@ -76,7 +76,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
             return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
 
         if(to_user.exp < transaction.price)
-            return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** ${ctx.symbols.tomato} to confirm this transaction`, 'red')
+            return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
 
         addUserCard(to_user, card.id)
         to_user.exp -= transaction.price

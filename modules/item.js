@@ -55,10 +55,10 @@ const withItem = (callback) => (ctx, user, ...args) => {
                 You can also use \`itemID\` `, 'red')
 
         const cat = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))[intArgs[0] - 1]
-        item = ctx.items.filter(x => x.type === cat)[intArgs[1] - 1]
+        item = ctx.items.filter(x => x.price > 0 && x.type === cat)[intArgs[1] - 1]
     } else {
         const reg = new RegExp(args.join('*.'), 'gi')
-        item = ctx.items.find(x => reg.test(x.id))
+        item = ctx.items.find(x => x.price > 0 && reg.test(x.id))
     }
 
     if(!item)
