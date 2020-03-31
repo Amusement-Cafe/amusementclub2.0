@@ -26,10 +26,8 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
             return ctx.reply(user, `failed to create auction. Please try again`, 'red')
 
         removeUserCard(target, card.id)
-        target.exp -= fee
         
-        target.dailystats.aucs = target.dailystats.aucs + 1 || 1
-        target.markModified('dailystats')
+        await target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}})
         await target.save()
 
         const last_auc = (await Auction.find().sort({ _id: -1 }))[0]
@@ -58,11 +56,20 @@ const bid_auc = async (ctx, user, auc, bid) => {
         auc.expires = asdate.add(auc.expires, 1, 'minutes')
 
     auc.bids.push({user: user.discord_id, bid: bid})
+    let bidsLeft = 5, cur = auc.bids.length - 1
+    while(cur >= 0 && auc.bids[cur].user === user.discord_id) {
+        cur--
+        bidsLeft--
+    }
+
+    if(bidsLeft < 0)
+        return ctx.reply(user, `you have exceeded the amount of bid attempts for this auction`, 'red')
     
     if(bid <= auc.highbid) {
         auc.price = bid
         await auc.save()
-        return ctx.reply(user, `you were instantly outbid! Try bidding higher`, 'red')
+        return ctx.reply(user, `you were instantly outbid! Try bidding higher
+            You have **${bidsLeft}** bid attempts left`, 'red')
     }
 
     auc.price = auc.highbid
@@ -85,9 +92,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
     }
 
     user.exp -= bid
-    user.dailystats.bids = user.dailystats.bids + 1 || 1
-    user.markModified('dailystats')
-    await user.save()
+    await user.updateOne({$inc: {exp: -bid, 'dailystats.bids': 1}})
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
 
@@ -109,8 +114,8 @@ const finish_aucs = async (ctx, now) => {
         await author.save()
         await from_auc(auc, author, lastBidder)
 
-        await ctx.direct(author, `your sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
-        return ctx.direct(lastBidder, `your won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
+        await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+        return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
     } else {
         addUserCard(author, auc.card)
         await author.save()

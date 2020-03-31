@@ -65,16 +65,16 @@ const trigger = async (type, ctx, user, args) => {
     }
 
     if (!cursor.hasOwnProperty('_callback')) {
-        throw new Error(`Unknown command. Possibly it wasn't implemented yet...`)
+        return ctx.reply(user, `unknown command. Please check you spelling or use help`, 'red')
     }
 
     if (cursor._perm) {
         if(!user.roles || !cursor._perm.find(x => user.roles.some(y => x === y)))
-            throw new Error(`Only users with roles **[${cursor._perm}]** can execute this command`)
+            return ctx.reply(user,`only users with roles **[${cursor._perm}]** can execute this command`, 'red')
     }
 
     if(!ctx.guild && cursor._access != 'dm') {
-        throw new Error(`This command is possible only in guild (server) channel`)
+        return ctx.reply(user, `this command is possible only in guild (server) channel`, 'red')
     }
 
     const newArgs = [ctx, user || { }].concat(args)

@@ -5,11 +5,12 @@ const Auction       = require('../collections/auction')
 const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
-const {itemInfo}    = require('./item')
 
 const {
-    checkGuildLoyalty
-} = require('./hero')
+    check_effect
+} = require('./effect')
+
+const m_hero = require('./hero')
 
 const cache = []
 
@@ -47,8 +48,8 @@ const addGuildXP = (ctx, user, xp) => {
     let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     
     if(!guildUser) {
-        guildUser = { id: user.discord_id, xp: 0, rank: 0 }
-        ctx.guild.userstats.push(guildUser)
+        ctx.guild.userstats.push({ id: user.discord_id, xp: 0, rank: 0 })
+        guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
 
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
@@ -58,14 +59,16 @@ const addGuildXP = (ctx, user, xp) => {
     }
 
     ctx.guild.xp += xp * .02
-    guildUser.xp += xp
+    guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
-    if(rank > guildUser.rank)
+    if(rank > guildUser.rank) {
         ctx.reply(user, `you ranked up in **${ctx.discord_guild.name}!**
             Your rank is now **${rank}**`)
 
-    guildUser.rank = rank
+        guildUser.xp -= rankXP[rank - 1]
+        guildUser.rank = rank
+    }
 }
 
 const bill_guilds = async (ctx, now) => {
@@ -73,22 +76,39 @@ const bill_guilds = async (ctx, now) => {
     if(!guild) return;
 
     const report = []
-    const isolatedCtx = Object.assign({}, ctx, { guild })
+    const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.guilds.find(x => x.id === guild.id) })
     const cost = getMaintenanceCost(isolatedCtx)
     const ratio = guild.balance / cost
     guild.balance = Math.max(0, guild.balance - cost)
+
+    if(ratio == Infinity)
+        ratio = 0
 
     report.push(`Maintenance cost: **${cost}** ${ctx.symbols.tomato}`)
     report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
-        const damage = Math.round(10 * (1 - ratio))
-        guild.buildings.map(x => x.health -= damage)
         guild.lockactive = false
-        report.push(`> Negative ratio resulted all buildings taking **${damage}** points of damage. The building will stop functioning if health goes lower than 50%`)
+        report.push(`> Negative ratio resulted all buildings taking damage. The building will stop functioning if health goes lower than 50%.
+            Use \`->guild status\` to check building health\n`)
+
         if(guild.lock)
             report.push(`> Lock has been disabled until next check`)
+
+        guild.buildings.map(x => {
+            const damage = Math.round(10 * (1 - ratio) * Math.min(Math.random() * x.level, 2))
+            const info = ctx.items.find(y => y.id === x.id)
+            x.health -= damage
+            if(x.health <= 0 && x.level > 1) {
+                x.level--
+                x.health = 49
+                report.push(`${ctx.symbols.red_circle} **${info.name}** has dropped down to level **${x.level}**!`)
+            } else if(x.id != 'castle' && x.health <= 0 && x.level <= 1) {
+                report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
+            }
+        })
         
+        guild.buildings = guild.buildings.filter(x => x.health > 0)
     } else {
         guild.buildings.map(x => x.health = Math.min(x.health + (x.health < 50? 10 : 5), 100))
         report.push(`> All costs were covered! Positive ratio healed buildings by **5%**`)
@@ -107,7 +127,7 @@ const bill_guilds = async (ctx, now) => {
     const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
     const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
 
-    checkGuildLoyalty(isolatedCtx)
+    m_hero.checkGuildLoyalty(isolatedCtx)
 
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
@@ -144,7 +164,16 @@ const getBuildingInfo = (ctx, user, args) => {
     if(!building)
         return ctx.reply(user, `**${item.name}** is not built in this guild`, 'red')
 
-    const embed = itemInfo(ctx, user, item)
+    const embed = {
+        description: item.fulldesc,
+        fields: item.levels.map((x, i) => ({
+            name: `Level ${i + 1}`, 
+            value: `Price: **${x.price}** ${ctx.symbols.tomato}
+                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+                Required guild level: **${x.level}**
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+    }))}
+
     const heart = building.health < 50? '💔' : '❤️'
     embed.color = color.blue
     embed.author = { name: item.name }
@@ -161,6 +190,11 @@ const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
 
+const isUserManager = (ctx, user) => {
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    return (guildUser && guildUser.roles.includes('manager'))
+}
+
 const rankXP = [10, 100, 500, 2500, 10000]
 
 const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
@@ -170,7 +204,7 @@ const guildLock = {
     maintenance: 5000
 }
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
 	fetchOrCreate,
     addGuildXP,
     XPtoRANK,
@@ -181,5 +215,6 @@ module.exports = {
     bill_guilds,
     getBuilding,
     guildLock,
-    getBuildingInfo
-}
+    getBuildingInfo,
+    isUserManager
+})

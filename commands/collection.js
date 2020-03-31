@@ -9,9 +9,10 @@ const {
     mapUserCards
 } = require('../modules/card')
 
-const {cmd}                 = require('../utils/cmd')
-const {nameSort}            = require('../utils/tools')
-const _                     = require('lodash')
+const {cmd}         = require('../utils/cmd')
+const {nameSort}    = require('../utils/tools')
+const colors        = require('../utils/colors')
+const _             = require('lodash')
 
 cmd('col', async (ctx, user, ...args) => {
     const completed = args.find(x => x === '-completed' || x === '!completed')
@@ -32,7 +33,7 @@ cmd('col', async (ctx, user, ...args) => {
 
     const pages = ctx.pgn.getPages(cols.map(x => {
         const complete = user.completedcols.find(y => x.id === y.id)
-        return `${complete? `[${complete.amount}${ctx.symbols.star}]` : ''} **${x.name}** (${x.id})`
+        return `${complete? `[${complete.amount}${ctx.symbols.star}] ` : ''}**${x.name}** (${x.id})`
     }))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -72,7 +73,8 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     return ctx.send(ctx.msg.channel.id, {
         title: col.name,
         image: { url: card.url },
-        description: resp.join('\n')
+        description: resp.join('\n'),
+        color: colors.blue
     }, user.discord_id)
 })
 

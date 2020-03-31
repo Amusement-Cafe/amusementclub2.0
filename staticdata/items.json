@@ -210,7 +210,37 @@
         "fulldesc": "When used gives you **Skies Of Friendship** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
         "recipe": [1, 2, 3, 3],
         "lasts": 40
-    }, 
+    }, {
+        "id": "cherrybloss",
+        "effectid": "cherrybloss",
+        "name": "Cherry Blossoms",
+        "price": 4000,
+        "type": "recipe",
+        "desc": "cheaper forge",
+        "fulldesc": "When used gives you **Cherry Blossoms** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [1, 1, 3, 3],
+        "lasts": 15
+    }, {
+        "id": "onvictory",
+        "effectid": "onvictory",
+        "name": "Onwards To Victory",
+        "price": 1200,
+        "type": "recipe",
+        "desc": "more rank points",
+        "fulldesc": "When used gives you **Onwards To Victory** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [2, 2, 2, 2, 2, 2],
+        "lasts": 10
+    }, {
+        "id": "rulerjeanne",
+        "effectid": "rulerjeanne",
+        "name": "The Ruler Jeanne",
+        "price": 7200,
+        "type": "recipe",
+        "desc": "faster daily",
+        "fulldesc": "When used gives you **The Ruler Jeanne** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [3, 3, 3],
+        "lasts": 24
+    },
 
     {
         "id": "enayano",
@@ -242,5 +272,15 @@
         "fulldesc": "When used gives you **The Space Unity** effect card. This is a usable card",
         "recipe": [2, 2, 2, 2, 3],
         "lasts": 25
+    }, {
+        "id": "judgeday",
+        "effectid": "judgeday",
+        "name": "The Judgment Day",
+        "price": 3500,
+        "type": "recipe",
+        "desc": "get any effect",
+        "fulldesc": "When used gives you **The Judgment Day** effect card. This is a usable card",
+        "recipe": [2, 3, 3, 3],
+        "lasts": 12
     }
 ]

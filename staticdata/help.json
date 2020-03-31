@@ -6,18 +6,18 @@
         "fields": [
             {
                 "title": "User",
-                "inline": true,
-                "description": "->help daily\n->help balance\n->help diff\n->help profile"
+                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss",
+                "inline": true
             },
             {
                 "title": "Card Management",
-                "inline": true,
-                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq"
+                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help info",
+                "inline": true
             },
             {
                 "title": "Other",
-                "inline": true,
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections"
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections",
+                "inline": true
             },
             {
                 "title": "Contacts",
@@ -82,8 +82,8 @@
                 "description": "You can also spend your tomatoes by accepting trade requests from other users (`->help sell`) and selling cards on auction (`->help auc`)"
             },
             {
-                "title": "Get your balance",
-                "description": "->bal"
+                "title": "->bal",
+                "description": "Get your balance"
             }
         ]
     },
@@ -97,28 +97,28 @@
                 "description": "You can combine any filters in any order. If no cards found, bot will tell you that\nTo see all collections, run `->col`"
             },
             {
-                "title": "Show all your cards",
-                "description": "->cards"
+                "title": "->cards",
+                "description": "Show all your cards"
             },
             {
-                "title": "Show only multiple (x2+) cards",
-                "description": "->cards -multi"
+                "title": "->cards -multi",
+                "description": "Show only multiple (x2+) cards"
             },
             {
-                "title": "Show only cards from some collection",
-                "description": "->cards -[collection]\n(e.g. `->cards -yuru`)"
+                "title": "->cards -[collection]\n(e.g. `->cards -yuru`)",
+                "description": "Show only cards from some collection"
             },
             {
-                "title": "Show only cards with certain amount of stars",
-                "description": "->cards -[stars]\n(e.g. `->cards -3`)"
+                "title": "->cards -[stars]\n(e.g. `->cards -3`)",
+                "description": "Show only cards with certain amount of stars"
             },
             {
-                "title": "Show only cards with tag",
-                "description": "->cards #[tag]\n(e.g. `->cards #saber`)"
+                "title": "->cards #[tag]\n(e.g. `->cards #saber`)",
+                "description": "Show only cards with tag"
             },
             {
-                "title": "Show cards that has keyword in the name",
-                "description": "->cards [keywords]\n(e.g. `->cards kyoko`)"
+                "title": "->cards [keywords]\n(e.g. `->cards kyoko`)",
+                "description": "Show cards that has keyword in the name"
             }
         ]
     },
@@ -155,16 +155,16 @@
                 "description": "This command can be executed only in bot channel (`->help channel` for more info)\nClaim cost can be different for certain *heroes*\nSome *effect cards* can reduce claim cost\nThe message above card shows cost of your next claim and can also include important information about the card"
             },
             {
-                "title": "Get a random card (can be locked)",
-                "description": "->claim"
+                "title": "->claim",
+                "description": "Get a random card (can be locked)"
             },
             {
-                "title": "Get any random card",
-                "description": "->claim any"
+                "title": "->claim any",
+                "description": "Get any random card"
             },
             {
-                "title": "Get several cards",
-                "description": "->claim [amount]"
+                "title": "->claim [amount]",
+                "description": "Get several cards"
             }
         ]
     },
@@ -174,16 +174,16 @@
         "description": "Collections or 'fandoms' are sets of cards that have same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command",
         "fields": [
             {
-                "title": "List all collections",
-                "description": "->col"
+                "title": "->col",
+                "description": "List all collections"
             },
             {
-                "title": "List collections that match name",
-                "description": "->col [name]"
+                "title": "->col [name]",
+                "description": "List collections that match name"
             },
             {
-                "title": "Information about collection",
-                "description": "->col info [name]"
+                "title": "->col info [name]",
+                "description": "Information about collection"
             }
         ]
     },
@@ -197,8 +197,8 @@
                 "description": "Can be used to forge cards. You can convert two cards of the same rarity, into a completely new card of the same rarity. The old system of 1+1=2 is gone. New card is completely random, except that if cards that you use for forging are from the same collection (fandom). In this case new card will be also from same collection. These forges cost a percentage of both cards evals + rarity"
             },
             {
-                "title": "To forge cards",
-                "description": "->forge [card 1 name], [second card]"
+                "title": "->forge [card 1 name], [second card]",
+                "description": "To forge cards"
             },
             {
                 "title": "Useful to know",
@@ -216,8 +216,8 @@
                 "description": "New players get 1000🍅 bonus\n"
             },
             {
-                "title": "Get daily bonus",
-                "description": "->daily"
+                "title": "->daily",
+                "description": "Get daily bonus"
             }
         ]
     },
@@ -231,28 +231,28 @@
                 "description": "You can combine any filters in any order.\nTo see all collections, run `->col`"
             },
             {
-                "title": "Show all different cards",
-                "description": "->diff @someuser"
+                "title": "->diff @someuser",
+                "description": "Show all different cards"
             },
             {
-                "title": "Show only multiple (x2+) cards",
-                "description": "->diff @someuser -multi"
+                "title": "->diff @someuser -multi",
+                "description": "Show only multiple (x2+) cards"
             },
             {
-                "title": "Show only cards from some collection",
-                "description": "->diff @someuser -[collection]]\n(e.g. `->diff @John -yuru`)"
+                "title": "->diff @someuser -[collection]]\n(e.g. `->diff @John -yuru`)",
+                "description": "Show only cards from some collection"
             },
             {
-                "title": "Show only cards with certain amount of stars",
-                "description": "->diff @someuser -[stars]\n(e.g. `->diff @John -3`)"
+                "title": "->diff @someuser -[stars]\n(e.g. `->diff @John -3`)",
+                "description": "Show only cards with certain amount of stars"
             },
             {
-                "title": "Show only cards with tag",
-                "description": "->diff #[tag]\n(e.g. `->diff #saber`)"
+                "title": "->diff #[tag]\n(e.g. `->diff #saber`)",
+                "description": "Show only cards with tag"
             },
             {
-                "title": "Show cards that has keyword in the name",
-                "description": "->diff [keywords]\n(e.g. `->diff kyoko`)"
+                "title": "->diff [keywords]\n(e.g. `->diff kyoko`)",
+                "description": "Show cards that has keyword in the name"
             }
         ]
     },
@@ -262,8 +262,8 @@
         "description": "Drawing is the ability to draw any card currently owned by someone within the bot within the rarities of 1-3★ using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
         "fields": [
             {
-                "title": "Draw a card of your choosing",
-                "description": "->draw [card]"
+                "title": "->draw [card]",
+                "description": "Draw a card of your choosing"
             }
         ]
     },
@@ -273,16 +273,16 @@
         "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such each time you go to craft one you are likely to get different card requirements for it.",
         "fields": [
             {
-                "title": "List all useable effects",
-                "description": "->effects"
+                "title": "->hero effects, or ->effects",
+                "description": "List all useable effects"
             },
             {
-                "title": "List all passive effects",
-                "description": "->hero slots"
+                "title": "->hero slots, or ->slots",
+                "description": "List all passive effects"
             },
             {
-                "title": "Equip a passive effect",
-                "description": "->hero equip [slot] [passive]"
+                "title": "->hero equip [slot] [passive], or ->equip [slot] [passive]",
+                "description": "Equip a passive effect"
             }
 
 
@@ -298,8 +298,8 @@
                 "description": "You can use any filters for card search, except `-multi`\nBot uses those values to determine your **give/get ratio** (read more in `->help trade`)"
             },
             {
-                "title": "Get evaluated card price",
-                "description": "->eval [card query]"
+                "title": "->eval [card query]",
+                "description": "Get evaluated card price"
             }
         ]
     },
@@ -309,32 +309,32 @@
         "description": "You can add any card to favorites. Favorited cards can't be sent and they won't show up for other users in `->has` or `->diff` commands, unless you have 2 or more of those cards or add the `-fav` option",
         "fields": [
             {
-                "title": "Favorite a card",
-                "description": "->fav [card query]"
+                "title": "->fav [card query]",
+                "description": "Favorite a card"
             },
             {
-                "title": "Favorite a card via tag",
-                "description": "->fav [#tag]"
+                "title": "->fav [#tag]",
+                "description": "Favorite a card via tag"
             },
             {
-                "title": "Favorite many cards",
-                "description": "->fav all [card query]"
+                "title": "->fav all [card query]",
+                "description": "Favorite many cards"
             },
             {
-                "title": "Favorite many cards via tag",
-                "description": "->fav all [#tag]"
+                "title": "->fav all [#tag]",
+                "description": "Favorite many cards via tag"
             },
             {
-                "title": "Remove a card from favorites",
-                "description": "->fav remove [card query]\nor\n->unfav [card query]"
+                "title": "->fav remove [card query]\nor\n->unfav [card query]",
+                "description": "Remove a card from favorites"
             },
             {
-                "title": "Remove many from favorites",
-                "description": "->fav remove all [card query]\nor\n->unfav all [card query]"
+                "title": "->fav remove all [card query]\nor\n->unfav all [card query]",
+                "description": "Remove many from favorites"
             },
             {
-                "title": "List favorite cards",
-                "description": "->cards -fav\nor\n->favs"
+                "title": "->cards -fav\nor\n->favs",
+                "description": "List favorite cards"
             }
         ]
     },
@@ -344,52 +344,52 @@
         "description": "You can set custom prefix/bot channels for Amusement Club",
         "fields": [
         	{
-            	"title": "List possible commands for ->guild [arg]",
-            	"description": "->guild"
+            	"title": "->guild",
+                "description": "List possible commands for ->guild [arg]"
             },
             {
-                "title": "Show basic information about current guild",
-                "description": "->guild info"
+                "title": "->guild info",
+                "description": "Show basic information about current guild"
             },
             {
-                "title": "Status of finances and buildings. Possible only if guild has **Castle**",
-                "description": "->guild status"
+                "title": "->guild status",
+                "description": "Status of finances and buildings. Possible only if guild has **Castle**"
             },
             {
-                "title": "Upgrade a building. Grants guild XP to the user who did the upgrade",
-                "description": "->guild upgrade [building ID]"
+                "title": "->guild upgrade [building ID]",
+                "description": "Upgrade a building. Grants guild XP to the user who did the upgrade"
             },
             {
-            	"title": "Allows you to donate your own 🍅 Tomatoes to the guild's balance (Requires a castle be built first)",
-            	"description": "->guild donate [amount]"
+            	"title": "->guild donate [amount]",
+                "description": "Allows you to donate your own 🍅 Tomatoes to the guild's balance (Requires a castle be built first)"
             },
             {
-                "title": "Set the claim tax of the guild (owner/manager only)",
-                "description": "->guild set tax [percentage]"
+                "title": "->guild set tax [percentage]",
+                "description": "Set the claim tax of the guild (owner/manager only)"
             },
             {
-                "title": "Set current channel to report channel of the guild. Only one report channel can be set (owner/manager only)",
-                "description": "->guild set report"
+                "title": "->guild set report",
+                "description": "Set current channel to report channel of the guild. Only one report channel can be set (owner/manager only)"
             },
             {
-                "title": "Set current channel as bot. `->guild unset bot` will give an opposite effect (owner/manager only)",
-                "description": "->guild set bot"
+                "title": "->guild set bot",
+                "description": "Set current channel as bot. `->guild unset bot` will give an opposite effect (owner/manager only)"
             },
             {
-                "title": "Change prefix of bot on current server (owner/manager only)",
-                "description": "->guild set prefix"
+                "title": "->guild set prefix",
+                "description": "Change prefix of bot on current server (owner/manager only)"
             },
             {
-            	"title": "Set @user as guild manager, allowing them to set guild lock. `->guild remove manager` does the opposite (owner only)",
-            	"description": "->guild add manager @someuser"
+            	"title": "->guild add manager @someuser",
+                "description": "Set @user as guild manager, allowing them to set guild lock. `->guild remove manager` does the opposite (owner only)"
             },
             {
-            	"title": "Set current guild lock to specified collection, requires 100,000 🍅 Tomatoes to lock, 3,500 🍅 Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)",
-            	"description": "->guild lock [collection]"
+            	"title": "->guild lock [collection]",
+                "description": "Set current guild lock to specified collection, requires 100,000 🍅 Tomatoes to lock, 5,000 🍅 Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)"
             },
             {
-            	"title": "Set the minimum rank within the guild needed to build and upgrade buildings (owner/manager only)",
-            	"description": "->guild set buildrank"
+            	"title": "->guild set buildrank",
+                "description": "Set the minimum rank within the guild needed to build and upgrade buildings (owner/manager only)"
             }
         ]
     },
@@ -399,8 +399,8 @@
         "description": "This command will try to find if a user has certain card by name. It is useful when you need to transfer card and would like to make sure target user doesn't have it already. Add option `-fav` to include favorite cards.",
         "fields": [
             {
-                "title": "Use command",
-                "description": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)"
+                "title": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)",
+                "description": "Use command"
             }
         ]
     },
@@ -410,24 +410,28 @@
         "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Changing heroes costs 5000 🍅 Tomatoes, while submitting heroes for review will cost 1000 🍅 Tomatoes. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
         "fields": [
             {
-                "title": "Display your current hero",
-                "description": "->hero"
+                "title": "->hero",
+                "description": "Display your current hero"
             },
             {
-                "title": "List all heroes available",
-                "description": "->hero list"
+                "title": "->hero info [name]",
+                "description": "Display information about a hero"
             },
             {
-                "title": "Get a hero",
-                "description": "->hero get [name]"
+                "title": "->hero list",
+                "description": "List all heroes available"
             },
             {
-                "title": "Equip a passive effect to a hero",
-                "description": "->hero equip [slot number] [effect number], or ->hero equip [slot number] [effect name]"
+                "title": "->hero get [name]",
+                "description": "Get a hero"
             },
             {
-                "title": "Submit a hero for review",
-                "description": "->hero submit [MAL link]"
+                "title": "->hero equip [slot number] [effect number], or ->hero equip [slot number] [effect name]",
+                "description": "Equip a passive effect to a hero"
+            },
+            {
+                "title": "->hero submit [MAL link]",
+                "description": "Submit a hero for review"
             }
         ]
     },
@@ -437,8 +441,8 @@
         "description": "Info allows you to see more information about a card, such as Price, Global Average Rating, Source, and Tags",
         "fields": [
             {
-                "title": "Get more information about a card",
-                "description": "->info [card name]"
+                "title": "->info [card name]",
+                "description": "Get more information about a card"
             }
         ]
     },
@@ -448,16 +452,16 @@
         "description": "Inventory contains different items that can be used in game. For example, guild buildings. Items can be stored unlimited amount of time.",
         "fields": [
             {
-                "title": "See the list of your items",
-                "description": "->inv"
+                "title": "->inv",
+                "description": "See the list of your items"
             },
             {
-                "title": "Use item",
-                "description": "->inv use [some item name]"
+                "title": "->inv use [some item name]",
+                "description": "Use item"
             },
             {
-                "title": "Get item info",
-                "description": "->inv info [some item name]"
+                "title": "->inv info [some item name]",
+                "description": "Get item info"
             }
         ]
     },
@@ -494,8 +498,8 @@
         "description": "You can Liquify any card from 1-3★ rarity into 🍷Vials. The amount of 🍷Vials you get is dependent on current Eval price and rarity of card being liquified",
         "fields": [
             {
-                "title": "Liquify a card of your choosing",
-                "description": "->liquify [card]"
+                "title": "->liquify [card]",
+                "description": "Liquify a card of your choosing"
             }
         ]
     },
@@ -506,12 +510,12 @@
         "description": "Miss allows you to view your overall missing cards. If an argument is added you can search within cards you don't have",
         "fields": [
             {
-                "title": "Display all missing cards",
-                "description": "->miss"
+                "title": "->miss",
+                "description": "Display all missing cards"
             },
             {
-                "title": "Display all missing cards within a certain argument(ex: -col, -rating, -gif)",
-                "description": "->miss [arg]"
+                "title": "->miss [arg]",
+                "description": "Display all missing cards within a certain argument(ex: -col, -rating, -gif)"
             }
         ]
     },
@@ -521,12 +525,12 @@
         "description": "Profiles are a way to quickly and nicely see your current: Level, Card Count, Star Count, Clout Count, Time Since Start, and Bot Roles(if any)",
         "fields": [
             {
-                "title": "How to display your profile",
-                "description": "->profile"
+                "title": "->profile",
+                "description": "How to display your profile"
             },
             {
-                "title": "How to display someone else's profile",
-                "description": "->profile [Discord UserID]"
+                "title": "->profile [Discord UserID]",
+                "description": "How to display someone else's profile"
             }
         ]
     },
@@ -536,44 +540,44 @@
         "description": "In the help messages you will often see `[card query]`. But what does it mean?\n In Amusement Club you can get cards in any request type (except `forge`) by using different card parameters. Those parameters can be also combined",
         "fields": [
             {
-                "title": "Name",
-                "description": "->cards [some name]"
+                "title": "->cards [some name]",
+                "description": "Name"
             },
             {
-                "title": "Collection",
-                "description": "->cards -[collection]"
+                "title": "->cards -[collection]",
+                "description": "Collection"
             },
             {
-                "title": "Rarity",
-                "description": "->cards -# where # is amount of stars"
+                "title": "->cards -# where # is amount of stars",
+                "description": "Rarity"
             },
             {
-                "title": "Animated",
-                "description": "->cards -gif"
+                "title": "->cards -gif",
+                "description": "Animated"
             },
             {
-                "title": "Favorite",
-                "description": "->cards -fav"
+                "title": "->cards -fav",
+                "description": "Favorite"
             },
             {
-                "title": "Make NEGATIVE request",
-                "description": "->cards ![collection] !fav !gif !craft"
+                "title": "->cards ![collection] !fav !gif !craft",
+                "description": "Make NEGATIVE request"
             },
             {
-                "title": "Sort by time when card was accuired",
-                "description": "->cards >date or ->cards <date"
+                "title": "->cards >date or ->cards <date",
+                "description": "Sort by time when card was accuired"
             },
             {
-                "title": "Sort by star amount",
-                "description": "->cards >star (default) or ->cards <star"
+                "title": "->cards >star (default) or ->cards <star",
+                "description": "Sort by star amount"
             },
             {
-                "title": "Sort by amount",
-                "description": "->cards >amount or ->cards <amount"
+                "title": "->cards >amount or ->cards <amount",
+                "description": "Sort by amount"
             },
             {
-                "title": "Sort alphabetically",
-                "description": "->cards >name or ->cards <name"
+                "title": "->cards >name or ->cards <name",
+                "description": "Sort alphabetically"
             }
         ]
     },
@@ -583,12 +587,12 @@
         "description": "Players can rate their cards and view those ratings or even sort by them. Players' ratings are averaged into a global average rating that can be seen with ->info [card]",
         "fields": [
             {
-                "title": "Rate one of your cards from 1 to 10.",
-                "description": "->rate [rating] [card]"
+                "title": "->rate [rating] [card]",
+                "description": "Rate one of your cards from 1 to 10."
             },
             {
-                "title": "Order your cards by rating.",
-                "description": "->cards >rating"
+                "title": "->cards >rating",
+                "description": "Order your cards by rating."
             }
         ]
     },
@@ -640,16 +644,16 @@
         "description": "The store is where you can buy blueprints for guilds, and recipes for effects. To browse the store use the `category` name or number,  with the commands below.",
         "fields": [
         	{
-                "title": "List the Store Categories",
-                "description": "->store"
+                "title": "->store",
+                "description": "List the Store Categories"
             },
             {
-                "title": "Browse the Categories",
-                "description": "->store [category name]"
+                "title": "->store [category name]",
+                "description": "Browse the Categories"
             },
             {
-                "title": "Get info on a specific item in the store",
-                "description": "->store info [item name]"
+                "title": "->store info [item name]",
+                "description": "Get info on a specific item in the store"
             }
          ]
     },
@@ -659,8 +663,8 @@
         "description": "You can summon card in any channel on server, but only if you have this card. This operation won't consume card.\nYou can include partial name of the card, but it has to be more than 3 characters long. The system will try to find *most suitable card* using name you provided",
         "fields": [
             {
-                "title": "Summon a card",
-                "description": "->sum [card query] [-collection] [-level] [!collection]"
+                "title": "->sum [card query] [-collection] [-level] [!collection]",
+                "description": "Summon a card"
             }
         ]
     },
@@ -670,12 +674,12 @@
         "description": "You can tag cards with #tags to help you and the playerbase better find cards. Adding a tag already on a card upvotes the tag",
         "fields": [ 
         	{
-                "title": "Upvote or Add a tag to a card",
-                "description": "->tag [card] #tag"
+                "title": "->tag [card] #tag",
+                "description": "Upvote or Add a tag to a card"
             },
             {
-                "title": "Downvote a tag on a card",
-                "description": "->tag down [card] #tag"
+                "title": "->tag down [card] #tag",
+                "description": "Downvote a tag on a card"
             }
 
         ]
@@ -686,24 +690,24 @@
         "description": "You can review your transaction history; this includes sells and auctions. Transactions older than a week will be erased.\nIf transaction was done via auction, you can also get auction details using TransactionID `->auc info [transaction_id]`",
         "fields": [
             {
-                "title": "List all recent transactions",
-                "description": "->trans"
+                "title": "->trans",
+                "description": "List all recent transactions"
             },
             {
-                "title": "List of the transactions where you get a card",
-                "description": "->trans gets"
+                "title": "->trans gets",
+                "description": "List of the transactions where you get a card"
             },
             {
-                "title": "List of the transactions where you sent a card",
-                "description": "->sends"
+                "title": "->sends",
+                "description": "List of the transactions where you sent a card"
             },
             {
-                "title": "List of the transactions that are waiting for confirmations",
-                "description": "->pending"
+                "title": "->pending",
+                "description": "List of the transactions that are waiting for confirmations"
             },
             {
-                "title": "Gets detailed info about transaction using TransactionID",
-                "description": "->trans info [ID]"
+                "title": "->trans info [ID]",
+                "description": "Gets detailed info about transaction using TransactionID"
             }
         ]
     }

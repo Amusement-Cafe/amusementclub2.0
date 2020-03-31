@@ -1,4 +1,5 @@
 const User = require('../collections/user')
+const _ = require('lodash')
 
 const {
     getAllUserIDs
@@ -15,7 +16,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.reply(user, 'welcome to **amoosement clup**')
+        await ctx.reply(user, `welcome to **Amusement Club!** Please read \`->rules\` and use \`->help\` to learn more about the game`)
     }
 
     if(user.username != username) {
@@ -26,8 +27,12 @@ const fetchOrCreate = async (ctx, userid, username) => {
     return user
 }
 
-const fetchOnly = async (userid) => {
-    return await User.findOne({ discord_id: userid })
+const fetchOnly = (userid) => {
+    return User.findOne({ discord_id: userid })
+}
+
+const updateUser = (user, query) => {
+    return User.findOneAndUpdate({discord_id: user.discord_id}, query, { returnNewDocument: true })
 }
 
 const onUsersFromArgs = async (args, callback) => {
@@ -42,8 +47,21 @@ const onUsersFromArgs = async (args, callback) => {
     }))
 }
 
+const getQuest = (ctx, user, tier) => {
+    const levels = ctx.guild.buildings.reduce((res, curr) => {
+        for(let i=0; i<curr.level; i++)
+            res.push(`${curr.id}${i + 1}`)
+        return res
+    }, [])
+    
+    const available = ctx.quests.daily.filter(x => (!x.building || levels.includes(x.building)) && x.tier === tier)
+    return _.sample(available)
+}
+
 module.exports = {
     fetchOrCreate,
     fetchOnly,
-    onUsersFromArgs
+    onUsersFromArgs,
+    updateUser,
+    getQuest
 }

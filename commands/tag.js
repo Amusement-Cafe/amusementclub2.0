@@ -1,20 +1,23 @@
-const {cmd, pcmd}           = require('../utils/cmd')
-const colors                = require('../utils/colors')
-const Filter                = require('bad-words')
-const filter                = new Filter();
+const {cmd, pcmd}   = require('../utils/cmd')
+const colors        = require('../utils/colors')
+const Filter        = require('bad-words')
+const filter        = new Filter();
 
 const {
-    fetchOnly
+    fetchOnly,
+    updateUser,
 } = require('../modules/user')
 
 const { 
     new_tag,
-    check_tag,
-    withTag
+    withTag,
+    fetchCardTags,
 } = require('../modules/tag')
 
 const {
     formatName,
+    withGlobalCards,
+    bestMatch,
 } = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
@@ -63,10 +66,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
-
-            user.dailystats.tags = user.dailystats.tags + 1 || 1
-            user.markModified('dailystats')
-            await user.save()
+            user = await updateUser(user, {$inc: {'dailystats.tags': 1}})
 
             ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
         },
@@ -95,8 +95,32 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             tag.downvotes.push(user.discord_id)
             tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
             await tag.save()
+            user = await updateUser(user, {$inc: {'dailystats.tags': (user.dailystats.tags <= 0? 0 : -1)}})
 
             return ctx.reply(user, `downvoted tag **#${tgTag}** for ${formatName(card)}`)
+        }
+    })
+}))
+
+cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'tag')
+
+    const card = bestMatch(cards)
+    const tags = await fetchCardTags(card)
+
+    if(tags.length === 0)
+        return ctx.reply(user, `this card doesn't have any tags`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(tags.map(x => 
+            `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\`  **${x.name}** ${
+                (x.upvotes.includes(user.discord_id) || x.downvotes.includes(user.discord_id))? '*' : ''
+            }`)),
+        switchPage: (data) => data.embed.description = `**Tags for** ${formatName(card)}:\n\n${data.pages[data.pagenum]}`,
+        buttons: ['back', 'forward'],
+        embed: {
+            color: colors.blue,
         }
     })
 }))
@@ -129,6 +153,8 @@ pcmd(['admin', 'mod'], ['tag', 'ban'],
     target.markModified('ban')
     await tag.save()
     await target.save()
+
+    // TODO: dm warning
 
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}. 
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)

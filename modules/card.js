@@ -28,6 +28,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         lastcard: false,
         diff: false,
         me: false,
+        bid: false,
     }
 
     args.map(x => {
@@ -36,7 +37,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         if(x === '.') {
             q.lastcard = true
 
-        } else if(x[0] === '<' || x[0] === '>') {
+        } else if((x[0] === '<' || x[0] === '>') && x[1] != '@') {
             switch(x) {
                 case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
                 case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
@@ -54,7 +55,9 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
                 case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
                 case 'diff': q.diff = m; break
+                case 'miss': q.diff = m; break
                 case 'me': q.me = m; break
+                case 'bid': q.bid = m; break
                 default: {
                     const pcol = bestColMatch(ctx, substr)
                     if(m) {
@@ -171,6 +174,9 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         cards = cards.filter(x => tgcards.includes(x.id))
     }
 
+    if(parsedargs.diff) 
+        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+
     if(parsedargs.lastcard)
         cards = cards.filter(x => x.id === user.lastcard)
 
@@ -220,7 +226,7 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
     formatName,
     equals,
     bestMatch,
@@ -232,4 +238,4 @@ module.exports = {
     withGlobalCards,
     mapUserCards,
     withMultiQuery
-}
+})

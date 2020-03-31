@@ -1,4 +1,5 @@
 const {Tag} = require('../collections')
+const cardMod = require('./card')
 
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
@@ -7,7 +8,8 @@ const fetchTaggedCards = async (tags) => {
 
 const fetchCardTags = async (card) => {
     const res = await Tag.find({ card: card.id })
-    return res.filter(x => check_tag(x)).map(x => x.name)
+    return res.filter(x => check_tag(x))
+        .sort((a, b) => (b.upvotes.length - b.downvotes.length) - (a.upvotes.length - a.downvotes.length))
 }
 
 const new_tag = async (user, name, card) => {
@@ -30,8 +32,7 @@ const check_tag = (tag) => {
  * @return {Promise}
  */
 const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
-    const c = require('./card')
-    const parsedargs = c.parseArgs(ctx, args)
+    const parsedargs = cardMod.parseArgs(ctx, args)
 
     if(parsedargs.isEmpty(false))
         return ctx.qhelp(ctx, user, 'tag')
@@ -39,8 +40,8 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     if(parsedargs.tags.length === 0)
         return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')
 
-    const cards = c.filter(ctx.cards, parsedargs)
-    const card = parsedargs.lastcard? ctx.cards[user.lastcard] : c.bestMatch(cards)
+    const cards = cardMod.filter(ctx.cards, parsedargs)
+    const card = parsedargs.lastcard? ctx.cards[user.lastcard] : cardMod.bestMatch(cards)
 
     if(!parsedargs.lastcard && card) {
         user.lastcard = card.id
@@ -54,15 +55,15 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     const tag = await Tag.findOne({name: tgTag, card: card.id})
 
     if(forceFind && !tag)
-        return ctx.reply(user, `tag #${tgTag} wasn't found for ${c.formatName(card)}`, 'red')
+        return ctx.reply(user, `tag #${tgTag} wasn't found for ${cardMod.formatName(card)}`, 'red')
 
     return callback(ctx, user, card, tag, tgTag, parsedargs)
 }
 
-module.exports = {
+module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
     new_tag,
     check_tag,
     withTag,
-}
+})

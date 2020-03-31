@@ -11,7 +11,8 @@ const {
     isUserOwner,
     getGuildUser,
     guildLock,
-    getBuildingInfo
+    getBuildingInfo,
+    isUserManager
 } = require('../modules/guild')
 
 const {
@@ -117,6 +118,9 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     if(!arg1)
         return ctx.reply(user, 'please specify building ID', 'red')
 
+    if(!getGuildUser(ctx, user))
+        return ctx.reply(user, 'you are not a part of this guild', 'red')
+
     if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < ctx.guild.buildperm)
         return ctx.reply(user, `you have to be at least rank **${ctx.guild.buildperm}** to upgrade buildings in this guild`, 'red')
 
@@ -127,12 +131,11 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
         return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
 
     const level = item.levels[building.level]
-
-    if(XPtoLEVEL(ctx.guild.xp) < level.level)
-        return ctx.reply(user, `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level ${level.level}**`, 'red')
-
     if(!level)
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
+
+    if(XPtoLEVEL(ctx.guild.xp) < level.level)
+        return ctx.reply(user, `this guild has to be at least level **${level.level}** to have **${item.name} level ${building.level + 1}**`, 'red')
 
     if(user.exp < level.price)
         return ctx.reply(user, `you have to have at least **${level.price}** ${ctx.symbols.tomato} to upgrade this building`, 'red')
@@ -161,7 +164,7 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
 })
 
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
-    const amount = parseInt(arg1)
+    let amount = parseInt(arg1)
     const castle = ctx.guild.buildings.find(x => x.id === 'castle')
 
     if(!castle)
@@ -170,6 +173,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     if(!amount)
         return ctx.reply(user, `please enter amount of ${ctx.symbols.tomato} you want to donate to this guild`, 'red')
 
+    amount = Math.abs(amount)
     if(user.exp < amount)
         return ctx.reply(user, `you don't have **${amount}** ${ctx.symbols.tomato} to donate`, 'red')
 
@@ -201,7 +205,7 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(!castle)
         return ctx.reply(user, '**Guild Castle** is required to set claim tax', 'red')
 
-    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only server owner can modify guild tax`, 'red')
 
     if(!tax)
@@ -210,7 +214,10 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(castle.level < 2 && tax > 5)
         return ctx.reply(user, `maximum allowed tax for current level is **5%**`, 'red')
 
-    if(castle.level < 4 && tax > 25)
+    if(castle.level < 4 && tax > 10)
+        return ctx.reply(user, `maximum allowed tax for current level is **10%**`, 'red')
+
+    if(tax > 25)
         return ctx.reply(user, `maximum allowed tax for current level is **25%**`, 'red')
 
     ctx.guild.tax = tax * .01
@@ -256,7 +263,8 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
 })
 
 cmd(['guild', 'set', 'buildrank'], async (ctx, user, arg1) => {
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user))
         return ctx.reply(user, `only owner or manager can change guild's required build rank`, 'red')
 
     const rank = Math.abs(parseInt(arg1))
@@ -275,12 +283,12 @@ cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...a
         return ctx.reply(user, `only owner can add guild managers`, 'red')
 
     const newArgs = parseArgs(ctx, args)
-    if(!newArgs.id)
+    if(!newArgs.ids[0])
         return ctx.reply(user, `please include ID of a target user`, 'red')
 
-    const tgUser = await fetchOnly(newArgs.id)
+    const tgUser = await fetchOnly(newArgs.ids[0])
     if(!tgUser)
-        return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
+        return ctx.reply(user, `user with ID \`${newArgs.ids[0]}\` was not found`, 'red')
 
     const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
     if(!target)
@@ -301,12 +309,12 @@ cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], async (ctx, user
         return ctx.reply(user, `only owner can remove guild managers`, 'red')
 
     const newArgs = parseArgs(ctx, args)
-    if(!newArgs.id)
+    if(!newArgs.ids[0])
         return ctx.reply(user, `please, include ID of a target user`, 'red')
 
-    const tgUser = await fetchOnly(newArgs.id)
+    const tgUser = await fetchOnly(newArgs.ids[0])
     if(!tgUser)
-        return ctx.reply(user, `user with ID \`${newArgs.id}\` was not found`, 'red')
+        return ctx.reply(user, `user with ID \`${newArgs.ids[0]}\` was not found`, 'red')
 
     const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
     if(!target)
@@ -341,6 +349,9 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
 
     if(ctx.guild.lock && ctx.guild.lock === col.id)
         return ctx.reply(user, `this guild is already locked to **${col.name}**`, 'red')
+
+    if(col.promo)
+        return ctx.reply(user, `you cannot lock guild to promo collections`, 'red')
 
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 4)
     if(colCards.length === 0)

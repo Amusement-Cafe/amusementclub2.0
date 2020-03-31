@@ -20,12 +20,14 @@ const {
 } = require('../modules/card')
 
 const {
-    fetchOnly
+    fetchOnly,
+    getQuest
 } = require('../modules/user')
 
 const {
     addGuildXP,
-    getBuilding
+    getBuilding,
+    rankXP
 } = require('../modules/guild')
 
 const {
@@ -51,15 +53,20 @@ cmd('bal', (ctx, user) => {
     let max = 1
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
-    while(claimCost(user, ctx.guild.tax, max) < user.exp)
-        max++
+    if(ctx.guild) {
+        while(claimCost(user, ctx.guild.tax, max) < user.exp)
+            max++
+    } else {
+        while(claimCost(user, 0, max) < user.exp)
+            max++
+    }
 
     const embed = {
         color: colors.green,
         description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
             Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
-            Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)
-            You can claim **${max - 1} cards** in current guild with your balance`
+            ${ctx.guild? `Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
+            You can claim **${max - 1} cards** ${ctx.guild? `in current guild `:''}with your balance`
     }
 
     if(promo) {
@@ -119,12 +126,13 @@ cmd('daily', async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
     const now = new Date()
-    const future = asdate.add(user.lastdaily, 20, 'hours')
+    const future = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
 
     if(future < now) {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
-        let amount = gbank? 500 : 300
+        //let amount = gbank? 500 : 300
+        let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
@@ -142,11 +150,11 @@ cmd('daily', async (ctx, user) => {
         user.markModified('dailystats')
 
         if(tavern) {
-            quests.push(_.sample(ctx.quests.daily.filter(x => x.tier < 2)))
+            quests.push(getQuest(ctx, user, 1))
             user.dailyquests.push(quests[0].id)
 
             if(tavern.level > 1) {
-                quests.push(_.sample(ctx.quests.daily.filter(x => x.tier > 1)))
+                quests.push(getQuest(ctx, user, 2))
                 user.dailyquests.push(quests[1].id)
             }
         }
@@ -211,8 +219,15 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd('profile', async (ctx, user, arg1) => {
-    if(arg1) user = await fetchOnly(arg1)
+cmd('profile', async (ctx, user, ...args) => {
+    const pargs = parseArgs(ctx, args)
+    if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0])
+
+    if(!user)
+        return ctx.send(ctx.msg.channel.id, {
+            description: `Cannot find user with ID ${pargs.ids[0]}`,
+            color: colors.red
+        })
 
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user._id.getTimestamp()
@@ -227,6 +242,11 @@ cmd('profile', async (ctx, user, arg1) => {
     if(cloutsum > 0) {
         resp.push(`Completed collections: **${user.completedcols.length}**`)
         resp.push(`Overall clout: **${cloutsum}**`)
+    }
+
+    const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    if(curUser){
+        resp.push(`Current guild rank: **${curUser.rank}** (${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%)`)
     }
 
     if(user.roles && user.roles.length > 0)
@@ -272,6 +292,7 @@ cmd('diff', async (ctx, user, ...args) => {
 cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const ids = user.cards.map(x => x.id)
     const diff = cards.filter(x => ids.indexOf(x.id) === -1)
+        .filter(x => !x.excluded)
         .sort(parsedargs.sort)
 
     if(diff.length === 0)
@@ -291,7 +312,7 @@ cmd('quest', 'quests', async (ctx, user) => {
         color: colors.blue,
         author: { name: `${user.username}, your quests:` },
         description: ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y))
-            .map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n') 
+            .map((x, i) => `${i + 1}. \`${new Array(x.tier + 1).join('★')}\` ${x.name} (${x.reward(ctx)})`).join('\n')
     }, user.discord_id)
 })
 

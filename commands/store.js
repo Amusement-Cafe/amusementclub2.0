@@ -4,7 +4,8 @@ const colors    = require('../utils/colors')
 
 const { 
     itemInfo,
-    buyItem
+    buyItem,
+    withItem
 } = require('../modules/item')
 
 cmd('store', 'shop', async (ctx, user, cat) => {
@@ -42,40 +43,15 @@ cmd('store', 'shop', async (ctx, user, cat) => {
     })
 })
 
-cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], async (ctx, user, ...args) => {
-    const reg = new RegExp(args.join('*.'), 'gi')
-    let item = ctx.items.find(x => reg.test(x.id))
-    if(!item && !isNaN(args[0]))
-        item = ctx.items[parseInt(args[0]) - 1]
-
-    if(!item)
-        return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
-
+cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withItem(async (ctx, user, item, args) => {
     const embed = itemInfo(ctx, user, item)
     embed.color = colors.deepgreen
     embed.author = { name: item.name }
 
     return ctx.send(ctx.msg.channel.id, embed)
-})
+}))
 
-cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, ...args) => {
-    const intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
-    let item
-    if(intArgs.length > 0) {
-        if(intArgs.length < 2)
-            return ctx.reply(user, `please use category **and** item number (e.g. \`->store buy 2 1\`)
-                You can also use \`itemID\` `, 'red')
-
-        const cat = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))[intArgs[0] - 1]
-        item = ctx.items.filter(x => x.type === cat)[intArgs[1] - 1]
-    } else {
-        const reg = new RegExp(args.join('*.'), 'gi')
-        item = ctx.items.find(x => reg.test(x.id))
-    }
-
-    if(!item)
-        return ctx.reply(user, `item with ID \`${args.join('')}\` not found or cannot be purchased`, 'red')
-
+cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) => {
     if(user.exp < item.price)
         return ctx.reply(user, `you have to have at least \`${item.price}\` ${ctx.symbols.tomato} to buy this item`, 'red')
 
@@ -91,4 +67,4 @@ cmd(['store', 'buy'], ['shop', 'buy'], async (ctx, user, ...args) => {
                 The item has been added to your inventory. See \`->inv info ${item.id}\` for details`, 'green')
         }
     })
-})
+}))

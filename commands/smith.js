@@ -26,6 +26,10 @@ const {
     check_effect
 } = require('../modules/effect')
 
+const {
+    updateUser
+} = require('../modules/user')
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
@@ -51,7 +55,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const eval1 = await evalCard(ctx, card1)
     const eval2 = await evalCard(ctx, card2)
     const vialavg = (await getVialCost(ctx, card1, eval1) + await getVialCost(ctx, card2, eval2)) * .5
-    const cost = Math.round((eval1 + eval2) * .25)
+    const cost = Math.round(((eval1 + eval2) * .25) * (check_effect(ctx, user, 'cherrybloss')? .5 : 1))
     const vialres = Math.round(vialavg * .5)
 
     if(user.exp < cost)
@@ -122,22 +126,21 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
-        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount}** card(s) left`}`
+        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount - 1}** card(s) left`}`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
         force: ctx.globals.force,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
-           user.vials += vials
-           removeUserCard(user, card.id)
-           user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-           user.markModified('dailystats')
-           await user.save()
+            user.vials += vials
+            removeUserCard(user, card.id)
+            await user.save()
+            user = await updateUser(user, {$inc: {'dailystats.liquify': 1}})
 
-           ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
-               You have **${user.vials}** ${ctx.symbols.vial}
-               You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+            ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
+                You have **${user.vials}** ${ctx.symbols.vial}
+                You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
         },
     })
 }))
@@ -153,6 +156,10 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const vials = await getVialCost(ctx, card)
+    const col = ctx.collections.find(x => x.id === card.col)
+
+    if(col.promo)
+        return ctx.reply(user, `you cannot draw promo cards`, 'red')
 
     if(card.level > 3)
         return ctx.reply(user, `you cannot draw card higher than 3 ${ctx.symbols.star}`, 'red')

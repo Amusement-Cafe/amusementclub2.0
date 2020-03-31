@@ -1,6 +1,6 @@
 const colors    = require('../utils/colors')
 
-const check_achievements = async (ctx, user, action) => {
+const check_achievements = async (ctx, user, action, channelID) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
     const complete = possible.find(x => x.check(ctx, user))
 
@@ -9,7 +9,7 @@ const check_achievements = async (ctx, user, action) => {
         user.achievements.push(complete.id)
         await user.save()
 
-        return ctx.send(ctx.msg.channel.id, {
+        return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,
@@ -23,7 +23,7 @@ const check_achievements = async (ctx, user, action) => {
     }
 }
 
-const check_daily = async (ctx, user, action) => {
+const check_daily = async (ctx, user, action, channelID) => {
     const rewards = []
     const complete = []
 
@@ -41,7 +41,7 @@ const check_daily = async (ctx, user, action) => {
     user.markModified('dailyquests')
     await user.save()
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,
         author: { name: `${user.username}, you completed:` },
         description: complete.join('\n'),
@@ -52,11 +52,11 @@ const check_daily = async (ctx, user, action) => {
     })
 }
 
-const check_all = async (ctx, user, action) => {
-    await check_achievements(ctx, user, action)
+const check_all = async (ctx, user, action, channelID) => {
+    await check_achievements(ctx, user, action, channelID)
 
     if(user.dailyquests.length > 0)
-        await check_daily(ctx, user, action)
+        await check_daily(ctx, user, action, channelID)
 }
 
 module.exports = {

@@ -2,12 +2,12 @@ const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
-const msToTime      = require('pretty-ms')
 
 const {
     getGuildUser,
     isUserOwner,
-    addGuildXP
+    addGuildXP,
+    getBuilding
 } = require('./guild')
 
 const {
@@ -41,9 +41,30 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
     items = items.filter(x => x)
 
     if(items.length === 0)
-        return ctx.reply(user, `found 0 items with that ID`, 'red')
+        return ctx.reply(user, `found 0 items with ID \`${args.join('')}\``, 'red')
 
     return callback(ctx, user, items, args)
+}
+
+const withItem = (callback) => (ctx, user, ...args) => {
+    const intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+    let item
+    if(intArgs.length > 0) {
+        if(intArgs.length < 2)
+            return ctx.reply(user, `please use category **and** item number (e.g. \`2 1\`)
+                You can also use \`itemID\` `, 'red')
+
+        const cat = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))[intArgs[0] - 1]
+        item = ctx.items.filter(x => x.price > 0 && x.type === cat)[intArgs[1] - 1]
+    } else {
+        const reg = new RegExp(args.join('*.'), 'gi')
+        item = ctx.items.find(x => x.price > 0 && reg.test(x.id))
+    }
+
+    if(!item)
+        return ctx.reply(user, `item with ID \`${args.join('')}\` not found or cannot be purchased`, 'red')
+
+    return callback(ctx, user, item, args)
 }
 
 const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
@@ -98,6 +119,18 @@ const uses = {
     },
 
     recipe: async (ctx, user, item) => {
+        const hub = getBuilding(ctx, 'smithhub')
+        if(!hub || hub.level < 3)
+            return ctx.reply(user, `you can create effect cards only in guild with **Smithing Hub level 3** or higher`, 'red')
+
+        const userEffect = user.effects.find(x => x.id === item.effectid)
+        if(userEffect && userEffect.expires < new Date()) {
+            user.heroslots = user.heroslots.filter(x => x != userEffect.id)
+            user.effects = user.effects.filter(x => x.id != userEffect.id)
+            user.markModified('heroslots')
+            user.markModified('effects')
+        }
+
         if(user.effects.some(x => x.id === item.effectid))
             return ctx.reply(user, `you already have this Effect Card`, 'red')
 
@@ -121,7 +154,7 @@ const uses = {
         await user.save() //double for cards
 
         return ctx.reply(user, {
-            image: { url: `${ctx.baseurl}/effects/${effect.id}.png` },
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
             color: colors.blue,
             description: `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
                 ${effect.passive? `To use this passive effect equip it with \`->hero equip [slot] ${effect.id}\``:
@@ -177,7 +210,8 @@ const infos = {
 
         return ({
             description: item.fulldesc,
-            fields
+            fields,
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
         })
     }
 }
@@ -215,5 +249,6 @@ module.exports = {
     useItem,
     getQuestion,
     itemInfo,
-    buyItem
+    buyItem,
+    withItem
 }

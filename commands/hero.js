@@ -23,9 +23,15 @@ const {
     get_userSumbissions,
     withHeroes,
     getInfo
-}   = require('../modules/hero')
+} = require('../modules/hero')
+
+const { 
+    itemInfo
+} = require('../modules/item')
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
+    const now = new Date()
+    effects = effects.filter(x => x.expires > now)
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet`, 'red')
 
@@ -55,17 +61,22 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
             user.herochanged = new Date()
             await user.save()
 
-            lasthero.followers--
             hero.followers++
             await hero.save()
-            await lasthero.save()
+
+            if(lasthero) {
+                lasthero.followers--
+                await lasthero.save()
+            }
 
             return ctx.reply(user, `say hello to your new hero **${hero.name}**!`)
         }
     })
 }))
 
-cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes) => {
+cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
+    if(isEmpty) return ctx.qhelp(ctx, user, 'hero')
+
     const hero = heroes[0]
     const usr = await fetchOnly(hero.user)
     const embed = await getInfo(ctx, user, hero.id)
@@ -87,6 +98,23 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
         }
     })
 }))
+
+cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
+    const reg = new RegExp(args.join('*.'), 'gi')
+    let item = ctx.items.find(x => reg.test(x.id))
+
+    if(!item)
+        return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
+
+    const embed = itemInfo(ctx, user, item)
+    embed.author = { name: item.name }
+    embed.description = embed.fields[0].value
+    embed.fields = embed.fields.slice(1)
+    embed.image = { url: `${ctx.baseurl}/effects/${item.effectid}.gif` }
+    embed.color = colors.blue
+
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
 
 cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects, ...args) => {
 
@@ -112,8 +140,9 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
 
 cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
 
-    const hero = await get_hero(ctx, user.hero)
     const now = new Date()
+    effects = effects.filter(x => x.expires > now)
+    const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
         .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
 
@@ -141,27 +170,27 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
     })
 }))
 
-cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
     const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
-    const intArg = parseInt(args.find(x => !isNaN(x)))
+    const intArg = parseInt(args[0])
 
     let effect
     if(intArg) {
         effect = usables[intArg - 1]
     } else {
-        const reg = new RegExp(args.join(''), 'gi')
+        const reg = new RegExp(args[0], 'gi')
         effect = usables.find(x => reg.test(x.id))
     }
 
     if(!effect)
-        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not usable`, 'red')
+        return ctx.reply(user, `effect with ID \`${args[0]}\` was not found or it is not usable`, 'red')
 
     const userEffect = user.effects.find(x => x.id === effect.id)
     const now = new Date()
     if(effect.cooldownends > now)
         return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
 
-    const res = await effect.use(ctx, user)
+    const res = await effect.use(ctx, user, args.slice(1))
     if(!res.used)
         return ctx.reply(user, res.msg, 'red')
 
@@ -172,10 +201,19 @@ cmd(['use'], ['hero', 'use'], withUserEffects(async (ctx, user, effects, ...args
     user.markModified('effects')
     await user.save()
 
-    if(count > user.effects.length)
-        return ctx.reply(user, `${res.msg}\nEffect Card has expired. Please make a new one`)
+    const embed = { 
+        description: res.msg,
+        image: { url: res.img },
+        color: colors.green
+    }
 
-    return ctx.reply(user, `${res.msg}\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`)
+    if(count > user.effects.length) {
+        embed.description += `\nEffect Card has expired. Please make a new one`
+    } else {
+        embed.description += `\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`
+    }
+
+    return ctx.reply(user, embed)
 }))
 
 cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
@@ -189,6 +227,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     args = args.filter(x => x != slotNum)
 
     let effect
+    const now = new Date()
     if(intArgs[0]) {
         effect = passives[intArgs[0] - 1]
     } else {
@@ -199,10 +238,12 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     if(!effect)
         return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not a passive`, 'red')
 
+    if(effect.expires < now)
+        return ctx.reply(user, `passive **${effect.name}** has expired. Please purchase a new recipe and use it to make a new effect`, 'red')
+
     if(user.heroslots.includes(effect.id))
         return ctx.reply(user, `passive **${effect.name}** is already equipped`, 'red')
-
-    const now = new Date()
+    
     if(user.herocooldown[slotNum - 1] && user.herocooldown[slotNum - 1] > now)
         return ctx.reply(user, `you can use this slot in **${msToTime(user.herocooldown[slotNum - 1] - now)}**`, 'red')
 
@@ -236,7 +277,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
-        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbils.tomato} to submit a hero`, 'red')
+        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)

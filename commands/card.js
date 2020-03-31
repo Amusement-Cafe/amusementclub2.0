@@ -51,7 +51,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.filter(x => !isNaN(x)).map(x => parseInt(x))[0] || 1
+    const amount = args.filter(x => !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
@@ -69,11 +69,11 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             You have **${Math.floor(user.promoexp)}** ${promo.currency}`, 'red')
 
     if(!promo) {
-        boost = args.map(x => curboosts.some(y => y.id === x)).find(x => x)
+        boost = curboosts.find(x => args.some(y => y === x.id))
     }
 
     const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
-    const tohruEffect = check_effect(ctx, user, 'tohrugift')
+    const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
@@ -81,14 +81,15 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
 
         let card, boostdrop = false
-        if(i === 0 && tohruEffect) {
-            card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3 && !x.excluded))
+        const colCards = ctx.cards.filter(x => x.col === col.id)
+        if(i === 0 && tohruEffect && colCards.some(x => x.level === 3)) {
+            card = _.sample(colCards.filter(x => x.level === 3 && !x.excluded))
         }
         else if(boost && rng < boost.rate) {
             boostdrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
-        else card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level < 5 && !x.excluded))
+        else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const count = addUserCard(user, card.id)
         cards.push({count, boostdrop, card: _.clone(card)})
@@ -105,12 +106,14 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     if(promo) {
         curr = promo.currency
         user.promoexp -= price
+        await user.updateOne({$inc: {'dailystats.promoclaims': amount}})
         user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
         while(promoClaimCost(user, max) < user.promoexp)
             max++
     } else {
         user.exp -= price
         user.promoexp += extra
+        await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
             max++
@@ -118,7 +121,6 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     user.lastcard = cards[0].card.id
     user.xp += amount
-    user.markModified('dailystats')
     await user.save()
     
     if(newCards.length > 0 && oldCards.length > 0) {
@@ -127,10 +129,11 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     if(price != normalprice) {
-        addGuildXP(ctx, user, amount)
         ctx.guild.balance += Math.round(price - normalprice)
-        await ctx.guild.save()
     }
+
+    addGuildXP(ctx, user, amount)
+    await ctx.guild.save()
 
     let fields = []
     let description = `**${user.username}**, you got:`
@@ -279,7 +282,7 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `Favourite cards can be accessed with -fav` } },
         force: ctx.globals.force,
-        question: `do you want to mark **${cards.length}** cards as favourite?`,
+        question: `**${user.username}**, do you want to mark **${cards.length}** cards as favourite?`,
         onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = true
@@ -317,7 +320,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
-        question: `do you want to remove **${cards.length}** cards from favourites?`,
+        question: `**${user.username}**, do you want to remove **${cards.length}** cards from favourites?`,
         onConfirm: async (x) => {
             cards.map(c => {
                  user.cards[user.cards.findIndex(x => x.id == c.id)].fav = false
@@ -341,19 +344,20 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const col = bestColMatch(ctx, card.col)
 
     const resp = []
+    const embed = { color: colors.blue, fields: [] }
+
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
     resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
     resp.push(`Average Rating: **none**`)
     resp.push(`ID: ${card.id}`)
+    embed.description = resp.join('\n')
 
-    if(tags && tags.length > 0)
-        resp.push(`Tags: **#${tags.join(' #')}**`)
+    if(tags && tags.length > 0) {
+        embed.fields.push({name: `Tags`, value: `#${tags.slice(0, 4).map(x => x.name).join('\n#')}${tags.length > 4? '\n...' : ''}`})
+    }
 
-    return ctx.send(ctx.msg.channel.id, {
-        description: resp.join('\n'),
-        color: colors['blue']
-    }, user.discord_id)
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 }))
 
 cmd('boost', 'boosts', (ctx, user) => {

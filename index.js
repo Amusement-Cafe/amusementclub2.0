@@ -38,7 +38,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     fillCardData(data.cards)
 
     const mongoUri = database
-    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
+    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}
 
     /* basics */
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
@@ -93,6 +93,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         auc_wss: '▫️',
         accept: '✅',
         decline: '❌',
+        red_circle: '`🔴`'
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
@@ -178,7 +179,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
             let args = msg.content.trim().substring(prefix.length).split(/ +/)
-            const usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+            let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
 
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
@@ -187,12 +188,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             })
             args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
 
-            if(usr.lock) {
-                usr.lock = false
-                await usr.save()
-            }
-
             await trigger('cmd', isolatedCtx, usr, args, prefix)
+            usr = await user.fetchOnly(msg.author.id)
             await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
@@ -207,23 +204,31 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             return
 
         try {
-            const isolatedCtx = Object.assign({}, ctx, {
+            /*const isolatedCtx = Object.assign({}, ctx, {
                 msg, 
                 emoji,
-            })
+            })*/
 
-            const usr  = await user.fetchOnly(userID)
-            if(!usr) return
+            //const usr  = await user.fetchOnly(userID)
+            //if(!usr) return
 
             await pgn.trigger(userID, msg, emoji.name)
         } catch (e) {
-            let sh = msg.channel.guild.shard
-            emitter.emit('error', e, sh.id)
+            emitter.emit('error', e)
         }
     })
 
     bot.on('error', async (err, sh) => {
         emitter.emit('error', err, sh)
+    })
+
+    pgn.emitter.on('resolve', async (res, obj) => {
+        if(!res || !obj.channel || !obj.onConfirm) return;
+
+        const isolatedCtx = Object.assign({}, ctx)
+
+        const usr = await user.fetchOnly(obj.userID)
+        await check_all(isolatedCtx, usr, obj.action, obj.channel)
     })
 
     return {

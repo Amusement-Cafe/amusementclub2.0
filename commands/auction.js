@@ -34,10 +34,12 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         .filter(x => x.expires > now)
 
     if(parsedargs.diff)
-        list = list.find(x => !user.cards.filter(y => x.card === y.id))
+        list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    else if(parsedargs.bid) 
+        list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
 
     if(!parsedargs.isEmpty())
-        list = list.find(x => cards.filter(y => x.card === y.id))
+        list = list.filter(x => cards.some(y => x.card === y.id))
 
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')

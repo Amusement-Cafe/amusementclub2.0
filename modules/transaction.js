@@ -1,5 +1,6 @@
 const {User, Transaction}   = require('../collections')
 const {generateNextId} = require('../utils/tools')
+const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
 
 const {
@@ -75,7 +76,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
             return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
 
         if(to_user.exp < transaction.price)
-            return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** ${ctx.symbols.tomato} to confirm this transaction`, 'red')
+            return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
 
         addUserCard(to_user, card.id)
         to_user.exp -= transaction.price
@@ -92,6 +93,13 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
     await from_user.save()
     await transaction.save()
+
+    if(to_user) {
+        ctx.send(ctx.msg.channel, { 
+            description: `**${transaction.from}** sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`, 
+            color: colors.green 
+        }, user.discord_id)
+    }
 
     return ctx.reply(user, `sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
 }
