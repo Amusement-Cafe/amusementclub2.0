@@ -85,7 +85,7 @@ const parseArgs = (ctx, args, lastdaily) => {
     if(anticols.length > 0) q.filters.push(c => !anticols.includes(c.col))
     if(antilevels.length > 0) q.filters.push(c => !antilevels.includes(c.level))
     if(keywords.length > 0) 
-        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
+        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('.*')}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
@@ -149,7 +149,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
         cards = map.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
-        return ctx.reply(user, `no cards found`, 'red')
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
     if(!parsedargs.lastcard && cards.length > 0) {
         user.lastcard = bestMatch(cards).id
@@ -181,7 +181,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         cards = cards.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
-        return ctx.reply(user, `card wasn't found`, 'red')
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
     cards.sort(parsedargs.sort)
     return callback(ctx, user, cards, parsedargs, args)

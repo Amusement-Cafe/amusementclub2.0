@@ -33,7 +33,7 @@ cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
     effects = effects.filter(x => x.expires > now)
     if(!user.hero)
-        return ctx.reply(user, `you don't have a hero yet`, 'red')
+        return ctx.reply(user, `you don't have a hero yet. To get one use \`->hero get [hero name]\``, 'red')
 
     const embed = await getInfo(ctx, user, user.hero)
     embed.fields = [
@@ -44,7 +44,10 @@ cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 }))
 
-cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes) => {
+cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes, isEmpty) => {
+    if(isEmpty)
+        return ctx.reply(user, `please specify hero name`, 'red')
+
     const hero = await get_hero(ctx, heroes[0].id)
     const past = asdate.subtract(new Date(), 7, 'days')
     if(user.herochanged > past)
