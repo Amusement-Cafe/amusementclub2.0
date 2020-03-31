@@ -411,7 +411,7 @@
     {
         "type": ["hero", "heroes"],
         "title": "About Heroes",
-        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Submitting heroes increases exponentially in price with each submission. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
+        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Submitting heroes increases exponentially in price with each submission, starting at 512. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
         "fields": [
             {
                 "title": "->hero",
