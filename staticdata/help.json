@@ -36,11 +36,11 @@
     {
         "type": ["auc", "auction", "auctions"],
         "title": "About auctions",
-        "description": "Auctions are a way to trade your cards introduced in `v1.10`. You can put any card on auction for a fee equal to 10% of your listing price, and then other users can bid on it. Each card will be on the auction list for 5 hours and sold to the highest bidder. If nobody bids on your card, your card will return to you, but the listing fee will not be refunded.",
+        "description": "Auctions are a way to trade your cards introduced in `v1.10`. You can put any card on auction for a fee equal to 10% of your listing price(5% with upgraded Auction House), and then other users can bid on it. Each card will be on the auction list for 5 hours(variable with maxed Auction House) and sold to the highest bidder. If nobody bids on your card, your card will return to you, but the listing fee will not be refunded.",
         "fields": [
             {
                 "title": "IMPORTANT",
-                "description": "Please note that using alt accounts to manipulate auctions in any way may result temporary or even **permanent ban**"
+                "description": "Please note that using alt accounts to manipulate auctions in any way may result in a temporary or even **permanent ban**"
             },
             {
                 "title": "Searching for cards/collection",
@@ -75,7 +75,7 @@
     {
         "type": ["bal", "balance", "economy", "currency", "tomatoes"],
         "title": "About currencies",
-        "description": "This command will show your amount of 🍅 Tomatoes, 🍷Vials and ★ Stars.\n**Tomatoes** are the main currency in game, that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs\n**Stars** show you an overall (clean) sum of card stars that you have. This is used mostly for rating and some benefits, like *heroes*",
+        "description": "This command will show your amount of 🍅 Tomatoes, and 🍷Vials.\n**Tomatoes** are the main currency in game, that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs. You can get them via daily quests or liquifying cards.",
         "fields": [
             {
                 "title": "Useful to know",
@@ -88,7 +88,7 @@
         ]
     },
     {
-        "type": ["cards"],
+        "type": ["cards", "list", "li", "ls"],
         "title": "About card listing",
         "description": "Gets your cards and shows it in several pages. If you have a long card list, use *card filters* to show only cards that you are interested in. See the filters below or read more at `->help query`",
         "fields": [
@@ -184,17 +184,21 @@
             {
                 "title": "->col info [name]",
                 "description": "Information about collection"
+            }, 
+            {
+                "title": "->col -completed",
+                "description": "Lists only completed collections"
             }
         ]
     },
     {
         "type": ["craft", "forge"],
         "title": "About card forging",
-        "description": "This command allows you to get new cards using cards that you have. Forge will consume old cards. \n If you got here with `->help craft` and are looking for craft cards. They are no longer a part of Amusement Club, see `->help (TBD)` for the replacement",
+        "description": "This command allows you to get new cards using cards that you have. Forge will consume old cards. \n If you got here with `->help craft` and are looking for craft cards. They are no longer a part of Amusement Club, see `->help effects` for the replacement(s)",
         "fields": [
             {
                 "title": "Forging Cards",
-                "description": "Can be used to forge cards. You can convert two cards of the same rarity, into a completely new card of the same rarity. The old system of 1+1=2 is gone. New card is completely random, except that if cards that you use for forging are from the same collection (fandom). In this case new card will be also from same collection. These forges cost a percentage of both cards evals + rarity"
+                "description": "Can be used to forge cards. You can convert two cards of the same rarity, into a completely new card of the same rarity. The old system of 1+1=2 is gone. The new card is completely random, except that if cards that you use for forging are from the same collection (fandom). In this case new card will be also from same collection. These forges cost a percentage of both cards evals + rarity"
             },
             {
                 "title": "->forge [card 1 name], [second card]",
@@ -224,7 +228,7 @@
     {
         "type": ["dif", "diff", "difference"],
         "title": "About difference",
-        "description": "Difference is very useful command for trading, that will show you cards that certain user has and you not. It can accept same set of filters as `->cards` command.  Add option `-fav` to include favorite cards.",
+        "description": "Difference is a very useful command for trading, that will show you cards that a certain user has that you don't. It can accept the same set of filters as the `->cards` command.  Add option `-fav` to include favorite cards.",
         "fields": [
             {
                 "title": "Useful to know",
@@ -259,7 +263,7 @@
     {
         "type": ["draw"],
         "title": "About Drawing",
-        "description": "Drawing is the ability to draw any card currently owned by someone within the bot within the rarities of 1-3★ using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
+        "description": "Drawing is the ability to draw any card currently owned by someone within the bot, within the rarities of 1-3★ using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
         "fields": [
             {
                 "title": "->draw [card]",
@@ -270,7 +274,7 @@
     {
         "type": ["effect", "effects"],
         "title": "Effect cards",
-        "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such each time you go to craft one you are likely to get different card requirements for it.",
+        "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such, each time you go to craft one you are likely to get different card requirements for it.",
         "fields": [
             {
                 "title": "->hero effects, or ->effects",
@@ -343,8 +347,8 @@
         "title": "Guild commands",
         "description": "You can set custom prefix/bot channels for Amusement Club",
         "fields": [
-        	{
-            	"title": "->guild",
+            {
+                "title": "->guild",
                 "description": "List possible commands for ->guild [arg]"
             },
             {
@@ -360,7 +364,7 @@
                 "description": "Upgrade a building. Grants guild XP to the user who did the upgrade"
             },
             {
-            	"title": "->guild donate [amount]",
+                "title": "->guild donate [amount]",
                 "description": "Allows you to donate your own 🍅 Tomatoes to the guild's balance (Requires a castle be built first)"
             },
             {
@@ -380,15 +384,15 @@
                 "description": "Change prefix of bot on current server (owner/manager only)"
             },
             {
-            	"title": "->guild add manager @someuser",
+                "title": "->guild add manager @someuser",
                 "description": "Set @user as guild manager, allowing them to set guild lock. `->guild remove manager` does the opposite (owner only)"
             },
             {
-            	"title": "->guild lock [collection]",
+                "title": "->guild lock [collection]",
                 "description": "Set current guild lock to specified collection, requires 100,000 🍅 Tomatoes to lock, 5,000 🍅 Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)"
             },
             {
-            	"title": "->guild set buildrank",
+                "title": "->guild set buildrank",
                 "description": "Set the minimum rank within the guild needed to build and upgrade buildings (owner/manager only)"
             }
         ]
@@ -396,7 +400,7 @@
     {
         "type": ["has"],
         "title": "Learn if user has a card",
-        "description": "This command will try to find if a user has certain card by name. It is useful when you need to transfer card and would like to make sure target user doesn't have it already. Add option `-fav` to include favorite cards.",
+        "description": "This command will try to find if a user has certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already. Add option `-fav` to include favorite cards.",
         "fields": [
             {
                 "title": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)",
@@ -407,7 +411,7 @@
     {
         "type": ["hero", "heroes"],
         "title": "About Heroes",
-        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Changing heroes costs 5000 🍅 Tomatoes, while submitting heroes for review will cost 1000 🍅 Tomatoes. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
+        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Submitting heroes increases exponentially in price with each submission, starting at 512. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
         "fields": [
             {
                 "title": "->hero",
@@ -449,7 +453,7 @@
     {
         "type": ["inv", "inventory"],
         "title": "About inventory",
-        "description": "Inventory contains different items that can be used in game. For example, guild buildings. Items can be stored unlimited amount of time.",
+        "description": "Inventory contains different items that can be used in game. For example, guild buildings and effect recipes. Items can be stored for an unlimited amount of time.",
         "fields": [
             {
                 "title": "->inv",
@@ -468,11 +472,11 @@
     {
         "type": ["invite"],
         "title": "About bot invitation",
-        "description": "You can add Amusement Club on any other server. Type `->invite` to get an invite link with all permissions set up.",
+        "description": "You can add Amusement Club to any other server. Type `->invite` to get an invite link with all permissions set up.",
         "fields": [
             {
                 "title": "Setting up your server",
-                "description": "Make sure that your server has a 'bot channel' where Amusement Club can post messages.\n`->server info` will show you the list of bot channels. You can set channel to bot by messaging `->server setbot` in that channel. `->server unsetbot` will remove bot perms from current channel.\nDon't remove 'send messages' permission from channels where you want `->summon` to work.\nIf you want to exclude Amusement Club from other bot channel, make sure you remove **both** 'read' and 'send' permissions. If you leave 'read messages' permission on, bot will still read commands, but won't be able to respond which can lead to confusion and loss of tomatoes"
+                "description": "Make sure that your server has a 'bot channel' where Amusement Club can post messages.\n`->server info` will show you the list of bot channels. You can set a channel to bot by messaging `->server setbot` in that channel. `->server unsetbot` will remove bot perms from current channel.\nDon't remove 'send messages' permission from channels where you want `->summon` to work.\nIf you want to exclude Amusement Club from other bot channel, make sure you remove **both** 'read' and 'send' permissions. If you leave 'read messages' permission on, bot will still read commands, but won't be able to respond which can lead to confusion and loss of tomatoes"
             },
             {
                 "title": "Channel Privacy (28.05.18)",
@@ -480,7 +484,7 @@
             },
             {
                 "title": "Server administration",
-                "description": "**Please note**, that bot can be invited only by users that have permission to invite bots to server. If you are NOT target server administrator, send *generated link* to administrator or any person with corresponding role"
+                "description": "**Please note**, that the bot can be invited only by users that have the permission to invite bots to your server. If you are NOT target server administrator, send *generated link* to administrator or any person with corresponding role"
             },
             {
                 "title": "Any questions?",
@@ -505,7 +509,7 @@
     },
     {
 
-        "type": ["miss"],
+        "type": ["miss", "missing"],
         "title": "About Miss",
         "description": "Miss allows you to view your overall missing cards. If an argument is added you can search within cards you don't have",
         "fields": [
@@ -515,7 +519,7 @@
             },
             {
                 "title": "->miss [arg]",
-                "description": "Display all missing cards within a certain argument(ex: -col, -rating, -gif)"
+                "description": "Display all missing cards within a certain argument(ex: -col, -rating, -gif, #tag)"
             }
         ]
     },
@@ -526,11 +530,11 @@
         "fields": [
             {
                 "title": "->profile",
-                "description": "How to display your profile"
+                "description": "Display your own profile"
             },
             {
                 "title": "->profile [Discord UserID]",
-                "description": "How to display someone else's profile"
+                "description": "Display someone else's profile"
             }
         ]
     },
@@ -641,9 +645,9 @@
     {
         "type": ["store", "st"],
         "title": "About store",
-        "description": "The store is where you can buy blueprints for guilds, and recipes for effects. To browse the store use the `category` name or number,  with the commands below.",
+        "description": "The store is where you can buy blueprints for guilds, and recipes for effects. To browse the store, use the `category` name or number with the commands below.",
         "fields": [
-        	{
+            {
                 "title": "->store",
                 "description": "List the Store Categories"
             },
@@ -654,13 +658,17 @@
             {
                 "title": "->store info [item name]",
                 "description": "Get info on a specific item in the store"
+            }, 
+            {
+                "title": "->store buy [item name]",
+                "description": "Buy a specific item from the store"
             }
          ]
     },
     {
         "type": ["sum", "summon"],
         "title": "About card summon",
-        "description": "You can summon card in any channel on server, but only if you have this card. This operation won't consume card.\nYou can include partial name of the card, but it has to be more than 3 characters long. The system will try to find *most suitable card* using name you provided",
+        "description": "You can summon a card in any channel on a server, but only if you have the card. This operation won't consume the card.\nYou can include partial name of the card, but it has to be more than 3 characters long. The system will try to find the *most suitable card* using the name you provided",
         "fields": [
             {
                 "title": "->sum [card query] [-collection] [-level] [!collection]",
@@ -669,17 +677,31 @@
         ]
     },
     {
-        "type": ["tag"],
+        "type": ["support"],
+        "title": "Support for embargo and tag ban",
+        "description": "Join the main support discord for the bot with this [invite link](https://discord.gg/xQAxThF) and head to the #support channel for inquiries",
+        "fields": [
+            {
+            
+            }
+        ]
+    },
+    {
+        "type": ["tag", "tags"],
         "title": "About tagging",
         "description": "You can tag cards with #tags to help you and the playerbase better find cards. Adding a tag already on a card upvotes the tag",
         "fields": [ 
-        	{
+            {
                 "title": "->tag [card] #tag",
                 "description": "Upvote or Add a tag to a card"
             },
             {
                 "title": "->tag down [card] #tag",
                 "description": "Downvote a tag on a card"
+            }, 
+            {
+                "title": "->tag info #tag [card]",
+                "description": "View information about a tag"
             }
 
         ]
