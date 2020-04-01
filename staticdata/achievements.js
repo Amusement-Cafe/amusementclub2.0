@@ -28,7 +28,7 @@ module.exports = [
         }
     }, {
         id: 'firstdaily',
-        name: 'Loyal Player',
+        name: 'Get the salary',
         desc: 'Get first Daily Bonus',
         actions: ['daily'],
         check: (ctx, user) => new Date() - user.lastdaily < 5000,

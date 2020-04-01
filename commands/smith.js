@@ -85,9 +85,11 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
             removeUserCard(user, card2.id)
             addUserCard(user, newcard.id)
             user.lastcard = newcard.id
-            user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`]++ || 1
-            user.markModified('dailystats')
             await user.save()
+
+            const inc = {dailystats: {}}
+            inc.dailystats[`forge${newcard.level}`]
+            user = await updateUser(user, {$inc: inc})
 
             return ctx.reply(user, {
                 image: { url: newcard.url },
@@ -175,9 +177,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
         onConfirm: async (x) => {
             user.vials -= vials
             addUserCard(user, card.id)
-            user.dailystats.draw = user.dailystats.draw + 1 || 1
-            user.markModified('dailystats')
             await user.save()
+            user = await updateUser(user, {$inc: {'dailystats.draw': 1}})
 
             return ctx.reply(user, {
                 image: { url: card.url },
