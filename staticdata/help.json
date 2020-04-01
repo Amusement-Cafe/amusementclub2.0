@@ -680,11 +680,7 @@
         "type": ["support"],
         "title": "Support for embargo and tag ban",
         "description": "Join the main support discord for the bot with this [invite link](https://discord.gg/xQAxThF) and head to the #support channel for inquiries",
-        "fields": [
-            {
-            
-            }
-        ]
+        "fields": []
     },
     {
         "type": ["tag", "tags"],

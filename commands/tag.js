@@ -1,7 +1,5 @@
 const {cmd, pcmd}   = require('../utils/cmd')
 const colors        = require('../utils/colors')
-const Filter        = require('bad-words')
-const filter        = new Filter();
 
 const {
     fetchOnly,
@@ -42,7 +40,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
        if(user.ban && user.ban.tags > 2)
             return ctx.reply(user, `you were banned from adding tags. To address this issue use \`->help support\``, 'red')
 
-        if(filter.isProfane(tgTag))
+        if(ctx.filter.isProfane(tgTag))
             return ctx.reply(user, `your tag contains excluded words`, 'red')
 
         if(tag && tag.upvotes.includes(user.discord_id))
@@ -53,7 +51,12 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
 
         if(tgTag.length > 25)
             return ctx.reply(user, `tag can't be longer than **25** characters`, 'red') 
+
+        if(tgTag.length < 2)
+            return ctx.reply(user, `tag can't be shorter than **2** characters`, 'red') 
     }
+
+    tgTag = tgTag.replace(/[^\w]/gi, '')
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
