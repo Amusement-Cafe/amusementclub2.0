@@ -103,7 +103,7 @@ const bill_guilds = async (ctx, now) => {
                 x.level--
                 x.health = 49
                 report.push(`${ctx.symbols.red_circle} **${info.name}** has dropped down to level **${x.level}**!`)
-            } else if(x.id != 'castle' && x.health <= 0 && x.level <= 1) {
+            } else if((x.id != 'castle' || guild.buildings.length === 1) && x.health <= 0 && x.level <= 1) {
                 report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
             }
         })
