@@ -194,18 +194,25 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
-    const card = bestMatch(cards)
-    const usercard = user.cards.find(x => x.id === card.id)
     const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to === id)
+    const pendingto = pending.filter(x => x.to_id === id)
 
     if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\``, 'red')
     else if(pendingto.length >= 5)
-        return ctx.reply(user, `you already have pending transactions to **${pending[0].to}**. 
+        return ctx.reply(user, `you already have pending transactions to **${pendingto[0].to}**. 
             You can have up to **5** pending transactions to the same user.
             Type \`->pending\` to see them`, 'red')
+
+    cards = cards.filter(x => !pending.some(y => y.card === x.id))
+    if(cards.length === 0) {
+        return ctx.reply(user, `cannot find unique cards for this request.
+            You cannot put the same card for sale several times`, 'red')
+    }
+
+    const card = bestMatch(cards)
+    const usercard = user.cards.find(x => x.id === card.id)
 
     if(pending.length > 0) {
         const cursales = pending.filter(x => x.card === card.id)
@@ -228,7 +235,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     const perms = { confirm: [id], decline: [user.discord_id, id] }
 
-    const price = await evalCard(ctx, card, parsedargs.id? 1 : .4)
+    const price = await evalCard(ctx, card, id? 1 : .4)
     const trs = await new_trs(ctx, user, card, price, id)
 
     let question = ""

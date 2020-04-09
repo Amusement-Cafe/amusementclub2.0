@@ -65,7 +65,10 @@ module.exports = [
         passive: false,
         cooldown: 32,
         use: async (ctx, user) => {
-            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1))
+            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1 && !user.dailyquests.includes(x.id)))
+            if(!quest)
+                return { msg: `cannot find a unique quest. Please, complete some quests before using this effect.`, used: false }
+
             user.dailyquests.push(quest.id)
             user.markModified('dailyquests')
             await user.save()

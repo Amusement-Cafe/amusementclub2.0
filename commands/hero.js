@@ -255,7 +255,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
         user.herocooldown[slotNum - 1] = asdate.add(new Date(), 1, 'day')
         user.markModified('heroslots')
         user.markModified('herocooldown')
-        return user.save()
+        user.save()
     }
 
     if(user.heroslots[slotNum - 1]) {
