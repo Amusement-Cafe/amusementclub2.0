@@ -29,6 +29,10 @@ const {
     itemInfo
 } = require('../modules/item')
 
+const {
+    check_effect
+} = require('../modules/effect')
+
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
     effects = effects.filter(x => x.expires > now)
@@ -198,8 +202,9 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
         return ctx.reply(user, res.msg, 'red')
 
     const count = user.effects.length
+    const cooldown = check_effect(ctx, user, 'spellcard')? Math.round(effect.cooldown * .6) : effect.cooldown
     userEffect.uses--
-    userEffect.cooldownends = asdate.add(new Date(), effect.cooldown, 'hours')
+    userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
     user.effects = user.effects.filter(x => x.expires || x.uses > 0)
     user.markModified('effects')
     await user.save()
@@ -213,7 +218,7 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     if(count > user.effects.length) {
         embed.description += `\nEffect Card has expired. Please make a new one`
     } else {
-        embed.description += `\nEffect Card has been used and now on cooldown\n**${userEffect.uses}** uses left`
+        embed.description += `\nEffect Card has been used and now on cooldown for **${cooldown}** hour(s)\n**${userEffect.uses}** uses left`
     }
 
     return ctx.reply(user, embed)

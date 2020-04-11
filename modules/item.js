@@ -207,11 +207,11 @@ const infos = {
             fields.push({ name: `Can be used`, value: `**${item.lasts}** times` })
             fields.push({ name: `Cooldown`, value: `**${effect.cooldown}** hours` })
         }
-
+        
         return ({
             description: item.fulldesc,
             fields,
-            image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.${effect.animated? 'gif' : 'jpg'}` },
         })
     }
 }
