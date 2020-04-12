@@ -21,11 +21,14 @@ const formatUserEffect = (ctx, user, x) => {
     if(!x) return '';
 
     const eff = ctx.effects.find(y => y.id === x.id)
-    const lasts = eff.passive? msToTime(x.expires - new Date(), { compact: true }) : x.uses
-    return `\`${eff.id}\` **${eff.name}** (${lasts})`
+    const lasts = eff.passive && x.expires? msToTime(x.expires - new Date(), { compact: true }) : x.uses
+    return `\`${eff.id}\` **${eff.name}** ${lasts? `(${lasts})` : ''}`
 }
 
-const mapUserEffects = (ctx, user) => user.effects.map(x => Object.assign({}, ctx.effects.find(y => y.id === x.id), x))
+const mapUserEffects = (ctx, user) => user.effects.map(x => Object.assign({}, 
+    ctx.items.find(y => y.effectid === x.id), 
+    ctx.effects.find(y => y.id === x.id), 
+    x))
 
 const withUserEffects = (callback) => (ctx, user, ...args) => {
     if(!user.hero)

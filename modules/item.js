@@ -140,8 +140,7 @@ const uses = {
                 Type \`->inv info ${item.id}\` to see the list of required cards`, 'red')
 
         const eobject = { id: item.effectid }
-        if(effect.passive) eobject.expires = asdate.add(new Date(), item.lasts, 'days')
-        else { 
+        if(!effect.passive) { 
             eobject.uses = item.lasts
             eobject.cooldownends = new Date()
         }
