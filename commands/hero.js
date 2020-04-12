@@ -35,7 +35,7 @@ const {
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
-    effects = effects.filter(x => x.expires > now)
+    effects = effects.filter(x => !x.expires || x.expires > now)
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet. To get one use \`->hero get [hero name]\``, 'red')
 
@@ -138,9 +138,13 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
         buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.fields[0] = { name: `Usable Effect Cards`, value: data.pages[data.pagenum] },
         embed: {
-            author: { name: `Your Effect Cards` },
-            color: colors.blue,
+            author: { name: `${user.username}, your Effect Cards` },
+            description: `To use an effect: \`->hero use [effect id]\`
+                To view your passives: \`->hero slots\``,
+            fields: [],
+            color: colors.blue
         }
     })
 }))
@@ -254,7 +258,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     if(user.herocooldown[slotNum - 1] && user.herocooldown[slotNum - 1] > now)
         return ctx.reply(user, `you can use this slot in **${msToTime(user.herocooldown[slotNum - 1] - now)}**`, 'red')
 
-    const equip = () => {
+    const equip = async () => {
         if(!effect.expires) {
             const ueffect = user.effects.findIndex(x => x.id === effect.id)
             user.effects[ueffect].expires = asdate.add(new Date(), effect.lasts, 'days')
@@ -266,11 +270,12 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
         user.markModified('heroslots')
         user.markModified('herocooldown')
         
-        user.save()
+        await user.save()
+        return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`)
     }
 
-    if(user.heroslots[slotNum - 1]) {
-        const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
+    const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
+    if(oldEffect) {
         return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
             force: ctx.globals.force,
             question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
@@ -278,8 +283,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
         })
     }
 
-    await equip()
-    return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`)
+    return equip()
 }))
 
 cmd(['hero', 'submit'], async (ctx, user, arg1) => {

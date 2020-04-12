@@ -6,7 +6,7 @@ const check_effect = (ctx, user, id) => {
 
     const effect = ctx.effects.find(x => x.id === id)
     const userEffect = user.effects.find(x => x.id === id)
-    if(userEffect && userEffect.expires < new Date()) {
+    if(userEffect && userEffect.expires && userEffect.expires < new Date()) {
         user.heroslots = user.heroslots.filter(x => x != id)
         user.effects = user.effects.filter(x => x.id != id)
         user.markModified('heroslots')
@@ -14,7 +14,7 @@ const check_effect = (ctx, user, id) => {
         return false
     }
 
-    return effect && user.heroslots.some(x => x === id)
+    return effect && user.heroslots.some(x => x === id) && userEffect.expires
 }
 
 const formatUserEffect = (ctx, user, x) => {
