@@ -208,7 +208,7 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     const cooldown = check_effect(ctx, user, 'spellcard')? Math.round(effect.cooldown * .6) : effect.cooldown
     userEffect.uses--
     userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
-    user.effects = user.effects.filter(x => x.uses > 0)
+    user.effects = user.effects.filter(x => x.uses === undefined || x.uses > 0)
     user.markModified('effects')
     await user.save()
 
