@@ -107,6 +107,9 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
 }))
 
 cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
+    if(args.length === 0)
+        return ctx.qhelp(ctx, user, 'effect')
+
     const reg = new RegExp(args.join('*.'), 'gi')
     let item = ctx.items.find(x => reg.test(x.id))
 
@@ -181,6 +184,9 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
 }))
 
 cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
+    if(args.length === 0)
+        return ctx.qhelp(ctx, user, 'effect')
+
     const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
     const intArg = parseInt(args[0])
 
@@ -228,6 +234,9 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
 }))
 
 cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
+    if(args.length === 0)
+        return ctx.qhelp(ctx, user, 'effect')
+
     const passives = effects.filter(x => x.passive)
 
     let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))

@@ -90,6 +90,9 @@ module.exports = [
         passive: false,
         cooldown: 40,
         use: async (ctx, user, args) => {
+            if(args.length === 0)
+                return { msg: `please specify collection`, used: false }
+
             const name = args.join('').replace(/^-/, '')
             const col = byAlias(ctx, name)[0]
             if(!col)
@@ -118,6 +121,9 @@ module.exports = [
         passive: false,
         cooldown: 1,
         use: async (ctx, user, args) => {
+            if(args.length === 0)
+                return { msg: `please specify effect ID`, used: false }
+
             const reg = new RegExp(args[0], 'gi')
             effect = ctx.effects.filter(x => !x.passive).find(x => reg.test(x.id))
 
