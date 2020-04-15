@@ -118,7 +118,7 @@ const bill_guilds = async (ctx, now) => {
         guild.lockactive = true
     }
 
-    guild.nextcheck = asdate.add(new Date(), 12, 'hours')
+    guild.nextcheck = asdate.add(new Date(), 24, 'hours')
     report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
     await guild.save()
 

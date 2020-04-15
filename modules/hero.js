@@ -139,7 +139,11 @@ const checkGuildLoyalty = async (ctx) => {
                 }
 
                 const heroq = m_guild.getBuilding(ctx, 'heroq')
-                ctx.guild.heroloyalty = Math.min(ctx.guild.heroloyalty + 1, heroq.level >= 2? 5 : 3)
+                const newLoyalty = Math.min(ctx.guild.heroloyalty + 1, heroq.level >= 2? 5 : 3)
+                if(ctx.guild.heroloyalty === newLoyalty)
+                    return
+                
+                ctx.guild.heroloyalty = newLoyalty
                 await ctx.guild.save()
                 
                 return ctx.send(ctx.guild.reportchannel, {
