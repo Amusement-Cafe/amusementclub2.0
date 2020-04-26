@@ -98,7 +98,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    let price = parsedargs.extra.filter(x => !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
+    let price = parsedargs.extra.filter(x => x.length < 7 && !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
 
     if(price <= 4)
         price *= ceval
