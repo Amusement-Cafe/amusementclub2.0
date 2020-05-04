@@ -6,4 +6,5 @@ module.exports = {
     Guild: require('./guild'),
     Promo: require('./promo'),
     Hero: require('./hero'),
+    Cardinfo: require('./cardinfo'),
 }

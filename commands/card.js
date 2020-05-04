@@ -29,6 +29,7 @@ const {
     withCards,
     withGlobalCards,
     bestMatch,
+    fetchInfo,
 } = require('../modules/card')
 
 const {
@@ -351,12 +352,20 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const col = bestColMatch(ctx, card.col)
 
     const resp = []
+    const extrainfo = await fetchInfo(card.id)
+    const usercard = user.cards.find(x => x.id === card.id)
     const embed = { color: colors.blue, fields: [] }
 
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
     resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
-    resp.push(`Average Rating: **none**`)
+
+    if(extrainfo.ratingsum > 0)
+        resp.push(`Average Rating: **${(extrainfo.ratingsum / extrainfo.usercount).toFixed(2)}**`)
+
+    if(usercard && usercard.rating)
+        resp.push(`Your Rating: **${usercard.rating}**`)
+
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')
 
@@ -382,3 +391,33 @@ cmd('boost', 'boosts', (ctx, user) => {
         title: `Current boosts`
     }, user.discord_id)
 })
+
+cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    if(!parsedargs.extra[0] || !parseInt(parsedargs.extra[0]))
+        return ctx.reply(user, `please specify rating as a whole number after \`:\` (e.g. \`mycard :8\`)`)
+
+    const rating = parseInt(parsedargs.extra[0])
+    if(rating > 10 || rating < 1)
+        return ctx.reply(user, `please specify rating from 1 to 10`)
+
+    const card = bestMatch(cards)
+    const info = await fetchInfo(card.id)
+    if(card.rating) {
+        const oldrating = card.rating
+        info.ratingsum -= oldrating
+        info.usercount--
+    }
+
+    user.cards.find(x => x.id === card.id).rating = rating
+    info.ratingsum += rating
+    info.usercount++
+
+    user.markModified('cards')
+    await user.save()
+    await info.save()
+
+    return ctx.reply(user, `set rating **${rating}** for ${formatName(card)}`)
+})).access('dm')

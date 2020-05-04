@@ -4,6 +4,7 @@ const {
     nameSort
 } = require('../utils/tools')
 
+const { Cardinfo }              = require('../collections')
 const { bestColMatch }          = require('./collection')
 const { fetchTaggedCards }      = require('./tag')
 const asdate                    = require('add-subtract-date')
@@ -118,9 +119,16 @@ const addUserCard = (user, cardID) => {
 
 const removeUserCard = (user, cardID) => {
     const matched = user.cards.findIndex(x => x.id == cardID)
+    const card = user.cards[matched]
     user.cards[matched].amount--
     user.cards = user.cards.filter(x => x.amount > 0)
     user.markModified('cards')
+
+    if(card.amount === 0 && card.rating) {
+        console.log("calling remove rating")
+        removeRating(cardID, card.rating)
+    }
+
     return user.cards[matched]? user.cards[matched].amount : 0
 }
 
@@ -226,6 +234,22 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
+const fetchInfo = async (id) => {
+    let info = await Cardinfo.findOne({id})
+    info = info || (await new Cardinfo())
+    info.id = id
+    return info
+}
+
+const removeRating = async (id, rating) => {
+    console.log(`removing rating ${id} ${rating}`)
+    const info = await Cardinfo.findOne({id})
+    info.ratingsum -= rating
+    info.usercount--
+    await info.save()
+    
+}
+
 module.exports = Object.assign(module.exports, {
     formatName,
     equals,
@@ -237,5 +261,7 @@ module.exports = Object.assign(module.exports, {
     withCards,
     withGlobalCards,
     mapUserCards,
-    withMultiQuery
+    withMultiQuery,
+    fetchInfo,
+    removeRating,
 })
