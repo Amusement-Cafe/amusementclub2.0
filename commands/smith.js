@@ -84,10 +84,10 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
             removeUserCard(user, card1.id)
             removeUserCard(user, card2.id)
             await user.save()
-            
+
             addUserCard(user, newcard.id)
             user.lastcard = newcard.id
-            user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`]++ || 1
+            user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`] + 1 || 1
             user.markModified('dailystats')
             await user.save()
 
