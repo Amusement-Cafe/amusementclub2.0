@@ -40,10 +40,12 @@ const parseArgs = (ctx, args, lastdaily) => {
 
         } else if((x[0] === '<' || x[0] === '>') && x[1] != '@') {
             switch(x) {
-                case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
-                case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '<date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '>date': q.sort = (a, b) => a.obtained - b.obtained; break
                 case '<amount': q.sort = (a, b) => a.amount - b.amount; break
                 case '>amount': q.sort = (a, b) => b.amount - a.amount; break
+                case '<rating': q.sort = (a, b) => a.rating - b.rating; break
+                case '>rating': q.sort = (a, b) => b.rating - a.rating; break
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break

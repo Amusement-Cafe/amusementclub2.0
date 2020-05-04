@@ -397,11 +397,11 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'rate')
 
     if(!parsedargs.extra[0] || !parseInt(parsedargs.extra[0]))
-        return ctx.reply(user, `please specify rating as a whole number after \`:\` (e.g. \`mycard :8\`)`)
+        return ctx.reply(user, `please specify rating as a whole number after \`:\` (e.g. \`mycard :8\`)`, 'red')
 
     const rating = parseInt(parsedargs.extra[0])
     if(rating > 10 || rating < 1)
-        return ctx.reply(user, `please specify rating from 1 to 10`)
+        return ctx.reply(user, `please specify rating from 1 to 10`, 'red')
 
     const card = bestMatch(cards)
     const info = await fetchInfo(card.id)

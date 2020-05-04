@@ -594,7 +594,7 @@
         "description": "Players can rate their cards and view those ratings or even sort by them. Players' ratings are averaged into a global average rating that can be seen with ->info [card]",
         "fields": [
             {
-                "title": "->rate [rating] [card]",
+                "title": "->rate [card] :[rating]",
                 "description": "Rate one of your cards from 1 to 10."
             },
             {
