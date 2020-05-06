@@ -86,14 +86,17 @@ cmd('bal', (ctx, user) => {
 }).access('dm')
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
-    const title = `To view the item details use \`->item info [item id]\`
-                    To use the item \`->inv use [item id]\`\n\n`
-
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`)),
+        pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`), 5),
+        switchPage: (data) => data.embed.fields[1].value = data.pages[data.pagenum],
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, your inventory (${items.length} results)` },
+            author: { name: `${user.username}, your inventory` },
+            fields: [
+                { name: `Usage`, value: `To view the item details use \`->item info [item id]\`
+                    To use the item \`->inv use [item id]\`` },
+                { name: `List (${items.length} results)`, value: '' }
+            ],
             color: colors.blue,
         }
     })
@@ -210,7 +213,7 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? `(x${c.amount})` : '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {

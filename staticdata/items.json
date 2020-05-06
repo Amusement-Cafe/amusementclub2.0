@@ -65,7 +65,7 @@
         "name": "Auction House",
         "price": 500,
         "type": "blueprint",
-        "desc": "sell and buy cards globally",
+        "desc": "sell cards globally",
         "fulldesc": "When built users will be able to sell cards on global card auction shared between all servers",
         "levels": [
             {
@@ -240,6 +240,16 @@
         "fulldesc": "When used gives you **The Ruler Jeanne** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
         "recipe": [3, 3, 3],
         "lasts": 24
+    }, {
+        "id": "spellcard",
+        "effectid": "spellcard",
+        "name": "Impossible Spell Card",
+        "price": 10200,
+        "type": "recipe",
+        "desc": "reduced cooldown",
+        "fulldesc": "When used gives you **Impossible Spell Card**. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [2, 2, 2, 3, 3, 3],
+        "lasts": 20
     },
 
     {
@@ -282,5 +292,15 @@
         "fulldesc": "When used gives you **The Judgment Day** effect card. This is a usable card",
         "recipe": [2, 3, 3, 3],
         "lasts": 12
+    }, {
+        "id": "claimrecall",
+        "effectid": "claimrecall",
+        "name": "Claim Recall",
+        "price": 6200,
+        "type": "recipe",
+        "desc": "refund claims",
+        "fulldesc": "When used gives you **Claim Recall** effect card. This is a usable card",
+        "recipe": [1, 1, 1, 2, 2, 2],
+        "lasts": 28
     }
 ]

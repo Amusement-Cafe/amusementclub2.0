@@ -4,6 +4,7 @@ const {
     nameSort
 } = require('../utils/tools')
 
+const { Cardinfo }              = require('../collections')
 const { bestColMatch }          = require('./collection')
 const { fetchTaggedCards }      = require('./tag')
 const asdate                    = require('add-subtract-date')
@@ -39,10 +40,12 @@ const parseArgs = (ctx, args, lastdaily) => {
 
         } else if((x[0] === '<' || x[0] === '>') && x[1] != '@') {
             switch(x) {
-                case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
-                case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '<date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '>date': q.sort = (a, b) => a.obtained - b.obtained; break
                 case '<amount': q.sort = (a, b) => a.amount - b.amount; break
                 case '>amount': q.sort = (a, b) => b.amount - a.amount; break
+                case '<rating': q.sort = (a, b) => a.rating - b.rating; break
+                case '>rating': q.sort = (a, b) => b.rating - a.rating; break
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
@@ -85,7 +88,7 @@ const parseArgs = (ctx, args, lastdaily) => {
     if(anticols.length > 0) q.filters.push(c => !anticols.includes(c.col))
     if(antilevels.length > 0) q.filters.push(c => !antilevels.includes(c.level))
     if(keywords.length > 0) 
-        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('_')}`, 'gi')).test(c.name))
+        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('.*')}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
@@ -118,9 +121,16 @@ const addUserCard = (user, cardID) => {
 
 const removeUserCard = (user, cardID) => {
     const matched = user.cards.findIndex(x => x.id == cardID)
+    const card = user.cards[matched]
     user.cards[matched].amount--
     user.cards = user.cards.filter(x => x.amount > 0)
     user.markModified('cards')
+
+    if(card.amount === 0 && card.rating) {
+        console.log("calling remove rating")
+        removeRating(cardID, card.rating)
+    }
+
     return user.cards[matched]? user.cards[matched].amount : 0
 }
 
@@ -149,7 +159,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
         cards = map.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
-        return ctx.reply(user, `no cards found`, 'red')
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
     if(!parsedargs.lastcard && cards.length > 0) {
         user.lastcard = bestMatch(cards).id
@@ -181,7 +191,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         cards = cards.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
-        return ctx.reply(user, `card wasn't found`, 'red')
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
     cards.sort(parsedargs.sort)
     return callback(ctx, user, cards, parsedargs, args)
@@ -226,6 +236,22 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
+const fetchInfo = async (id) => {
+    let info = await Cardinfo.findOne({id})
+    info = info || (await new Cardinfo())
+    info.id = id
+    return info
+}
+
+const removeRating = async (id, rating) => {
+    console.log(`removing rating ${id} ${rating}`)
+    const info = await Cardinfo.findOne({id})
+    info.ratingsum -= rating
+    info.usercount--
+    await info.save()
+    
+}
+
 module.exports = Object.assign(module.exports, {
     formatName,
     equals,
@@ -237,5 +263,7 @@ module.exports = Object.assign(module.exports, {
     withCards,
     withGlobalCards,
     mapUserCards,
-    withMultiQuery
+    withMultiQuery,
+    fetchInfo,
+    removeRating,
 })

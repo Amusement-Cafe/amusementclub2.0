@@ -2,9 +2,9 @@ const cap = (str) => {
     return str.split(' ').map(s => s[0].toUpperCase() + s.slice(1).toLowerCase()).join(' ')
 }
 
-const claimCost = (user, tax, amount) => {
+const claimCost = (user, tax, amount, totalClaims) => {
     let total = 0
-    let claims = user.dailystats.claims || 0
+    let claims = totalClaims || user.dailystats.claims || 0
     for (let i = 0; i < amount; i++) {
         claims++
         total += claims * 50
@@ -13,9 +13,9 @@ const claimCost = (user, tax, amount) => {
     return Math.round(total + total * tax)
 }
 
-const promoClaimCost = (user, amount) => {
+const promoClaimCost = (user, amount, totalClaims) => {
     let total = 0
-    let claims = user.dailystats.promoclaims || 0
+    let claims = totalClaims || user.dailystats.promoclaims || 0
     for (let i = 0; i < amount; i++) {
         claims++
         total += claims * 50

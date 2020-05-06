@@ -140,8 +140,7 @@ const uses = {
                 Type \`->inv info ${item.id}\` to see the list of required cards`, 'red')
 
         const eobject = { id: item.effectid }
-        if(effect.passive) eobject.expires = asdate.add(new Date(), item.lasts, 'days')
-        else { 
+        if(!effect.passive) { 
             eobject.uses = item.lasts
             eobject.cooldownends = new Date()
         }
@@ -207,11 +206,11 @@ const infos = {
             fields.push({ name: `Can be used`, value: `**${item.lasts}** times` })
             fields.push({ name: `Cooldown`, value: `**${effect.cooldown}** hours` })
         }
-
+        
         return ({
             description: item.fulldesc,
             fields,
-            image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
+            image: { url: `${ctx.baseurl}/effects/${effect.id}.${effect.animated? 'gif' : 'jpg'}` },
         })
     }
 }

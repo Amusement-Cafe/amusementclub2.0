@@ -29,6 +29,7 @@ const {
     withCards,
     withGlobalCards,
     bestMatch,
+    fetchInfo,
 } = require('../modules/card')
 
 const {
@@ -51,7 +52,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
     }
 
-    const amount = args.filter(x => !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
+    const amount = args.filter(x => x.length < 3 && !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
@@ -194,18 +195,25 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
-    const card = bestMatch(cards)
-    const usercard = user.cards.find(x => x.id === card.id)
     const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to === id)
+    const pendingto = pending.filter(x => x.to_id === id)
 
     if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\``, 'red')
     else if(pendingto.length >= 5)
-        return ctx.reply(user, `you already have pending transactions to **${pending[0].to}**. 
+        return ctx.reply(user, `you already have pending transactions to **${pendingto[0].to}**. 
             You can have up to **5** pending transactions to the same user.
             Type \`->pending\` to see them`, 'red')
+
+    cards = cards.filter(x => !pending.some(y => y.card === x.id))
+    if(cards.length === 0) {
+        return ctx.reply(user, `cannot find unique cards for this request.
+            You cannot put the same card for sale several times`, 'red')
+    }
+
+    const card = bestMatch(cards)
+    const usercard = user.cards.find(x => x.id === card.id)
 
     if(pending.length > 0) {
         const cursales = pending.filter(x => x.card === card.id)
@@ -228,7 +236,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     const perms = { confirm: [id], decline: [user.discord_id, id] }
 
-    const price = await evalCard(ctx, card, parsedargs.id? 1 : .4)
+    const price = await evalCard(ctx, card, id? 1 : .4)
     const trs = await new_trs(ctx, user, card, price, id)
 
     let question = ""
@@ -344,12 +352,20 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const col = bestColMatch(ctx, card.col)
 
     const resp = []
+    const extrainfo = await fetchInfo(card.id)
+    const usercard = user.cards.find(x => x.id === card.id)
     const embed = { color: colors.blue, fields: [] }
 
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
     resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
-    resp.push(`Average Rating: **none**`)
+
+    if(extrainfo.ratingsum > 0)
+        resp.push(`Average Rating: **${(extrainfo.ratingsum / extrainfo.usercount).toFixed(2)}**`)
+
+    if(usercard && usercard.rating)
+        resp.push(`Your Rating: **${usercard.rating}**`)
+
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')
 
@@ -375,3 +391,33 @@ cmd('boost', 'boosts', (ctx, user) => {
         title: `Current boosts`
     }, user.discord_id)
 })
+
+cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    if(!parsedargs.extra[0] || !parseInt(parsedargs.extra[0]))
+        return ctx.reply(user, `please specify rating as a whole number after \`:\` (e.g. \`mycard :8\`)`, 'red')
+
+    const rating = parseInt(parsedargs.extra[0])
+    if(rating > 10 || rating < 1)
+        return ctx.reply(user, `please specify rating from 1 to 10`, 'red')
+
+    const card = bestMatch(cards)
+    const info = await fetchInfo(card.id)
+    if(card.rating) {
+        const oldrating = card.rating
+        info.ratingsum -= oldrating
+        info.usercount--
+    }
+
+    user.cards.find(x => x.id === card.id).rating = rating
+    info.ratingsum += rating
+    info.usercount++
+
+    user.markModified('cards')
+    await user.save()
+    await info.save()
+
+    return ctx.reply(user, `set rating **${rating}** for ${formatName(card)}`)
+})).access('dm')

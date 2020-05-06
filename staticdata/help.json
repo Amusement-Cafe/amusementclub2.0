@@ -73,7 +73,7 @@
         ]
     },
     {
-        "type": ["bal", "balance", "economy", "currency", "tomatoes"],
+        "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato"],
         "title": "About currencies",
         "description": "This command will show your amount of 🍅 Tomatoes, and 🍷Vials.\n**Tomatoes** are the main currency in game, that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs. You can get them via daily quests or liquifying cards.",
         "fields": [
@@ -287,8 +287,11 @@
             {
                 "title": "->hero equip [slot] [passive], or ->equip [slot] [passive]",
                 "description": "Equip a passive effect"
+            },
+            {
+                "title": "->use [effect], ->hero use [effect], or ->effect use [effect]",
+                "description": "Use an active effect in your `->effects`"
             }
-
 
         ]
     },
@@ -591,7 +594,7 @@
         "description": "Players can rate their cards and view those ratings or even sort by them. Players' ratings are averaged into a global average rating that can be seen with ->info [card]",
         "fields": [
             {
-                "title": "->rate [rating] [card]",
+                "title": "->rate [card] :[rating]",
                 "description": "Rate one of your cards from 1 to 10."
             },
             {
@@ -680,11 +683,7 @@
         "type": ["support"],
         "title": "Support for embargo and tag ban",
         "description": "Join the main support discord for the bot with this [invite link](https://discord.gg/xQAxThF) and head to the #support channel for inquiries",
-        "fields": [
-            {
-            
-            }
-        ]
+        "fields": []
     },
     {
         "type": ["tag", "tags"],

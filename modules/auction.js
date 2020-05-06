@@ -3,6 +3,10 @@ const {generateNextId}  = require('../utils/tools')
 const {fetchOnly}       = require('./user')
 
 const {
+    check_effect
+} = require('../modules/effect')
+
+const {
     formatName,
     removeUserCard,
     addUserCard
@@ -107,7 +111,8 @@ const finish_aucs = async (ctx, now) => {
     const author = await fetchOnly(auc.author)
 
     if(lastBidder) {
-        lastBidder.exp += auc.highbid - auc.price
+        const tback = check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
+        lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
         await lastBidder.save()
@@ -115,7 +120,8 @@ const finish_aucs = async (ctx, now) => {
         await from_auc(auc, author, lastBidder)
 
         await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
-        return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`)
+        return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
+            ${tback > 0? `You got **${tback}** ${ctx.symbols.tomato} back` : ''}`)
     } else {
         addUserCard(author, auc.card)
         await author.save()

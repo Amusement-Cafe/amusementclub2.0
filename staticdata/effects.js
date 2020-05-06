@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const { byAlias } = require('../modules/collection')
 const { addUserCard, formatName } = require('../modules/card')
+const { claimCost } = require('../utils/tools')
 
 module.exports = [
     {
@@ -12,12 +13,14 @@ module.exports = [
         id: 'cakeday',
         name: 'Cake Day',
         desc: 'Get +100 tomatoes in your daily for every claim you did',
-        passive: true
+        passive: true,
+        animated: true
     }, {
         id: 'holygrail',
         name: 'The Holy Grail',
         desc: 'Get +25% of vials when liquifying 1 and 2-star cards',
-        passive: true
+        passive: true,
+        animated: true
     }, {
         id: 'skyfriend',
         name: 'Skies Of Friendship',
@@ -37,6 +40,11 @@ module.exports = [
         id: 'rulerjeanne',
         name: 'The Ruler Jeanne',
         desc: 'Get `->daily` every 17 hours instead of 20',
+        passive: true
+    }, {
+        id: 'spellcard',
+        name: 'Impossible Spell Card',
+        desc: 'Usable effects have 40% less cooldown',
         passive: true
     },
 
@@ -65,7 +73,10 @@ module.exports = [
         passive: false,
         cooldown: 32,
         use: async (ctx, user) => {
-            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1))
+            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1 && !user.dailyquests.includes(x.id)))
+            if(!quest)
+                return { msg: `cannot find a unique quest. Please, complete some quests before using this effect.`, used: false }
+
             user.dailyquests.push(quest.id)
             user.markModified('dailyquests')
             await user.save()
@@ -79,6 +90,9 @@ module.exports = [
         passive: false,
         cooldown: 40,
         use: async (ctx, user, args) => {
+            if(args.length === 0)
+                return { msg: `please specify collection`, used: false }
+
             const name = args.join('').replace(/^-/, '')
             const col = byAlias(ctx, name)[0]
             if(!col)
@@ -107,6 +121,9 @@ module.exports = [
         passive: false,
         cooldown: 1,
         use: async (ctx, user, args) => {
+            if(args.length === 0)
+                return { msg: `please specify effect ID`, used: false }
+
             const reg = new RegExp(args[0], 'gi')
             effect = ctx.effects.filter(x => !x.passive).find(x => reg.test(x.id))
 
@@ -118,6 +135,17 @@ module.exports = [
 
             const res = await effect.use(ctx, user, args.slice(1))
             return res
+        }
+    }, {
+        id: 'claimrecall',
+        name: 'Claim Recall',
+        desc: 'Refunds previous claim cost (excluding tax) when used. For multiple card claims it refunds cost of the last card claimed',
+        passive: false,
+        cooldown: 15,
+        use: async (ctx, user) => {
+            const cost = claimCost(user, 0, 1, user.dailystats.claims - 1 || 0)
+            user.exp += cost
+            return { msg: `you got **${cost}** ${ctx.symbols.tomato} back`, used: true }
         }
     }
 ]

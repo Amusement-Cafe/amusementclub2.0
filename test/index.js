@@ -7,6 +7,7 @@ const main = async () => {
     const data = {
         cards: require('./data/cards.json'),
         collections: require('./data/collections.json'),
+        bannedwords: ['loli', 'shouta'],
         promos: require('./data/promos.json').map(
             x => Object.assign({}, x, {
             starts: Date.parse(x.starts),

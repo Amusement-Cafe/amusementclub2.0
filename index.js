@@ -8,6 +8,7 @@ const paginator     = require('discord-paginator')
 const _             = require('lodash')
 const {trigger}     = require('./utils/cmd')
 const {check_all}   = require('./modules/secondarycheck')
+const Filter        = require('bad-words')
 
 const {
     auction, 
@@ -97,6 +98,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
+    const filter = new Filter()
+    filter.addWords(...data.bannedwords)
 
     /* create our context */
     const ctx = {
@@ -112,6 +115,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         effects: require('./staticdata/effects'),
         promos: data.promos,
         boosts: data.boosts,
+        filter,
         direct, /* DM reply function to the user */
         symbols,
         baseurl,
@@ -189,7 +193,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
-            usr = await user.fetchOnly(msg.author.id)
+            //usr = await user.fetchOnly(msg.author.id)
+            usr.unmarkModified('dailystats')
             await check_all(isolatedCtx, usr, action)
             
         } catch (e) {

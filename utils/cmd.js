@@ -65,7 +65,7 @@ const trigger = async (type, ctx, user, args) => {
     }
 
     if (!cursor.hasOwnProperty('_callback')) {
-        return ctx.reply(user, `unknown command. Please check you spelling or use help`, 'red')
+        return ctx.reply(user, `unknown command. Please check your spelling or use help`, 'red')
     }
 
     if (cursor._perm) {
