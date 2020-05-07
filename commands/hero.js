@@ -342,7 +342,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     const embed = { 
         title: `Submitting a hero`,
         description: `you are about to submit **${char.name}** from **${char.animeography[0].name}**.
-        > It may take up to a week to review the character. You will have your current hero until the submission process completes. If approved, your hero will be automatically changed.
+        > It may take up to a week to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,
         image: { url: char.image_url }
     }
