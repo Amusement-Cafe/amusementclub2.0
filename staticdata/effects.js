@@ -109,6 +109,7 @@ module.exports = [
                 return { msg: `cannot fetch unique card from **${col.name}** collection`, used: false }
 
             addUserCard(user, card.id)
+            user.lastcard = card.id
             user.markModified('cards')
             await user.save()
 

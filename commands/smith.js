@@ -177,6 +177,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
         onConfirm: async (x) => {
             user.vials -= vials
             addUserCard(user, card.id)
+            user.lastcard = card.id
             await user.save()
             user = await updateUser(user, {$inc: {'dailystats.draw': 1}})
 
