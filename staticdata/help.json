@@ -36,35 +36,35 @@
     {
         "type": ["auc", "auction", "auctions"],
         "title": "About auctions",
-        "description": "Auctions are a way to trade your cards introduced in `v1.10`. You can put any card on auction for a fee equal to 10% of your listing price(5% with upgraded Auction House), and then other users can bid on it. Each card will be on the auction list for 5 hours(variable with maxed Auction House) and sold to the highest bidder. If nobody bids on your card, your card will return to you, but the listing fee will not be refunded.",
+        "description": "Auctions are a way to trade your cards. You can put any card on auction for a fee equal to 10% of your listing price(5% with upgraded Auction House), and then other users can bid on it. Each card will be on the auction list for 5 hours(variable with maxed Auction House) and sold to the highest bidder. If nobody bids on your card, your card will be returned to you, but the listing fee will not be refunded.",
         "fields": [
             {
                 "title": "IMPORTANT",
                 "description": "Please note that using alt accounts to manipulate auctions in any way may result in a temporary or even **permanent ban**"
             },
             {
-                "title": "Searching for cards/collection",
-                "description": "Use `->auc` or `->auc [card title]` or `->auc [-card collection]` to find the list of current auctions.\n"
+                "title": "->auc, ->auc [card name], or ->auc -collection",
+                "description": "Find currently active auctions\n"
             },
             {
-                "title": "Selling a card",
-                "description": "Command:`->auc sell [card title] :[amount]` will list your card on auction.The lowest possible price is 0.5x eval, while the highest is 4.0x eval. If no amount is given, the eval price is used.\n With Auction House level 3 you can specify time of auction with `->auc sell :-X` where X is 1-10 for hours"
+                "title": "->auc sell [card name] :[amount]",
+                "description": "List your card on auction. The lowest possible price is 0.5x eval, while the highest is 4.0x eval. If no amount is given, the eval price is used.\n With Auction House level 3 you can specify time of auction with `:-X` where X is limited to 1-10 for hours\n"
             },            
             {
-                "title": "Bidding on a card", 
-                "description": "Command: `->auc bid [id] [amount]` For example `->auc bid ktgs4 500` will bid 500 🍅 on auction with ID `ktgs4`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n"
+                "title": "->auc bid [id] [amount]", 
+                "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 🍅 on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n"
             },
             {
-                "title": "Finding information on a bid",
-                "description": "Command:`->auc info [id]` will show you detailed information about that auction auction.\n"
+                "title": "->auc info [id]",
+                "description": "Find info about an auction, new or old.\n"
             },
             {
-                "title": "Tracking my auctions",
-                "description": "Command: `->auc -me` This command will show you the auctions you have created.\n"
+                "title": "->auc -me",
+                "description": "List your currently running auctions\n"
             },
             {
-                "title": "Tracking my bids",
-                "description": "Command: `->auc -bid` This command will show you the auctions you have bid in.\n"
+                "title": "->auc -bid",
+                "description": "List the auctions you have bid on.\n"
             },
             {
                 "title": "Diamond marks",
@@ -75,7 +75,7 @@
     {
         "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato"],
         "title": "About currencies",
-        "description": "This command will show your amount of 🍅 Tomatoes, and 🍷Vials.\n**Tomatoes** are the main currency in game, that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs. You can get them via daily quests or liquifying cards.",
+        "description": "This command will show your amount of 🍅 Tomatoes, and 🍷Vials.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs. You can get them via daily quests or liquifying cards.",
         "fields": [
             {
                 "title": "Useful to know",
@@ -148,11 +148,11 @@
         "fields": [
             {
                 "title": "Locked claims",
-                "description": "If the server you are claiming on is related to specific fandom/series, that means that only one collection is used for claiming. However, you can always try and claim among all available cards for the bot. Use `->claim any` for that"
+                "description": "If the server you are claiming on is related to a specific fandom/series, that means that only one collection is used for claiming. However, you can always try and claim among all available cards for the bot. Use `->claim any` for that"
             },
             {
                 "title": "Useful to know",
-                "description": "This command can be executed only in bot channel (`->help channel` for more info)\nClaim cost can be different for certain *heroes*\nSome *effect cards* can reduce claim cost\nThe message above card shows cost of your next claim and can also include important information about the card"
+                "description": "This command can be executed only in bot channel (`->help channel` for more info)\nClaim cost can be different for certain *heroes*\nThe message above the card shows the cost of your next claim and can also include important information about the card"
             },
             {
                 "title": "->claim",
@@ -164,14 +164,14 @@
             },
             {
                 "title": "->claim [amount]",
-                "description": "Get several cards"
+                "description": "Get several cards, limit 10 per command"
             }
         ]
     },
     {
         "type": ["col", "collection", "collections"],
         "title": "About collections",
-        "description": "Collections or 'fandoms' are sets of cards that have same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command",
+        "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command",
         "fields": [
             {
                 "title": "->col",
@@ -206,7 +206,7 @@
             },
             {
                 "title": "Useful to know",
-                "description": "You can’t combine ordinary and craft card\nYou can’t combine cards of different level\nMinimum amount of cards is 2\nCraft cards usually contain part of effect card name"
+                "description": "You can’t combine cards of different level\nMinimum amount of cards is 2"
             }
         ]
     },
@@ -256,14 +256,14 @@
             },
             {
                 "title": "->diff [keywords]\n(e.g. `->diff kyoko`)",
-                "description": "Show cards that has keyword in the name"
+                "description": "Show cards that have the keyword in the name"
             }
         ]
     },
     {
         "type": ["draw"],
         "title": "About Drawing",
-        "description": "Drawing is the ability to draw any card currently owned by someone within the bot, within the rarities of 1-3★ using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
+        "description": "Drawing is the ability to draw any card currently owned by someone within the bot, within the rarities of 1-3★, using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
         "fields": [
             {
                 "title": "->draw [card]",
@@ -311,9 +311,9 @@
         ]
     },
     {
-        "type": ["fav", "favorite"],
+        "type": ["fav", "favorite", "favourite"],
         "title": "Adding cards to favorites",
-        "description": "You can add any card to favorites. Favorited cards can't be sent and they won't show up for other users in `->has` or `->diff` commands, unless you have 2 or more of those cards or add the `-fav` option",
+        "description": "You can add any card to favorites. Favorited cards can't be sent and they won't show up for other users in `->has` or `->diff` commands, unless you have 2 or more of those cards or they add the `-fav` option",
         "fields": [
             {
                 "title": "->fav [card query]",
@@ -348,8 +348,12 @@
     {
         "type": ["guild", "server"],
         "title": "Guild commands",
-        "description": "You can set custom prefix/bot channels for Amusement Club",
+        "description": "You can set custom prefix/bot channels for Amusement Club as well as manage guild(server) level settings.",
         "fields": [
+            {
+                "title": "Useful to know",
+                "description": "A guild is just a discord server. Servers are defined as guilds in the code."
+            },
             {
                 "title": "->guild",
                 "description": "List possible commands for ->guild [arg]"
@@ -403,7 +407,7 @@
     {
         "type": ["has"],
         "title": "Learn if user has a card",
-        "description": "This command will try to find if a user has certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already. Add option `-fav` to include favorite cards.",
+        "description": "This command will try to find if a user has a certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already. Add option `-fav` to include favorite cards.",
         "fields": [
             {
                 "title": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)",
@@ -414,7 +418,7 @@
     {
         "type": ["hero", "heroes"],
         "title": "About Heroes",
-        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. Submitting heroes increases exponentially in price with each submission, starting at 512. You can gain hero XP globally with daily and using hero effects. Currently Hero level is only used to say 'My waifu is a higher level than yours'",
+        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. The price to submit heroes increases exponentially in price with each submission, starting at 512. You can gain hero XP globally with daily and using hero effects.",
         "fields": [
             {
                 "title": "->hero",
@@ -629,19 +633,15 @@
     {
         "type": ["sell"],
         "title": "About cards selling",
-        "description": "Users can sell cards either to bot or to other users. In both cases prices are defined by bot.",
+        "description": "Users can sell cards either to bot or to other users. In both cases the prices are defined by bot.",
         "fields": [
             {
-                "title": "Sell a card to BOT",
-                "description": "Use `->sell [card query]` to sell cards that you don't need. You get 🍅 tomatoes based on a percentage of eval for selling to bot. You do not get full eval"
+                "title": "->sell [card query]",
+                "description": "Sell a card to the bot for a percentage of eval"
             },
             {
-                "title": "Sell a card to USER",
-                "description": "Use `->sell @user [card query]` to sell a card to user. Target user will be asked to confirm or decline your transaction. You can **not** send more than 5 requests to the same user. Selling price is decided by bot using **eval algorithm**. You can always run `->eval [card query]` to find out card cost before trading it"
-            },
-            {
-                "title": "Getting into Debt",
-                "description": "If someone sells you a card for more tomatoes than you own, you will find yourself in **debt**. You will need to come out of debt before you can trade with others. You **can** however, daily and sell cards to come out of debt."
+                "title": "->sell @user [card query]",
+                "description": "Sell a card to another user. Target user will be asked to confirm or decline your transaction. You can **not** send more than 5 requests to the same user. Selling price is decided by bot using **eval algorithm**. You can always run `->eval [card query]` to find out card cost before trading it"
             }
         ]
     },
@@ -708,7 +708,7 @@
     {
         "type": ["trans", "transactions"],
         "title": "About transaction history",
-        "description": "You can review your transaction history; this includes sells and auctions. Transactions older than a week will be erased.\nIf transaction was done via auction, you can also get auction details using TransactionID `->auc info [transaction_id]`",
+        "description": "You can review your transaction history; this includes sells and auctions. Transactions older than a week will be erased.\nIf transaction was done via auction, you can also get auction details using auction ID `->auc info [auction ID]`",
         "fields": [
             {
                 "title": "->trans",
