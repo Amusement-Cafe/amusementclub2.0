@@ -89,5 +89,6 @@ typings/
 
 # Custom
 config.json
+.idea/*
 # duckdoc.io project config
 .duckdoc

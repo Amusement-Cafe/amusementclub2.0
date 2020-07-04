@@ -243,7 +243,7 @@
                 "description": "Show only multiple (x2+) cards"
             },
             {
-                "title": "->diff @someuser -[collection]]\n(e.g. `->diff @John -yuru`)",
+                "title": "->diff @someuser -[collection]\n(e.g. `->diff @John -yuru`)",
                 "description": "Show only cards from some collection"
             },
             {
