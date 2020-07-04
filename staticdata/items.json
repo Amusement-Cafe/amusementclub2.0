@@ -12,12 +12,12 @@
                 "price": 100,
                 "level": 1,
                 "maintenance": 10,
-                "desc": "Allows to check guild status, set claim tax up to 5%, keeps othe buildings in good shape"
+                "desc": "Allows one to check guild status, set claim tax up to 5%, keeps other buildings in good shape"
             }, {
                 "price": 2000,
                 "level": 5,
                 "maintenance": 100,
-                "desc": "Allows to set claim tax up to 10%"
+                "desc": "Allows claim tax to be set up to 10%"
             }, {
                 "price": 5000,
                 "level": 20,
@@ -27,7 +27,7 @@
                 "price": 10000,
                 "level": 30,
                 "maintenance": 200,
-                "desc": "Allows to set claim tax up to 25%"
+                "desc": "Allows claim tax to be set up to 25%"
             }, {
                 "price": 25000,
                 "level": 50,
@@ -102,7 +102,7 @@
                 "price": 5000,
                 "level": 17,
                 "maintenance": 220,
-                "desc": "Allows users to liquify cards and draw a card using vials"
+                "desc": "Allows users to liquefy cards and draw a card using vials"
             }, {
                 "price": 10000,
                 "level": 33,
@@ -122,7 +122,7 @@
                 "price": 1000,
                 "level": 10,
                 "maintenance": 200,
-                "desc": "Increses user daily to **500** {currency}"
+                "desc": "Increases user daily to **500** {currency}"
             }, {
                 "price": 5000,
                 "level": 15,

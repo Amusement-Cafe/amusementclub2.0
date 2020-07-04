@@ -249,7 +249,7 @@ cmd('profile', async (ctx, user, ...args) => {
 
     const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(curUser){
-        resp.push(`Current guild rank: **${curUser.rank}** (${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%)`)
+        resp.push(`Current guild rank: **${curUser.rank}** (${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'})`)
     }
 
     if(user.roles && user.roles.length > 0)
@@ -280,7 +280,7 @@ cmd('diff', async (ctx, user, ...args) => {
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
 
     const ids = user.cards.map(x => x.id)
-    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
+    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1).filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
         .sort(newArgs.sort)
 
     if(diff.length === 0)
@@ -290,6 +290,27 @@ cmd('diff', async (ctx, user, ...args) => {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''}`), 15),
         embed: { author: { name: `${user.username}, your difference with ${otherUser.username} (${diff.length} results)` } }
     })
+})
+
+cmd('has', async (ctx, user, ...args) => {
+    const newArgs = parseArgs(ctx, args)
+
+    if(!newArgs.ids[0])
+        return ctx.qhelp(ctx, user, 'has')
+
+    if(user.discord_id == newArgs.ids[0])
+        return ctx.reply(user, 'you can use ->cards to see your own cards', 'red')
+
+    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+
+    if (otherCards.length === 0)
+        return ctx.reply(user, `**${otherUser.username}** doesn't have that card.`, 'red')
+
+    if (newArgs.filters.length === 0 || otherCards.map(x=> `${formatName(x)}`).length > 1) {
+        return ctx.reply(user, 'Please specify a single card to match', 'red')
+    }
+    return ctx.reply(user, `Matched card ${otherCards.map(x => `${formatName(x)} ${x.fav? 'and it is marked as **favorite**': ''}`)}`)
 })
 
 cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {

@@ -62,7 +62,7 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
     const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(curUser){
         userstat.push(`Current rank: **${curUser.rank}**`)
-        userstat.push(`Progress to the next rank: **${Math.round((curUser.xp / rankXP[curUser.rank]) * 100)}%**`)
+        userstat.push(`Progress to the next rank: **${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'}**`)
         if(curUser.roles.length > 0)
             userstat.push(`Roles: **${curUser.roles.join(' | ')}**`)
     } else {
