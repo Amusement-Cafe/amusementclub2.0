@@ -107,7 +107,7 @@
                 "price": 10000,
                 "level": 33,
                 "maintenance": 500,
-                "desc": "Allows users to forge effects using recipies"
+                "desc": "Allows users to forge effects using recipes"
             }
         ]
     }, {
@@ -176,7 +176,7 @@
         "price": 1500,
         "type": "recipe",
         "desc": "3-star every day",
-        "typedesc": "Use Effect Card recipies to obtain usable or passive Effect Cards",
+        "typedesc": "Use Effect Card recipes to obtain usable or passive Effect Cards",
         "fulldesc": "When used gives you **Gift From Tohru** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
         "recipe": [2, 2, 2],
         "lasts": 30

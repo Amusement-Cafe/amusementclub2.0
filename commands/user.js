@@ -287,7 +287,7 @@ cmd('diff', async (ctx, user, ...args) => {
         return ctx.reply(user, `no different cards found`, 'red')
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
+        pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''}`), 15),
         embed: { author: { name: `${user.username}, your difference with ${otherUser.username} (${diff.length} results)` } }
     })
 })

@@ -45,11 +45,15 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
 
-    let promo, boost
+    let promo, boost, any
     if(args.indexOf('promo') != -1) {
         promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         if(!promo)
             return ctx.reply(user, `no events are running right now. Please use regular claim`, 'red')
+    }
+
+    if (args.indexOf('any') !== -1) {
+        any = true
     }
 
     const amount = args.filter(x => x.length < 3 && !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
@@ -73,7 +77,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         boost = curboosts.find(x => args.some(y => y === x.id))
     }
 
-    const lock = ctx.guild.overridelock || (ctx.guild.lockactive? ctx.guild.lock : null)
+    const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
     const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
@@ -144,8 +148,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         You have **${Math.round(promo? user.promoexp : user.exp)}** ${curr} left
         You can claim **${max - 1}** more cards
         Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}`})
-    fields.push({name: `External view`, value: 
-        `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})
+    /*fields.push({name: `External view`, value:
+        `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
     fields = fields.map(x => {
         if(x.value.length < 1024)
