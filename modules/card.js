@@ -30,6 +30,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         diff: false,
         me: false,
         bid: false,
+        fav: false,
     }
 
     args.map(x => {
@@ -55,7 +56,7 @@ const parseArgs = (ctx, args, lastdaily) => {
             switch(substr) {
                 case 'gif': q.filters.push(c => c.animated == m); break
                 case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); break
-                case 'fav': q.filters.push(c => m? c.fav : !c.fav); break
+                case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; break
                 case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
                 case 'diff': q.diff = m; break
                 case 'miss': q.diff = m; break
