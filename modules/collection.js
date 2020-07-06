@@ -23,7 +23,7 @@ const completed = async (ctx, user, card) => {
         "`->col reset "+ card.col +"`"
 
     let userCards = user.cards.filter(x => x.id < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.id], x)).filter(x => x.col === card.col && x.level < 5)
-    console.log(userCards.length < colCards.length)
+    
     if(userCards.length < colCards.length) {
         return false
     }
