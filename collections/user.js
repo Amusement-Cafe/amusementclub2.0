@@ -6,6 +6,7 @@ module.exports = model('User', {
 
     exp:                { type: Number, default: 0 },
     promoexp:           { type: Number, default: 0 },
+    joined:             { type: Date },
 
     lastQueriedCard:    { type: Object },
     dailystats:         { type: Object, default: {} },
