@@ -1,5 +1,4 @@
 const {cmd}                 = require('../utils/cmd')
-const {bestColMatch}        = require('../modules/collection')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
 const msToTime              = require('pretty-ms')
@@ -10,6 +9,11 @@ const {
     claimCost, 
     promoClaimCost
 } = require('../utils/tools')
+
+const {
+    bestColMatch,
+    completed
+} = require('../modules/collection')
 
 const {
     evalCard, 
@@ -97,6 +101,9 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const count = addUserCard(user, card.id)
+
+        await completed(ctx, user, card)
+
         cards.push({count, boostdrop, card: _.clone(card)})
     }
     

@@ -267,7 +267,7 @@ cmd('profile', async (ctx, user, ...args) => {
     }, user.discord_id)
 }).access('dm')
 
-cmd('diff', async (ctx, user, ...args) => {
+cmd('diff', 'dif', async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args)
 
     if(!newArgs.ids[0])

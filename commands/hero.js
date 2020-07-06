@@ -325,7 +325,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     const recent = submissions.find(x => x.submitted > past)
     if(recent)
-        return ctx.reply(user, `you can submit new hero in **${msToTime(recent.submitted - past, {compact: true})}**`, 'red')
+        return ctx.reply(user, `you can submit a new hero in **${msToTime(recent.submitted - past, {compact: true})}**`, 'red')
 
     let char
     try {
@@ -333,15 +333,15 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     } catch { }
 
     if(!char)
-        return ctx.reply(user, `cannot find a valid character on this URL`, 'red')
+        return ctx.reply(user, `cannot find a valid character at this URL`, 'red')
 
     if(!char.animeography[0])
-        return ctx.reply(user, `seems like this character doesn't have any asociated anime.
+        return ctx.reply(user, `seems like this character doesn't have any associated anime.
             Only characters with valid animeography are allowed`, 'red')
 
     const embed = { 
         title: `Submitting a hero`,
-        description: `you are about to submit **${char.name}** from **${char.animeography[0].name}**.
+        description: `You are about to submit **${char.name}** from **${char.animeography[0].name}**.
         > It may take up to a week to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,
         image: { url: char.image_url }

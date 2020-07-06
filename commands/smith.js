@@ -13,6 +13,10 @@ const {
 } = require('../modules/card')
 
 const {
+    completed
+} = require('../modules/collection')
+
+const {
     evalCard, 
     getVialCost 
 } = require('../modules/eval')
@@ -89,13 +93,17 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
             user.lastcard = newcard.id
             user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`] + 1 || 1
             user.markModified('dailystats')
+            await completed(ctx, user, newcard)
             await user.save()
+
+            const usercard = user.cards.find(x => x.id === newcard.id)
 
             return ctx.reply(user, {
                 image: { url: newcard.url },
                 color: colors.blue,
                 description: `you got ${formatName(newcard)}!
-                    **${vialres}** ${ctx.symbols.vial} were added to your account`
+                    **${vialres}** ${ctx.symbols.vial} were added to your account
+                    ${usercard.amount > 1 ? `*You already have this card*` : ''}`
             })
         }
     })
@@ -178,6 +186,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             user.vials -= vials
             addUserCard(user, card.id)
             user.lastcard = card.id
+            await completed(ctx, user, card)
             await user.save()
             user = await updateUser(user, {$inc: {'dailystats.draw': 1}})
 

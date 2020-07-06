@@ -3,6 +3,10 @@ const {generateNextId}  = require('../utils/tools')
 const {fetchOnly}       = require('./user')
 
 const {
+    completed
+} = require('../modules/collection')
+
+const {
     check_effect
 } = require('../modules/effect')
 
@@ -115,6 +119,8 @@ const finish_aucs = async (ctx, now) => {
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
+        const aucCard = ctx.cards[auc.card]
+        await completed(ctx, lastBidder, aucCard)
         await lastBidder.save()
         await author.save()
         await from_auc(auc, author, lastBidder)
