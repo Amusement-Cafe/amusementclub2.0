@@ -9,6 +9,10 @@ const {
     formatName
 } = require('./card')
 
+const {
+    completed
+} = require('./collection')
+
 const new_trs = async (ctx, user, card, price, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
     const last_trs = (await Transaction.find({status: {$ne: 'auction'}})
@@ -64,6 +68,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
     const from_user = await User.findOne({ discord_id: transaction.from_id })
     const to_user = await User.findOne({ discord_id: transaction.to_id })
     const card = from_user.cards.find(x => x.id == transaction.card)
+    const fullCard = ctx.cards[card.id]
 
     if(!card){
         transaction.status = 'declined'
@@ -79,6 +84,8 @@ const confirm_trs = async (ctx, user, trs_id) => {
             return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
 
         addUserCard(to_user, card.id)
+
+        await completed(ctx, to_user, fullCard)
         to_user.exp -= transaction.price
 
         await to_user.save()
@@ -95,10 +102,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
     await transaction.save()
 
     if(to_user) {
-        ctx.send(ctx.msg.channel, { 
-            description: `**${transaction.from}** sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`, 
-            color: colors.green 
-        }, user.discord_id)
+        return ctx.reply(from_user, `sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
     }
 
     return ctx.reply(user, `sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)

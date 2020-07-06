@@ -33,7 +33,7 @@ cmd('col', async (ctx, user, ...args) => {
 
     const pages = ctx.pgn.getPages(cols.map(x => {
         const complete = user.completedcols.find(y => x.id === y.id)
-        return `${complete? `[${complete.amount}${ctx.symbols.star}] ` : ''}**${x.name}** (${x.id})`
+        return `${complete && complete.amount > 0? `[${complete.amount}${ctx.symbols.star}] ` : ''}**${x.name}** (${x.id})`
     }))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -60,7 +60,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     resp.push(`Overall cards: **${colCards.length}**`)
     resp.push(`You have: **${userCards.length} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
 
-    if(clout)
+    if(clout && clout.amount > 0)
         resp.push(`Your clout: **${new Array(clout.amount + 1).join('★')}** (${clout.amount})`)
 
     resp.push(`Aliases: **${col.aliases.join(" **|** ")}**`)
