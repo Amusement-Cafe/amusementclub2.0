@@ -1,5 +1,6 @@
 /* command registry */
 require('./admin.js')
+require('./audit')
 require('./card.js')
 require('./misc.js')
 require('./user.js')

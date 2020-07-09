@@ -7,4 +7,5 @@ module.exports = {
     Promo: require('./promo'),
     Hero: require('./hero'),
     Cardinfo: require('./cardinfo'),
+    Audit: require('./audit'),
 }
