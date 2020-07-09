@@ -1,10 +1,21 @@
 
-const paginate_overPrice = (ctx, user, list) => {
+const paginate_auditReports = (ctx, user, list, report) => {
     const pages = []
-    list.map((t, i) => {
-        if (i % 10 == 0) pages.push("")
-        pages[Math.floor(i/10)] += `${format_overPrice(ctx, user, t)}\n`
-    })
+    switch (report) {
+
+        case 2:
+            list.map((t, i) => {
+                if (i % 10 == 0) pages.push("")
+                pages[Math.floor(i/10)] += `${format_overPrice(ctx, user, t)}\n`
+            })
+            break
+        case 3:
+            list.map((t, i) => {
+                if (i % 10 == 0) pages.push("")
+                pages[Math.floor(i/10)] += `${format_rebuys(ctx, user, t)}\n`
+            })
+            break
+    }
 
     return pages;
 }
@@ -17,25 +28,14 @@ const format_overPrice = (ctx, user, auc) => {
     return resp;
 }
 
-const paginate_rebuys = (ctx, user, list) => {
-    const pages = []
-    list.map((t, i) => {
-        if (i % 10 == 0) pages.push("")
-        pages[Math.floor(i/10)] += `${format_rebuys(ctx, user, t)}\n`
-    })
-
-    return pages;
-}
-
 const format_rebuys = (ctx, user, auc) => {
     let resp = ""
-    console.log(auc)
+
     resp += `${auc.user} sold ${auc.card} on auction at \`${auc.id}\` for ${auc.price} and bought it back for ${auc.transprice} at ${auc.transid} `
 
     return resp;
 }
 
 module.exports = {
-    paginate_overPrice,
-    paginate_rebuys,
+    paginate_auditReports,
 }

@@ -1,5 +1,5 @@
-const {Auction, Audit}         = require('../collections')
-const {evalCard} = require("../modules/eval");
+const {Auction, Audit}  = require('../collections')
+const {evalCard}        = require("../modules/eval");
 const {generateNextId}  = require('../utils/tools')
 const {fetchOnly}       = require('./user')
 
