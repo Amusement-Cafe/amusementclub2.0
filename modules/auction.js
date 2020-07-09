@@ -1,4 +1,5 @@
-const {Auction}         = require('../collections')
+const {Auction, Audit}  = require('../collections')
+const {evalCard}        = require("../modules/eval");
 const {generateNextId}  = require('../utils/tools')
 const {fetchOnly}       = require('./user')
 
@@ -120,6 +121,19 @@ const finish_aucs = async (ctx, now) => {
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
         const aucCard = ctx.cards[auc.card]
+        const eval = await evalCard(ctx, aucCard)
+        if (auc.price > eval * 2) {
+            const auditDB = await new Audit()
+            auditDB.id = auc.id
+            auditDB.card = aucCard.name
+            auditDB.bids = auc.bids.length
+            auditDB.finished = auc.finished
+            auditDB.eval = eval
+            auditDB.price = auc.price
+            auditDB.price_over = auc.price / eval
+            auditDB.report_type = 2
+            await auditDB.save()
+        }
         await completed(ctx, lastBidder, aucCard)
         await lastBidder.save()
         await author.save()

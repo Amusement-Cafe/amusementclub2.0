@@ -9,4 +9,5 @@ module.exports = {
     effect: require('./effect'),
     collection: require('./collection'),
     transaction: require('./transaction'),
+    audit: require('./audit'),
 }

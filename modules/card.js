@@ -39,7 +39,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         if(x === '.') {
             q.lastcard = true
 
-        } else if((x[0] === '<' || x[0] === '>') && x[1] != '@') {
+        } else if((x[0] === '<' || x[0] === '>' || x[0] === '=' || x[0] === '\\') && x[1] != '@') {
             switch(x) {
                 case '<date': q.sort = (a, b) => b.obtained - a.obtained; break
                 case '>date': q.sort = (a, b) => a.obtained - b.obtained; break
@@ -50,6 +50,21 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
+                default: {
+                    const eq = x[1] === '='
+                    eq? substr = x.substr(2): substr
+                    const escHeart = x[0] === '\\'
+                    if (escHeart && x[1] === '<') {
+                        x = x.substr(1)
+                        substr = x.substr(1)
+                    }
+                    switch(x[0]) {
+                        case '>' : q.filters.push(c => eq? c.amount >= substr: c.amount > substr); break
+                        case '<' : q.filters.push(c => eq? c.amount <= substr: c.amount < substr); break
+                        case '=' : q.filters.push(c => c.amount == substr); break
+                    }
+
+                }
             }
         } else if(x[0] === '-' || x[0] === '!') {
             const m = x[0] === '-'

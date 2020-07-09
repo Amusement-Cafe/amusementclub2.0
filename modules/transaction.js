@@ -1,4 +1,4 @@
-const {User, Transaction}   = require('../collections')
+const {Auction, Audit, User, Transaction}   = require('../collections')
 const {generateNextId} = require('../utils/tools')
 const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
@@ -87,6 +87,20 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
         await completed(ctx, to_user, fullCard)
         to_user.exp -= transaction.price
+
+        const auditCheck = await Auction.findOne({ author: transaction.to_id, card: card.id})
+        if (auditCheck) {
+            const auditDB = await new Audit()
+            auditDB.report_type = 3
+            auditDB.transid = transaction.id
+            auditDB.id = auditCheck.id
+            auditDB.price = auditCheck.price
+            auditDB.transprice =  transaction.price
+            auditDB.audited = false
+            auditDB.user = transaction.to
+            auditDB.card = fullCard.name
+            await auditDB.save()
+        }
 
         await to_user.save()
 

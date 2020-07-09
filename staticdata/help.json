@@ -407,7 +407,7 @@
     {
         "type": ["has"],
         "title": "Learn if user has a card",
-        "description": "This command will try to find if a user has a certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already. Add option `-fav` to include favorite cards.",
+        "description": "This command will try to find if a user has a certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already.",
         "fields": [
             {
                 "title": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)",
@@ -589,6 +589,18 @@
             {
                 "title": "->cards >name or ->cards <name",
                 "description": "Sort alphabetically"
+            },
+            {
+                "title": "->cards ># or ->cards <#",
+                "description": "Sort by amount of copies greater than or less than number\nTo do <3, you need to type `\\<3`"
+            },
+            {
+                "title": "->cards >=# or ->cards <=#",
+                "description": "Sort by amount of copies equal to or greater than or equal to or less than number"
+            },
+            {
+                "title": "->cards =#",
+                "description": "Sort for exact amount of copies you own"
             }
         ]
     },
