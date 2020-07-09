@@ -1,7 +1,7 @@
-const {paginate_auditReports}  = require("../modules/audit");
-const {pcmd}                = require('../utils/cmd')
-const {Audit}               = require('../collections')
-const colors                = require('../utils/colors')
+const {paginate_auditReports}   = require("../modules/audit");
+const {pcmd}                    = require('../utils/cmd')
+const {Audit}                   = require('../collections')
+const colors                    = require('../utils/colors')
 
 
 
