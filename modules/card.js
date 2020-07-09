@@ -50,6 +50,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
+                case '>star': q.sort = (a, b) => b.level - a.level; break
                 default: {
                     const eq = x[1] === '='
                     eq? substr = x.substr(2): substr
