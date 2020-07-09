@@ -18,7 +18,7 @@ const main = async () => {
 
         try {
             const db = conn.db('amusement')
-            //await colsCards(db)
+            await colsCards(db)
             await users(db)
         } catch(e) { console.error(e) }
     })
@@ -32,7 +32,7 @@ const colsCards = async (db) => {
     const cardList = [], colList = []
     cols.map(col => {
         const aliases = `[${col.aliases.map(x => `"${x}"`)}]`
-        colList.push(`{"id":"${col.id}","name":"${col.name}","origin":${col.origin},"aliases":${aliases},"promo":false,"compressed":${col.compressed}}`)
+        colList.push(`{"id":"${col.id}","name":"${col.name}","origin":"${col.origin}","aliases":${aliases},"promo":false,"compressed":${col.compressed}}`)
         cards.filter(y => y.collection === col.id).map(y => {
             cardList.push(`{"name":"${y.name}","level":${y.level},"animated":${y.animated},"col":"${y.collection}"}`)
         })
@@ -45,6 +45,11 @@ const colsCards = async (db) => {
 const users = async (db) => {
     const usrs = await db.collection('users').find().limit(1).toArray()
     const cards = require('./crds.json')
+    const collections = require('./cols.json')
+
+    cards.map((x, i) => { 
+        x.id = i
+    })
     //const collections = require('./collections.json')
 
     usrs.map(async u => {
@@ -110,6 +115,7 @@ const users = async (db) => {
             the_judgment_day: ['triggered_angel', 'huge_kaboom', 'trumpet_of_doom']
         }
 
+        const now = new Date();
         u.inventory.map(invi => {
             const effect = effects.find(x => x.id === oldToNew[invi.name])
             const item = items.find(x => x.effectid === effect.id)
@@ -121,7 +127,15 @@ const users = async (db) => {
 
             newu.effects.push(eobject)
 
-            const now = new Date();
+            //console.log(item)
+            const cardlist = item.recipe.reduce((arr, x) => {
+                arr.push(_.sample(cards.filter(y => y.level === x 
+                    && !collections.find(z => z.id === y.col).promo 
+                    && !arr.includes(y.id))).id)
+                return arr
+            }, [])
+            newu.inventory.push({ id: item.id, cards: cardlist, time: now })
+            
             crafts[invi.name].map(x => {
                 const id = cards.findIndex(y => y.name === x && y.level === 4)
                 const existing = newu.cards.find(y => y.id === id)
