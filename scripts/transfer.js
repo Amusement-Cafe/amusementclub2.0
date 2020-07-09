@@ -28,13 +28,19 @@ const colsCards = async (db) => {
     console.log(`Processing cards and collections`)
     const cols = await db.collection('collections').find().toArray()
     const cards = await db.collection('cards').find().toArray()
+    const promocards = await db.collection('promocards').find().toArray()
+    const allcards = cards.concat(promocards)
     
+    const now = new Date()
     const cardList = [], colList = []
     cols.map(col => {
         const aliases = `[${col.aliases.map(x => `"${x}"`)}]`
         colList.push(`{"id":"${col.id}","name":"${col.name}","origin":"${col.origin}","aliases":${aliases},"promo":false,"compressed":${col.compressed}}`)
-        cards.filter(y => y.collection === col.id).map(y => {
-            cardList.push(`{"name":"${y.name}","level":${y.level},"animated":${y.animated},"col":"${y.collection}"}`)
+        allcards.filter(y => y.collection === col.id).map(y => {
+            if(y.craft)
+                cardList.push(`{"name":"${y.name}","level":4,"animated":false,"col":"limitedcraft","added":"${now.toJSON()}"}`)
+            else
+                cardList.push(`{"name":"${y.name}","level":${y.level},"animated":${y.animated},"col":"${y.collection}","added":"${y._id.getTimestamp().toJSON()}"}`)
         })
 
         fs.writeFileSync(`cols.json`, `[${colList.join(',\n')}]`)
@@ -52,8 +58,10 @@ const users = async (db) => {
     })
     //const collections = require('./collections.json')
 
-    usrs.map(async u => {
+    for(let i=0; i<usrs.length; i++) {
+        const u = usrs[i]
         console.log(`Processing ${u.username} : ${u.discord_id}...`)
+
         const newu = await new User()
         newu.ban = { }
         newu.joined = u._id.getTimestamp()
@@ -65,11 +73,12 @@ const users = async (db) => {
         newu.xp = u.hero.exp || 1
 
         u.cards.map(c => {
-            const id = cards.findIndex(x => x.name === c.name && x.level === c.level && x.col === c.collection)
-            //console.log(`${id} : ${c.name}`)
+            let id = cards.findIndex(x => x.name === c.name.toLowerCase() && x.level === c.level && x.col === c.collection)
 
             if(c.craft) {
-                id = cards.findIndex(x => x.name === c.name && x.level === 4)
+                id = cards.findIndex(x => x.name === c.name.toLowerCase() && x.level === 4)
+                console.log(c)
+                console.log(id)
             }
 
             if(id != -1 && !newu.cards.some(x => x.id === id)) {
@@ -154,7 +163,9 @@ const users = async (db) => {
         })
 
         await newu.save()
-    })
+    }
+
+    console.log("All users processed")
 }
 
 main()
