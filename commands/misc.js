@@ -1,6 +1,7 @@
 const {cmd} = require('../utils/cmd')
 const colors = require('../utils/colors')
 const msToTime  = require('pretty-ms')
+const { arrayChunks } = require('../utils/tools')
 
 cmd('help', async (ctx, user, ...args) => {
     let sbj = 'general'
@@ -16,12 +17,12 @@ cmd('help', async (ctx, user, ...args) => {
         return ctx.reply(user, `can't find help for \`${sbj}\``, 'red')
 
     if(sendHere){
-        await ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`), user.discord_id)
+        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, getHelpEmbed(ctx, help, `->`))
 
     } else {
         try {
             const ch = await ctx.bot.getDMChannel(user.discord_id)
-            await ctx.send(ch.id, getHelpEmbed(help, `->`), user.discord_id)
+            await ctx.pgn.addPagination(user.discord_id, ch.id, getHelpEmbed(ctx, help, `->`))
 
             if(ch.id != ctx.msg.channel.id)
                 await ctx.reply(user, 'help was sent to you')
@@ -34,7 +35,7 @@ cmd('help', async (ctx, user, ...args) => {
 
 cmd('rules', async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
-    return ctx.send(ctx.msg.channel.id, getHelpEmbed(help, `->`), user.discord_id)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, getHelpEmbed(ctx, help, `->`))
 }).access('dm')
 
 cmd('baka', async (ctx, user, ...args) => {
@@ -42,17 +43,25 @@ cmd('baka', async (ctx, user, ...args) => {
     return ctx.reply(user, `you baka in \`${time}\``)
 })
 
-const getHelpEmbed = (o, prefix) => {
-    const e = {
+const getHelpEmbed = (ctx, o, prefix) => {
+
+    const footerText = `Amusement Club Alexandrite | xQAxThF | v0.1.0 BETA | by NoxCaos#4905`
+    const embed = {
         title: o.title, 
         description: o.description.replace(/->/g, prefix), fields: [],
-        footer: { text: `Amusement Club Alexandrite | xQAxThF | v0.1.0 BETA | by NoxCaos#4905` },
+        footer: { text: footerText },
         color: colors['green']
     }
 
-    o.fields.map((x) => {
-       e.fields.push({ name: x.title, inline: x.inline, value: x.description.replace(/->/g, prefix)})
-    })
+    const pages = arrayChunks(o.fields.map((x) => ({ name: x.title, inline: x.inline, value: x.description.replace(/->/g, prefix)})), 5)
+    return {
+        pages, embed,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => { 
+            data.embed.fields = data.pages[data.pagenum]
+            data.embed.footer.text = `- Page ${data.pagenum + 1}/${pages.length} - | ${footerText}`
+        }
+    }
 
     return e
 }

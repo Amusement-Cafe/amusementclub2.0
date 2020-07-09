@@ -3,6 +3,8 @@ const _ = require('lodash')
 const fs = require('fs')
 const mongoose = require('mongoose')
 
+const effects = require('../staticdata/effects')
+const items = require('../staticdata/items')
 const User = require('../collections/user')
 
 const main = async () => {
@@ -16,7 +18,7 @@ const main = async () => {
 
         try {
             const db = conn.db('amusement')
-            await colsCards(db)
+            //await colsCards(db)
             await users(db)
         } catch(e) { console.error(e) }
     })
@@ -48,6 +50,7 @@ const users = async (db) => {
     usrs.map(async u => {
         console.log(`Processing ${u.username} : ${u.discord_id}...`)
         const newu = await new User()
+        newu.ban = { }
         newu.joined = u._id.getTimestamp()
         newu.discord_id = u.discord_id
         newu.username = u.username
@@ -58,7 +61,12 @@ const users = async (db) => {
 
         u.cards.map(c => {
             const id = cards.findIndex(x => x.name === c.name && x.level === c.level && x.col === c.collection)
-            console.log(`${id} : ${c.name}`)
+            //console.log(`${id} : ${c.name}`)
+
+            if(c.craft) {
+                id = cards.findIndex(x => x.name === c.name && x.level === 4)
+            }
+
             if(id != -1 && !newu.cards.some(x => x.id === id)) {
                 newu.cards.push({ 
                     id, 
@@ -69,10 +77,66 @@ const users = async (db) => {
             }
         })
 
-        newu.completedcols = u.completedCols.map(x => {id: x.colID, amount: x.timesCompleted})
+        if(newu.completedcols)
+            newu.completedcols = u.completedCols.map(x => ({id: x.colID, amount: x.timesCompleted, notified: true }))
 
-        u.inventory.map(item => {
+        const oldToNew = {
+            cherry_blossoms: 'cherrybloss',
+            blue_free_eyes: 'cakeday',
+            'long-awaited_date': 'enayano',
+            sushi_squad: 'holygrail',
+            delightful_sunset: 'claimrecall',
+            skies_of_friendship: 'skyfriend',
+            the_space_unity: 'spaceunity',
+            gift_from_tohru: 'tohrugift',
+            onward_to_victory: 'onvictory',
+            hazardous_duo: 'pbocchi',
+            the_ruler_jeanne: 'rulerjeanne',
+            the_judgment_day: 'judgeday' 
+        }
 
+        const crafts = {
+            cherry_blossoms: ['censored_akari', 'cherry_attacks'],
+            blue_free_eyes: ['blue_eyes', 'free_butterfly'],
+            'long-awaited_date': ['date_with_ayano', 'kyoko_delight'],
+            sushi_squad: ['rolled_sushi_band', 'rolled_sushi_party'],
+            delightful_sunset: ['cheery_sunset', 'afterschool_sunset'],
+            skies_of_friendship: ['clear_skies', 'dragon_friend'],
+            the_space_unity: ['deep_space', 'dragon_unity'],
+            gift_from_tohru: ['gift_to_koboyashi', `tohru's_delight`],
+            onward_to_victory: ['onward_to_battle', 'sword_of_victory'],
+            hazardous_duo: ['diffident_snake', 'sneaky_phoenix'],
+            the_ruler_jeanne: ['dark_jeanne', 'light_jeanne'],
+            the_judgment_day: ['triggered_angel', 'huge_kaboom', 'trumpet_of_doom']
+        }
+
+        u.inventory.map(invi => {
+            const effect = effects.find(x => x.id === oldToNew[invi.name])
+            const item = items.find(x => x.effectid === effect.id)
+            const eobject = { id: effect.id }
+            if(!effect.passive) { 
+                eobject.uses = item.lasts * 3
+                eobject.cooldownends = new Date()
+            }
+
+            newu.effects.push(eobject)
+
+            const now = new Date();
+            crafts[invi.name].map(x => {
+                const id = cards.findIndex(y => y.name === x && y.level === 4)
+                const existing = newu.cards.find(y => y.id === id)
+
+                if(existing) {
+                    existing.amount++
+                } else {
+                   newu.cards.push({ 
+                        id, 
+                        amount: 1,
+                        obtained: now,
+                        fav: false
+                    }) 
+                }
+            })
         })
 
         await newu.save()
