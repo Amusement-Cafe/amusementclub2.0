@@ -92,3 +92,5 @@ config.json
 .idea/*
 # duckdoc.io project config
 .duckdoc
+scripts/cols.json
+scripts/crds.json
