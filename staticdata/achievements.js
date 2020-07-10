@@ -86,7 +86,7 @@ module.exports = [
         name: 'Snap your fingers',
         desc: 'Reset collection for the first time',
         actions: ['col', 'collection'],
-        check: (ctx, user) => user.completedcols.length > 0,
+        check: (ctx, user) => user.completedcols.map(x => x.amount).sort((a, b) => b.amount - a.amount)[0] > 0,
         resolve: (ctx, user) => {
             user.xp += 2
             user.exp += 800

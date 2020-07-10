@@ -32,7 +32,7 @@ const completed = async (ctx, user, card) => {
 
     if (!completedCol) {
         await ctx.direct(user, message)
-        user.completedcols.push({ id: card.col, notified: true })
+        user.completedcols.push({ id: card.col, amount: 0, notified: true })
         user.markModified('completedcols')
     }
     else {
@@ -50,11 +50,18 @@ const reset = async (ctx, user, col) => {
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
 
     if(completed) {
-        completed.amount++
+        if(completed.amount){
+            completed.amount++
+
+        }else{
+            completed.amount = 1
+
+        }
+
         completed.notified = false
     }
     else {
-        user.completedcols.push({id: col.id, amount: 1})
+        user.completedcols.push({id: col.id, amount: 1, notified: false})
     }
     user.markModified('completedcols')
 

@@ -97,6 +97,44 @@ cmd(['trans', 'sends'], 'sends', async (ctx, user) => {
     })
 })
 
+cmd(['trans', 'auction'], async (ctx, user, arg1) => {
+    let auth, list
+    switch (arg1) {
+        case 'gets' :
+            list = await Transaction.find({
+                to_id: user.discord_id ,
+                status: 'auction'
+            }).sort({ time: -1 })
+            auth = `${user.username}, your incoming auction transactions (${list.length} results)`
+            break
+        case 'sends' :
+            list = await Transaction.find({
+                from_id: user.discord_id,
+                status: 'auction'
+            }).sort({ time: -1 })
+            auth = `${user.username}, your outgoing auction transactions (${list.length} results)`
+            break
+        default:
+            list = await Transaction.find({
+                $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
+                status: 'auction'
+            }).sort({ time: -1 })
+            auth = `${user.username}, your auction transactions (${list.length} results)`
+    }
+
+    if(list.length == 0)
+        return ctx.reply(user, `you don't have any recent auction transactions`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: auth },
+            color: colors.green,
+        }
+    })
+})
+
 cmd(['trans', 'info'], async (ctx, user, arg1) => {
     const trs = await Transaction.findOne({ id: arg1 })
 

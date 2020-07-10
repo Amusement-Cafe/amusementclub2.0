@@ -232,6 +232,7 @@ cmd('profile', async (ctx, user, ...args) => {
             color: colors.red
         })
 
+    const completedSum = user.completedcols.map(x => x.id).length
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user._id.getTimestamp()
     const cards = mapUserCards(ctx, user)
@@ -242,8 +243,10 @@ cmd('profile', async (ctx, user, ...args) => {
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
-    if(cloutsum > 0) {
+    if(completedSum > 0) {
         resp.push(`Completed collections: **${user.completedcols.length}**`)
+    }
+    if(cloutsum > 0) {
         resp.push(`Overall clout: **${cloutsum}**`)
     }
 

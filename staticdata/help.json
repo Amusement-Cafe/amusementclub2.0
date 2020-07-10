@@ -592,15 +592,15 @@
             },
             {
                 "title": "->cards ># or ->cards <#",
-                "description": "Sort by amount of copies greater than or less than number\nTo do <3, you need to type `\\<3`"
+                "description": "Filter by amount of copies greater than or less than number\nIf <3 doesn't work, you need to type `\\<3`"
             },
             {
                 "title": "->cards >=# or ->cards <=#",
-                "description": "Sort by amount of copies equal to or greater than or equal to or less than number"
+                "description": "Filter by amount of copies equal to or greater than or equal to or less than number"
             },
             {
                 "title": "->cards =#",
-                "description": "Sort for exact amount of copies you own"
+                "description": "Filter for exact amount of copies you own"
             }
         ]
     },
