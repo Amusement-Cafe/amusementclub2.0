@@ -181,3 +181,7 @@ pcmd(['admin'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards, parsed
         description: `summons **${formatName(card)}**!`
     })
 }))
+
+pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
+    throw `This is a test exception`
+})

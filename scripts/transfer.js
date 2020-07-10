@@ -1,11 +1,12 @@
-const MongoClient = require('mongodb').MongoClient
-const _ = require('lodash')
-const fs = require('fs')
-const mongoose = require('mongoose')
+const MongoClient   = require('mongodb').MongoClient
+const _             = require('lodash')
+const fs            = require('fs')
+const mongoose      = require('mongoose')
+const asdate        = require('add-subtract-date')
 
-const effects = require('../staticdata/effects')
-const items = require('../staticdata/items')
-const User = require('../collections/user')
+const effects       = require('../staticdata/effects')
+const items         = require('../staticdata/items')
+const User          = require('../collections/user')
 
 const main = async () => {
     const mongoUri = 'mongodb://localhost:27017/amusement2'
@@ -50,10 +51,41 @@ const colsCards = async (db) => {
 
 const users = async (db) => {
     const now = new Date();
+    const past = asdate.subtract(new Date(), 20, 'hours')
     const cursor = db.collection('users').find()
     //const usrs = await db.collection('users').find().toArray()
     const cards = require('./crds.json')
     const collections = require('./cols.json')
+
+    const oldToNew = {
+        cherry_blossoms: 'cherrybloss',
+        blue_free_eyes: 'cakeday',
+        'long-awaited_date': 'enayano',
+        sushi_squad: 'holygrail',
+        delightful_sunset: 'claimrecall',
+        skies_of_friendship: 'skyfriend',
+        the_space_unity: 'spaceunity',
+        gift_from_tohru: 'tohrugift',
+        onward_to_victory: 'onvictory',
+        hazardous_duo: 'pbocchi',
+        the_ruler_jeanne: 'rulerjeanne',
+        the_judgment_day: 'judgeday' 
+    }
+
+    const crafts = {
+        cherry_blossoms: ['censored_akari', 'cherry_attacks'],
+        blue_free_eyes: ['blue_eyes', 'free_butterfly'],
+        'long-awaited_date': ['date_with_ayano', 'kyoko_delight'],
+        sushi_squad: ['rolled_sushi_band', 'rolled_sushi_party'],
+        delightful_sunset: ['cheery_sunset', 'afterschool_sunset'],
+        skies_of_friendship: ['clear_skies', 'dragon_friend'],
+        the_space_unity: ['deep_space', 'dragon_unity'],
+        gift_from_tohru: ['gift_to_kobayashi', `tohru's_delight`],
+        onward_to_victory: ['onward_to_battle', 'sword_of_victory'],
+        hazardous_duo: ['diffident_snake', 'sneaky_phoenix'],
+        the_ruler_jeanne: ['dark_jeanne', 'light_jeanne'],
+        the_judgment_day: ['triggered_angel', 'huge_kaboom', 'trumpet_of_doom']
+    }
 
     cards.map((x, i) => { 
         x.id = i
@@ -75,6 +107,7 @@ const users = async (db) => {
         newu.exp = u.exp
         newu.ban.embargo = u.embargo
         newu.cards = []
+        newu.lastdaily = past
 
         if(u.hero)
             newu.xp = u.hero.exp
@@ -87,47 +120,22 @@ const users = async (db) => {
             }
 
             if(id != -1 && !newu.cards.some(x => x.id === id)) {
-                newu.cards.push({ 
+                const ncard = { 
                     id, 
                     amount: c.amount || 1,
                     obtained: now,
-                    fav: false
-                })
+                    fav: c.fav
+                }
+
+                if(c.rating) {
+                    ncard.rating = c.rating
+                }
+                newu.cards.push(ncard)
             }
         })
 
         if(u.completedCols)
             newu.completedcols = u.completedCols.map(x => ({id: x.colID, amount: x.timesCompleted, notified: true }))
-
-        const oldToNew = {
-            cherry_blossoms: 'cherrybloss',
-            blue_free_eyes: 'cakeday',
-            'long-awaited_date': 'enayano',
-            sushi_squad: 'holygrail',
-            delightful_sunset: 'claimrecall',
-            skies_of_friendship: 'skyfriend',
-            the_space_unity: 'spaceunity',
-            gift_from_tohru: 'tohrugift',
-            onward_to_victory: 'onvictory',
-            hazardous_duo: 'pbocchi',
-            the_ruler_jeanne: 'rulerjeanne',
-            the_judgment_day: 'judgeday' 
-        }
-
-        const crafts = {
-            cherry_blossoms: ['censored_akari', 'cherry_attacks'],
-            blue_free_eyes: ['blue_eyes', 'free_butterfly'],
-            'long-awaited_date': ['date_with_ayano', 'kyoko_delight'],
-            sushi_squad: ['rolled_sushi_band', 'rolled_sushi_party'],
-            delightful_sunset: ['cheery_sunset', 'afterschool_sunset'],
-            skies_of_friendship: ['clear_skies', 'dragon_friend'],
-            the_space_unity: ['deep_space', 'dragon_unity'],
-            gift_from_tohru: ['gift_to_kobayashi', `tohru's_delight`],
-            onward_to_victory: ['onward_to_battle', 'sword_of_victory'],
-            hazardous_duo: ['diffident_snake', 'sneaky_phoenix'],
-            the_ruler_jeanne: ['dark_jeanne', 'light_jeanne'],
-            the_judgment_day: ['triggered_angel', 'huge_kaboom', 'trumpet_of_doom']
-        }
 
         if(u.inventory) {
             u.inventory.map(invi => {

@@ -53,7 +53,7 @@ const getHelpEmbed = (ctx, o, prefix) => {
         color: colors['green']
     }
 
-    const pages = arrayChunks(o.fields.map((x) => ({ name: x.title, inline: x.inline, value: x.description.replace(/->/g, prefix)})), 5)
+    const pages = arrayChunks(o.fields.map((x) => ({ name: x.title, inline: x.inline, value: x.description.replace(/->/g, prefix)})), 6)
     return {
         pages, embed,
         buttons: ['back', 'forward'],
