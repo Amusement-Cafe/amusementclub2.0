@@ -20,6 +20,7 @@ const main = async () => {
         }))
     }
 
+    console.log(`Working with ${data.cards.length} cards and ${data.collections.length} collections`)
     const options  = Object.assign({shards: 1, data}, config, debug)
     const instance = await amusement.create(options)
 

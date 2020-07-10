@@ -233,7 +233,7 @@ cmd('profile', async (ctx, user, ...args) => {
         })
 
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
-    const stamp = user._id.getTimestamp()
+    const stamp = user.joined
     const cards = mapUserCards(ctx, user)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
 
