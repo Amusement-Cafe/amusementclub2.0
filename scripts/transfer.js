@@ -7,6 +7,7 @@ const asdate        = require('add-subtract-date')
 const effects       = require('../staticdata/effects')
 const items         = require('../staticdata/items')
 const User          = require('../collections/user')
+const Cardinfo      = require('../collections/cardinfo')
 
 const main = async () => {
     const mongoUri = 'mongodb://localhost:27017/amusement2'
@@ -19,8 +20,9 @@ const main = async () => {
 
         try {
             const db = conn.db('amusement')
-            //await colsCards(db)
+            await colsCards(db)
             await users(db)
+            await calcCardInfo(db)
         } catch(e) { console.error(e) }
     })
 }
@@ -181,6 +183,47 @@ const users = async (db) => {
     }
 
     console.log("All users processed")
+}
+
+const calcCardInfo = async (db) => {
+    const carddata = []
+    const cards = require('./crds.json')
+    const cursor = db.collection('users').find()
+
+    console.log(`Processing users for card info...`)
+    let count = 0
+    for (let user = await cursor.next(); user != null; user = await cursor.next()) {
+        console.log(`[${count}] Filling data from ${user.username}`)
+        user.cards.map(card => {
+            const i = cards.findIndex(x => x.name === card.name && x.col === card.collection && x.level === card.level)
+            if(card.rating) {
+                carddata[i] = carddata[i] || { ratingsum: 0, usercount: 0 }
+                carddata[i].ratingsum += card.rating
+                carddata[i].usercount++
+            }
+        })
+        count++
+
+        //if(count > 1000)
+            //break
+    }
+
+    count = 0
+    console.log(`Extracting card info...`)
+    for (let i=0; i<carddata.length; i++) {
+        const data = carddata[i]
+        if(data) {
+            console.log(`[${count}] Processing card ${cards[i].name}`)
+            const info = await new Cardinfo()
+            info.id = i
+            info.ratingsum = data.ratingsum
+            info.usercount = data.usercount
+            await info.save()
+        }
+        count++
+    }
+
+    console.log(`Global card info done`)
 }
 
 main()
