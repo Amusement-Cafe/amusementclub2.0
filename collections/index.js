@@ -8,4 +8,5 @@ module.exports = {
     Hero: require('./hero'),
     Cardinfo: require('./cardinfo'),
     Audit: require('./audit'),
+    AuditAucSell: require('./auditAucSell'),
 }
