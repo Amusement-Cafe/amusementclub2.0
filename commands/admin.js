@@ -186,6 +186,10 @@ pcmd(['admin'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards, parsed
     })
 }))
 
+pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
+    throw `This is a test exception`
+})
+
 pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
     let lift
     const rpl = ['']
