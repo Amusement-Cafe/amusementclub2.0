@@ -141,6 +141,9 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
     if(!trs)
         return ctx.reply(user, `transaction with ID \`${arg1}\` was not found`, 'red')
 
+    if(user.discord_id != trs.to_id && user.discord_id != trs.from_id)
+        return ctx.reply(user, `you do not have permission to view \`${arg1}\``, 'red')
+
     const card = ctx.cards[trs.card]
     const timediff = msToTime(new Date() - trs.time, {compact: true})
 

@@ -1,8 +1,30 @@
+const Audit              = require('../collections/audit')
+const AuditAucSell       = require('../collections/auditAucSell')
+
+const asdate             = require('add-subtract-date')
+
+const msToTime           = require('pretty-ms')
+const {ch_map} = require('./transaction')
+const {formatName}       = require('./card')
+const {tryGetUserID}     = require('../utils/tools')
+
+
+
+const clean_audits = async (ctx, now) => {
+    const auditcleanup = asdate.subtract(new Date(), 21, 'days')
+    await Audit.deleteMany({time: {$lt: auditcleanup}})
+    await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
+}
 
 const paginate_auditReports = (ctx, user, list, report) => {
     const pages = []
     switch (report) {
-
+        case 1:
+            list.map((t, i) => {
+                if (i % 10 == 0) pages.push("")
+                pages[Math.floor(i/10)] += `${format_overSell(ctx, user, t)}\n`
+            })
+            break
         case 2:
             list.map((t, i) => {
                 if (i % 10 == 0) pages.push("")
@@ -20,10 +42,27 @@ const paginate_auditReports = (ctx, user, list, report) => {
     return pages;
 }
 
+const paginate_guildtrslist = (ctx, user, list) => {
+    const pages = []
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("")
+        pages[Math.floor(i/10)] += `${formatGuildTrsList(ctx, user, t)}\n`
+    })
+    return pages;
+}
+
+const format_overSell = (ctx, user, auc) => {
+    let resp = ""
+    let sellPerc = (auc.sold / (auc.sold + auc.unsold)) * 100
+    resp += `${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell Percentage is ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
+
+    return resp;
+}
+
 const format_overPrice = (ctx, user, auc) => {
     let resp = ""
 
-    resp += `**${auc.id}** sold \`${auc.card}\` for ${auc.price_over.toLocaleString('en-us', {minimumFractionDigits: 0})}x eval of ${auc.eval} with ${auc.price} finishing in ${auc.bids} bids`
+    resp += `**${auc.id}** sold \`${auc.card}\` for ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})}x eval of ${auc.eval} with ${auc.price} finishing in ${auc.bids} bids`
 
     return resp;
 }
@@ -36,6 +75,56 @@ const format_rebuys = (ctx, user, auc) => {
     return resp;
 }
 
+const formatGuildTrsList = (ctx, user, gtrans) => {
+    let resp = ""
+    const timediff = msToTime(new Date() - gtrans.time, {compact: true})
+
+    resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${formatName(ctx.cards[gtrans.card])}`
+    resp += `**${gtrans.from}** \`->\` **${gtrans.to}**`
+    return resp;
+}
+
+const formatAucBidList = (ctx, user, bids) => {
+    let resp = ""
+    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bids.time}`
+    return resp;
+}
+
+const parseAuditArgs = (ctx, args) => {
+    const a = {
+        id: '',
+        auction: false,
+        gets: false,
+        sends: false,
+        extraArgs: []
+    }
+
+    args.map( x => {
+        switch (x) {
+            case 'auction':
+                a.auction = true
+                break
+            case 'gets':
+                a.gets = true
+                break
+            case 'sends':
+                a.sends = true
+                break
+            default:
+                const tryid = tryGetUserID(x)
+                if(tryid && !a.id) a.id = x
+                else a.extraArgs.push(x)
+        }
+    })
+    return a
+
+}
+
 module.exports = {
     paginate_auditReports,
+    paginate_guildtrslist,
+    parseAuditArgs,
+    clean_audits,
+    formatAucBidList,
+    formatGuildTrsList
 }

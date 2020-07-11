@@ -88,7 +88,6 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
-
         let card, boostdrop = false
         const colCards = ctx.cards.filter(x => x.col === col.id)
         if(i === 0 && tohruEffect && colCards.some(x => x.level === 3)) {
@@ -204,6 +203,11 @@ cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
+
+    if(user.ban && user.ban.embargo)
+        return ctx.reply(user, `you are not allowed to list cards at auction.
+                                Your dealings were found to be in violation of our community rules.
+                                You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
 
     const id = parsedargs.ids[0]
     const pending = await getPendingFrom(ctx, user)
