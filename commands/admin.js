@@ -198,7 +198,7 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
         if(lift) {
             target.ban.embargo = false
             rpl.push(`${target.username} has been lifted`)
-            await messageLift(ctx, target)
+            await ctx.direct(target, "Your embargo has been lifted, you may now return to normal bot usage. Please try to follow the rules, they can easily be found at \`->rules\`")
             await target.save()
         } else {
             target.ban? target.ban.embargo = true: target.ban = {embargo: true}
