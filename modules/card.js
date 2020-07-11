@@ -5,7 +5,7 @@ const {
 } = require('../utils/tools')
 
 const { Cardinfo }              = require('../collections')
-const { bestColMatch }          = require('./collection')
+const { bestColMatch, bestColMatchMulti }          = require('./collection')
 const { fetchTaggedCards }      = require('./tag')
 const asdate                    = require('add-subtract-date')
 
@@ -69,11 +69,14 @@ const parseArgs = (ctx, args, lastdaily) => {
             }
         } else if(x[0] === '-' || x[0] === '!') {
             const m = x[0] === '-'
+            const mcol = bestColMatchMulti(ctx, substr)
             switch(substr) {
                 case 'gif': q.filters.push(c => c.animated == m); break
                 case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); break
                 case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; break
                 case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
+                case 'rated': q.filters.push(c => m? c.rating: !c.rating); break
+                case 'promo': m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
                 case 'diff': q.diff = m; break
                 case 'miss': q.diff = m; break
                 case 'me': q.me = m; break

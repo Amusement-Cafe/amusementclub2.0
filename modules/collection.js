@@ -11,6 +11,11 @@ const bestColMatch = (ctx, name) => {
 	return c.sort((a, b) => a.id.length - b.id.length)[0]
 }
 
+const bestColMatchMulti = (ctx, name) => {
+    const c = byAlias(ctx, name)
+    return c.sort((a, b) => a.id.length - b.id.length)
+}
+
 /*
     To utilize this elsewhere, you'll need to pass it the ctx, user, and full card(ctx.cards[card.id]).
     userCards is mainly a copy/paste of mapUserCards from module Cards, but it would break on require so I stole it since it's only 1 line
@@ -81,6 +86,7 @@ const reset = async (ctx, user, col) => {
 module.exports = {
     byAlias,
     bestColMatch,
+    bestColMatchMulti,
     completed,
     reset
 }

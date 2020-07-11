@@ -11,7 +11,8 @@ const {check_all}   = require('./modules/secondarycheck')
 const Filter        = require('bad-words')
 
 const {
-    auction, 
+    auction,
+    audit,
     user,
     guild,
     hero
@@ -21,7 +22,7 @@ var userq = require('./utils/userq')
 
 module.exports.schemas = require('./collections')
 
-module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, audit, data }) => {
+module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, auditc, data }) => {
     const emitter = new Emitter()
 
     const fillCardData = (carddata) => {
@@ -121,7 +122,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         baseurl,
         pgn,
         qhelp,
-        audit,
+        auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 
@@ -134,6 +135,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         const now = new Date()
         auction.finish_aucs(ctx, now)
         guild.bill_guilds(ctx, now)
+        audit.cleanAudits(ctx, now)
     }
 
     /* service tick for user checks */

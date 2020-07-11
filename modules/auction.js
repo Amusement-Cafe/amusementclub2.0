@@ -64,7 +64,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
     if(diff < 300000)
         auc.expires = asdate.add(auc.expires, 1, 'minutes')
 
-    auc.bids.push({user: user.discord_id, bid: bid})
+    auc.bids.push({user: user.discord_id, bid: bid, time: new Date()})
     let bidsLeft = 5, cur = auc.bids.length - 1
     while(cur >= 0 && auc.bids[cur].user === user.discord_id) {
         cur--

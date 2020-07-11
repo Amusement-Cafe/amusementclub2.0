@@ -27,7 +27,9 @@ module.exports = model('User', {
     herosubmits:        { type: Number, default: 0 },
 
     roles:              { type: Array, default: [] },
-    ban:                { type: Object },
+    ban:                {
+        embargo:        {type: Boolean}
+    },
 
     lastcard:           { type: Number, default: -1 },
     xp:                 { type: Number, default: 0 },

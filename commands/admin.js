@@ -1,6 +1,10 @@
 const {pcmd} = require('../utils/cmd')
 
 const {
+    messageLift
+} = require('../modules/audit')
+
+const {
     onUsersFromArgs
 } = require('../modules/user')
 
@@ -181,3 +185,23 @@ pcmd(['admin'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards, parsed
         description: `summons **${formatName(card)}**!`
     })
 }))
+
+pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
+    let lift
+    const rpl = ['']
+    await onUsersFromArgs(args, async (target, newargs) => {
+        newargs[0] == 'lift'? lift = true: lift = false
+        if(lift) {
+            target.ban.embargo = false
+            rpl.push(`${target.username} has been lifted`)
+            await messageLift(ctx, target)
+            await target.save()
+        } else {
+            target.ban? target.ban.embargo = true: target.ban = {embargo: true}
+            rpl.push(`${target.username} has been embargoed`)
+            await target.save()
+        }
+    })
+
+    return ctx.reply(user, rpl.join('\n'))
+})
