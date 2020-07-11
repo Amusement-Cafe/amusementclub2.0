@@ -134,8 +134,8 @@ cmd('daily', async (ctx, user) => {
     if(future < now) {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
-        //let amount = gbank? 500 : 300
-        let amount = 5000
+        let amount = gbank? 500 : 300
+        //let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
@@ -222,6 +222,20 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
+cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
+    const now = new Date()
+    cards = cards.filter(x => x.fav)
+    const cardstr = cards.map(c => {
+        const isnew = c.obtained > (user.lastdaily || now)
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cardstr, 15),
+        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+    })
+})).access('dm')
+
 cmd('profile', async (ctx, user, ...args) => {
     const pargs = parseArgs(ctx, args)
     if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0])
@@ -234,7 +248,7 @@ cmd('profile', async (ctx, user, ...args) => {
 
     const completedSum = user.completedcols.length
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
-    const stamp = user._id.getTimestamp()
+    const stamp = user.joined
     const cards = mapUserCards(ctx, user)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
 

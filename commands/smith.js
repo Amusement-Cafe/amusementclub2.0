@@ -164,8 +164,11 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
 
+    const amount = user.dailystats.draw || 0
     const card = bestMatch(cards)
-    const vials = await getVialCost(ctx, card)
+    const cost = await getVialCost(ctx, card)
+    const extra = Math.floor(cost * .2 * amount)
+    const vials = cost + extra
     const col = ctx.collections.find(x => x.id === card.col)
 
     if(col.promo)
@@ -176,9 +179,10 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     if(user.vials < vials)
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
-            You need **${vials}** ${ctx.symbols.vial} but you have **${user.vials}** ${ctx.symbols.vial}`, 'red')
+            You need **${vials}** ${ctx.symbols.vial} (+**${extra}**) but you have **${user.vials}** ${ctx.symbols.vial}`, 'red')
 
-    const question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}?`
+    const question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}? 
+        (+**${extra}** for your #${amount} draw today)`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
         force: ctx.globals.force,
