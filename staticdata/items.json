@@ -50,12 +50,12 @@
                 "desc": "Allows hero to join the guild"
             }, {
                 "price": 1000,
-                "level": 5,
+                "level": 10,
                 "maintenance": 500,
                 "desc": "Increases max loyalty level to 5"
             }, {
                 "price": 30000,
-                "level": 10,
+                "level": 40,
                 "maintenance": 100,
                 "desc": "Makes current hero will 20% less likely to consider other guilds"
             }
@@ -70,17 +70,17 @@
         "levels": [
             {
                 "price": 100,
-                "level": 5,
+                "level": 3,
                 "maintenance": 10,
                 "desc": "Allows users to auction cards globally"
             }, {
                 "price": 500,
-                "level": 5,
+                "level": 10,
                 "maintenance": 20,
                 "desc": "Decreases auction fees from 10% to 5%"
             }, {
                 "price": 5000,
-                "level": 10,
+                "level": 15,
                 "maintenance": 100,
                 "desc": "Allows users to specify auction length (1 to 10 hours)"
             }
@@ -95,7 +95,7 @@
         "levels": [
             {
                 "price": 1000,
-                "level": 10,
+                "level": 3,
                 "maintenance": 100,
                 "desc": "Allows users to forge two cards"
             }, {

@@ -222,6 +222,20 @@ cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
+cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
+    const now = new Date()
+    cards = cards.filter(x => x.fav)
+    const cardstr = cards.map(c => {
+        const isnew = c.obtained > (user.lastdaily || now)
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cardstr, 15),
+        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+    })
+})).access('dm')
+
 cmd('profile', async (ctx, user, ...args) => {
     const pargs = parseArgs(ctx, args)
     if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0])
