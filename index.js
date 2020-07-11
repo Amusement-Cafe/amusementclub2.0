@@ -122,7 +122,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         baseurl,
         pgn,
         qhelp,
-        auditc,
+        audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
     }
 
@@ -135,7 +135,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         const now = new Date()
         auction.finish_aucs(ctx, now)
         guild.bill_guilds(ctx, now)
-        audit.cleanAudits(ctx, now)
+        audit.clean_audits(ctx, now)
     }
 
     /* service tick for user checks */

@@ -15,7 +15,7 @@ const {tryGetUserID}     = require('../utils/tools')
 const {onUsersFromArgs}  = require('../modules/user')
 
 
-const cleanAudits = async (ctx, now) => {
+const clean_audits = async (ctx, now) => {
     const auditcleanup = asdate.subtract(new Date(), 21, 'days')
     await Audit.deleteMany({time: {$lt: auditcleanup}})
     await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
@@ -284,7 +284,7 @@ const parseAuditArgs = (ctx, args) => {
 
 module.exports = {
     paginate_auditReports,
-    cleanAudits,
+    clean_audits,
     auditUser,
     auditAuc,
     auditGuild,

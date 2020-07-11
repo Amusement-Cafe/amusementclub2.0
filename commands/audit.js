@@ -15,7 +15,7 @@ const {
 
 
 pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.auditc['channel'])
+    if (ctx.msg.channel.id != ctx.audit['channel'])
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let switchType = args.shift()
@@ -69,7 +69,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.auditc['channel'])
+    if (ctx.msg.channel.id != ctx.audit['channel'])
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     if(!args)
