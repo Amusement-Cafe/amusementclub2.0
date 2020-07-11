@@ -97,29 +97,29 @@ cmd(['trans', 'sends'], 'sends', async (ctx, user) => {
     })
 })
 
-cmd(['trans', 'auction'], async (ctx, user, arg1) => {
-    let auth, list
+cmd(['trans', 'auction'], ['trans', 'auc'], async (ctx, user, arg1) => {
+    let authorText, list
     switch (arg1) {
         case 'gets' :
             list = await Transaction.find({
                 to_id: user.discord_id ,
                 status: 'auction'
             }).sort({ time: -1 })
-            auth = `${user.username}, your incoming auction transactions (${list.length} results)`
+            authorText = `${user.username}, your incoming auction transactions (${list.length} results)`
             break
         case 'sends' :
             list = await Transaction.find({
                 from_id: user.discord_id,
                 status: 'auction'
             }).sort({ time: -1 })
-            auth = `${user.username}, your outgoing auction transactions (${list.length} results)`
+            authorText = `${user.username}, your outgoing auction transactions (${list.length} results)`
             break
         default:
             list = await Transaction.find({
                 $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
                 status: 'auction'
             }).sort({ time: -1 })
-            auth = `${user.username}, your auction transactions (${list.length} results)`
+            authorText = `${user.username}, your auction transactions (${list.length} results)`
     }
 
     if(list.length == 0)
@@ -129,7 +129,7 @@ cmd(['trans', 'auction'], async (ctx, user, arg1) => {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: auth },
+            author: { name: authorText },
             color: colors.green,
         }
     })

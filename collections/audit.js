@@ -15,4 +15,5 @@ module.exports = model('Audit', {
     report_type:    { type: Number, default: 0 },
     card:           [],
 
+    time:           { type: Date },
 })

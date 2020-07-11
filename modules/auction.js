@@ -1,7 +1,7 @@
-const {Auction, Audit}  = require('../collections')
-const {evalCard}        = require("../modules/eval");
-const {generateNextId}  = require('../utils/tools')
-const {fetchOnly}       = require('./user')
+const {Auction, Audit, AuditAucSell}  = require('../collections')
+const {evalCard}                      = require("../modules/eval");
+const {generateNextId}                = require('../utils/tools')
+const {fetchOnly}                     = require('./user')
 
 const {
     completed
@@ -114,12 +114,14 @@ const finish_aucs = async (ctx, now) => {
 
     const lastBidder = await fetchOnly(auc.lastbidder)
     const author = await fetchOnly(auc.author)
+    const findSell = await AuditAucSell.findOne({ user: author.discord_id})
 
     if(lastBidder) {
         const tback = check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
+        //Audit Logic Start
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
         if (auc.price > eval * 2) {
@@ -132,8 +134,20 @@ const finish_aucs = async (ctx, now) => {
             auditDB.price = auc.price
             auditDB.price_over = auc.price / eval
             auditDB.report_type = 2
+            auditDB.time = new Date()
             await auditDB.save()
         }
+        if(!findSell){
+            const sellDB = await new AuditAucSell()
+            sellDB.user = author.discord_id
+            sellDB.name = author.username
+            sellDB.sold = 1
+            sellDB.time = new Date()
+            await sellDB.save()
+        }else {
+            await AuditAucSell.findOneAndUpdate({ user: author.discord_id, $inc: {sold: 1}})
+        }
+        // End audit logic
         await completed(ctx, lastBidder, aucCard)
         await lastBidder.save()
         await author.save()
@@ -143,6 +157,16 @@ const finish_aucs = async (ctx, now) => {
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
             ${tback > 0? `You got **${tback}** ${ctx.symbols.tomato} back` : ''}`)
     } else {
+        if(!findSell){
+            const sellDB = await new AuditAucSell()
+            sellDB.user = author.discord_id
+            sellDB.name = author.username
+            sellDB.unsold = 1
+            sellDB.time = new Date()
+            await sellDB.save()
+        }else {
+            await AuditAucSell.findOneAndUpdate({ user: author.discord_id, $inc: {unsold: 1}})
+        }
         addUserCard(author, auc.card)
         await author.save()
         return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.

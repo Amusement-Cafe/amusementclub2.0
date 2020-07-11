@@ -50,14 +50,7 @@ const reset = async (ctx, user, col) => {
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
 
     if(completed) {
-        if(completed.amount){
-            completed.amount++
-
-        }else{
-            completed.amount = 1
-
-        }
-
+        completed.amount = completed.amount + 1 || 1
         completed.notified = false
     }
     else {

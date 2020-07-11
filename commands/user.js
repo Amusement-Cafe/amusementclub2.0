@@ -232,7 +232,7 @@ cmd('profile', async (ctx, user, ...args) => {
             color: colors.red
         })
 
-    const completedSum = user.completedcols.map(x => x.id).length
+    const completedSum = user.completedcols.length
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user._id.getTimestamp()
     const cards = mapUserCards(ctx, user)
