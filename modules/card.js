@@ -5,7 +5,10 @@ const {
 } = require('../utils/tools')
 
 const { Cardinfo }              = require('../collections')
-const { bestColMatch, bestColMatchMulti }          = require('./collection')
+const { 
+    bestColMatch, 
+    bestColMatchMulti 
+} = require('./collection')
 const { fetchTaggedCards }      = require('./tag')
 const asdate                    = require('add-subtract-date')
 
