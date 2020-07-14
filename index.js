@@ -23,7 +23,7 @@ var userq = require('./utils/userq')
 module.exports.schemas = require('./collections')
 module.exports.modules = require('./modules')
 
-module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, auditc, data }) => {
+module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, auditc, debug, data }) => {
     const emitter = new Emitter()
 
     const fillCardData = (carddata) => {
@@ -203,8 +203,8 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
-            //if(debug)
-            await send(msg.channel.id, { description: e.message, color: colors.red })
+            if(debug)
+                await send(msg.channel.id, { description: e.message, color: colors.red })
             emitter.emit('error', e)
         }
     })

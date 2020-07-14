@@ -83,7 +83,7 @@ const trigger = async (type, ctx, user, args) => {
         return await cursor._callback.apply({}, newArgs)
     } catch (err) {
         console.error(err) /* log actual error to the console */
-        throw new Error(err)
+        throw (err)
     }
 }
 
