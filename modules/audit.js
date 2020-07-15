@@ -51,10 +51,19 @@ const paginate_guildtrslist = (ctx, user, list) => {
     return pages;
 }
 
+const paginate_closedAudits = (ctx, user, list) => {
+    const pages =[]
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("")
+        pages[Math.floor(i/10)] += `${formatCompletedList(ctx, user, t)}\n`
+    })
+    return pages;
+}
+
 const format_overSell = (ctx, user, auc) => {
     let resp = ""
     let sellPerc = (auc.sold / (auc.sold + auc.unsold)) * 100
-    resp += `${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell Percentage is ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
+    resp += `AuditID:\`${auc.audit_id}\` ${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell% ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
 
     return resp;
 }
@@ -62,7 +71,7 @@ const format_overSell = (ctx, user, auc) => {
 const format_overPrice = (ctx, user, auc) => {
     let resp = ""
 
-    resp += `**${auc.id}** sold \`${auc.card}\` for ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})}x eval of ${auc.eval} with ${auc.price} finishing in ${auc.bids} bids`
+    resp += `AuditID: \`${auc.audit_id}\` **${auc.id}** sold \`${auc.card}\` for ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})}x eval of ${auc.eval} with ${auc.price} finishing in ${auc.bids} bids`
 
     return resp;
 }
@@ -87,6 +96,12 @@ const formatGuildTrsList = (ctx, user, gtrans) => {
 const formatAucBidList = (ctx, user, bids) => {
     let resp = ""
     resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bids.time}`
+    return resp;
+}
+
+const formatCompletedList = (ctx, user, audit) => {
+    let resp = ""
+    resp += `\`${audit.audit_id}\` closed by ${audit.closedBy}, Report Type ${audit.report_type}`
     return resp;
 }
 
@@ -123,6 +138,7 @@ const parseAuditArgs = (ctx, args) => {
 module.exports = {
     paginate_auditReports,
     paginate_guildtrslist,
+    paginate_closedAudits,
     parseAuditArgs,
     clean_audits,
     formatAucBidList,

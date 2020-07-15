@@ -91,6 +91,8 @@ const confirm_trs = async (ctx, user, trs_id) => {
         const auditCheck = await Auction.findOne({ author: transaction.to_id, card: card.id})
         if (auditCheck) {
             const auditDB = await new Audit()
+            const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+            auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
             auditDB.report_type = 3
             auditDB.transid = transaction.id
             auditDB.id = auditCheck.id
