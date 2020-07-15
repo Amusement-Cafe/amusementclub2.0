@@ -63,7 +63,7 @@ const paginate_closedAudits = (ctx, user, list) => {
 const format_overSell = (ctx, user, auc) => {
     let resp = ""
     let sellPerc = (auc.sold / (auc.sold + auc.unsold)) * 100
-    resp += `AuditID:\`${auc.audit_id}\` ${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell% ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
+    resp += `${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell% ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
 
     return resp;
 }
