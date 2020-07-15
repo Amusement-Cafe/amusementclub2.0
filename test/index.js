@@ -3,7 +3,6 @@ const amusement = require('../index.js')
 const _         = require('lodash')
 
 const main = async () => {
-    const debug = true
     const data = {
         cards: require('./data/cards.json'),
         collections: require('./data/collections.json'),
@@ -21,7 +20,7 @@ const main = async () => {
     }
 
     console.log(`Working with ${data.cards.length} cards and ${data.collections.length} collections`)
-    const options  = Object.assign({shards: 1, data}, config, debug)
+    const options  = Object.assign({shards: 1, data}, config)
     const instance = await amusement.create(options)
 
     await instance.connect()

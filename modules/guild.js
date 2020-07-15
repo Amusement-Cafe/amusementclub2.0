@@ -199,6 +199,10 @@ const rankXP = [10, 100, 500, 2500, 10000]
 
 const XPtoRANK = (xp) => rankXP.filter(x => xp > x).length
 
+const dropCache = () => { 
+    cache = []
+}
+
 const guildLock = {
     price: 100000,
     maintenance: 5000
@@ -216,5 +220,6 @@ module.exports = Object.assign(module.exports, {
     getBuilding,
     guildLock,
     getBuildingInfo,
-    isUserManager
+    isUserManager,
+    dropCache
 })
