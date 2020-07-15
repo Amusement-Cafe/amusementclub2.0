@@ -1,4 +1,4 @@
-const {cmd}             = require('../utils/cmd')
+const {cmd, pcmd}       = require('../utils/cmd')
 const {XPtoLEVEL}       = require('../utils/tools')
 const color             = require('../utils/colors')
 const msToTime          = require('pretty-ms')
@@ -12,7 +12,8 @@ const {
     getGuildUser,
     guildLock,
     getBuildingInfo,
-    isUserManager
+    isUserManager,
+    dropCache
 } = require('../modules/guild')
 
 const {
@@ -423,4 +424,9 @@ cmd(['guild', 'unlock'], async (ctx, user) => {
                 Claim pool now consists of **${colCards.length}** cards`)
         }
     })
+})
+
+pcmd(['admin'], ['sudo', 'guild', 'cache', 'reload'], (ctx) => {
+    dropCache()
+    return ctx.reply(user, 'guild cache was reset')
 })

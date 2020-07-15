@@ -125,6 +125,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         qhelp,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
+        wip: false,
     }
 
     const globalArgsMap = {
@@ -163,7 +164,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
 
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
-        emitter.emit('info', `Bot is ready on ${bot.guilds.size} guild(s) with ${bot.users.size} user(s) using ${bot.shards.size} shard(s)`)
+        emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
     })
 
     bot.on('messageCreate', async (msg) => {
