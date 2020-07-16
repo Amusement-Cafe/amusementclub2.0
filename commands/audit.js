@@ -316,7 +316,7 @@ pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], async (c
 
 pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
     if (ctx.msg.channel.id != ctx.audit['channel'])
-        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+        return ctx.reply(user, 'this command can only be run in an audit channel.', 'red')
 
     const closedAudits = await Audit.find({audited: true}).sort({ _id: -1})
 
