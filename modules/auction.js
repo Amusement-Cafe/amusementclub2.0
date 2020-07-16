@@ -126,6 +126,8 @@ const finish_aucs = async (ctx, now) => {
         const eval = await evalCard(ctx, aucCard)
         if (auc.price > eval * 2) {
             const auditDB = await new Audit()
+            const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+            auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
             auditDB.id = auc.id
             auditDB.card = aucCard.name
             auditDB.bids = auc.bids.length
@@ -145,7 +147,7 @@ const finish_aucs = async (ctx, now) => {
             sellDB.time = new Date()
             await sellDB.save()
         }else {
-            await AuditAucSell.findOneAndUpdate({ user: author.discord_id, $inc: {sold: 1}})
+            await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
         }
         // End audit logic
         await completed(ctx, lastBidder, aucCard)
@@ -165,7 +167,7 @@ const finish_aucs = async (ctx, now) => {
             sellDB.time = new Date()
             await sellDB.save()
         }else {
-            await AuditAucSell.findOneAndUpdate({ user: author.discord_id, $inc: {unsold: 1}})
+            await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
         }
         addUserCard(author, auc.card)
         await author.save()

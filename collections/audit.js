@@ -1,9 +1,11 @@
 const {model, Schema} = require('mongoose')
 
 module.exports = model('Audit', {
+    audit_id:       { type: String },
     id:             { type: String },
     transid:        { type: String },
     user:           { type: String },
+    closedBy:       { type: String },
 
     audited:        { type: Boolean, default: false },
 
@@ -16,4 +18,5 @@ module.exports = model('Audit', {
     card:           [],
 
     time:           { type: Date },
+
 })

@@ -630,11 +630,19 @@
             },
             {
                 "title": "Auction Bidding",
-                "description": "The only reason you should bid on an auction is if you want to collect that card or resell it to a collector."
+                "description": "Bidding on auctions for the express purpose of helping someone gain tomatoes is prohibited. This includes buying cards from someone on auction and re-selling it to them, bidding to drive the price higher for them, and more."
             },
             {
                 "title": "Multiple Accounts",
                 "description": "This is only allowed if your accounts do not interact with each other."
+            },
+            {
+                "title": "Tagging Bypass",
+                "description": "Attempts to bypass banned words in the tagging process is prohibited. Users found doing this repeatedly will be subject to tagging bans and/or 10,000 tomato fine.\nIf tags are found to be done from an alt, the 10,000 tomato fine will be subjected to the main account, as well as proper punishment for alt usage."
+            },
+            {
+                "title": "Tagging Guidelines",
+                "description": "We are looking for useful tags, not tags based on opinions. \nTag types we are looking for:\n- Character name(s) of pictured\n- Fandom name(s) pictured\n- Key descriptions: `Animal_ears, cat_ears, fox_girl, maid`\n- Word Separation with \\_: Kanna`_`Kamui\n\nTag types we are NOT looking for:\n- Cute X: `Cute girls, cute girl, cute boys, cute boy`\n- Best X: `Best Girl, Best Boy, Best Character etc.`\n- Worst X: `Same as above, replace best with worst`\n- No Word Separation: kannakamui"
             },
             {
                 "title": "Play nice",
