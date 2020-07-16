@@ -47,14 +47,17 @@ const onUsersFromArgs = async (args, callback) => {
     }))
 }
 
-const getQuest = (ctx, user, tier) => {
+const getQuest = (ctx, user, tier, exclude) => {
     const levels = ctx.guild.buildings.reduce((res, curr) => {
         for(let i=0; i<curr.level; i++)
             res.push(`${curr.id}${i + 1}`)
         return res
     }, [])
     
-    const available = ctx.quests.daily.filter(x => (!x.building || levels.includes(x.building)) && x.tier === tier)
+    const available = ctx.quests.daily.filter(x => 
+        (!x.building || levels.includes(x.building))
+        && (!exclude || !x.id.includes(exclude.slice(0, -1)))
+        && x.tier === tier)
     return _.sample(available)
 }
 

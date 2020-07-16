@@ -157,7 +157,7 @@ cmd('daily', async (ctx, user) => {
             user.dailyquests.push(quests[0].id)
 
             if(tavern.level > 1) {
-                quests.push(getQuest(ctx, user, 2))
+                quests.push(getQuest(ctx, user, 2, quests[0].id))
                 user.dailyquests.push(quests[1].id)
             }
         }
