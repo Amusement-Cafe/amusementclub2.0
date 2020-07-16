@@ -157,7 +157,7 @@ cmd('daily', async (ctx, user) => {
             user.dailyquests.push(quests[0].id)
 
             if(tavern.level > 1) {
-                quests.push(getQuest(ctx, user, 2))
+                quests.push(getQuest(ctx, user, 2, quests[0].id))
                 user.dailyquests.push(quests[1].id)
             }
         }
@@ -248,7 +248,7 @@ cmd('profile', async (ctx, user, ...args) => {
 
     const completedSum = user.completedcols.length
     const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
-    const stamp = user.joined
+    const stamp = user.joined || user._id.getTimestamp()
     const cards = mapUserCards(ctx, user)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
 

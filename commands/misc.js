@@ -1,7 +1,12 @@
-const {cmd} = require('../utils/cmd')
-const colors = require('../utils/colors')
-const msToTime  = require('pretty-ms')
-const { arrayChunks } = require('../utils/tools')
+const {cmd}             = require('../utils/cmd')
+const colors            = require('../utils/colors')
+const msToTime          = require('pretty-ms')
+const _                 = require('lodash')
+const { fetchOnly }     = require('../modules/user')
+const { 
+    arrayChunks, 
+    getAllUserIDs 
+} = require('../utils/tools')
 
 cmd('help', async (ctx, user, ...args) => {
     let sbj = 'general'
@@ -43,6 +48,20 @@ cmd('baka', async (ctx, user, ...args) => {
     return ctx.reply(user, `you baka in \`${time}\``)
 })
 
+cmd('pat', async (ctx, user, ...args) => {
+    const otherid = getAllUserIDs(args).ids[0]
+    if(!otherid) return
+
+    const otheruser = await fetchOnly(otherid)
+    if(!otheruser) return
+
+    const embed = { 
+        description: `**${user.username}** pats **${otheruser.username}** ${_.sample(pats)}`,
+        color: Math.floor(Math.random() * 16777215)
+    }
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
+
 const getHelpEmbed = (ctx, o, prefix) => {
 
     const footerText = `Amusement Club Alexandrite | xQAxThF | v0.1.0 BETA | by NoxCaos#4905`
@@ -65,3 +84,16 @@ const getHelpEmbed = (ctx, o, prefix) => {
 
     return e
 }
+
+const pats = [
+    '(；^＿^)ッ☆(　゜o゜)',
+    '(　´Д｀)ﾉ(´･ω･`)　ﾅﾃﾞﾅﾃﾞ',
+    '(*￣▽￣)ノ”(^ー^*)',
+    '(*￣▽￣)ノ”(- -*)',
+    '(*￣▽￣)ノ”(ﾟ∇ﾟ*)',
+    '(*￣▽￣)ノ”(ﾟーﾟ*)',
+    '(*’-’)ノ”(^o^*)',
+    '(ｏ・_・)ノ”(ᴗ_ ᴗ。)',
+    '(*´・ω・)ノ(-ω-｀*)',
+    '(o・_・)ノ”(ノ_＜。)'
+]
