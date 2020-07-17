@@ -60,7 +60,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const eval2 = await evalCard(ctx, card2)
     const vialavg = (await getVialCost(ctx, card1, eval1) + await getVialCost(ctx, card2, eval2)) * .5
     const cost = Math.round(((eval1 + eval2) * .25) * (check_effect(ctx, user, 'cherrybloss')? .5 : 1))
-    const vialres = Math.round(vialavg * .5)
+    const vialres = Math.round((vialavg === Infinity? 0 : vialavg) * .5)
 
     if(user.exp < cost)
         return ctx.reply(user, `you need at least **${cost}** ${ctx.symbols.tomato} to forge these cards`, 'red')
@@ -120,6 +120,8 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     let vials = Math.round((await getVialCost(ctx, card)) * .25)
+    if(vials === Infinity)
+        vials = 5
 
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify a card`, 'red')

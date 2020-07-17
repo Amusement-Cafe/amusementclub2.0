@@ -1,5 +1,6 @@
-const User = require('../collections/user')
-const _ = require('lodash')
+const User      = require('../collections/user')
+const _         = require('lodash')
+const asdate    = require('add-subtract-date')
 
 const {
     getAllUserIDs
@@ -14,6 +15,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
         user.discord_id = userid
         user.exp = 3000
         user.joined = new Date()
+        user.lastdaily = asdate.subtract(new Date(), 1, 'day')
 
         /* save, and send welcome msg */
         await user.save()

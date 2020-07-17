@@ -197,6 +197,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             })
             args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
             usr.exp = Math.min(usr.exp, 10**7)
+            usr.vials = Math.min(usr.vials, 10**6)
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
             //usr = await user.fetchOnly(msg.author.id)
