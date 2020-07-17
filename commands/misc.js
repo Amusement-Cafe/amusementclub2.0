@@ -33,7 +33,8 @@ cmd('help', async (ctx, user, ...args) => {
                 await ctx.reply(user, 'help was sent to you')
         } catch (e) {
             await ctx.reply(user, `please make sure you have **Allow direct messages from server members** enabled in server privacy settings.
-                You can do it in any server that you share with bot`, 'red')
+                You can do it in any server that you share with bot.
+                You also can add *-here* (e.g. \`->help guild -here\`) to see help in the current channel`, 'red')
         }
     }
 }).access('dm')
