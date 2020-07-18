@@ -214,7 +214,7 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], () => {
+pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) => {
     ctx.wip = !ctx.wip
     return ctx.reply(user, `maintenance mode is now **${ctx.wip? `ENABLED` : `DISABLED`}**`)
 })
