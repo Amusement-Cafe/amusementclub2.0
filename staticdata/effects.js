@@ -120,7 +120,7 @@ module.exports = [
         name: 'The Judgment Day',
         desc: 'Grants effect of any useable card',
         passive: false,
-        cooldown: 1,
+        cooldown: 48,
         use: async (ctx, user, args) => {
             if(args.length === 0)
                 return { msg: `please specify effect ID`, used: false }

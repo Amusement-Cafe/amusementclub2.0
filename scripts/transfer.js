@@ -111,6 +111,9 @@ const users = async (db) => {
         newu.cards = []
         newu.lastdaily = past
 
+        if(newu.exp === Infinity)
+            newu.exp = 0
+
         if(u.hero)
             newu.xp = u.hero.exp
 
