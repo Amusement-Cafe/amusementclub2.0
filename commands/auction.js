@@ -62,7 +62,7 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
 
     const author = await fetchOnly(auc.author)
     const card = ctx.cards[auc.card]
-    const timediff = msToTime(auc.expires - new Date(), {compact: true})
+    const timediff = msToTime(auc.expires - new Date())
 
     const resp = []
     resp.push(`Seller: **${author.username}**`)

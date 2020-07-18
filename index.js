@@ -23,13 +23,19 @@ var userq = require('./utils/userq')
 module.exports.schemas = require('./collections')
 module.exports.modules = require('./modules')
 
-module.exports.create = async ({ shards, database, token, prefix, baseurl, shorturl, auditc, debug, data }) => {
+module.exports.create = async ({ 
+        shards, database, token, prefix, 
+        baseurl, shorturl, auditc, debug, 
+        maintenance, data 
+    }) => {
+
     const emitter = new Emitter()
 
     const fillCardData = (carddata) => {
         data.cards = carddata.map((x, i) => {
             const col = data.collections.filter(y => y.id == x.col)[0]
-            const basePath = `/${col.promo? 'promo':'cards'}/${col.id}/${x.level}_${x.name}.${x.animated? 'gif' : (col.compressed? 'jpg' : 'png')}`
+            const ext = x.animated? 'gif' : (col.compressed? 'jpg' : 'png')
+            const basePath = `/${col.promo? 'promo':'cards'}/${col.id}/${x.level}_${x.name}.${ext}`
             x.url = baseurl + basePath
             x.shorturl = shorturl + basePath
             x.id = i
@@ -125,7 +131,7 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
         qhelp,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
-        wip: false,
+        wip: maintenance,
     }
 
     const globalArgsMap = {
@@ -190,6 +196,10 @@ module.exports.create = async ({ shards, database, token, prefix, baseurl, short
             let args = msg.content.trim().substring(prefix.length).split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
+
+            if(ctx.wip && !usr.roles.includes()) {
+                return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
+            }
 
             isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
