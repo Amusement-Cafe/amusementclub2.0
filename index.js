@@ -197,7 +197,7 @@ module.exports.create = async ({
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
 
-            if(ctx.wip && !usr.roles.includes()) {
+            if(ctx.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
                 return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
             }
 
