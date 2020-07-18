@@ -134,12 +134,8 @@ const parseAuditArgs = (ctx, args) => {
 
 }
 
-const add0 = (i) => {
-    return (i < 10) ? "0" + i : i;
-}
 
 module.exports = {
-    add0,
     paginate_auditReports,
     paginate_guildtrslist,
     paginate_closedAudits,

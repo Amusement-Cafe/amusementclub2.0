@@ -8,7 +8,6 @@ const {paginate_trslist, ch_map} = require('../modules/transaction')
 const dateFormat                = require(`dateformat`)
 
 const {
-    add0,
     formatAucBidList,
     paginate_auditReports,
     paginate_guildtrslist,
