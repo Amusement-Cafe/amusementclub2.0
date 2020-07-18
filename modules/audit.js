@@ -95,8 +95,8 @@ const formatGuildTrsList = (ctx, user, gtrans) => {
 
 const formatAucBidList = (ctx, user, bids) => {
     let resp = ""
-    
-    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bids.time.toISOString()}`
+    const bidTime = `${add0(bids.time.getFullYear())}-${add0(1 + bids.time.getMonth())}-${add0(bids.time.getDate())} ${add0(bids.time.getHours())}:${add0(bids.time.getMinutes())}:${add0(bids.time.getSeconds())}`
+    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bidTime}`
     return resp;
 }
 
@@ -136,7 +136,12 @@ const parseAuditArgs = (ctx, args) => {
 
 }
 
+const add0 = (i) => {
+    return (i < 10) ? "0" + i : i;
+}
+
 module.exports = {
+    add0,
     paginate_auditReports,
     paginate_guildtrslist,
     paginate_closedAudits,

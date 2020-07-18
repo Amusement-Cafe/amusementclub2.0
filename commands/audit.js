@@ -7,6 +7,7 @@ const msToTime                  = require('pretty-ms')
 const {paginate_trslist, ch_map} = require('../modules/transaction')
 
 const {
+    add0,
     formatAucBidList,
     paginate_auditReports,
     paginate_guildtrslist,
@@ -230,6 +231,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
     const author = await fetchOnly(auc.author)
     const card = ctx.cards[auc.card]
     const timediff = msToTime(auc.expires - new Date(), {compact: true})
+    const endTime = `${add0(auc.expires.getFullYear())}-${add0(1 + auc.expires.getMonth())}-${add0(auc.expires.getDate())} ${add0(auc.expires.getHours())}:${add0(auc.expires.getMinutes())}:${add0(auc.expires.getSeconds())}`
 
     const resp = []
     resp.push(`Seller: **${author.username}** \`${author.discord_id}\``)
@@ -238,7 +240,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
     resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
 
     if(auc.finished)
-        resp.push(`**This auction has finished! Finished at ${auc.expires.toISOString()}**`)
+        resp.push(`**This auction has finished! Finished at ${endTime}**`)
     else
         resp.push(`Expires in **${timediff}**`)
 
