@@ -95,7 +95,8 @@ const formatGuildTrsList = (ctx, user, gtrans) => {
 
 const formatAucBidList = (ctx, user, bids) => {
     let resp = ""
-    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bids.time}`
+    
+    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bids.time.toISOString()}`
     return resp;
 }
 
