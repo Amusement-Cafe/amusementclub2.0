@@ -2,6 +2,7 @@ const {cmd, pcmd}           = require('../utils/cmd')
 const {Transaction}         = require('../collections')
 const msToTime              = require('pretty-ms')
 const colors                = require('../utils/colors')
+const dateFormat            = require(`dateformat`)
 
 const {
     formatName,
@@ -160,7 +161,7 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
         resp.push(`${ch_map[trs.status]} This is an **auction** transaction`)
     }
     
-    resp.push(`Date: **${trs.time}**`)
+    resp.push(`Date: **${dateFormat(trs.time, "yyyy-mm-dd HH:MM:ss")}**`)
 
     return ctx.send(ctx.msg.channel.id, {
         title: `Transaction [${trs.id}] (${timediff})`,
