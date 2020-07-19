@@ -131,7 +131,9 @@ module.exports.create = async ({
         qhelp,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
-        wip: maintenance,
+        settings: {
+            wip: maintenance,
+        }
     }
 
     const globalArgsMap = {
@@ -197,7 +199,7 @@ module.exports.create = async ({
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
 
-            if(ctx.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
+            if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
                 return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
             }
 
