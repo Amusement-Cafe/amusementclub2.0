@@ -1,8 +1,7 @@
 const Audit              = require('../collections/audit')
 const AuditAucSell       = require('../collections/auditAucSell')
-
 const asdate             = require('add-subtract-date')
-
+const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
 const {ch_map} = require('./transaction')
 const {formatName}       = require('./card')
@@ -95,7 +94,7 @@ const formatGuildTrsList = (ctx, user, gtrans) => {
 
 const formatAucBidList = (ctx, user, bids) => {
     let resp = ""
-    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${bids.time}`
+    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${dateFormat(bids.time, "yyyy-mm-dd HH:MM:ss")}`
     return resp;
 }
 
@@ -134,6 +133,7 @@ const parseAuditArgs = (ctx, args) => {
     return a
 
 }
+
 
 module.exports = {
     paginate_auditReports,

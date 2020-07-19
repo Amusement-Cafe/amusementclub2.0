@@ -5,6 +5,7 @@ const {fetchOnly}               = require('../modules/user')
 const colors                    = require('../utils/colors')
 const msToTime                  = require('pretty-ms')
 const {paginate_trslist, ch_map} = require('../modules/transaction')
+const dateFormat                = require(`dateformat`)
 
 const {
     formatAucBidList,
@@ -24,7 +25,7 @@ const {
 
 
 pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
 
@@ -36,7 +37,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let overSell = await AuditAucSell.find({sold: {$gt:5}}).sort({sold: -1})
@@ -52,7 +53,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
 })
 
 pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let overPrice = (await Audit.find({ audited: false, report_type: 2 }).sort({price_over : -1}))
@@ -68,7 +69,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
 })
 
 pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let buybacks = await Audit.find({audited: false, report_type: 3}).sort({price: -1})
@@ -84,14 +85,14 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
 })
 
 pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     return ctx.reply(user, "Current audit options are: auction, guild, trans, user, warn")
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
 
@@ -136,7 +137,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
     let search
@@ -162,7 +163,7 @@ pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let trans = await Transaction.findOne({id: arg[0]})
 
@@ -196,7 +197,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
     let warnedUser = await fetchOnly(arg.id)
@@ -220,7 +221,7 @@ pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     const auc = await Auction.findOne({ id: args[0] })
 
@@ -238,7 +239,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
     resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
 
     if(auc.finished)
-        resp.push(`**This auction has finished**`)
+        resp.push(`**This auction has finished! Finished at ${dateFormat(auc.expires, "yyyy-mm-dd HH:MM:ss")}**`)
     else
         resp.push(`Expires in **${timediff}**`)
 
@@ -266,7 +267,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'find'], async (ctx, user, ...args) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
     if (!arg.id)
@@ -297,7 +298,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], async (ctx, user, arg) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     if (!arg)
@@ -315,7 +316,7 @@ pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], async (c
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
-    if (ctx.msg.channel.id != ctx.audit['channel'])
+    if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'this command can only be run in an audit channel.', 'red')
 
     const closedAudits = await Audit.find({audited: true}).sort({ _id: -1})

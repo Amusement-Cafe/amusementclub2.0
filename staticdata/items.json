@@ -116,7 +116,7 @@
         "price": 2500,
         "type": "blueprint",
         "desc": "get better cards and daily",
-        "fulldesc": "When built and upgraded, adds 4-star cards to a claim pool and increases default daily",
+        "fulldesc": "When built and upgraded, adds rare collection cards to a claim pool and increases default daily",
         "levels": [
             {
                 "price": 1000,
@@ -127,7 +127,7 @@
                 "price": 5000,
                 "level": 15,
                 "maintenance": 400,
-                "desc": "Enables 4-star drop when claiming in this guild"
+                "desc": "Enables rare collection card drops when claiming in this guild"
             }, {
                 "price": 12000,
                 "level": 30,

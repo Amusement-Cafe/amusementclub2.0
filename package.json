@@ -12,6 +12,7 @@
   "dependencies": {
     "add-subtract-date": "^1.0.14",
     "bad-words": "^3.0.3",
+    "dateformat": "^3.0.3",
     "discord-paginator": "^0.8.10",
     "eris": "^0.11.2",
     "jikanjs": "^0.7.0",
