@@ -100,7 +100,7 @@ const users = async (db) => {
     for (let g = await gcursor.next(); g != null; g = await gcursor.next()) {
         console.log(`[#${count}] Processing Guild ${g.id}...`)
         const newg = await new Guild()
-        newd.id = g.id
+        newg.id = g.id
         newg.prefix = g.prefix || '->'
         newg.botchannels = g.botChannels
         newg.xp = 100
