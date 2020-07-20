@@ -176,8 +176,15 @@ module.exports.create = async ({
     })
 
     bot.on('messageCreate', async (msg) => {
-        if (!msg.content.startsWith(prefix)) return; /* skip not commands */
         if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
+
+        let curprefix = prefix
+        const curguild = await guild.fetchOnly(msg.channel.guild)
+        if(curguild) {
+            curprefix = curguild.prefix
+        }
+
+        if (!msg.content.startsWith(curprefix)) return;
         msg.content = msg.content.toLowerCase()
 
         try {
@@ -195,7 +202,7 @@ module.exports.create = async ({
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
-            let args = msg.content.trim().substring(prefix.length).split(/ +/)
+            let args = msg.content.trim().substring(curprefix.length).split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
 
@@ -203,7 +210,7 @@ module.exports.create = async ({
                 return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
             }
 
-            isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
