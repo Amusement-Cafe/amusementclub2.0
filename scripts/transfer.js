@@ -7,6 +7,7 @@ const asdate        = require('add-subtract-date')
 const effects       = require('../staticdata/effects')
 const items         = require('../staticdata/items')
 const User          = require('../collections/user')
+const Guild         = require('../collections/guild')
 const Cardinfo      = require('../collections/cardinfo')
 
 const main = async () => {
@@ -55,6 +56,7 @@ const users = async (db) => {
     const now = new Date();
     const past = asdate.subtract(new Date(), 20, 'hours')
     const cursor = db.collection('users').find()
+    const gcursor = db.collection('servers').find()
     //const usrs = await db.collection('users').find().toArray()
     const cards = require('./crds.json')
     const collections = require('./cols.json')
@@ -95,6 +97,23 @@ const users = async (db) => {
     //const collections = require('./collections.json')
 
     let count = 1
+    for (let g = await gcursor.next(); g != null; g = await gcursor.next()) {
+        console.log(`[#${count}] Processing Guild ${g.id}...`)
+        const newg = await new Guild()
+        newd.id = g.id
+        newg.prefix = g.prefix || '->'
+        newg.botchannels = g.botChannels
+        newg.xp = 100
+        newg.balance = 5000
+
+        if(g.lock)
+            newg.overridelock = g.lock
+
+        newg.save()
+        count++
+    }
+
+    count = 1
     for (let u = await cursor.next(); u != null; u = await cursor.next()) {
         console.log(`[#${count}] Processing ${u.username} : ${u.discord_id}...`)
 
