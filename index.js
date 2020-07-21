@@ -26,7 +26,7 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, data 
+        maintenance, invite, data 
     }) => {
 
     const emitter = new Emitter()
@@ -129,6 +129,7 @@ module.exports.create = async ({
         baseurl,
         pgn,
         qhelp,
+        invite,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         settings: {

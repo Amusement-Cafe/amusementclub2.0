@@ -63,6 +63,17 @@ cmd('pat', async (ctx, user, ...args) => {
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
 
+cmd('invite', async (ctx, user) => {
+    const embed = { 
+        title: `Invite Amusement Club`,
+        description: `Please, read terms and conditions of using bot on your server by typing \`->help invite\` 
+            After that [click here](${ctx.invite}) to invite the bot.`,
+        color: colors.green
+    }
+
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
+
 const getHelpEmbed = (ctx, o, prefix) => {
 
     const footerText = `Amusement Club Alexandrite | xQAxThF | v0.1.0 BETA | by NoxCaos#4905`
