@@ -56,7 +56,7 @@ const fetchOnly = async (discord_guild) => {
         fromcache = false
     }
 
-    if(!fromcache)
+    if(!fromcache && guild)
         cache.push(guild)
 
     return guild

@@ -1,6 +1,6 @@
 const MongoClient   = require('mongodb').MongoClient
 const _             = require('lodash')
-const fs            = require('fs')
+const fs            = require('fs').promises
 const mongoose      = require('mongoose')
 const asdate        = require('add-subtract-date')
 
@@ -39,17 +39,18 @@ const colsCards = async (db) => {
     const cardList = [], colList = []
     cols.map(col => {
         const aliases = `[${col.aliases.map(x => `"${x}"`)}]`
-        colList.push(`{"id":"${col.id}","name":"${col.name}","origin":"${col.origin}","aliases":${aliases},"promo":false,"compressed":${col.compressed}}`)
+        console.log(`${col.id} : ${col.special}`)
+        colList.push(`{"id":"${col.id}","name":"${col.name}","origin":"${col.origin}","aliases":${aliases},"promo":${col.special},"compressed":${col.compressed}}`)
         allcards.filter(y => y.collection === col.id).map(y => {
             if(y.craft)
                 cardList.push(`{"name":"${y.name}","level":4,"animated":false,"col":"limitedcraft","added":"${now.toJSON()}"}`)
             else
                 cardList.push(`{"name":"${y.name}","level":${y.level},"animated":${y.animated},"col":"${y.collection}","added":"${y._id.getTimestamp().toJSON()}"}`)
         })
-
-        fs.writeFileSync(`cols.json`, `[${colList.join(',\n')}]`)
-        fs.writeFileSync(`crds.json`, `[${cardList.join(',\n')}]`)
     })
+
+    await fs.writeFile(`cols.json`, `[${colList.join(',\n')}]`)
+    await fs.writeFile(`crds.json`, `[${cardList.join(',\n')}]`)
 }
 
 const users = async (db) => {
