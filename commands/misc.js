@@ -22,19 +22,26 @@ cmd('help', async (ctx, user, ...args) => {
         return ctx.reply(user, `can't find help for \`${sbj}\``, 'red')
 
     if(sendHere){
-        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, getHelpEmbed(ctx, help, `->`))
+        const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
 
     } else {
         try {
             const ch = await ctx.bot.getDMChannel(user.discord_id)
-            await ctx.pgn.addPagination(user.discord_id, ch.id, getHelpEmbed(ctx, help, `->`))
+            const curpgn = getHelpEmbed(ctx, help, `->`)
+            curpgn.embed.description = `> NOTE: This help message has standard prefix \`->\` which can be different in guilds (servers).\n
+                ${curpgn.embed.description}`
+            await ctx.pgn.addPagination(user.discord_id, ch.id, curpgn)
 
             if(ch.id != ctx.msg.channel.id)
-                await ctx.reply(user, 'help was sent to you')
+                await ctx.reply(user, `help was sent to you. 
+                    You can also use *-here* (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
+
         } catch (e) {
-            await ctx.reply(user, `please make sure you have **Allow direct messages from server members** enabled in server privacy settings.
+            await ctx.reply(user, `failed to send direct message to you ੨( ･᷄ ︵･᷅ )ｼ
+                Please make sure you have **Allow direct messages from server members** enabled in server privacy settings.
                 You can do it in any server that you share with bot.
-                You also can add *-here* (e.g. \`->help guild -here\`) to see help in the current channel`, 'red')
+                You also can add *-here* (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`, 'red')
         }
     }
 }).access('dm')
@@ -84,7 +91,12 @@ const getHelpEmbed = (ctx, o, prefix) => {
         color: colors['green']
     }
 
-    const pages = arrayChunks(o.fields.map((x) => ({ name: x.title, inline: x.inline, value: x.description.replace(/->/g, prefix)})), 6)
+    const pages = arrayChunks(o.fields.map((x) => ({ 
+        name: x.title.replace(/->/g, prefix), 
+        inline: x.inline, 
+        value: x.description.replace(/->/g, prefix)
+    })), 6)
+
     return {
         pages, embed,
         buttons: ['back', 'forward'],

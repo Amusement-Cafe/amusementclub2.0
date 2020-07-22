@@ -47,6 +47,7 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
     resp.push(`Prefix: \`${ctx.guild.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
+    resp.push(`Bot channels: ${ctx.guild.botchannels.map(x => `<#${x}>`).join(' ')}`)
 
     const lock = ctx.guild.overridelock || ctx.guild.lock
     if(lock) {

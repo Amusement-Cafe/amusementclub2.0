@@ -187,10 +187,6 @@ module.exports.create = async ({
         const curguild = await guild.fetchOnly(msg.channel.guild)
         if(curguild) {
             curprefix = curguild.prefix
-
-            /* skip cooldown guilds */
-            if(guildq.some(x => x === curguild.id))
-                return
         }
 
         if (!msg.content.startsWith(curprefix)) return;
@@ -201,9 +197,15 @@ module.exports.create = async ({
             const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
 
             const setbotmsg = 'guild set bot'
+            const cntnt = msg.content.trim().substring(curprefix.length)
             if(curguild 
-                && !msg.content.includes(setbotmsg)
+                && !cntnt.includes(setbotmsg)
+                && !cntnt.startsWith('sum')
                 && !curguild.botchannels.some(x => x === msg.channel.id)) {
+
+                /* skip cooldown guilds */
+                if(guildq.some(x => x === curguild.id))
+                    return
 
                 const warnmsg = await send(msg.channel.id, { 
                     description: `**${msg.author.username}**, bot commands are only available in these channels: 
@@ -232,7 +234,7 @@ module.exports.create = async ({
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
-            let args = msg.content.trim().substring(curprefix.length).split(/ +/)
+            let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             const action = args[0]
 
