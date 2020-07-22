@@ -18,7 +18,8 @@ const {
     hero
 } = require('./modules')
 
-var userq = require('./utils/userq')
+var userq = []
+var guildq = []
 
 module.exports.schemas = require('./collections')
 module.exports.modules = require('./modules')
@@ -70,6 +71,7 @@ module.exports.create = async ({
     const toObj = (user, str, clr) => {
         if(typeof str === 'object') {
             str.description = `**${user.username}**, ${str.description}`
+            str.color = colors[clr]
             return str
         }
 
@@ -177,12 +179,18 @@ module.exports.create = async ({
     })
 
     bot.on('messageCreate', async (msg) => {
-        if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
+        /* skip bot or cooldown users */
+        if (msg.author.bot || userq.some(x => x.id === msg.author.id))
+            return
 
         let curprefix = prefix
         const curguild = await guild.fetchOnly(msg.channel.guild)
         if(curguild) {
             curprefix = curguild.prefix
+
+            /* skip cooldown guilds */
+            if(guildq.some(x => x === curguild.id))
+                return
         }
 
         if (!msg.content.startsWith(curprefix)) return;
@@ -191,6 +199,27 @@ module.exports.create = async ({
         try {
             /* create our player reply sending fn */
             const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
+
+            const setbotmsg = 'guild set bot'
+            if(curguild 
+                && !msg.content.includes(setbotmsg)
+                && !curguild.botchannels.some(x => x === msg.channel.id)) {
+
+                const warnmsg = await send(msg.channel.id, { 
+                    description: `**${msg.author.username}**, bot commands are only available in these channels: 
+                        ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
+                        \nGuild owner or administrator can add a bot channel by typing \`${curprefix}${setbotmsg}\` in the target channel.`, 
+                    footer: { text: `This message will be removed in 10s` },
+                    color: colors.red
+                })
+
+                guildq.push(curguild.id)
+                await new Promise(r => setTimeout(r, 10000));
+                await bot.deleteMessage(warnmsg.channel.id, warnmsg.id)
+                guildq = guildq.filter(x => x != curguild.id)
+
+                return
+            }
 
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
