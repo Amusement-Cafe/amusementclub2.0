@@ -77,11 +77,16 @@ const withHeroes = (callback) => async (ctx, user, ...args) => {
     if(hcache.length === 0)
         await reloadCache()
 
-    let list
+    let list = hcache
     if(args.length > 0) {
-        const reg = new RegExp(args.join('.*'), 'gi')
-        list = hcache.filter(x => reg.test(x.name))
-    } else list = hcache
+        const id = parseInt(args[0])
+        if(id) {
+            list = hcache.filter(x => x.id == id)
+        } else {
+            const reg = new RegExp(args.join('.*'), 'gi')
+            list = hcache.filter(x => reg.test(x.name))
+        }
+    }
 
     if(list.length === 0)
         return ctx.reply(user, `no heroes found matching that request`, 'red')
@@ -261,5 +266,6 @@ module.exports = Object.assign(module.exports, {
     withHeroes,
     getInfo,
     checkGuildLoyalty,
-    getGuildScore
+    getGuildScore,
+    reloadCache
 })

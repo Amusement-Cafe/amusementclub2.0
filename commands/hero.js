@@ -1,8 +1,8 @@
-const {cmd}     = require('../utils/cmd')
-const jikanjs   = require('jikanjs')
-const asdate    = require('add-subtract-date')
-const msToTime  = require('pretty-ms')
-const colors    = require('../utils/colors')
+const {cmd, pcmd}   = require('../utils/cmd')
+const jikanjs       = require('jikanjs')
+const asdate        = require('add-subtract-date')
+const msToTime      = require('pretty-ms')
+const colors        = require('../utils/colors')
 
 const {
     fetchOnly
@@ -22,7 +22,8 @@ const {
     get_hero,
     get_userSumbissions,
     withHeroes,
-    getInfo
+    getInfo,
+    reloadCache
 } = require('../modules/hero')
 
 const { 
@@ -94,7 +95,7 @@ cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
 
 cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
     heroes.sort((a, b) => b.xp - a.xp)
-    const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
+    const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. \`[${x.id}]\` **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
@@ -358,4 +359,9 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
             return ctx.reply(user, `your hero suggestion has been submitted and will be reviewed by moderators soon`)
         }
     })
+})
+
+pcmd(['admin'], ['sudo', 'hero', 'cache', 'reload'], async (ctx, user) => {
+    await reloadCache()
+    return ctx.reply(user, 'reloaded hero cache')
 })

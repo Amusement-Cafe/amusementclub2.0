@@ -442,7 +442,7 @@ cmd(['guild', 'set', 'prefix'], async (ctx, user, arg1) => {
     return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
 })
 
-pcmd(['admin'], ['sudo', 'guild', 'cache', 'reload'], (ctx) => {
+pcmd(['admin'], ['sudo', 'guild', 'cache', 'reload'], (ctx, user) => {
     dropCache()
     return ctx.reply(user, 'guild cache was reset')
 })

@@ -12,7 +12,7 @@ const {
 
 const m_hero = require('./hero')
 
-const cache = []
+let cache = []
 
 const fetchOrCreate = async (ctx, user, discord_guild) => {
     if(!discord_guild)
