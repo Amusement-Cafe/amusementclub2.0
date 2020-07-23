@@ -284,7 +284,7 @@ cmd('profile', async (ctx, user, ...args) => {
     }, user.discord_id)
 }).access('dm')
 
-cmd('diff', 'dif', async (ctx, user, ...args) => {
+cmd('diff', async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args)
 
     if(!newArgs.ids[0])
@@ -297,7 +297,8 @@ cmd('diff', 'dif', async (ctx, user, ...args) => {
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
 
     const ids = user.cards.map(x => x.id)
-    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1).filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
+    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
+        .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
         .sort(newArgs.sort)
 
     if(diff.length === 0)
@@ -305,7 +306,34 @@ cmd('diff', 'dif', async (ctx, user, ...args) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''}`), 15),
-        embed: { author: { name: `${user.username}, your difference with ${otherUser.username} (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${diff.length} results)` } }
+    })
+})
+
+cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
+    const newArgs = parseArgs(ctx, args)
+
+    if(!newArgs.ids[0])
+        return ctx.qhelp(ctx, user, 'diff')
+
+    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherCards = otherUser.cards
+    const mappedCards = filter(mapUserCards(ctx, user), newArgs)
+
+    if(otherCards.length === 0)
+        return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
+
+    const ids = otherCards.map(x => x.id)
+    const diff = mappedCards.filter(x => ids.indexOf(x.id) === -1)
+        .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
+        .sort(newArgs.sort)
+
+    if(diff.length === 0)
+        return ctx.reply(user, `no different cards found`, 'red')
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''}`), 15),
+        embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${diff.length} results)` } }
     })
 })
 

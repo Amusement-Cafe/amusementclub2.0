@@ -197,9 +197,11 @@ module.exports.create = async ({
             const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
 
             const setbotmsg = 'guild set bot'
+            const setreportmsg = 'guild set report'
             const cntnt = msg.content.trim().substring(curprefix.length)
             if(curguild 
                 && !cntnt.includes(setbotmsg)
+                && !cntnt.includes(setreportmsg)
                 && !cntnt.startsWith('sum')
                 && !curguild.botchannels.some(x => x === msg.channel.id)) {
 
