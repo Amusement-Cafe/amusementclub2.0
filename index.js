@@ -299,6 +299,6 @@ module.exports.create = async ({
         updateCols: (coldata) => data.collections = coldata,
         updatePromos: (promodata) => data.promos = promodata,
         updateBoosts: (boostdata) => data.boosts = boostdata,
-        updateWords: (wordsdata) => data.bannedwords = wordsdata
+        updateWords: (wordsdata) => filter.addWords(...wordsdata)
     }
 }
