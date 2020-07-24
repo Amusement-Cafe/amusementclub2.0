@@ -78,7 +78,7 @@ const format_overPrice = (ctx, user, auc) => {
 const format_rebuys = (ctx, user, auc) => {
     let resp = ""
 
-    resp += `${auc.user} sold ${auc.card} on auction at \`${auc.id}\` for ${auc.price} and bought it back for ${auc.transprice} at ${auc.transid} `
+    resp += `AuditID: \`${auc.audit_id}\`, ${auc.user} sold ${auc.card} on auction at \`${auc.id}\` for ${auc.price} and bought it back for ${auc.transprice} at ${auc.transid}`
 
     return resp;
 }

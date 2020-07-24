@@ -297,5 +297,8 @@ module.exports.create = async ({
         reconnect: () => bot.disconnect({ reconnect: 'auto' }),
         updateCards: (carddata) => fillCardData(carddata),
         updateCols: (coldata) => data.collections = coldata,
+        updatePromos: (promodata) => data.promos = promodata,
+        updateBoosts: (boostdata) => data.boosts = boostdata,
+        updateWords: (wordsdata) => data.bannedwords = wordsdata
     }
 }
