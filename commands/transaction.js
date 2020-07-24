@@ -17,11 +17,11 @@ const {
     getPending
 } = require('../modules/transaction')
 
-cmd(['trans', 'confirm'], 'confirm', 'cfm', (ctx, user, arg1) => {
+cmd(['trans', 'confirm'], 'confirm', 'cfm', 'accept', (ctx, user, arg1) => {
     confirm_trs(ctx, user, arg1)
 })
 
-cmd(['trans', 'decline'], 'decline', 'dcl', (ctx, user, arg1) => {
+cmd(['trans', 'decline'], 'decline', 'dcl', 'reject', (ctx, user, arg1) => {
     decline_trs(ctx, user, arg1)
 })
 

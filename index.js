@@ -269,14 +269,6 @@ module.exports.create = async ({
             return
 
         try {
-            /*const isolatedCtx = Object.assign({}, ctx, {
-                msg, 
-                emoji,
-            })*/
-
-            //const usr  = await user.fetchOnly(userID)
-            //if(!usr) return
-
             await pgn.trigger(userID, msg, emoji.name)
         } catch (e) {
             emitter.emit('error', e)
@@ -288,9 +280,11 @@ module.exports.create = async ({
     })
 
     pgn.emitter.on('resolve', async (res, obj) => {
-        if(!res || !obj.channel || !obj.onConfirm) return;
+        if(!res || !obj.channel || !obj.onConfirm)
+            return
 
         const isolatedCtx = Object.assign({}, ctx)
+        await new Promise(r => setTimeout(r, 2000))
 
         const usr = await user.fetchOnly(obj.userID)
         await check_all(isolatedCtx, usr, obj.action, obj.channel)
