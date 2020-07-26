@@ -127,11 +127,22 @@ const checkGuildLoyalty = async (ctx) => {
 
         if(ourScore >= otherScore) {
             if(highest === ctx.guild.hero) {
-                const otherGuilds = await Guild.find({ id: { $ne: ctx.guild.id } })
-                const otherScores = (await Promise.all(otherGuilds.map(async x => { 
-                    const score = await getGuildScore(ctx, x, highest)
+                const otherGuilds = await Guild.find({ 
+                    id: { $ne: ctx.guild.id }, 
+                    buildings: { $elemMatch: { id: 'heroq' }}
+                }, 'userstats')
+                const otherUsers = await User.find({hero: {$exists: 1}}, 'discord_id hero')
+                const otherScores = otherGuilds.map(g => { 
+                    //const score = await getGuildScore(ctx, g, highest)
+                    let score = 0
+                    otherUsers.filter(x => x.hero === highest).map(x => {
+                        const usr = g.userstats.find(y => y.id === x.discord_id)
+                        if(usr) {
+                            score += guildUserScore(usr)
+                        }
+                    })
                     return score
-                }))).sort((a, b) => b - a)
+                }).sort((a, b) => b - a)
 
                 if(otherScores[0] && otherScores[0] > ourScore) {
                     return ctx.send(ctx.guild.reportchannel, {

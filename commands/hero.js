@@ -1,5 +1,6 @@
 const {cmd, pcmd}   = require('../utils/cmd')
 const jikanjs       = require('jikanjs')
+const Jikan        = require('jikan-node')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
 const colors        = require('../utils/colors')
@@ -33,6 +34,8 @@ const {
 const {
     check_effect
 } = require('../modules/effect')
+
+const mal = new Jikan()
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
@@ -331,7 +334,11 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     let char
     try {
         char = await jikanjs.loadCharacter(charID)
-    } catch { }
+        //char = await mal.findCharacter(charID)
+    } catch(e) { 
+        return ctx.reply(user, `there was a problem with fetching a character from MAL database.
+            Error code: \`${e}\``, 'red')
+    }
 
     if(!char)
         return ctx.reply(user, `cannot find a valid character at this URL`, 'red')

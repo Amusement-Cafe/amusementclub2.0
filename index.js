@@ -238,10 +238,15 @@ module.exports.create = async ({
 
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
-            const action = args[0]
 
+            const action = args[0]
             if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
                 return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
+            }
+
+            if(usr.ban.full) {
+                return reply(usr, `this account was banned permanently.
+                    For more information please visit [bot discord](${ctx.cafe})`, 'red')
             }
 
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)

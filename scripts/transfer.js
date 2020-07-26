@@ -127,7 +127,7 @@ const users = async (db) => {
         newu.discord_id = u.discord_id
         newu.username = u.username
         newu.exp = u.exp
-        newu.ban.embargo = u.embargo
+        newu.ban.full = u.embargo
         newu.cards = []
         newu.lastdaily = past
 

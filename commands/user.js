@@ -272,6 +272,7 @@ cmd('profile', async (ctx, user, ...args) => {
     if(user.roles && user.roles.length > 0)
         resp.push(`Roles: **${user.roles.join(" **|** ")}**`)
 
+    const botuser = ctx.bot.users.find(x => x.id === user.discord_id)
     return ctx.send(ctx.msg.channel.id, {
         description: resp.join('\n'),
         color: colors['yellow'],
@@ -279,7 +280,7 @@ cmd('profile', async (ctx, user, ...args) => {
             name: `${user.username} (${user.discord_id})`
         },
         thumbnail: {
-            url: ctx.bot.users.find(x => x.id === user.discord_id).avatarURL
+            url: botuser? botuser.avatarURL : ''
         }
     }, user.discord_id)
 }).access('dm')
