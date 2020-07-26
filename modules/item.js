@@ -83,7 +83,8 @@ const uses = {
         if(XPtoLEVEL(guild.xp) < item.levels[0].level)
             return ctx.reply(user, `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`, 'red')
 
-        if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < guild.buildperm)
+        const guilduser = getGuildUser(ctx, user)
+        if(!isUserOwner(ctx, user) && guilduser && guilduser.rank < guild.buildperm)
             return ctx.reply(user, `you have to be at least rank **${guild.buildperm}** to build in this guild`, 'red')
 
         const xp = item.levels[0].price * .1
