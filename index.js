@@ -147,8 +147,13 @@ module.exports.create = async ({
     const tick = (ctx) => {
         const now = new Date()
         auction.finish_aucs(ctx, now)
-        guild.bill_guilds(ctx, now)
         audit.clean_audits(ctx, now)
+    }
+
+    /* service tick for guilds */
+    const gtick = (ctx) => {
+        const now = new Date()
+        guild.bill_guilds(ctx, now)
     }
 
     /* service tick for user checks */
@@ -164,9 +169,10 @@ module.exports.create = async ({
     }
 
     setInterval(tick.bind({}, ctx), 5000)
+    setInterval(gtick.bind({}, ctx), 20000)
     setInterval(qtick.bind({}, ctx), 1000)
-    //setInterval(htick.bind({}, ctx), 60000 * 2)
-    setInterval(htick.bind({}, ctx), 6000)
+    setInterval(htick.bind({}, ctx), 60000 * 2)
+    //setInterval(htick.bind({}, ctx), 6000)
 
     /* events */
     mongoose.connection.on('error', err => {
@@ -257,6 +263,7 @@ module.exports.create = async ({
             usr.exp = Math.min(usr.exp, 10**7)
             usr.vials = Math.min(usr.vials, 10**6)
 
+            console.log(`[${usr.username}]: ${msg.content}`)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
             //usr = await user.fetchOnly(msg.author.id)
             usr.unmarkModified('dailystats')
