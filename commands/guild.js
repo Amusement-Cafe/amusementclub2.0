@@ -47,6 +47,7 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
     resp.push(`Prefix: \`${ctx.guild.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
+    resp.push(`Bot channels: ${ctx.guild.botchannels.map(x => `<#${x}>`).join(' ')}`)
 
     const lock = ctx.guild.overridelock || ctx.guild.lock
     if(lock) {
@@ -426,7 +427,23 @@ cmd(['guild', 'unlock'], async (ctx, user) => {
     })
 })
 
-pcmd(['admin'], ['sudo', 'guild', 'cache', 'reload'], (ctx) => {
+cmd(['guild', 'set', 'prefix'], async (ctx, user, arg1) => {
+    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+        return ctx.reply(user, `only owner or guild manager can set guild prefix`, 'red')
+
+    if(!arg1)
+        return ctx.reply(user, `please specify new prefix`, 'red')
+
+    if(arg1.length < 1 || arg1.length > 3)
+        return ctx.reply(user, `prefix length can be between **1** and **3** charaters`, 'red')
+
+    ctx.guild.prefix = arg1
+    await ctx.guild.save()
+    return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
+})
+
+pcmd(['admin'], ['sudo', 'guild', 'cache', 'reload'], (ctx, user) => {
     dropCache()
     return ctx.reply(user, 'guild cache was reset')
 })

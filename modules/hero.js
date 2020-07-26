@@ -77,11 +77,16 @@ const withHeroes = (callback) => async (ctx, user, ...args) => {
     if(hcache.length === 0)
         await reloadCache()
 
-    let list
+    let list = hcache
     if(args.length > 0) {
-        const reg = new RegExp(args.join('.*'), 'gi')
-        list = hcache.filter(x => reg.test(x.name))
-    } else list = hcache
+        const id = parseInt(args[0])
+        if(id) {
+            list = hcache.filter(x => x.id == id)
+        } else {
+            const reg = new RegExp(args.join('.*'), 'gi')
+            list = hcache.filter(x => reg.test(x.name))
+        }
+    }
 
     if(list.length === 0)
         return ctx.reply(user, `no heroes found matching that request`, 'red')
@@ -122,11 +127,22 @@ const checkGuildLoyalty = async (ctx) => {
 
         if(ourScore >= otherScore) {
             if(highest === ctx.guild.hero) {
-                const otherGuilds = await Guild.find({ id: { $ne: ctx.guild.id } })
-                const otherScores = (await Promise.all(otherGuilds.map(async x => { 
-                    const score = await getGuildScore(ctx, x, highest)
+                const otherGuilds = await Guild.find({ 
+                    id: { $ne: ctx.guild.id }, 
+                    buildings: { $elemMatch: { id: 'heroq' }}
+                }, 'userstats')
+                const otherUsers = await User.find({hero: {$exists: 1}}, 'discord_id hero')
+                const otherScores = otherGuilds.map(g => { 
+                    //const score = await getGuildScore(ctx, g, highest)
+                    let score = 0
+                    otherUsers.filter(x => x.hero === highest).map(x => {
+                        const usr = g.userstats.find(y => y.id === x.discord_id)
+                        if(usr) {
+                            score += guildUserScore(usr)
+                        }
+                    })
                     return score
-                }))).sort((a, b) => b - a)
+                }).sort((a, b) => b - a)
 
                 if(otherScores[0] && otherScores[0] > ourScore) {
                     return ctx.send(ctx.guild.reportchannel, {
@@ -261,5 +277,6 @@ module.exports = Object.assign(module.exports, {
     withHeroes,
     getInfo,
     checkGuildLoyalty,
-    getGuildScore
+    getGuildScore,
+    reloadCache
 })

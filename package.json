@@ -15,9 +15,10 @@
     "dateformat": "^3.0.3",
     "discord-paginator": "^0.8.10",
     "eris": "^0.11.2",
+    "jikan-node": "^1.2.1",
     "jikanjs": "^0.7.0",
     "lockfile": "^1.0.4",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "mongodb": "^3.5.2",
     "mongoose": "^5.8.11",
     "pretty-ms": "^5.1.0"

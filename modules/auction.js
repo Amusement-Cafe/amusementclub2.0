@@ -198,6 +198,26 @@ const paginate_auclist = (ctx, user, list) => {
     return pages;
 }
 
+const format_auc = async(ctx, auc, author, doeval = true) => {
+    const card = ctx.cards[auc.card]
+    const timediff = msToTime(auc.expires - new Date())
+
+    const resp = []
+    resp.push(`Seller: **${author.username}**`)
+    resp.push(`Price: **${auc.price}** ${ctx.symbols.tomato}`)
+    resp.push(`Card: ${formatName(card)}`)
+
+    if(doeval)
+        resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
+
+    if(auc.finished)
+        resp.push(`**This auction has finished**`)
+    else
+        resp.push(`Expires in **${timediff}**`)
+
+    return resp.join('\n')
+}
+
 const unlock = () => {
     lockFile.unlock('auc.lock', err => {
         if(err) console.log(err)
@@ -208,5 +228,6 @@ module.exports = {
     new_auc,
     paginate_auclist,
     bid_auc,
-    finish_aucs
+    finish_aucs,
+    format_auc
 }

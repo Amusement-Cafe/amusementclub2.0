@@ -1,12 +1,13 @@
 const MongoClient   = require('mongodb').MongoClient
 const _             = require('lodash')
-const fs            = require('fs')
+const fs            = require('fs').promises
 const mongoose      = require('mongoose')
 const asdate        = require('add-subtract-date')
 
 const effects       = require('../staticdata/effects')
 const items         = require('../staticdata/items')
 const User          = require('../collections/user')
+const Guild         = require('../collections/guild')
 const Cardinfo      = require('../collections/cardinfo')
 
 const main = async () => {
@@ -38,23 +39,25 @@ const colsCards = async (db) => {
     const cardList = [], colList = []
     cols.map(col => {
         const aliases = `[${col.aliases.map(x => `"${x}"`)}]`
-        colList.push(`{"id":"${col.id}","name":"${col.name}","origin":"${col.origin}","aliases":${aliases},"promo":false,"compressed":${col.compressed}}`)
+        console.log(`${col.id} : ${col.special}`)
+        colList.push(`{"id":"${col.id}","name":"${col.name}","origin":"${col.origin}","aliases":${aliases},"promo":${col.special},"compressed":${col.compressed}}`)
         allcards.filter(y => y.collection === col.id).map(y => {
             if(y.craft)
                 cardList.push(`{"name":"${y.name}","level":4,"animated":false,"col":"limitedcraft","added":"${now.toJSON()}"}`)
             else
                 cardList.push(`{"name":"${y.name}","level":${y.level},"animated":${y.animated},"col":"${y.collection}","added":"${y._id.getTimestamp().toJSON()}"}`)
         })
-
-        fs.writeFileSync(`cols.json`, `[${colList.join(',\n')}]`)
-        fs.writeFileSync(`crds.json`, `[${cardList.join(',\n')}]`)
     })
+
+    await fs.writeFile(`cols.json`, `[${colList.join(',\n')}]`)
+    await fs.writeFile(`crds.json`, `[${cardList.join(',\n')}]`)
 }
 
 const users = async (db) => {
     const now = new Date();
     const past = asdate.subtract(new Date(), 20, 'hours')
     const cursor = db.collection('users').find()
+    const gcursor = db.collection('servers').find()
     //const usrs = await db.collection('users').find().toArray()
     const cards = require('./crds.json')
     const collections = require('./cols.json')
@@ -95,6 +98,23 @@ const users = async (db) => {
     //const collections = require('./collections.json')
 
     let count = 1
+    for (let g = await gcursor.next(); g != null; g = await gcursor.next()) {
+        console.log(`[#${count}] Processing Guild ${g.id}...`)
+        const newg = await new Guild()
+        newg.id = g.id
+        newg.prefix = g.prefix || '->'
+        newg.botchannels = g.botChannels
+        newg.xp = 100
+        newg.balance = 5000
+
+        if(g.lock)
+            newg.overridelock = g.lock
+
+        newg.save()
+        count++
+    }
+
+    count = 1
     for (let u = await cursor.next(); u != null; u = await cursor.next()) {
         console.log(`[#${count}] Processing ${u.username} : ${u.discord_id}...`)
 
@@ -107,7 +127,7 @@ const users = async (db) => {
         newu.discord_id = u.discord_id
         newu.username = u.username
         newu.exp = u.exp
-        newu.ban.embargo = u.embargo
+        newu.ban.full = u.embargo
         newu.cards = []
         newu.lastdaily = past
 

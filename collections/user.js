@@ -28,6 +28,7 @@ module.exports = model('User', {
 
     roles:              { type: Array, default: [] },
     ban:                {
+        full:           {type: Boolean},
         embargo:        {type: Boolean}
     },
 

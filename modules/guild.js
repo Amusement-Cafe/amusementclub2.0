@@ -12,11 +12,11 @@ const {
 
 const m_hero = require('./hero')
 
-const cache = []
+let cache = []
 
 const fetchOrCreate = async (ctx, user, discord_guild) => {
-	if(!discord_guild)
-		return null
+    if(!discord_guild)
+        return null
 
     let fromcache = true
     let guild = cache.find(x => x.id === discord_guild.id)
@@ -39,6 +39,24 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
     }
 
     if(!fromcache)
+        cache.push(guild)
+
+    return guild
+}
+
+const fetchOnly = async (discord_guild) => {
+    if(!discord_guild)
+        return null
+
+    let fromcache = true
+    let guild = cache.find(x => x.id === discord_guild.id)
+
+    if(!guild) {
+        guild = await Guild.findOne({ id: discord_guild.id })
+        fromcache = false
+    }
+
+    if(!fromcache && guild)
         cache.push(guild)
 
     return guild
@@ -209,7 +227,7 @@ const guildLock = {
 }
 
 module.exports = Object.assign(module.exports, {
-	fetchOrCreate,
+    fetchOrCreate,
     addGuildXP,
     XPtoRANK,
     rankXP,
@@ -221,5 +239,6 @@ module.exports = Object.assign(module.exports, {
     guildLock,
     getBuildingInfo,
     isUserManager,
-    dropCache
+    dropCache,
+    fetchOnly
 })

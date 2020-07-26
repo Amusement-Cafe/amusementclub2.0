@@ -6,6 +6,7 @@
     "shorturl": "https://amuse.noxc.dev",
     "daily": 72000000,
     "debug": true,
+    "invite": "",
     "maintenance": false,
     "auditc": {
         "channel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"

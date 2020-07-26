@@ -2,7 +2,7 @@
     {
         "type": ["general"],
         "title": "\u2B50 Amusement Club \u2B50 RPG Gacha",
-        "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. You will get your first card and special card of the day if you are a new player. Each claim will cost you more tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
+        "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
         "fields": [
             {
                 "title": "User",
@@ -29,7 +29,7 @@
             },
             {
                 "title": "Invite bot",
-                "description": "Please run `->help invite` and read the conditions. Use `->help server` to get information about server related commands"
+                "description": "Please run `->help invite` and read the conditions. Use `->help guild` to get information about server related commands"
             }
         ]
     },
@@ -52,7 +52,7 @@
             },            
             {
                 "title": "->auc bid [id] [amount]", 
-                "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 🍅 on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n"
+                "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 `🍅` on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n"
             },
             {
                 "title": "->auc info [id]",
@@ -75,7 +75,7 @@
     {
         "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato"],
         "title": "About currencies",
-        "description": "This command will show your amount of 🍅 Tomatoes, and 🍷Vials.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n🍷 Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs. You can get them via daily quests or liquifying cards.",
+        "description": "This command will show your amount of `🍅` Tomatoes, and `🍷`Vials.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n`🍷` Vials are the secondary currency used for drawing new cards in servers with upgraded Smith Hubs. You can get them via daily quests or liquifying cards.",
         "fields": [
             {
                 "title": "Useful to know",
@@ -144,7 +144,7 @@
     {
         "type": ["cl", "claim"],
         "title": "About card claiming",
-        "description": "You can claim cards as long as you have enough 🍅 Tomatoes. Claim costs start at 50 tomatoes and increase by 50 each claim. The claim cost goes back to minimum after running `->daily`. Claim cost can be affected by Guilds in the form of taxes. Prices for claims will be adjusted by specific guild tax amounts",
+        "description": "You can claim cards as long as you have enough `🍅` Tomatoes. Claim costs start at 50 tomatoes and increase by 50 each claim. The claim cost goes back to minimum after running `->daily`. Claim cost can be affected by Guilds in the form of taxes. Prices for claims will be adjusted by specific guild tax amounts",
         "fields": [
             {
                 "title": "Locked claims",
@@ -213,11 +213,11 @@
     {
         "type": ["daily"],
         "title": "About daily bonus",
-        "description": "You can get free **300🍅** Tomatoes every 20 hours(**500🍅** in servers with Guild Bank level 1).",
+        "description": "You can get free **300`🍅`** Tomatoes every 20 hours(**500`🍅`** in servers with Guild Bank level 1).",
         "fields": [
             {
                 "title": "Useful to know",
-                "description": "New players get 1000🍅 bonus\n"
+                "description": "New players get 1000`🍅` bonus\n"
             },
             {
                 "title": "->daily",
@@ -372,7 +372,7 @@
             },
             {
                 "title": "->guild donate [amount]",
-                "description": "Allows you to donate your own 🍅 Tomatoes to the guild's balance (Requires a castle be built first)"
+                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance (Requires a castle be built first)"
             },
             {
                 "title": "->guild set tax [percentage]",
@@ -396,7 +396,7 @@
             },
             {
                 "title": "->guild lock [collection]",
-                "description": "Set current guild lock to specified collection, requires 100,000 🍅 Tomatoes to lock, 5,000 🍅 Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)"
+                "description": "Set current guild lock to specified collection, requires 100,000 `🍅` Tomatoes to lock, 5,000 `🍅` Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)"
             },
             {
                 "title": "->guild set buildrank",
@@ -483,10 +483,10 @@
         "fields": [
             {
                 "title": "Setting up your server",
-                "description": "Make sure that your server has a 'bot channel' where Amusement Club can post messages.\n`->server info` will show you the list of bot channels. You can set a channel to bot by messaging `->server setbot` in that channel. `->server unsetbot` will remove bot perms from current channel.\nDon't remove 'send messages' permission from channels where you want `->summon` to work.\nIf you want to exclude Amusement Club from other bot channel, make sure you remove **both** 'read' and 'send' permissions. If you leave 'read messages' permission on, bot will still read commands, but won't be able to respond which can lead to confusion and loss of tomatoes"
+                "description": "The channel where you run your first command becomes bot channel.\n`->guild info` will show you the list of bot channels. You can set a bot channel by typing `->guild set bot` in that channel. `->guild unset bot` will remove bot perms from current channel.\nDon't remove 'send messages' permission from channels where you want `->summon` to work.\nIf you want to exclude Amusement Club from other bot channel, make sure you remove **both** 'read' and 'send' permissions. If you leave 'read messages' permission on, bot will still read commands, but won't be able to respond which can lead to confusion and loss of tomatoes"
             },
             {
-                "title": "Channel Privacy (28.05.18)",
+                "title": "Channel Privacy (2018-05-28)",
                 "description": "Bot constantly reads all the messages, however it logs only messages that start with `->`. Feel free to exclude bot from ANY channels, that you want to secure contents of.\n**Messages in Logs** can be used by **bot administration** to find bugs/errors and cheaters. In order to secure your channels completely from any bot, make sure that it is **not** present in channels, that may contain any **confidential** information"
             },
             {
@@ -495,7 +495,7 @@
             },
             {
                 "title": "Any questions?",
-                "description": "If you have any questions regarding bot, please ask them [in bot discord](https://discord.gg/kqgAvdX)"
+                "description": "If you have any questions regarding bot, please ask them [in bot discord](https://discord.gg/xQAxThF)"
             },
             {
                 "title": "Ready to invite?",
@@ -506,7 +506,7 @@
     {
         "type": ["liquify", "liq"],
         "title": "About Liquify",
-        "description": "You can Liquify any card from 1-3★ rarity into 🍷Vials. The amount of 🍷Vials you get is dependent on current Eval price and rarity of card being liquified",
+        "description": "You can Liquify any card from 1-3★ rarity into `🍷`Vials. The amount of `🍷`Vials you get is dependent on current Eval price and rarity of card being liquified",
         "fields": [
             {
                 "title": "->liquify [card]",

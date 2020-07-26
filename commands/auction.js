@@ -9,7 +9,8 @@ const asdate            = require('add-subtract-date')
 const {
     new_auc,
     paginate_auclist,
-    bid_auc
+    bid_auc,
+    format_auc
 } = require('../modules/auction')
 
 const {
@@ -61,27 +62,66 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
         return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
 
     const author = await fetchOnly(auc.author)
+    const aucformat = await format_auc(ctx, auc, author)
     const card = ctx.cards[auc.card]
-    const timediff = msToTime(auc.expires - new Date())
-
-    const resp = []
-    resp.push(`Seller: **${author.username}**`)
-    resp.push(`Price: **${auc.price}** ${ctx.symbols.tomato}`)
-    resp.push(`Card: ${formatName(card)}`)
-    resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
-
-    if(auc.finished)
-        resp.push(`**This auction has finished**`)
-    else
-        resp.push(`Expires in **${timediff}**`)
 
     return ctx.send(ctx.msg.channel.id, {
         title: `Auction [${auc.id}]`,
         image: { url: card.url },
-        description: resp.join('\n'),
+        description: aucformat,
         color: colors['blue']
     }, user.discord_id)
 }).access('dm')
+
+cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const now = new Date();
+    const req = {finished: false}
+
+    if(parsedargs.me)
+        req.author = user.discord_id
+
+    let list = (await Auction.find(req).sort({ expires: 1 }).limit(15))
+        .filter(x => x.expires > now)
+
+    if(parsedargs.diff)
+        list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    else if(parsedargs.bid) 
+        list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
+
+    if(!parsedargs.isEmpty())
+        list = list.filter(x => cards.some(y => x.card === y.id))
+
+    if(list.length === 0)
+        return ctx.reply(user, `found 0 active auctions`, 'red')
+
+    const pages = await Promise.all(list.map(async auc => {
+        const author = await fetchOnly(auc.author).select('username')
+        const aucformat = await format_auc(ctx, auc, author, false)
+
+        return {
+            id: auc.id,
+            image: ctx.cards[auc.card].url,
+            info: aucformat
+        }
+    }))
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.image.url = page.image
+            data.embed.description = page.info
+            data.embed.title = `Auction [${page.id}]`
+        },
+        embed: {
+            title: 'Auction',
+            image: { url: '' },
+            description: 'loading',
+            color: colors.blue
+        }
+    })
+})).access('dm')
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const auchouse = getBuilding(ctx, 'auchouse')

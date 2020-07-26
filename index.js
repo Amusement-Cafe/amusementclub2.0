@@ -18,7 +18,8 @@ const {
     hero
 } = require('./modules')
 
-var userq = require('./utils/userq')
+var userq = []
+var guildq = []
 
 module.exports.schemas = require('./collections')
 module.exports.modules = require('./modules')
@@ -26,7 +27,7 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, data 
+        maintenance, invite, data 
     }) => {
 
     const emitter = new Emitter()
@@ -70,6 +71,7 @@ module.exports.create = async ({
     const toObj = (user, str, clr) => {
         if(typeof str === 'object') {
             str.description = `**${user.username}**, ${str.description}`
+            str.color = colors[clr]
             return str
         }
 
@@ -129,9 +131,12 @@ module.exports.create = async ({
         baseurl,
         pgn,
         qhelp,
+        invite,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
-        wip: maintenance,
+        settings: {
+            wip: maintenance,
+        }
     }
 
     const globalArgsMap = {
@@ -142,8 +147,13 @@ module.exports.create = async ({
     const tick = (ctx) => {
         const now = new Date()
         auction.finish_aucs(ctx, now)
-        guild.bill_guilds(ctx, now)
         audit.clean_audits(ctx, now)
+    }
+
+    /* service tick for guilds */
+    const gtick = (ctx) => {
+        const now = new Date()
+        guild.bill_guilds(ctx, now)
     }
 
     /* service tick for user checks */
@@ -159,9 +169,10 @@ module.exports.create = async ({
     }
 
     setInterval(tick.bind({}, ctx), 5000)
+    setInterval(gtick.bind({}, ctx), 20000)
     setInterval(qtick.bind({}, ctx), 1000)
-    //setInterval(htick.bind({}, ctx), 60000 * 2)
-    setInterval(htick.bind({}, ctx), 6000)
+    setInterval(htick.bind({}, ctx), 60000 * 2)
+    //setInterval(htick.bind({}, ctx), 6000)
 
     /* events */
     mongoose.connection.on('error', err => {
@@ -174,13 +185,51 @@ module.exports.create = async ({
     })
 
     bot.on('messageCreate', async (msg) => {
-        if (!msg.content.startsWith(prefix)) return; /* skip not commands */
-        if (msg.author.bot || userq.filter(x => x.id === msg.author.id)[0]) return; /* skip bot or cooldown users */
+        /* skip bot or cooldown users */
+        if (msg.author.bot || userq.some(x => x.id === msg.author.id))
+            return
+
+        let curprefix = prefix
+        const curguild = await guild.fetchOnly(msg.channel.guild)
+        if(curguild) {
+            curprefix = curguild.prefix
+        }
+
+        if (!msg.content.startsWith(curprefix)) return;
         msg.content = msg.content.toLowerCase()
 
         try {
             /* create our player reply sending fn */
             const reply = (user, str, clr = 'default') => send(msg.channel.id, toObj(user, str, clr), user.discord_id)
+
+            const setbotmsg = 'guild set bot'
+            const setreportmsg = 'guild set report'
+            const cntnt = msg.content.trim().substring(curprefix.length)
+            if(curguild 
+                && !cntnt.includes(setbotmsg)
+                && !cntnt.includes(setreportmsg)
+                && !cntnt.startsWith('sum')
+                && !curguild.botchannels.some(x => x === msg.channel.id)) {
+
+                /* skip cooldown guilds */
+                if(guildq.some(x => x === curguild.id))
+                    return
+
+                const warnmsg = await send(msg.channel.id, { 
+                    description: `**${msg.author.username}**, bot commands are only available in these channels: 
+                        ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
+                        \nGuild owner or administrator can add a bot channel by typing \`${curprefix}${setbotmsg}\` in the target channel.`, 
+                    footer: { text: `This message will be removed in 10s` },
+                    color: colors.red
+                })
+
+                guildq.push(curguild.id)
+                await new Promise(r => setTimeout(r, 10000));
+                await bot.deleteMessage(warnmsg.channel.id, warnmsg.id)
+                guildq = guildq.filter(x => x != curguild.id)
+
+                return
+            }
 
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
@@ -193,15 +242,20 @@ module.exports.create = async ({
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
 
-            let args = msg.content.trim().substring(prefix.length).split(/ +/)
+            let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
-            const action = args[0]
 
-            if(ctx.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
+            const action = args[0]
+            if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
                 return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
             }
 
-            isolatedCtx.guild = await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            if(usr.ban.full) {
+                return reply(usr, `this account was banned permanently.
+                    For more information please visit [bot discord](${ctx.cafe})`, 'red')
+            }
+
+            isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
@@ -209,6 +263,7 @@ module.exports.create = async ({
             usr.exp = Math.min(usr.exp, 10**7)
             usr.vials = Math.min(usr.vials, 10**6)
 
+            console.log(`[${usr.username}]: ${msg.content}`)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
             //usr = await user.fetchOnly(msg.author.id)
             usr.unmarkModified('dailystats')
@@ -226,14 +281,6 @@ module.exports.create = async ({
             return
 
         try {
-            /*const isolatedCtx = Object.assign({}, ctx, {
-                msg, 
-                emoji,
-            })*/
-
-            //const usr  = await user.fetchOnly(userID)
-            //if(!usr) return
-
             await pgn.trigger(userID, msg, emoji.name)
         } catch (e) {
             emitter.emit('error', e)
@@ -245,9 +292,11 @@ module.exports.create = async ({
     })
 
     pgn.emitter.on('resolve', async (res, obj) => {
-        if(!res || !obj.channel || !obj.onConfirm) return;
+        if(!res || !obj.channel || !obj.onConfirm)
+            return
 
         const isolatedCtx = Object.assign({}, ctx)
+        await new Promise(r => setTimeout(r, 2000))
 
         const usr = await user.fetchOnly(obj.userID)
         await check_all(isolatedCtx, usr, obj.action, obj.channel)
@@ -260,5 +309,8 @@ module.exports.create = async ({
         reconnect: () => bot.disconnect({ reconnect: 'auto' }),
         updateCards: (carddata) => fillCardData(carddata),
         updateCols: (coldata) => data.collections = coldata,
+        updatePromos: (promodata) => data.promos = promodata,
+        updateBoosts: (boostdata) => data.boosts = boostdata,
+        updateWords: (wordsdata) => filter.addWords(...wordsdata)
     }
 }
