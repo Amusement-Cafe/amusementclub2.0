@@ -49,7 +49,7 @@ const {
     check_effect
 } = require('../modules/effect')
 
-cmd('bal', (ctx, user) => {
+cmd('bal', 'balance', (ctx, user) => {
     let max = 1
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)

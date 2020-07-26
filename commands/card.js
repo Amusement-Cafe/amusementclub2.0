@@ -213,6 +213,10 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const pending = await getPendingFrom(ctx, user)
     const pendingto = pending.filter(x => x.to_id === id)
 
+    if(id && id === user.discord_id) {
+        return ctx.reply(user, `you cannot sell cards to yourself.`, 'red')
+    }
+
     if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\``, 'red')
