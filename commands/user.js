@@ -294,6 +294,9 @@ cmd('diff', async (ctx, user, ...args) => {
         return ctx.qhelp(ctx, user, 'diff')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
+    if(!otherUser)
+        return ctx.reply(user, `could not find target user`, 'red')
+
     const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
 
     if(otherCards.length === 0)
