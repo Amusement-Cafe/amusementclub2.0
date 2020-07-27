@@ -165,6 +165,43 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
     })
 })
 
+cmd(['guild', 'downgrade'], ['guild', 'down'], async (ctx, user, arg1) => {
+    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only server owner can modify guild tax`, 'red')
+
+    if(!arg1)
+        return ctx.reply(user, 'please specify building ID', 'red')
+
+    const building = ctx.guild.buildings.find(x => x.id === arg1)
+    const item = ctx.items.find(x => x.id === arg1)
+
+    if(!building)
+        return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
+
+    const question = `Do you want to downgrade **${item.name}** to level **${building.level - 1}**?
+        It will be destroyed once reaches level 0`
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        force: ctx.globals.force,
+        onConfirm: async (x) => {
+            building.level--
+            
+            const destroyed = building.level < 1
+            if(destroyed) {
+                ctx.guild.buildings = ctx.guild.buildings.filter(x => x.id != building.id)
+            }
+
+            ctx.guild.markModified('buildings')
+            await ctx.guild.save()
+
+            if(destroyed) {
+                return ctx.reply(user, `the building **${item.name}** has been destroyed`)
+            }
+            return ctx.reply(user, `the building **${item.name}** has been downgraded to level **${building.level}**`)
+        },
+    })
+})
+
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     let amount = parseInt(arg1)
     const castle = ctx.guild.buildings.find(x => x.id === 'castle')
@@ -443,7 +480,7 @@ cmd(['guild', 'set', 'prefix'], async (ctx, user, arg1) => {
     return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
 })
 
-pcmd(['admin'], ['sudo', 'guild', 'cache', 'reload'], (ctx, user) => {
+pcmd(['admin'], ['sudo', 'guild', 'cache', 'flush'], (ctx, user) => {
     dropCache()
     return ctx.reply(user, 'guild cache was reset')
 })

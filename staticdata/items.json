@@ -56,7 +56,7 @@
             }, {
                 "price": 30000,
                 "level": 40,
-                "maintenance": 100,
+                "maintenance": 1000,
                 "desc": "Makes current hero will 20% less likely to consider other guilds"
             }
         ]

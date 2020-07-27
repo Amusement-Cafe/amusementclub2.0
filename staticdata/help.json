@@ -721,6 +721,14 @@
             {
                 "title": "->tag info #tag [card]",
                 "description": "View information about a tag"
+            },
+            {
+                "title": "Tagging Bypass",
+                "description": "Attempts to bypass banned words in the tagging process is prohibited. Users found doing this repeatedly will be subject to tagging bans and/or 10,000 tomato fine.\nIf tags are found to be done from an alt, the 10,000 tomato fine will be subjected to the main account, as well as proper punishment for alt usage."
+            },
+            {
+                "title": "Tagging Guidelines",
+                "description": "We are looking for useful tags, not tags based on opinions. \nTag types we are looking for:\n- Character name(s) of pictured\n- Fandom name(s) pictured\n- Key descriptions: `Animal_ears, cat_ears, fox_girl, maid`\n- Word Separation with \\_: Kanna`_`Kamui\n\nTag types we are NOT looking for:\n- Cute X: `Cute girls, cute girl, cute boys, cute boy`\n- Best X: `Best Girl, Best Boy, Best Character etc.`\n- Worst X: `Same as above, replace best with worst`\n- No Word Separation: kannakamui"
             }
 
         ]

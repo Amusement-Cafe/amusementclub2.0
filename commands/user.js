@@ -49,7 +49,7 @@ const {
     check_effect
 } = require('../modules/effect')
 
-cmd('bal', (ctx, user) => {
+cmd('bal', 'balance', (ctx, user) => {
     let max = 1
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
@@ -209,7 +209,7 @@ cmd('daily', async (ctx, user) => {
     return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`, 'red')
 })
 
-cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
@@ -264,9 +264,11 @@ cmd('profile', async (ctx, user, ...args) => {
         resp.push(`Overall clout: **${cloutsum}**`)
     }
 
-    const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
-    if(curUser){
-        resp.push(`Current guild rank: **${curUser.rank}** (${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'})`)
+    if(ctx.guild) {
+        const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+        if(curUser){
+            resp.push(`Current guild rank: **${curUser.rank}** (${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'})`)
+        }
     }
 
     if(user.roles && user.roles.length > 0)
@@ -292,6 +294,9 @@ cmd('diff', async (ctx, user, ...args) => {
         return ctx.qhelp(ctx, user, 'diff')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
+    if(!otherUser)
+        return ctx.reply(user, `could not find target user`, 'red')
+
     const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
 
     if(otherCards.length === 0)
@@ -393,4 +398,16 @@ cmd('stats', async (ctx, user) => {
         description: Object.keys(user.dailystats)
             .map(x => `${x}: **${user.dailystats[x]}**`).join('\n')
     }, user.discord_id)
+})
+
+cmd('achievements', 'ach', async (ctx, user) => {
+    const list = user.achievements.map(x => {
+        const item = ctx.achievements.find(y => y.id === x)
+        return `**${item.name}** (${item.desc})`
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(list, 15),
+        embed: { author: { name: `${user.username}, completed achievements: (${list.length})` } }
+    })
 })

@@ -2,8 +2,8 @@ const User      = require('../collections/user')
 const asdate    = require('add-subtract-date')
 
 const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
-const evalUserRate = 0.3
-const evalVialRate = 0.04
+const evalUserRate = 0.15
+const evalVialRate = 0.05
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 
 const evalCard = async (ctx, card, modifier = 1) => {

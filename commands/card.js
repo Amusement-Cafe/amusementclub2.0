@@ -183,6 +183,15 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     user.lastcard = card.id
     await user.save()
 
+    if(card.imgur) {
+        await ctx.reply(user, {
+            color: colors.blue,
+            description: `summons **${formatName(card)}**!`
+        })
+
+        return ctx.bot.createMessage(ctx.msg.channel.id, card.imgur)
+    }
+
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,
@@ -212,6 +221,10 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const id = parsedargs.ids[0]
     const pending = await getPendingFrom(ctx, user)
     const pendingto = pending.filter(x => x.to_id === id)
+
+    if(id && id === user.discord_id) {
+        return ctx.reply(user, `you cannot sell cards to yourself.`, 'red')
+    }
 
     if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 

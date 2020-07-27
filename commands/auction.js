@@ -31,7 +31,7 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.me)
         req.author = user.discord_id
 
-    let list = (await Auction.find(req).limit(100).sort({ expires: 1 }))
+    let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
 
     if(parsedargs.diff)
@@ -44,6 +44,8 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
+
+    list = list.slice(0, 100)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_auclist(ctx, user, list),
@@ -80,7 +82,7 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
     if(parsedargs.me)
         req.author = user.discord_id
 
-    let list = (await Auction.find(req).sort({ expires: 1 }).limit(15))
+    let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
 
     if(parsedargs.diff)
@@ -93,6 +95,8 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
 
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
+
+    list = list.slice(0, 15)
 
     const pages = await Promise.all(list.map(async auc => {
         const author = await fetchOnly(auc.author).select('username')

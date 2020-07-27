@@ -146,7 +146,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'],
     return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
-pcmd(['admin', 'mod'], ['tag', 'ban'], 
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
     const target = await fetchOnly(tag.author)
@@ -157,7 +157,13 @@ pcmd(['admin', 'mod'], ['tag', 'ban'],
     await tag.save()
     await target.save()
 
-    // TODO: dm warning
+    try {
+        await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
+            Please make sure you add valid tags in the future. Learn more with \`->help tag\`
+            You have **${3 - target.ban.tags}** warning(s) remaining`, 'red')
+    } catch {
+        ctx.reply(user, `failed to send a warning to the user.`, 'red')
+    }
 
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}. 
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)

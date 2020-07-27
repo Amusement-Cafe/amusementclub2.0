@@ -14,7 +14,7 @@ const {nameSort}    = require('../utils/tools')
 const colors        = require('../utils/colors')
 const _             = require('lodash')
 
-cmd('col', async (ctx, user, ...args) => {
+cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     const completed = args.find(x => x === '-completed' || x === '!completed')
     args = args.filter(x => x != '-completed' && x != '!completed')
 
@@ -45,7 +45,7 @@ cmd('col', async (ctx, user, ...args) => {
     })
 })
 
-cmd(['col', 'info'], async (ctx, user, ...args) => {
+cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
     const col = bestColMatch(ctx, args.join().replace('-', ''));
 
     if(!col)
@@ -78,7 +78,7 @@ cmd(['col', 'info'], async (ctx, user, ...args) => {
     }, user.discord_id)
 })
 
-cmd(['col', 'reset'], async (ctx, user, ...args) => {
+cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
     const col = bestColMatch(ctx, args.join().replace('-', ''));
 
     if(!col)

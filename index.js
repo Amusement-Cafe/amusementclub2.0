@@ -223,10 +223,12 @@ module.exports.create = async ({
                     color: colors.red
                 })
 
-                guildq.push(curguild.id)
-                await new Promise(r => setTimeout(r, 10000));
-                await bot.deleteMessage(warnmsg.channel.id, warnmsg.id)
-                guildq = guildq.filter(x => x != curguild.id)
+                try {
+                    guildq.push(curguild.id)
+                    await new Promise(r => setTimeout(r, 10000))
+                    guildq = guildq.filter(x => x != curguild.id)
+                    await bot.deleteMessage(warnmsg.channel.id, warnmsg.id)
+                } catch(e) { }
 
                 return
             }
@@ -270,6 +272,9 @@ module.exports.create = async ({
             await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
+            if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
+                return
+            
             if(debug)
                 await send(msg.channel.id, { description: e.message, color: colors.red })
             emitter.emit('error', e)

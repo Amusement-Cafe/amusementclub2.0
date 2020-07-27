@@ -183,8 +183,11 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
             You need **${vials}** ${ctx.symbols.vial} (+**${extra}**) but you have **${user.vials}** ${ctx.symbols.vial}`, 'red')
 
-    const question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}? 
-        (+**${extra}** for your #${amount} draw today)`
+    let question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}?`
+    if(amount > 0) {
+        question += `\n(+**${extra}** for your #${amount + 1} draw today)`
+    }
+
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
         force: ctx.globals.force,
