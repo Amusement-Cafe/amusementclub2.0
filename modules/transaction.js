@@ -68,7 +68,6 @@ const confirm_trs = async (ctx, user, trs_id) => {
     const from_user = await User.findOne({ discord_id: transaction.from_id })
     const to_user = await User.findOne({ discord_id: transaction.to_id })
     const card = from_user.cards.find(x => x.id == transaction.card)
-    const fullCard = ctx.cards[card.id]
 
     if(!card){
         transaction.status = 'declined'
@@ -76,6 +75,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         return ctx.reply(to_user, `seller doesn't have this card anymore. Transaction was declined`, 'red')
     }
 
+    const fullCard = ctx.cards[card.id]
     if(to_user) {
         if(user.discord_id != transaction.to_id)
             return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')

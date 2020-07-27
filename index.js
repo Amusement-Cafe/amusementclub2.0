@@ -223,10 +223,12 @@ module.exports.create = async ({
                     color: colors.red
                 })
 
-                guildq.push(curguild.id)
-                await new Promise(r => setTimeout(r, 10000));
-                await bot.deleteMessage(warnmsg.channel.id, warnmsg.id)
-                guildq = guildq.filter(x => x != curguild.id)
+                try {
+                    guildq.push(curguild.id)
+                    await new Promise(r => setTimeout(r, 10000))
+                    guildq = guildq.filter(x => x != curguild.id)
+                    await bot.deleteMessage(warnmsg.channel.id, warnmsg.id)
+                } catch(e) { }
 
                 return
             }

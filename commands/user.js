@@ -264,9 +264,11 @@ cmd('profile', async (ctx, user, ...args) => {
         resp.push(`Overall clout: **${cloutsum}**`)
     }
 
-    const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
-    if(curUser){
-        resp.push(`Current guild rank: **${curUser.rank}** (${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'})`)
+    if(ctx.guild) {
+        const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+        if(curUser){
+            resp.push(`Current guild rank: **${curUser.rank}** (${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'})`)
+        }
     }
 
     if(user.roles && user.roles.length > 0)
