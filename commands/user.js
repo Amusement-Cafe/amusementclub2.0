@@ -209,7 +209,7 @@ cmd('daily', async (ctx, user) => {
     return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`, 'red')
 })
 
-cmd('cards', 'li', 'ls', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
@@ -398,4 +398,16 @@ cmd('stats', async (ctx, user) => {
         description: Object.keys(user.dailystats)
             .map(x => `${x}: **${user.dailystats[x]}**`).join('\n')
     }, user.discord_id)
+})
+
+cmd('achievements', 'ach', async (ctx, user) => {
+    const list = user.achievements.map(x => {
+        const item = ctx.achievements.find(y => y.id === x)
+        return `**${item.name}** (${item.desc})`
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(list, 15),
+        embed: { author: { name: `${user.username}, completed achievements: (${list.length})` } }
+    })
 })

@@ -272,6 +272,9 @@ module.exports.create = async ({
             await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
+            if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
+                return
+            
             if(debug)
                 await send(msg.channel.id, { description: e.message, color: colors.red })
             emitter.emit('error', e)

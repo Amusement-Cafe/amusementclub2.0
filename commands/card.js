@@ -183,6 +183,15 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     user.lastcard = card.id
     await user.save()
 
+    if(card.imgur) {
+        await ctx.reply(user, {
+            color: colors.blue,
+            description: `summons **${formatName(card)}**!`
+        })
+
+        return ctx.bot.createMessage(ctx.msg.channel.id, card.imgur)
+    }
+
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,

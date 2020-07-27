@@ -368,7 +368,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     })
 })
 
-pcmd(['admin'], ['sudo', 'hero', 'cache', 'reload'], async (ctx, user) => {
+pcmd(['admin'], ['sudo', 'hero', 'cache', 'flush'], async (ctx, user) => {
     await reloadCache()
-    return ctx.reply(user, 'reloaded hero cache')
+    return ctx.reply(user, 'reset hero cache')
 })
