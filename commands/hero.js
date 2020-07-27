@@ -1,8 +1,7 @@
 const {cmd, pcmd}   = require('../utils/cmd')
-const jikanjs       = require('jikanjs')
-const Jikan        = require('jikan-node')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
+const anilist       = require('anilist-node');
 const colors        = require('../utils/colors')
 
 const {
@@ -35,7 +34,7 @@ const {
     check_effect
 } = require('../modules/effect')
 
-const mal = new Jikan()
+const Anilist = new anilist();
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
@@ -304,7 +303,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
         return ctx.reply(user, `you have to be level **25** or higher to submit a hero`, 'red')
 
     if(!arg1)
-        return ctx.reply(user, `please specify MAL character URL`, 'red')
+        return ctx.reply(user, `please specify Anilist character URL`, 'red')
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
@@ -313,7 +312,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)
         return ctx.reply(user, `seems like this URL is invalid.
-            Please specify MAL character URL`, 'red')
+            Please specify Anilist character URL`, 'red')
 
     const dbchar = await get_hero(ctx, charID)
     if(dbchar && dbchar.active)
@@ -333,26 +332,26 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     let char
     try {
-        char = await jikanjs.loadCharacter(charID)
-        //char = await mal.findCharacter(charID)
+        char = await Anilist.people.character(parseInt(charID))
     } catch(e) { 
-        return ctx.reply(user, `there was a problem with fetching a character from MAL database.
+        return ctx.reply(user, `there was a problem with fetching a character from Anilist database.
             Error code: \`${e}\``, 'red')
     }
 
     if(!char)
         return ctx.reply(user, `cannot find a valid character at this URL`, 'red')
 
-    if(!char.animeography[0])
+    const media = char.media.find(x => x.format === 'TV' || x.format === 'MOVIE')
+    if(!media)
         return ctx.reply(user, `seems like this character doesn't have any associated anime.
             Only characters with valid animeography are allowed`, 'red')
 
     const embed = { 
         title: `Submitting a hero`,
-        description: `You are about to submit **${char.name}** from **${char.animeography[0].name}**.
-        > It may take up to a week to review the character. You will keep your current hero while the submission is being processed.
+        description: `You are about to submit **${char.name.english}** from **${media.title.english}**.
+        > It may take up some time to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,
-        image: { url: char.image_url }
+        image: { url: char.image.large }
     }
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {

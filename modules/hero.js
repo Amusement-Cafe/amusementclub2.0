@@ -4,7 +4,6 @@ const Guild         = require('../collections/guild')
 
 const {fetchOnly}   = require('./user')
 const m_guild       = require('./guild')
-const jikanjs       = require('jikanjs')
 const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
@@ -12,14 +11,15 @@ const colors        = require('../utils/colors')
 let hcache = []
 
 const new_hero = async (ctx, user, char) => {
-    const pics = await jikanjs.loadCharacter(char.mal_id, 'pictures')
+    const pics = []
+    pics.push(char.image.large)
 
     const hero = await new Hero()
-    hero.id = char.mal_id
-    hero.name = char.name
+    hero.id = char.id
+    hero.name = char.name.english
     hero.user = user.discord_id
     hero.submitted = new Date()
-    hero.pictures = pics.pictures.map(x => x.large)
+    hero.pictures = pics
 
     hero.accepted = true
 
