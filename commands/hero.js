@@ -96,7 +96,8 @@ cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
     const guild = await Guild.findOne({ hero: hero.id })
     if(guild) {
         const discord_guild = ctx.bot.guilds.find(x => x.id === guild.id)
-        embed.description += `\nCurrent guild: **${discord_guild.name}**`
+        if(discord_guild)
+            embed.description += `\nCurrent guild: **${discord_guild.name}**`
     }
 
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
