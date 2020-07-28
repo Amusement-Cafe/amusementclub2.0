@@ -167,7 +167,7 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
 
 cmd(['guild', 'downgrade'], ['guild', 'down'], async (ctx, user, arg1) => {
     if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
-        return ctx.reply(user, `only server owner can modify guild tax`, 'red')
+        return ctx.reply(user, `only server owner can downgrade buildings`, 'red')
 
     if(!arg1)
         return ctx.reply(user, 'please specify building ID', 'red')
@@ -185,7 +185,7 @@ cmd(['guild', 'downgrade'], ['guild', 'down'], async (ctx, user, arg1) => {
         force: ctx.globals.force,
         onConfirm: async (x) => {
             building.level--
-            
+
             const destroyed = building.level < 1
             if(destroyed) {
                 ctx.guild.buildings = ctx.guild.buildings.filter(x => x.id != building.id)
