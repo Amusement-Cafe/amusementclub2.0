@@ -40,7 +40,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
     if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
-    let overSell = await AuditAucSell.find({sold: {$gt:5}}).sort({sold: -1})
+    let overSell = await AuditAucSell.find({sold: {$gt:5}}).sort({sold: -1, unsold: 1})
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_auditReports(ctx, user, overSell, 1),

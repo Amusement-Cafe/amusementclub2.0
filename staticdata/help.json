@@ -6,17 +6,17 @@
         "fields": [
             {
                 "title": "User",
-                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss",
+                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv",
                 "inline": true
             },
             {
                 "title": "Card Management",
-                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help info",
+                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help info\n->help query",
                 "inline": true
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections",
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->rules",
                 "inline": true
             },
             {
@@ -34,9 +34,21 @@
         ]
     },
     {
+        "type": ["ach", "achievement", "achievements"],
+        "title": "About achievements",
+        "description": "Achievements are fun little extras you can recieve by playing the bot normally. They can reward you with personal xp, tomatoes, or vials.",
+        "fields": [
+            {
+                "title": "->achievements",
+                "description": "List your completed achievements"
+            }
+        ]
+
+    },
+    {
         "type": ["auc", "auction", "auctions"],
         "title": "About auctions",
-        "description": "Auctions are a way to trade your cards. You can put any card on auction for a fee equal to 10% of your listing price(5% with upgraded Auction House), and then other users can bid on it. Each card will be on the auction list for 5 hours(variable with maxed Auction House) and sold to the highest bidder. If nobody bids on your card, your card will be returned to you, but the listing fee will not be refunded.",
+        "description": "Auctions are a way to trade your cards. You can put any card on auction for a fee equal to 10% of your listing price(5% with upgraded Auction House), and then other users can bid on it. Each card will be on the auction list for 6 hours(variable with maxed Auction House) and sold to the highest bidder. If nobody bids on your card, your card will be returned to you, but the listing fee will not be refunded.",
         "fields": [
             {
                 "title": "IMPORTANT",
@@ -169,9 +181,9 @@
         ]
     },
     {
-        "type": ["col", "collection", "collections"],
+        "type": ["col", "collection", "collections", "clout"],
         "title": "About collections",
-        "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command",
+        "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command.\nCollections can be reset(clouted) for 5 star cards if they exist for that collection, or just for clout stars. You need all of the cards in the collection to clout.",
         "fields": [
             {
                 "title": "->col",
@@ -188,6 +200,10 @@
             {
                 "title": "->col -completed",
                 "description": "Lists only completed collections"
+            },
+            {
+                "title": "->col reset [collection name]",
+                "description": "Reset a collection for clout stars and 5 stars if available for that collection."
             }
         ]
     },
@@ -257,6 +273,10 @@
             {
                 "title": "->diff [keywords]\n(e.g. `->diff kyoko`)",
                 "description": "Show cards that have the keyword in the name"
+            },
+            {
+                "title": "->diff reverse @user",
+                "description": "Show cards you have that someone else does not"
             }
         ]
     },
@@ -375,6 +395,10 @@
                 "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance (Requires a castle be built first)"
             },
             {
+                "title": "->guild downgrade [building ID]",
+                "description": "Downgrades a building to a lower level, if used on a building of level 1, it destroys the building (owner/manager only)"
+            },
+            {
                 "title": "->guild set tax [percentage]",
                 "description": "Set the claim tax of the guild (owner/manager only)"
             },
@@ -384,7 +408,7 @@
             },
             {
                 "title": "->guild set bot",
-                "description": "Set current channel as bot. `->guild unset bot` will give an opposite effect (owner/manager only)"
+                "description": "Set current channel as bot. `->guild unset bot` will give an opposite effect (owner only)"
             },
             {
                 "title": "->guild set prefix",
@@ -441,7 +465,7 @@
                 "description": "Equip a passive effect to a hero"
             },
             {
-                "title": "->hero submit [MAL link]",
+                "title": "->hero submit [Anilist link]",
                 "description": "Submit a hero for review"
             }
         ]
