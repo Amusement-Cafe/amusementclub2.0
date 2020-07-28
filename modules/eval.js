@@ -2,15 +2,20 @@ const User      = require('../collections/user')
 const asdate    = require('add-subtract-date')
 
 const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
-const evalUserRate = 0.035
+const evalUserRate = 1
 const evalVialRate = 0.05
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
+
+let userCount
 
 const evalCard = async (ctx, card, modifier = 1) => {
     if(card.hasOwnProperty('eval'))
         return card.eval
 
-    const userCount = await User.estimatedDocumentCount()
+    if(!userCount) {
+        userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
+    }
+    
     const amount = await User.countDocuments({
         cards: { $elemMatch: { id: card.id }}, 
         lastdaily: { $gt: evalLastDaily }})
