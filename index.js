@@ -40,6 +40,7 @@ module.exports.create = async ({
             x.url = baseurl + basePath
             x.shorturl = shorturl + basePath
             x.id = i
+            x.added = Date.parse(x.added)
             return x
         })
     }

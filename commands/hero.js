@@ -3,6 +3,7 @@ const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
 const anilist       = require('anilist-node');
 const colors        = require('../utils/colors')
+const Guild         = require('../collections/guild')
 
 const {
     fetchOnly
@@ -91,6 +92,12 @@ cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
     const usr = await fetchOnly(hero.user)
     const embed = await getInfo(ctx, user, hero.id)
     embed.description += `\nSubmitted by: **${usr.username}**`
+
+    const guild = await Guild.findOne({ hero: hero.id })
+    if(guild) {
+        const discord_guild = ctx.bot.guilds.find(x => x.id === guild.id)
+        embed.description += `\nCurrent guild: **${discord_guild.name}**`
+    }
 
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 }))
@@ -340,6 +347,10 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     if(!char)
         return ctx.reply(user, `cannot find a valid character at this URL`, 'red')
+
+    if(!char.media)
+        return ctx.reply(user, `seems like this character doesn't have any associated anime.
+            Only characters with valid animeography are allowed`, 'red')
 
     const media = char.media.find(x => x.format === 'TV' || x.format === 'MOVIE')
     if(!media)

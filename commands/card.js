@@ -2,6 +2,7 @@ const {cmd}                 = require('../utils/cmd')
 const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
 const msToTime              = require('pretty-ms')
+const dateFormat            = require(`dateformat`)
 
 const _ = require('lodash')
 
@@ -394,6 +395,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     if(usercard && usercard.rating)
         resp.push(`Your Rating: **${usercard.rating}**`)
 
+    resp.push(`Added: **${dateFormat(card.added, "yyyy-mm-dd")}** (${msToTime(new Date() - card.added, {compact: true})})`)
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')
 
