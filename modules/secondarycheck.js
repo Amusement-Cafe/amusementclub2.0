@@ -40,8 +40,7 @@ const check_daily = async (ctx, user, action, channelID) => {
     if(complete.length === 0)
         return
 
-    await User.findOneAndUpdate({discord_id: user.discord_id}, 
-        {$set: { dailyquests: user.dailyquests }})
+    await user.save()
 
     return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,
