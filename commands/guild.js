@@ -96,11 +96,17 @@ cmd(['guild', 'status'], (ctx, user) => {
 
     const resp = []
     const cost = getMaintenanceCost(ctx)
-    const ratio = cost / ctx.guild.balance
+    const total = Math.round(cost - cost * ctx.guild.discount)
+    const ratio = total / ctx.guild.balance
 
     resp.push(`Building maintenance: **${cost}** ${ctx.symbols.tomato}/day`)
+
+    if(ctx.guild.discount > 0) {
+        resp.push(`Maintenance discount: **${ctx.guild.discount * 100}%**`)
+        resp.push(`Subtotal after discounts: **${total}** ${ctx.symbols.tomato}/day`)
+    }
     resp.push(`Current finances: **${ctx.guild.balance}** ${ctx.symbols.tomato}`)
-    resp.push(`Ratio: **${ratio.toFixed(2)}** (${ratio < 1? 'positive' : 'negative'})`)
+    resp.push(`Ratio: **${ratio.toFixed(2)}** (${ratio <= 1? 'positive' : 'negative'})`)
     resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
     resp.push(`> Make sure you have **positive** ratio when maintenance costs are charged`)
 
@@ -112,7 +118,7 @@ cmd(['guild', 'status'], (ctx, user) => {
             const heart = x.health < 50? '💔' : '❤️'
             return `[\`${heart}\` ${x.health}] **${item.name}** level **${x.level}** costs **${item.levels[x.level - 1].maintenance}** ${ctx.symbols.tomato}/day`
         }).join('\n')}],
-        color: (ratio < 1? color.green : color.red)
+        color: (ratio <= 1? color.green : color.red)
     }, user.discord_id)
 })
 

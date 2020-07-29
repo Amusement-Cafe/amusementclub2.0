@@ -1,4 +1,5 @@
 const colors    = require('../utils/colors')
+const User      = require('../collections/user')
 
 const check_achievements = async (ctx, user, action, channelID) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
@@ -7,7 +8,8 @@ const check_achievements = async (ctx, user, action, channelID) => {
     if(complete) {
         const reward = complete.resolve(ctx, user)
         user.achievements.push(complete.id)
-        await user.save()
+        await User.findOneAndUpdate({discord_id: user.discord_id}, 
+            {$push: { achievements: complete.id }})
 
         return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
@@ -38,8 +40,8 @@ const check_daily = async (ctx, user, action, channelID) => {
     if(complete.length === 0)
         return
 
-    user.markModified('dailyquests')
-    await user.save()
+    await User.findOneAndUpdate({discord_id: user.discord_id}, 
+        {$set: { dailyquests: user.dailyquests }})
 
     return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,
