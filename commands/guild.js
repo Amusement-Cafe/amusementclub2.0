@@ -42,12 +42,13 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
         return getBuildingInfo(ctx, user, args)
 
     const resp = [], userstat = [], fields = []
+    const channels = ctx.guild.botchannels.filter(x => ctx.discord_guild.channels.some(y => y.id === x))
     resp.push(`Level: **${XPtoLEVEL(ctx.guild.xp)}**`)
     resp.push(`Players: **${ctx.guild.userstats.length}/${ctx.discord_guild.memberCount}**`)
     resp.push(`Prefix: \`${ctx.guild.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
-    resp.push(`Bot channels: ${ctx.guild.botchannels.map(x => `<#${x}>`).join(' ')}`)
+    resp.push(`Bot channels: ${channels.map(x => `<#${x}>`).join(' ')}`)
 
     const lock = ctx.guild.overridelock || ctx.guild.lock
     if(lock) {

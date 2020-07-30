@@ -31,9 +31,14 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     if(cols.length === 0)
         return ctx.reply(user, `no collections found`, 'red')
 
+    const cardmap = mapUserCards(ctx, user)
     const pages = ctx.pgn.getPages(cols.map(x => {
         const complete = user.completedcols.find(y => x.id === y.id)
-        return `${complete && complete.amount > 0? `[${complete.amount}${ctx.symbols.star}] ` : ''}**${x.name}** (${x.id})`
+        const overall = ctx.cards.filter(c => c.col === x.id).length
+        const usercount = cardmap.filter(c => c.col === x.id).length
+        const rate = usercount / overall
+        const completestars = complete && complete.amount > 0? `[${complete.amount}${ctx.symbols.star}] ` : ''
+        return `${completestars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.round(rate * 100)}%)` : ''}`
     }))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {

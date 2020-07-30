@@ -40,7 +40,7 @@ module.exports.create = async ({
             x.url = baseurl + basePath
             x.shorturl = shorturl + basePath
             x.id = i
-            
+
             if(x.added)
                 x.added = Date.parse(x.added)
 
@@ -246,7 +246,7 @@ module.exports.create = async ({
             })
 
             /* add user to cooldown q */
-            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 2, 'seconds')});
+            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
 
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
