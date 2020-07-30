@@ -1,10 +1,6 @@
 const {pcmd} = require('../utils/cmd')
 
 const {
-    messageLift
-} = require('../modules/audit')
-
-const {
     onUsersFromArgs
 } = require('../modules/user')
 

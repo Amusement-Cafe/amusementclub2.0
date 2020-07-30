@@ -1,6 +1,7 @@
 const Guild         = require('../collections/guild')
 const Transaction   = require('../collections/transaction')
 const Auction       = require('../collections/auction')
+const User          = require('../collections/user')
 
 const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
@@ -96,14 +97,38 @@ const bill_guilds = async (ctx, now) => {
     const report = []
     const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.guilds.find(x => x.id === guild.id) })
     const cost = getMaintenanceCost(isolatedCtx)
-    const ratio = guild.balance / cost
-    guild.balance = Math.max(0, guild.balance - cost)
+    const discount = Math.round(cost * guild.discount)
+    const total = Math.round(cost - discount)
+    const ratio = guild.balance / total
+    guild.balance = Math.max(0, guild.balance - total)
 
     if(ratio == Infinity)
         ratio = 0
 
-    report.push(`Maintenance cost: **${cost}** ${ctx.symbols.tomato}`)
+    report.push(`Maintenance cost: **${total}** ${ctx.symbols.tomato}`)
+    if(guild.discount > 0) {
+        report.push(`Applied discount: **${guild.discount * 100}%** (${discount} ${ctx.symbols.tomato})`)
+    }
+
     report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
+
+    const past = asdate.subtract(new Date(), 7, 'days')
+    const activeUsers = await User.countDocuments({ 
+        discord_id: { $in: guild.userstats.map(x => x.id) },
+        lastdaily: { $gt: past }
+    })
+
+    if(activeUsers <= 5) {
+        guild.discount = .75
+        report.push(`Next maintenance discount: **75%**`)
+
+    } else if(activeUsers <= 20) {
+        guild.discount = (1 - (activeUsers / 20)).toFixed(2)
+        report.push(`Next maintenance discount: **${guild.discount * 100}%**`)
+
+    } else {
+        guild.discount = 0
+    }
 
     if(ratio < 1) {
         guild.lockactive = false

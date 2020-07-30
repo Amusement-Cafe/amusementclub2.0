@@ -236,13 +236,14 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
 
 cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
     let auc = await Auction.findOne({ id: arg1 })
+
+    if(!auc)
+        return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
+
     const card = ctx.cards[auc.card]
 
     const check = async () => {
         auc = await Auction.findOne({ id: arg1 })
-
-        if(!auc)
-            return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
 
         if(auc.author != user.discord_id)
             return ctx.reply(user, `you don't have rights to cancel this auction`, 'red')

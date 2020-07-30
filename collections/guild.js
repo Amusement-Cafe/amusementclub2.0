@@ -28,6 +28,7 @@ module.exports = model('Guild', {
     lock:           { type: String, default: '' },
     lockactive:     { type: Boolean, default: false },
     lastlock:       { type: Date, default: new Date(0) },
+    discount:       { type: Number, default: 0 },
 
     hero:           { type: String, default: '' },
     heroloyalty:    { type: Number, default: 0 },

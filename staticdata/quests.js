@@ -32,10 +32,10 @@ module.exports = {
             actions: ['auc', 'auction'],
             check: (ctx, user) => user.dailystats.bids >= 2,
             resolve: (ctx, user) => {
-                user.exp += 400
+                user.exp += 600
                 user.xp += 2
             },
-            reward: (ctx) => `**400** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**600** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'bid5',
             name: 'Bid on 5 auctions today',
@@ -44,10 +44,10 @@ module.exports = {
             actions: ['auc', 'auction'],
             check: (ctx, user) => user.dailystats.bids >= 5,
             resolve: (ctx, user) => {
-                user.exp += 1000
+                user.exp += 2500
                 user.xp += 5
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **5** xp`
+            reward: (ctx) => `**2500** ${ctx.symbols.tomato} and **5** xp`
         }, {
             id: 'forge1',
             name: 'Forge 1-star card',
@@ -107,10 +107,10 @@ module.exports = {
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 4,
             resolve: (ctx, user) => {
-                user.exp += 700
+                user.exp += 1000
                 user.xp += 4
             },
-            reward: (ctx) => `**700** ${ctx.symbols.tomato} and **4** xp`
+            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **4** xp`
         }, {
             id: 'liq2',
             name: 'Liquify 2 cards',

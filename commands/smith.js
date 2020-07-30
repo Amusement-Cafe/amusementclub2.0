@@ -72,39 +72,44 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
-            let res = ctx.cards.filter(x => x.level === card1.level && x.id != card1.id && x.id != card2.id)
+            try {
+                let res = ctx.cards.filter(x => x.level === card1.level && x.id != card1.id && x.id != card2.id)
 
-            if(card1.col === card2.col)
-                res = res.filter(x => x.col === card1.col)
-            else res = res.filter(x => !ctx.collections.find(y => y.id === x.col).promo)
+                if(card1.col === card2.col)
+                    res = res.filter(x => x.col === card1.col)
+                else res = res.filter(x => !ctx.collections.find(y => y.id === x.col).promo)
 
-            const newcard = _.sample(res)
-            user.vials += vialres
-            user.exp -= cost
+                const newcard = _.sample(res)
+                user.vials += vialres
+                user.exp -= cost
 
-            if(!newcard)
-                return ctx.reply(user, `an error occured, please try again`, 'red')
+                if(!newcard)
+                    return ctx.reply(user, `an error occured, please try again`, 'red')
 
-            removeUserCard(user, card1.id)
-            removeUserCard(user, card2.id)
-            await user.save()
+                removeUserCard(user, card1.id)
+                removeUserCard(user, card2.id)
+                await user.save()
 
-            addUserCard(user, newcard.id)
-            user.lastcard = newcard.id
-            user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`] + 1 || 1
-            user.markModified('dailystats')
-            await completed(ctx, user, newcard)
-            await user.save()
+                addUserCard(user, newcard.id)
+                user.lastcard = newcard.id
+                user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`] + 1 || 1
+                user.markModified('dailystats')
+                await completed(ctx, user, newcard)
+                await user.save()
 
-            const usercard = user.cards.find(x => x.id === newcard.id)
+                const usercard = user.cards.find(x => x.id === newcard.id)
 
-            return ctx.reply(user, {
-                image: { url: newcard.url },
-                color: colors.blue,
-                description: `you got ${formatName(newcard)}!
-                    **${vialres}** ${ctx.symbols.vial} were added to your account
-                    ${usercard.amount > 1 ? `*You already have this card*` : ''}`
-            })
+                return ctx.reply(user, {
+                    image: { url: newcard.url },
+                    color: colors.blue,
+                    description: `you got ${formatName(newcard)}!
+                        **${vialres}** ${ctx.symbols.vial} were added to your account
+                        ${usercard.amount > 1 ? `*You already have this card*` : ''}`
+                })
+            } catch(e) {
+                return ctx.reply(user, `an error occured while executing this command. 
+                    Please try again`, 'red')
+            }
         }
     })
 }))
@@ -145,14 +150,22 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         force: ctx.globals.force,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
-            user.vials += vials
-            removeUserCard(user, card.id)
-            await user.save()
-            user = await updateUser(user, {$inc: {'dailystats.liquify': 1}})
+            try {
+                user.vials += vials
+                user.dailystats.liquify = user.dailystats.liquify + 1 || 1
+                removeUserCard(user, card.id)
+                await updateUser(user, {
+                    $inc: {'dailystats.liquify': 1}, 
+                    $set: {vials: user.vials, cards: user.cards}
+                })
 
-            ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
-                You have **${user.vials}** ${ctx.symbols.vial}
-                You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+                ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
+                    You have **${user.vials}** ${ctx.symbols.vial}
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+            } catch(e) {
+                return ctx.reply(user, `an error occured while executing this command. 
+                    Please try again`, 'red')
+            }
         },
     })
 }))
