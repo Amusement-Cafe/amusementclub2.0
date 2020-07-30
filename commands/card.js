@@ -291,7 +291,7 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const price = await evalCard(ctx, card)
     const vials = await getVialCost(ctx, card, price)
     return ctx.reply(user, 
-        `card ${formatName(card)} is worth: **${price}** ${ctx.symbols.tomato} ${card.level < 4? `and **${vials}** ${ctx.symbols.vial}` : ``}`)
+        `card ${formatName(card)} is worth: **${price}** ${ctx.symbols.tomato} ${card.level < 4? `or **${vials}** ${ctx.symbols.vial}` : ``}`)
 }))
 
 cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
@@ -397,7 +397,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
 
     if(card.added)
         resp.push(`Added: **${dateFormat(card.added, "yyyy-mm-dd")}** (${msToTime(new Date() - card.added, {compact: true})})`)
-    
+
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')
 
