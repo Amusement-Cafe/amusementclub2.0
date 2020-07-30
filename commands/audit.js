@@ -286,6 +286,12 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
 
     let effects = findUser.effects.map(x => x.id)
 
+    const dailyStats = `
+    Claims: **${findUser.dailystats.claims ? findUser.dailystats.claims : 0}**, Bids: **${findUser.dailystats.bids ? findUser.dailystats.bids : 0}**, Auctions: **${findUser.dailystats['aucs'] ? findUser.dailystats['aucs'] : 0}**
+    Liq: **${findUser.dailystats.liquify ? findUser.dailystats.liquify : 0}**, Draw: **${findUser.dailystats['draw'] ? findUser.dailystats['draw'] : 0}**, Tags: **${findUser.dailystats.tags ? findUser.dailystats.tags : 0}**
+    Forge1: **${findUser.dailystats['forge1'] ? findUser.dailystats['forge1'] : 0}**, Forge2: **${findUser.dailystats['forge2'] ? findUser.dailystats['forge2'] : 0}**, Forge3: **${findUser.dailystats['forge3'] ? findUser.dailystats['forge3'] : 0}**`
+
+
     let embed = {
         author: {name: `${user.username} here is the info for ${findUser.username}`},
         description: `**${findUser.username}** \`${findUser.discord_id}\`
@@ -297,7 +303,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
                       Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
                       Effects List: **${effects.length != 0? effects: 0}**
                       __Daily Stats__: 
-                      Claims: **${findUser.dailystats.claims? findUser.dailystats.claims: 0}**, Bids: **${findUser.dailystats.bids? findUser.dailystats.bids: 0}** Auctions: **${findUser.dailystats['aucs']? findUser.dailystats['aucs']: 0}**`,
+                      ${dailyStats}`,
         color: colors['green']
     }
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
