@@ -38,7 +38,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const hub = getBuilding(ctx, 'smithhub')
 
     if(!hub)
-        return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**`, 'red')
+        return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**. Buy one in the \`->store\``, 'red')
 
     const card1 = bestMatch(cards[0])
     let card2 = bestMatch(cards[1])

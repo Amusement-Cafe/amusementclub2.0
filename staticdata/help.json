@@ -61,7 +61,11 @@
             {
                 "title": "->auc sell [card name] :[amount]",
                 "description": "List your card on auction. The lowest possible price is 0.5x eval, while the highest is 4.0x eval. If no amount is given, the eval price is used.\n With Auction House level 3 you can specify time of auction with `:-X` where X is limited to 1-10 for hours\n"
-            },            
+            },
+            {
+                "title": "->auc cancel [id]",
+                "description": "Cancels your auction if there are no bids on it and there is more than 1 hour remaining. You do not get list fees back"
+            },
             {
                 "title": "->auc bid [id] [amount]", 
                 "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 `🍅` on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n"
@@ -69,6 +73,10 @@
             {
                 "title": "->auc info [id]",
                 "description": "Find info about an auction, new or old.\n"
+            },
+            {
+                "title": "->auc info all [query]",
+                "description": "Shows the first 15 auctions matching the search query in a changeable page"
             },
             {
                 "title": "->auc -me",
@@ -96,6 +104,17 @@
             {
                 "title": "->bal",
                 "description": "Get your balance"
+            }
+        ]
+    },
+    {
+        "type": ["building", "buildings", "castle", "tavern", "auchouse", "heroq", "gbank", "smithhub"],
+        "title": "About buildings",
+        "description": "If you are here for anything except how guild heroes work. Head on over to `->help store` or just `->store`.",
+        "fields": [
+            {
+                "title": "Guild heroes",
+                "description": "Guild heroes are obtainable once you build a Hero's Quarters. Depending on how many followers of a certain hero are in your guild, and if that hero is not already in another guild. The hero with the highest quality followers(highest guild rank) will be selected to join your guild. If another guild obtains more high quality followers, they will slowly steal the hero from your guild. Besides asking everyone in your guild to follow a certain hero, there is no way to choose the hero for your guild."
             }
         ]
     },
@@ -625,6 +644,10 @@
             {
                 "title": "->cards =#",
                 "description": "Filter for exact amount of copies you own"
+            },
+            {
+                "title": "-f",
+                "description": "Adding -f to most commands that require you to confirm or deny bypasses the prompt and forces the command through. Whether you meant to or not."
             }
         ]
     },
@@ -771,12 +794,20 @@
                 "description": "List of the transactions where you get a card"
             },
             {
-                "title": "->sends",
+                "title": "->trans sends",
                 "description": "List of the transactions where you sent a card"
             },
             {
                 "title": "->pending",
                 "description": "List of the transactions that are waiting for confirmations"
+            },
+            {
+                "title": "->confirm [ID]",
+                "description": "Confirm a pending transaction"
+            },
+            {
+                "title": "->decline [ID]",
+                "description": "Decline a pending transaction"
             },
             {
                 "title": "->trans info [ID]",

@@ -93,7 +93,7 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
 cmd(['guild', 'status'], (ctx, user) => {
     const castle = ctx.guild.buildings.find(x => x.id === 'castle')
     if(!castle)
-        return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**', 'red')
+        return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**. Buy one in the `->store`', 'red')
 
     const resp = []
     const cost = getMaintenanceCost(ctx)
@@ -128,7 +128,7 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
         return ctx.reply(user, 'please specify building ID', 'red')
 
     if(!getGuildUser(ctx, user))
-        return ctx.reply(user, 'you are not a part of this guild', 'red')
+        return ctx.reply(user, 'you are not a part of this guild. Claim a card or daily to join', 'red')
 
     if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < ctx.guild.buildperm)
         return ctx.reply(user, `you have to be at least rank **${ctx.guild.buildperm}** to upgrade buildings in this guild`, 'red')
@@ -214,7 +214,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     const castle = ctx.guild.buildings.find(x => x.id === 'castle')
 
     if(!castle)
-        return ctx.reply(user, '**Guild Castle** is required before you can donate', 'red')
+        return ctx.reply(user, '**Guild Castle** is required before you can donate. Buy one in the `->store`', 'red')
 
     if(!amount)
         return ctx.reply(user, `please enter amount of ${ctx.symbols.tomato} you want to donate to this guild`, 'red')
@@ -249,7 +249,7 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     const castle = ctx.guild.buildings.find(x => x.id === 'castle')
 
     if(!castle)
-        return ctx.reply(user, '**Guild Castle** is required to set claim tax', 'red')
+        return ctx.reply(user, '**Guild Castle** is required to set claim tax. Buy one in the `->store`', 'red')
 
     if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only server owner can modify guild tax`, 'red')

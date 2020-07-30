@@ -1,11 +1,17 @@
 const {pcmd}                    = require('../utils/cmd')
-const {formatName}              = require('../modules/card')
 const {evalCard}                = require('../modules/eval')
 const {fetchOnly}               = require('../modules/user')
 const colors                    = require('../utils/colors')
 const msToTime                  = require('pretty-ms')
 const {paginate_trslist, ch_map} = require('../modules/transaction')
 const dateFormat                = require(`dateformat`)
+
+const {
+    formatName,
+    mapUserCards,
+    parseArgs,
+    withGlobalCards
+}   = require('../modules/card')
 
 const {
     formatAucBidList,
@@ -88,7 +94,7 @@ pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
-    return ctx.reply(user, "Current audit options are: auction, guild, trans, user, warn")
+    return ctx.reply(user, "Current audit options are: auction, guild, trans, user, warn, find user, find trans, confirm")
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
@@ -266,7 +272,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
     }, user.discord_id)
 })
 
-pcmd(['admin', 'auditor'], ['audit', 'find'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
@@ -296,6 +302,24 @@ pcmd(['admin', 'auditor'], ['audit', 'find'], async (ctx, user, ...args) => {
     }
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
+
+pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ctx, user, cards, ...args) => {
+    const list = await Transaction.find({
+        $or: [{to_id: args[0].ids}, {from_id: args[0].ids}], card: { $in: cards.map(c => c.id) }
+    }).sort({ time: -1 }).limit(100)
+
+    if(list.length == 0)
+        return ctx.reply(user, `matched ${cards.length} cards and 0 transactions`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_guildtrslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, matched ${cards.length} cards and ${list.length} transactions` },
+            color: colors.blue,
+        }
+    })
+}))
 
 pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], async (ctx, user, arg) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
@@ -331,5 +355,26 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
             author: { name: `${user.username}, here are the closed audits. (${closedAudits.length} results)` },
             color: colors.blue,
         }
+    })
+})
+
+pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], async (ctx, user, ...args) => {
+    if (ctx.msg.channel.id != ctx.audit.channel)
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+    let arg = parseArgs(ctx, args)
+    if (!arg.ids)
+        return ctx.reply(user, `please submit a valid user ID`, 'red')
+
+    const findUser = await User.findOne({discord_id: arg.ids})
+    const now = new Date()
+    const cards = mapUserCards(ctx, findUser).sort(arg.sort)
+    const cardstr = cards.map(c => {
+        const isnew = c.obtained > (findUser.lastdaily || now)
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cardstr, 15),
+        embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${cards.length} results)` } }
     })
 })
