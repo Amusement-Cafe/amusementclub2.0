@@ -193,6 +193,10 @@ module.exports.create = async ({
         if (msg.author.bot || userq.some(x => x.id === msg.author.id))
             return
 
+        const tm1 = Date.now()
+        const tm2 = Date.now()
+        let diff1, diff2, diff3, diff4, diff5
+
         let curprefix = prefix
         const curguild = await guild.fetchOnly(msg.channel.guild)
         if(curguild) {
@@ -201,6 +205,8 @@ module.exports.create = async ({
 
         if (!msg.content.startsWith(curprefix)) return;
         msg.content = msg.content.toLowerCase()
+
+        diff1 = Date.now() - tm1
 
         try {
             /* create our player reply sending fn */
@@ -248,8 +254,12 @@ module.exports.create = async ({
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
 
+            const tm3 = Date.now()
+
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+
+            diff3 = Date.now() - tm3
 
             const action = args[0]
             if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
@@ -261,7 +271,12 @@ module.exports.create = async ({
                     For more information please visit [bot discord](${ctx.cafe})`, 'red')
             }
 
+            const tm4 = Date.now()
+
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+
+            diff4 = Date.now() - tm4
+
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
@@ -270,7 +285,13 @@ module.exports.create = async ({
             usr.vials = Math.min(usr.vials, 10**6)
 
             console.log(`[${usr.username}]: ${msg.content}`)
+
+            const tm5 = Date.now()
+
             await trigger('cmd', isolatedCtx, usr, args, prefix)
+
+            diff5 = Date.now() - tm5
+
             //usr = await user.fetchOnly(msg.author.id)
             usr.unmarkModified('dailystats')
             await check_all(isolatedCtx, usr, action)
@@ -282,6 +303,18 @@ module.exports.create = async ({
             if(debug)
                 await send(msg.channel.id, { description: e.message, color: colors.red })
             emitter.emit('error', e)
+        }
+
+        diff2 = Date.now() - tm2
+
+        if(debug){
+            const timings = `**Execution time stats**
+            Guild fetch: ${diff1}ms
+            User fetch: ${diff3}ms
+            Guild fetchOrCreate: ${diff4}ms
+            Command Execution: ${diff5}ms
+            Total: ${diff2}ms`
+            await send(msg.channel.id, { description: timings, color: colors.yellow })
         }
     })
 
