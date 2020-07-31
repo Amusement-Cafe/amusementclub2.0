@@ -86,7 +86,12 @@ module.exports = [
         name: 'Snap your fingers',
         desc: 'Reset collection for the first time',
         actions: ['col', 'collection'],
-        check: (ctx, user) => user.completedcols.sort((a, b) => b.amount - a.amount)[0].amount > 0,
+        check: (ctx, user) => {
+            const col = user.completedcols.sort((a, b) => b.amount - a.amount)[0]
+            if(col)
+                return col.amount > 0
+            return false
+        },
         resolve: (ctx, user) => {
             user.xp += 2
             user.exp += 800
