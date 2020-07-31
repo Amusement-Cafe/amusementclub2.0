@@ -68,7 +68,7 @@
             },
             {
                 "title": "->auc bid [id] [amount]", 
-                "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 `🍅` on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n"
+                "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 `🍅` on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n You have 5 attempts to outbid someone on an auction before you are locked out from bidding on that specific auction again. If you outbid them, this counter is reset. Any extra tomatoes bid over displayed price will be returned to you upon winning an auction"
             },
             {
                 "title": "->auc info [id]",
