@@ -210,7 +210,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             user.lastcard = card.id
             await completed(ctx, user, card)
             await user.save()
-            user = await updateUser(user, {$inc: {'dailystats.draw': 1}})
+            await updateUser(user, {$inc: {'dailystats.draw': 1}})
+            
+            user.dailystats.draw = user.dailystats.draw + 1 || 1
 
             return ctx.reply(user, {
                 image: { url: card.url },
