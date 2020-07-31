@@ -124,7 +124,7 @@ const finish_aucs = async (ctx, now) => {
         //Audit Logic Start
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
-        if (auc.price > eval * 2) {
+        if (auc.price > eval * 4) {
             const auditDB = await new Audit()
             const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
             auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)

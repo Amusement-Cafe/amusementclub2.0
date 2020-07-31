@@ -41,6 +41,10 @@ const {
     getPending
 } = require('../modules/transaction')
 
+const {
+    fetchTaggedCards
+} = require('../modules/tag')
+
 const { 
     get_hero
 }   = require('../modules/hero')
@@ -297,10 +301,15 @@ cmd('diff', async (ctx, user, ...args) => {
     if(!otherUser)
         return ctx.reply(user, `could not find target user`, 'red')
 
-    const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+    let otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
+
+    if(newArgs.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(newArgs.tags)
+        otherCards = otherCards.filter(x => tgcards.includes(x.id))
+    }
 
     const ids = user.cards.map(x => x.id)
     const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
@@ -324,10 +333,15 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
 
     const otherUser = await fetchOnly(newArgs.ids[0])
     const otherCards = otherUser.cards
-    const mappedCards = filter(mapUserCards(ctx, user), newArgs)
+    let mappedCards = filter(mapUserCards(ctx, user), newArgs)
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
+
+    if(newArgs.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(newArgs.tags)
+        mappedCards = mappedCards.filter(x => tgcards.includes(x.id))
+    }
 
     const ids = otherCards.map(x => x.id)
     const diff = mappedCards.filter(x => ids.indexOf(x.id) === -1)
