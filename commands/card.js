@@ -125,7 +125,9 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             max++
     } else {
         user.exp -= price
-        activepromo? user.promoexp += extra :
+        if (activepromo){
+            user.promoexp += extra
+        }
         await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
         while(claimCost(user, ctx.guild.tax, max) < user.exp)

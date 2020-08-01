@@ -150,11 +150,14 @@ cmd('daily', async (ctx, user) => {
             amount += 100 * (user.dailystats.claims || 0)
         }
 
+        if (promo) {
+            user.promoexp += promoAmount
+        }
+
         user.lastdaily = now
         user.dailystats = {}
         user.exp += amount
         user.xp += 10
-        promo? user.promoexp += promoAmount :
         user.dailyquests = []
         user.markModified('dailystats')
 
