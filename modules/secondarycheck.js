@@ -8,8 +8,7 @@ const check_achievements = async (ctx, user, action, channelID) => {
     if(complete) {
         const reward = complete.resolve(ctx, user)
         user.achievements.push(complete.id)
-        await User.findOneAndUpdate({discord_id: user.discord_id}, 
-            {$push: { achievements: complete.id }})
+        await user.save()
 
         return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
