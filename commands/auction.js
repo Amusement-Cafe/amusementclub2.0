@@ -135,7 +135,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
-                                You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
+                                You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
 
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
@@ -199,7 +199,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
-                                You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
+                                You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
 
     const now = new Date();
     const bid = parseInt(args.find(x => !isNaN(x)))

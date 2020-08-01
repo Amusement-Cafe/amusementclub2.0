@@ -101,6 +101,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
     }
 
     user.exp -= bid
+    user.dailystats.bids = user.dailystats.bids + 1 || 1
     await user.updateOne({$inc: {exp: -bid, 'dailystats.bids': 1}})
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
