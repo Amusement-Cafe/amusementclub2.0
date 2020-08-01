@@ -251,6 +251,10 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
 
     let bids = auc.bids.sort((a, b) => b.time - a.time)
     const pages = []
+    if (bids.length == 0) {
+        pages.push("There are no current bids")
+    }
+
 
     bids.map((t, i) => {
         if (i % 8 == 0) pages.push("")
