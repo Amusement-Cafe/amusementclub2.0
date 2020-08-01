@@ -310,6 +310,9 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ctx, user, cards, ...args) => {
+    if (ctx.msg.channel.id != ctx.audit.channel)
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+
     const list = await Transaction.find({
         $or: [{to_id: args[0].ids}, {from_id: args[0].ids}], card: { $in: cards.map(c => c.id) }
     }).sort({ time: -1 }).limit(100)
@@ -367,6 +370,7 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
 pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], async (ctx, user, ...args) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+    
     let arg = parseArgs(ctx, args)
     if (!arg.ids)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
