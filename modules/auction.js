@@ -25,6 +25,8 @@ const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
 
+const aucHide   = 5 * 60 * 1000
+
 const new_auc = async (ctx, user, card, price, fee, time) => {
     const target = await fetchOnly(user.discord_id)
     if(!target.cards.find(x => x.id === card.id))
@@ -60,9 +62,7 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
 
 const bid_auc = async (ctx, user, auc, bid) => {
     const lastBidder = await fetchOnly(auc.lastbidder)
-    const diff = auc.expires - new Date()
-    if(diff < 300000)
-        auc.expires = asdate.add(auc.expires, 1, 'minutes')
+    let diff = auc.expires - new Date()
 
     auc.bids.push({user: user.discord_id, bid: bid, time: new Date()})
     let bidsLeft = 5, cur = auc.bids.length - 1
@@ -81,6 +81,12 @@ const bid_auc = async (ctx, user, auc, bid) => {
             You have **${bidsLeft}** bid attempts left`, 'red')
     }
 
+    if(diff < 300000) {
+        auc.expires = asdate.add(auc.expires, 3, 'minutes')
+        diff = auc.expires - new Date()
+        auc.markModified('expires')
+    }
+
     auc.price = auc.highbid
     auc.highbid = bid
     auc.lastbidder = user.discord_id
@@ -90,11 +96,12 @@ const bid_auc = async (ctx, user, auc, bid) => {
         lastBidder.exp += auc.price
         await lastBidder.save()
 
-        if(lastBidder.discord_id != user.discord_id)
+        if(lastBidder.discord_id != user.discord_id) {
             await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
                 Use \`->auc bid ${auc.id} [new bid]\`
-                This auction will end in **${msToTime(diff)}**`, 'yellow')
+                This auction will end in **${diff > 60000? msToTime(diff) : '<1m'}**`, 'yellow')
+        }
     } else {
         const author = await fetchOnly(auc.author)
         await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`, 'green')
@@ -184,7 +191,9 @@ const paginate_auclist = (ctx, user, list) => {
         if (i % 10 == 0) 
             pages.push("")
 
-        const timediff = msToTime(auc.expires - new Date(), {compact: true})
+        const msdiff = auc.expires - new Date()
+        const timediff = msToTime(msdiff, {compact: true})
+        const diffstr = msdiff > aucHide? timediff : '<5m'
         let char = ctx.symbols.auc_wss
 
         if(auc.author === user.discord_id) {
@@ -194,7 +203,7 @@ const paginate_auclist = (ctx, user, list) => {
             char = ctx.symbols.auc_sod
         }
 
-        pages[Math.floor(i/10)] += `${char} [${timediff}] \`${auc.id}\` [${auc.price}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
+        pages[Math.floor(i/10)] += `${char} [${diffstr}] \`${auc.id}\` [${auc.price}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
     })
 
     return pages;
@@ -202,7 +211,10 @@ const paginate_auclist = (ctx, user, list) => {
 
 const format_auc = async(ctx, auc, author, doeval = true) => {
     const card = ctx.cards[auc.card]
-    const timediff = msToTime(auc.expires - new Date())
+    const msdiff = auc.expires - new Date()
+    const timediff = msToTime(msdiff)
+
+    console.log(msdiff)
 
     const resp = []
     resp.push(`Seller: **${author.username}**`)
@@ -215,7 +227,7 @@ const format_auc = async(ctx, auc, author, doeval = true) => {
     if(auc.finished)
         resp.push(`**This auction has finished**`)
     else
-        resp.push(`Expires in **${timediff}**`)
+        resp.push(`Expires in **${msdiff > aucHide? timediff : '<5m'}**`)
 
     return resp.join('\n')
 }
