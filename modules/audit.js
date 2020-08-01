@@ -10,7 +10,7 @@ const {tryGetUserID}     = require('../utils/tools')
 
 
 const clean_audits = async (ctx, now) => {
-    const auditcleanup = asdate.subtract(new Date(), 21, 'days')
+    const auditcleanup = asdate.subtract(new Date(), 14, 'days')
     await Audit.deleteMany({time: {$lt: auditcleanup}})
     await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
 }
