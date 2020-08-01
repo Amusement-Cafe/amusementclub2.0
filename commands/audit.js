@@ -287,7 +287,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
     let effects = findUser.effects.map(x => x.id)
 
     const dailyStats = `
-    Claims: **${findUser.dailystats.claims ? findUser.dailystats.claims : 0}**, Bids: **${findUser.dailystats.bids ? findUser.dailystats.bids : 0}**, Auctions: **${findUser.dailystats['aucs'] ? findUser.dailystats['aucs'] : 0}**
+    Claims: **${findUser.dailystats.claims ? findUser.dailystats.claims : 0}** (+${findUser.dailystats.promoclaims ? findUser.dailystats.promoclaims : 0} Promo), Bids: **${findUser.dailystats.bids ? findUser.dailystats.bids : 0}**, Auctions: **${findUser.dailystats['aucs'] ? findUser.dailystats['aucs'] : 0}**
     Liq: **${findUser.dailystats.liquify ? findUser.dailystats.liquify : 0}**, Draw: **${findUser.dailystats['draw'] ? findUser.dailystats['draw'] : 0}**, Tags: **${findUser.dailystats.tags ? findUser.dailystats.tags : 0}**
     Forge1: **${findUser.dailystats['forge1'] ? findUser.dailystats['forge1'] : 0}**, Forge2: **${findUser.dailystats['forge2'] ? findUser.dailystats['forge2'] : 0}**, Forge3: **${findUser.dailystats['forge3'] ? findUser.dailystats['forge3'] : 0}**`
 

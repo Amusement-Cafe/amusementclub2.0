@@ -102,6 +102,10 @@
                 "description": "You can also spend your tomatoes by accepting trade requests from other users (`->help sell`) and selling cards on auction (`->help auc`)"
             },
             {
+                "title": "Promo Currency",
+                "description": "Promo currency is gotten by doing daily and claiming cards"
+            },
+            {
                 "title": "->bal",
                 "description": "Get your balance"
             }
@@ -757,6 +761,10 @@
         "title": "About tagging",
         "description": "You can tag cards with #tags to help you and the playerbase better find cards. Adding a tag already on a card upvotes the tag",
         "fields": [ 
+            {
+                "title": "IMPORTANT INFORMATION",
+                "description": "Tags are a global item, meaning everyone can see your tags. This is why we have tag rules. Read below for tag rules, if you have not run `->help tag`, do that command to see the rules. Or do `->rules`."
+            },
             {
                 "title": "->tag [card] #tag",
                 "description": "Upvote or Add a tag to a card"

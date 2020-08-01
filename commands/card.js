@@ -66,6 +66,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const normalprice = promo? price : claimCost(user, 0, amount)
     const gbank = getBuilding(ctx, 'gbank')
     const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
+    const activepromo = ctx.promos.find(x => x.starts < now && x.expires > now)
 
     if(amount > 10)
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
@@ -124,7 +125,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             max++
     } else {
         user.exp -= price
-        user.promoexp += extra
+        activepromo? user.promoexp += extra :
         await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
@@ -154,7 +155,9 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     fields.push({name: `Receipt`, value: `You spent **${price}** ${curr} in total
         You have **${Math.round(promo? user.promoexp : user.exp)}** ${curr} left
         You can claim **${max - 1}** more cards
-        Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}`})
+        Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}
+        ${activepromo && !promo? `You got **${extra}** ${activepromo.currency}
+        You now have **${user.promoexp}** ${activepromo.currency}` : ""}`})
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 

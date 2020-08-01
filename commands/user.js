@@ -139,6 +139,7 @@ cmd('daily', async (ctx, user) => {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
         let amount = gbank? 500 : 300
+        const promoAmount = 500
         //let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
@@ -153,6 +154,7 @@ cmd('daily', async (ctx, user) => {
         user.dailystats = {}
         user.exp += amount
         user.xp += 10
+        promo? user.promoexp += promoAmount :
         user.dailyquests = []
         user.markModified('dailystats')
 
@@ -203,8 +205,8 @@ cmd('daily', async (ctx, user) => {
         }
 
         return ctx.reply(user, {
-            description: `you recieved daily **${amount}** ${ctx.symbols.tomato} 
-                You have now **${Math.round(user.exp)}** ${ctx.symbols.tomato}`,
+            description: `you received daily **${amount}** ${ctx.symbols.tomato} ${promo? `and **${promoAmount}** ${promo.currency}`: ""}
+                You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato} ${promo? `and **${user.promoexp}** ${promo.currency}`: ""}`,
             color: colors.green,
             fields
         })
