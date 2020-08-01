@@ -185,6 +185,9 @@ cmd(['guild', 'downgrade'], ['guild', 'down'], async (ctx, user, arg1) => {
     if(!building)
         return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
 
+    if (item.id == "castle" && building.level - 1 == 0)
+        return ctx.reply(user, `you cannot destroy your own castle!`, 'red')
+
     const question = `Do you want to downgrade **${item.name}** to level **${building.level - 1}**?
         It will be destroyed once reaches level 0`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {

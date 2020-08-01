@@ -102,6 +102,10 @@
                 "description": "You can also spend your tomatoes by accepting trade requests from other users (`->help sell`) and selling cards on auction (`->help auc`)"
             },
             {
+                "title": "Promo Currency",
+                "description": "Promo currency is gotten by doing daily and claiming cards"
+            },
+            {
                 "title": "->bal",
                 "description": "Get your balance"
             }
@@ -758,6 +762,10 @@
         "description": "You can tag cards with #tags to help you and the playerbase better find cards. Adding a tag already on a card upvotes the tag",
         "fields": [ 
             {
+                "title": "IMPORTANT INFORMATION",
+                "description": "Tags are a global item, meaning everyone can see your tags. This is why we have tag rules. Read below for tag rules, if you have not run `->help tag`, do that command to see the rules. Or do `->rules`."
+            },
+            {
                 "title": "->tag [card] #tag",
                 "description": "Upvote or Add a tag to a card"
             },
@@ -779,7 +787,7 @@
             },
             {
                 "title": "Tagging Guidelines",
-                "description": "We are looking for useful tags, not tags based on opinions. \nTag types we are looking for:\n- Character name(s) of pictured\n- Fandom name(s) pictured\n- Key descriptions: `Animal_ears, cat_ears, fox_girl, maid`\n- Word Separation with \\_: Kanna`_`Kamui\n\nTag types we are NOT looking for:\n- Cute X: `Cute girls, cute girl, cute boys, cute boy`\n- Best X: `Best Girl, Best Boy, Best Character etc.`\n- Worst X: `Same as above, replace best with worst`\n- No Word Separation: kannakamui"
+                "description": "__FAILURE TO FOLLOW THE BELOW CAN RESULT IN YOU BEING BANNED FROM TAGGING__\nWe are looking for useful tags, not tags based on opinions. \nTag types we are looking for:\n- Character name(s) of pictured\n- Fandom name(s) pictured\n- Key descriptions: `Animal_ears, cat_ears, fox_girl, maid`\n- Word Separation with \\_: Kanna`_`Kamui\n\nTag types we are NOT looking for:\n- Cute X: `Cute girls, cute girl, cute boys, cute boy`\n- Best X: `Best Girl, Best Boy, Best Character etc.`\n- Worst X: `Same as above, replace best with worst`\n- No Word Separation: kannakamui"
             }
 
         ]
