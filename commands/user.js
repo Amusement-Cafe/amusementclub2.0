@@ -154,7 +154,7 @@ cmd('daily', async (ctx, user) => {
         user.dailystats = {}
         user.exp += amount
         user.xp += 10
-        promo? user.promoexp += promoAmount :
+        promo? user.promoexp += promoAmount :user.promoexp
         user.dailyquests = []
         user.markModified('dailystats')
 
