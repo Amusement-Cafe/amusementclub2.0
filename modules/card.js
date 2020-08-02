@@ -1,7 +1,8 @@
 const {
     cap,
     tryGetUserID,
-    nameSort
+    nameSort,
+    escapeRegex
 } = require('../utils/tools')
 
 const { Cardinfo }              = require('../collections')
@@ -96,7 +97,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                 }
             }
         } else if(x[0] === '#') {
-            q.tags.push(substr)
+            q.tags.push(substr.replace(/[^\w]/gi, ''))
         } else if(x[0] === ':') {
             q.extra.push(substr)
         } else {
@@ -111,7 +112,7 @@ const parseArgs = (ctx, args, lastdaily) => {
     if(anticols.length > 0) q.filters.push(c => !anticols.includes(c.col))
     if(antilevels.length > 0) q.filters.push(c => !antilevels.includes(c.level))
     if(keywords.length > 0) 
-        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('.*')}`, 'gi')).test(c.name))
+        q.filters.push(c => (new RegExp(`(_|^)${escapeRegex(keywords.join('.*'))}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)

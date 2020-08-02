@@ -36,6 +36,9 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
 }))
 
 cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+    
+    tgTag = tgTag.replace(/[^\w]/gi, '')
+
     const check = () => {
        if(user.ban && user.ban.tags > 2)
             return ctx.reply(user, `you were banned from adding tags. To address this issue use \`->help support\``, 'red')
@@ -55,8 +58,6 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
         if(tgTag.length < 2)
             return ctx.reply(user, `tag can't be shorter than **2** characters`, 'red') 
     }
-
-    tgTag = tgTag.replace(/[^\w]/gi, '')
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,

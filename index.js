@@ -52,7 +52,7 @@ module.exports.create = async ({
     fillCardData(data.cards)
 
     const mongoUri = database
-    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}
+    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true}
 
     /* basics */
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
