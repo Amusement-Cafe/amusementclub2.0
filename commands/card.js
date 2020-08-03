@@ -222,7 +222,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
-                                You can inquire further on our [Bot Discord](https://discord.gg/kqgAvdX)`, 'red')
+                                You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
 
     const id = parsedargs.ids[0]
     const pending = await getPendingFrom(ctx, user)
@@ -274,7 +274,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     const trs = await new_trs(ctx, user, card, price, id)
 
     let question = ""
-    if(id) {
+    if(trs.to != 'bot') {
         question = `**${trs.to}**, **${trs.from}** wants to sell you **${formatName(card)}** for **${price}** ${ctx.symbols.tomato}`
     } else {
         question = `**${trs.from}**, do you want to sell **${formatName(card)}** to **bot** for **${price}** ${ctx.symbols.tomato}?`
@@ -283,7 +283,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `ID: \`${trs.id}\`` } },
-        force: ctx.globals.force,
+        force: trs.to === 'bot'? ctx.globals.force : false,
         question,
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id),
