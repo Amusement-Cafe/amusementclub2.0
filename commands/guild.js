@@ -257,7 +257,7 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only server owner can modify guild tax`, 'red')
 
-    if(!tax)
+    if(isNaN(tax))
         return ctx.reply(user, `please specify a number that indicates % of claim tax`, 'red')
 
     if(castle.level < 2 && tax > 5)

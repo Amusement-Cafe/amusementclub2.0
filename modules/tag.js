@@ -1,5 +1,5 @@
-const {Tag} = require('../collections')
-const cardMod = require('./card')
+const {Tag}     = require('../collections')
+const cardMod   = require('./card')
 
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
@@ -40,7 +40,13 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     if(parsedargs.tags.length === 0)
         return ctx.reply(user, `please specify a tag using \`#\` before it`, 'red')
 
-    const cards = cardMod.filter(ctx.cards, parsedargs)
+    let allcards
+    if(parsedargs.userQuery) 
+        allcards = cardMod.mapUserCards(ctx, user)
+    else 
+        allcards = ctx.cards.slice()
+
+    const cards = cardMod.filter(allcards, parsedargs)
     const card = parsedargs.lastcard? ctx.cards[user.lastcard] : cardMod.bestMatch(cards)
 
     if(!parsedargs.lastcard && card) {

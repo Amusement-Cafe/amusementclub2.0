@@ -1,7 +1,8 @@
 const {
     cap,
     tryGetUserID,
-    nameSort
+    nameSort,
+    escapeRegex
 } = require('../utils/tools')
 
 const { Cardinfo }              = require('../collections')
@@ -34,6 +35,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         me: false,
         bid: false,
         fav: false,
+        userQuery: false,
     }
 
     args.map(x => {
@@ -44,12 +46,12 @@ const parseArgs = (ctx, args, lastdaily) => {
 
         } else if((x[0] === '<' || x[0] === '>' || x[0] === '=' || x[0] === '\\') && x[1] != '@') {
             switch(x) {
-                case '<date': q.sort = (a, b) => a.obtained - b.obtained; break
-                case '>date': q.sort = (a, b) => b.obtained - a.obtained; break
+                case '<date': q.sort = (a, b) => a.obtained - b.obtained; q.userQuery = true; break
+                case '>date': q.sort = (a, b) => b.obtained - a.obtained; q.userQuery = true; break
                 case '<amount': q.sort = (a, b) => a.amount - b.amount; break
                 case '>amount': q.sort = (a, b) => b.amount - a.amount; break
-                case '<rating': q.sort = (a, b) => a.rating - b.rating; break
-                case '>rating': q.sort = (a, b) => b.rating - a.rating; break
+                case '<rating': q.sort = (a, b) => a.rating - b.rating; q.userQuery = true; break
+                case '>rating': q.sort = (a, b) => b.rating - a.rating; q.userQuery = true; break
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
@@ -63,9 +65,9 @@ const parseArgs = (ctx, args, lastdaily) => {
                         substr = x.substr(1)
                     }
                     switch(x[0]) {
-                        case '>' : q.filters.push(c => eq? c.amount >= substr: c.amount > substr); break
-                        case '<' : q.filters.push(c => eq? c.amount <= substr: c.amount < substr); break
-                        case '=' : q.filters.push(c => c.amount == substr); break
+                        case '>' : q.filters.push(c => eq? c.amount >= substr: c.amount > substr); q.userQuery = true; break
+                        case '<' : q.filters.push(c => eq? c.amount <= substr: c.amount < substr); q.userQuery = true; break
+                        case '=' : q.filters.push(c => c.amount == substr); q.userQuery = true; break
                     }
 
                 }
@@ -75,9 +77,9 @@ const parseArgs = (ctx, args, lastdaily) => {
             const mcol = bestColMatchMulti(ctx, substr)
             switch(substr) {
                 case 'gif': q.filters.push(c => c.animated == m); break
-                case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); break
-                case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; break
-                case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); break
+                case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); q.userQuery = true; break
+                case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
+                case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
                 case 'rated': q.filters.push(c => m? c.rating: !c.rating); break
                 case 'promo': m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
                 case 'diff': q.diff = m; break
@@ -96,7 +98,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                 }
             }
         } else if(x[0] === '#') {
-            q.tags.push(substr)
+            q.tags.push(substr.replace(/[^\w]/gi, ''))
         } else if(x[0] === ':') {
             q.extra.push(substr)
         } else {
@@ -111,7 +113,7 @@ const parseArgs = (ctx, args, lastdaily) => {
     if(anticols.length > 0) q.filters.push(c => !anticols.includes(c.col))
     if(antilevels.length > 0) q.filters.push(c => !antilevels.includes(c.level))
     if(keywords.length > 0) 
-        q.filters.push(c => (new RegExp(`(_|^)${keywords.join('.*')}`, 'gi')).test(c.name))
+        q.filters.push(c => (new RegExp(`(_|^)${keywords.map(k => escapeRegex(k)).join('.*')}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
@@ -200,8 +202,13 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  */
 const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     const parsedargs = parseArgs(ctx, args)
-    let cards = filter(ctx.cards.slice(), parsedargs)
+    let allcards
+    if(parsedargs.userQuery)
+        allcards = mapUserCards(ctx, user)
+    else 
+        allcards = ctx.cards.slice()
 
+    let cards = filter(allcards, parsedargs)
     if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
@@ -211,7 +218,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
 
     if(parsedargs.lastcard)
-        cards = cards.filter(x => x.id === user.lastcard)
+        cards = [ctx.cards[user.lastcard]]
 
     if(cards.length == 0)
         return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')

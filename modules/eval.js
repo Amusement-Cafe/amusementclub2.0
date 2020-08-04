@@ -43,7 +43,7 @@ const getVialCost = async (ctx, card, cardeval) => {
     if(diff === Infinity) 
         diff = 0
 
-    return Math.round(5 + diff)
+    return Math.round(10 + diff)
 }
 
 module.exports = {

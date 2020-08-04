@@ -1,7 +1,7 @@
 const {model, Schema} = require('mongoose')
 
 module.exports = model('User', {
-    discord_id:         { type: String },
+    discord_id:         { type: String, index: true },
     username:           { type: String },
 
     exp:                { type: Number, default: 0 },

@@ -97,6 +97,8 @@ const XPtoLEVEL = (xp) => Math.floor(Math.sqrt(xp * 2))
 
 const arrayChunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk_size)).fill().map((_, index) => index * chunk_size).map(begin => array.slice(begin, begin + chunk_size));
 
+const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+
 module.exports = {
     cap,
     claimCost,
@@ -106,5 +108,6 @@ module.exports = {
     getAllUserIDs,
     generateNextId,
     XPtoLEVEL,
-    arrayChunks
+    arrayChunks,
+    escapeRegex
 }
