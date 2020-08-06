@@ -166,11 +166,11 @@ cmd('daily', async (ctx, user) => {
 
         if(tavern) {
             quests.push(getQuest(ctx, user, 1, quests[0].id))
-            user.dailyquests.push(quests[0].id)
+            user.dailyquests.push(quests[1].id)
 
             if(tavern.level > 1) {
                 quests.push(getQuest(ctx, user, 2, quests[0].id))
-                user.dailyquests.push(quests[1].id)
+                user.dailyquests.push(quests[2].id)
             }
         }
         user.markModified('dailyquests')

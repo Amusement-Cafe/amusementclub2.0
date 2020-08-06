@@ -499,10 +499,12 @@ cmd(['guild', 'lead'], async (ctx, user) => {
     const heroes = await Promise.all(guildUsers.map(x => x.hero? get_hero(ctx, x.hero) : {id: -1}))
     const pages = ctx.pgn.getPages(ctx.guild.userstats
         .sort((a, b) => b.xp - a.xp)
+        .sort((a, b) => b.rank - a.rank)
         .map((x, i) => {
-        const gUser = guildUsers.find(y => y.discord_id === x.id)
-        const hero = heroes.find(y => y.id === gUser.hero)
-        return `${i + 1}. **${gUser.username}** (${x.xp}xp) ${hero? `\`${hero.name}\`` : ''}`
+        const curUser = guildUsers.find(y => y.discord_id === x.id)
+        const xpSum = rankXP.slice(0, x.rank).reduce((acc, cur) => acc + cur, 0) + x.xp
+        const hero = heroes.find(y => y.id === curUser.hero)
+        return `${i + 1}. **${curUser.username}** (${xpSum}xp) ${hero? `\`${hero.name}\`` : ''}`
     }))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
