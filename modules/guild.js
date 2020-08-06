@@ -233,6 +233,8 @@ const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
 
+const fetchGuildUsers = (ctx) => User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
+
 const isUserManager = (ctx, user) => {
     const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     return (guildUser && guildUser.roles.includes('manager'))
@@ -265,5 +267,6 @@ module.exports = Object.assign(module.exports, {
     getBuildingInfo,
     isUserManager,
     dropCache,
-    fetchOnly
+    fetchOnly,
+    fetchGuildUsers,
 })

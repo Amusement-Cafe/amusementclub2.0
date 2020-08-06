@@ -13,7 +13,8 @@ const {
     guildLock,
     getBuildingInfo,
     isUserManager,
-    dropCache
+    dropCache,
+    fetchGuildUsers,
 } = require('../modules/guild')
 
 const {
@@ -491,6 +492,27 @@ cmd(['guild', 'set', 'prefix'], async (ctx, user, arg1) => {
     ctx.guild.prefix = arg1
     await ctx.guild.save()
     return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
+})
+
+cmd(['guild', 'lead'], async (ctx, user) => {
+    const guildUsers = await fetchGuildUsers(ctx).select('discord_id username hero')
+    const heroes = await Promise.all(guildUsers.map(x => x.hero? get_hero(ctx, x.hero) : {id: -1}))
+    const pages = ctx.pgn.getPages(ctx.guild.userstats
+        .sort((a, b) => b.xp - a.xp)
+        .map((x, i) => {
+        const gUser = guildUsers.find(y => y.discord_id === x.id)
+        const hero = heroes.find(y => y.id === gUser.hero)
+        return `${i + 1}. **${gUser.username}** (${x.xp}xp) ${hero? `\`${hero.name}\`` : ''}`
+    }))
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        embed: {
+            title: `${ctx.discord_guild.name} leaderboard:`,
+            color: color.blue,
+        }
+    })
 })
 
 pcmd(['admin'], ['sudo', 'guild', 'cache', 'flush'], (ctx, user) => {
