@@ -33,7 +33,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         lastcard: false,
         diff: false,
         me: false,
-        bid: false,
+        bid: 0,
         fav: false,
         userQuery: false,
     }
@@ -85,7 +85,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case 'diff': q.diff = m; break
                 case 'miss': q.diff = m; break
                 case 'me': q.me = m; break
-                case 'bid': q.bid = m; break
+                case 'bid': q.bid = m? 1 : 2; break
                 default: {
                     const pcol = bestColMatch(ctx, substr)
                     if(m) {

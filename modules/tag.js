@@ -26,6 +26,8 @@ const check_tag = (tag) => {
     return (tag.upvotes.length - tag.downvotes.length > -2) && tag.status === 'clear'
 }
 
+const delete_tag = (tag) => Tag.deleteOne({ name: tag.name, card: tag.card })
+
 /**
  * Helper function to enrich the comamnd with selected tag and card
  * @param  {Function} callback command handler
@@ -72,4 +74,5 @@ module.exports = Object.assign(module.exports, {
     new_tag,
     check_tag,
     withTag,
+    delete_tag,
 })

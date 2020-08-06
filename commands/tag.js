@@ -10,6 +10,7 @@ const {
     new_tag,
     withTag,
     fetchCardTags,
+    delete_tag,
 } = require('../modules/tag')
 
 const {
@@ -90,18 +91,31 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             return ctx.reply(user, `this tag has been banned by moderator`, 'red')
     }
 
+    let remove = false
+    let question = `Do you want to downvote tag **#${tgTag}** for ${formatName(card)}?`
+    if(tag.author === user.discord_id 
+        && tag.upvotes.includes(user.discord_id) 
+        && tag.upvotes.length === 1) {
+        remove = true
+        question = `Do you want to **remove** your tag **#${tgTag}** for ${formatName(card)}?`
+    }
+
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
         force: ctx.globals.force,
         embed: { footer: { text: `Please, use downvote to remove only irrelevant or incorrect tags` } },
-        question: `Do you want to downvote tag **#${tgTag}** for ${formatName(card)}?`,
+        question,
         onConfirm: async (x) => {
-            tag.downvotes.push(user.discord_id)
-            tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
-            await tag.save()
+            if(remove) {
+                await delete_tag(tag)
+            } else {
+                tag.downvotes.push(user.discord_id)
+                tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
+                await tag.save()
+            }
             user = await updateUser(user, {$inc: {'dailystats.tags': (user.dailystats.tags <= 0? 0 : -1)}})
 
-            return ctx.reply(user, `downvoted tag **#${tgTag}** for ${formatName(card)}`)
+            return ctx.reply(user, `${remove? 'removed' : 'downvoted'} tag **#${tgTag}** for ${formatName(card)}`)
         }
     })
 }))

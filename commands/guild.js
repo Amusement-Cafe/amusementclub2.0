@@ -485,6 +485,9 @@ cmd(['guild', 'set', 'prefix'], async (ctx, user, arg1) => {
     if(arg1.length < 1 || arg1.length > 3)
         return ctx.reply(user, `prefix length can be between **1** and **3** charaters`, 'red')
 
+    if(arg1 === '<')
+        return ctx.reply(user, `cannot set prefix to \`<\` as this is a Discord reserved character`, 'red')
+
     ctx.guild.prefix = arg1
     await ctx.guild.save()
     return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
