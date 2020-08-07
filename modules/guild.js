@@ -91,8 +91,14 @@ const addGuildXP = (ctx, user, xp) => {
 }
 
 const bill_guilds = async (ctx, now) => {
-    const guild = await Guild.findOne({nextcheck: {$lt: now}, buildings: {$exists: true, $ne: []}})
-    if(!guild) return;
+    const guild = await Guild.findOne({nextcheck: {$lt: now} })
+
+    const transcleanup = asdate.subtract(new Date(), 15, 'days')
+    const auccleanup = asdate.subtract(new Date(), 5, 'days')
+    const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
+    const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
+
+    if(!guild.buildings || guild.buildings.length === 0) return;
 
     const report = []
     const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.guilds.find(x => x.id === guild.id) })
@@ -164,11 +170,6 @@ const bill_guilds = async (ctx, now) => {
     guild.nextcheck = asdate.add(new Date(), 24, 'hours')
     report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
     await guild.save()
-
-    const transcleanup = asdate.subtract(new Date(), 15, 'days')
-    const auccleanup = asdate.subtract(new Date(), 5, 'days')
-    const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
-    const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
 
     m_hero.checkGuildLoyalty(isolatedCtx)
 
