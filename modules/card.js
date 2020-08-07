@@ -5,18 +5,39 @@ const {
     escapeRegex
 } = require('../utils/tools')
 
-const { Cardinfo }              = require('../collections')
+const { 
+    Cardinfo 
+} = require('../collections')
+
 const { 
     bestColMatch, 
     bestColMatchMulti 
 } = require('./collection')
-const { fetchTaggedCards }      = require('./tag')
-const asdate                    = require('add-subtract-date')
+
+const { 
+    fetchTaggedCards 
+} = require('./tag')
+
+const asdate = require('add-subtract-date')
+
+const promoRarity = {
+    halloween: '🎃',
+    christmas: '❄',
+    valentine: '🍫',
+    birthday: '🎂',
+    halloween18: '🍬',
+    christmas18: '🎄',
+    valentine19: '💗',
+    halloween19: '👻',
+    christmas19: '☃️',
+    birthday20: '🎈',
+}
 
 const formatName = (x) => {
-    //const promo = ctx.promos.filter(y => y.id === x.col)
-    //return `[${new Array(x.level + 1).join(promo? promo.currency : '★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
-    return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
+    const promo = promoRarity[x.col]
+    const rarity = promo? `\`${new Array(x.level + 1).join(promo)}\`` : new Array(x.level + 1).join('★')
+    return `[${rarity}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
+    //return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
 const parseArgs = (ctx, args, lastdaily) => {

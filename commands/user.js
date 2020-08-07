@@ -5,6 +5,7 @@ const asdate            = require('add-subtract-date')
 const _                 = require('lodash')
 
 const {
+    cap,
     claimCost,
     promoClaimCost,
     XPtoLEVEL
@@ -420,11 +421,14 @@ cmd('quest', 'quests', async (ctx, user) => {
 })
 
 cmd('stats', async (ctx, user) => {
+    const keys = Object.keys(user.dailystats).filter(x => !x.startsWith('effect_'))
+    if(keys.length === 0)
+        return ctx.reply(user, `no statistics to display today`)
+
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
         author: { name: `${user.username}, your daily stats:` },
-        description: Object.keys(user.dailystats)
-            .map(x => `${x}: **${user.dailystats[x]}**`).join('\n')
+        description: keys.map(x => `${cap(x)}: **${user.dailystats[x]}**`).join('\n')
     }, user.discord_id)
 })
 

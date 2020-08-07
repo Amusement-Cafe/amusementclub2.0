@@ -250,6 +250,7 @@ module.exports.create = async ({
 
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
+            usr.username = usr.username.replace(/\*/gi, '')
 
             const action = args[0]
             if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
