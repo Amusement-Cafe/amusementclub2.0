@@ -173,7 +173,7 @@ module.exports.create = async ({
     }
 
     setInterval(tick.bind({}, ctx), 5000)
-    setInterval(gtick.bind({}, ctx), 20000)
+    setInterval(gtick.bind({}, ctx), 10000)
     setInterval(qtick.bind({}, ctx), 1000)
     setInterval(htick.bind({}, ctx), 60000 * 2)
     //setInterval(htick.bind({}, ctx), 6000)
