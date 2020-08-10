@@ -91,7 +91,7 @@ const addGuildXP = (ctx, user, xp) => {
 }
 
 const bill_guilds = async (ctx, now) => {
-    const guild = await Guild.findOne({nextcheck: {$lt: now} })
+    const guild = await Guild.findOne({nextcheck: {$lt: now}, buildings: {$exists: true, $ne: []}})
 
     if(!guild) return;
     console.log(guild.id)
