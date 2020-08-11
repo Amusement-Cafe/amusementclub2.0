@@ -39,7 +39,7 @@ const get_hero = async (ctx, id) => {
     return hero
 }
 
-const get_userSumbissions = (ctx, user) => {
+const get_userSubmissions = (ctx, user) => {
     return Hero.find({ user: user.discord_id })
 }
 
@@ -272,7 +272,7 @@ const guildUserScore = (guildUser) => Math.sqrt(m_guild.rankXP[guildUser.rank - 
 module.exports = Object.assign(module.exports, {
     new_hero,
     get_hero,
-    get_userSumbissions,
+    get_userSubmissions,
     check_heroes,
     withHeroes,
     getInfo,
