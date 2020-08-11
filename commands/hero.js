@@ -21,7 +21,7 @@ const {
 const { 
     new_hero,
     get_hero,
-    get_userSumbissions,
+    get_userSubmissions,
     withHeroes,
     getInfo,
     reloadCache
@@ -338,7 +338,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(dbchar && !dbchar.active)
         return ctx.reply(user, `hero **${dbchar.name}** is already pending for approval`, 'yellow')
 
-    const submissions = await get_userSumbissions(ctx, user)
+    const submissions = await get_userSubmissions(ctx, user)
     const past = asdate.subtract(new Date(), 20, 'days')
     if(submissions.some(x => !x.accepted))
         return ctx.reply(user, `you already have a hero pending approval. You cannot add another`, 'red')
