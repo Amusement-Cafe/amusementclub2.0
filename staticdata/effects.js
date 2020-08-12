@@ -1,5 +1,5 @@
 const _ = require('lodash')
-const { byAlias } = require('../modules/collection')
+const { byAlias, completed } = require('../modules/collection')
 const { addUserCard, formatName } = require('../modules/card')
 const { claimCost } = require('../utils/tools')
 
@@ -111,6 +111,7 @@ module.exports = [
             addUserCard(user, card.id)
             user.lastcard = card.id
             user.markModified('cards')
+            await completed(ctx, user, card)
             await user.save()
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }

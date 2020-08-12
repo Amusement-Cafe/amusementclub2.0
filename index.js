@@ -151,7 +151,6 @@ module.exports.create = async ({
     const tick = (ctx) => {
         const now = new Date()
         auction.finish_aucs(ctx, now)
-        audit.clean_audits(ctx, now)
     }
 
     /* service tick for guilds */
@@ -172,10 +171,18 @@ module.exports.create = async ({
         hero.check_heroes(ctx, now)
     }
 
+    /* service tick for audit and transaction cleaning */
+    const atick = () => {
+        const now = new Date()
+        audit.clean_audits(ctx, now)
+        guild.clean_trans(ctx, now)
+    }
+
     setInterval(tick.bind({}, ctx), 5000)
     setInterval(gtick.bind({}, ctx), 10000)
     setInterval(qtick.bind({}, ctx), 1000)
     setInterval(htick.bind({}, ctx), 60000 * 2)
+    setInterval(atick.bind({}, ctx), 600000)
     //setInterval(htick.bind({}, ctx), 6000)
 
     /* events */

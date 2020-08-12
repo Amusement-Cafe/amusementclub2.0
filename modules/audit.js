@@ -10,9 +10,11 @@ const {tryGetUserID}     = require('../utils/tools')
 
 
 const clean_audits = async (ctx, now) => {
-    const auditcleanup = asdate.subtract(new Date(), 14, 'days')
-    await Audit.deleteMany({time: {$lt: auditcleanup}})
-    await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
+    const auditcleanup = asdate.subtract(new Date(), 10, 'days')
+    const auditClean = await Audit.deleteMany({time: {$lt: auditcleanup}})
+    const auditAucSellClean = await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
+    if (auditClean.n > 0 || auditAucSellClean.n > 0)
+        console.log(`Cleaned ${auditClean.n} audit entries and ${auditAucSellClean.n} oversell entries`)
 }
 
 const paginate_auditReports = (ctx, user, list, report) => {
