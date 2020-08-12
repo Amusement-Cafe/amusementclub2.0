@@ -11,6 +11,7 @@ const {
     withTag,
     fetchCardTags,
     delete_tag,
+    fetchTagNames,
 } = require('../modules/tag')
 
 const {
@@ -183,3 +184,34 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}. 
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)
 }))
+
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
+    withTag(async (ctx, user, card, tag, tgTag) => {
+        const author = await fetchOnly(tag.author)
+
+        const resp = []
+        resp.push(`Card: **${formatName(card)}**`)
+        resp.push(`Upvotes: **${tag.upvotes.length}**`)
+        resp.push(`Downvotes: **${tag.downvotes.length}**`)
+        resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
+        resp.push(`Status: **${tag.status}**`)
+
+        return ctx.send(ctx.msg.channel.id, {
+            title: `#${tag.name}`,
+            description: resp.join('\n'),
+            color: colors['blue']
+        }, user.discord_id)
+}))
+
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
+    const tags = await fetchTagNames(ctx);
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(tags),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `List of all tag names: ${tags.length} results` },
+            color: colors.blue,
+        }
+    })
+})
+

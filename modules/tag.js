@@ -6,6 +6,13 @@ const fetchTaggedCards = async (tags) => {
     return res.filter(x => check_tag(x)).map(x => x.card)
 }
 
+const fetchTagNames = async (ctx) => {
+    const res = await Tag.find()
+    let names = []
+    res.map(t => names.indexOf(t.name) == -1 && t.status != 'banned'? names.push(t.name): t)
+    return names.sort()
+}
+
 const fetchCardTags = async (card) => {
     const res = await Tag.find({ card: card.id })
     return res.filter(x => check_tag(x))
@@ -71,6 +78,7 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
 module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
+    fetchTagNames,
     new_tag,
     check_tag,
     withTag,

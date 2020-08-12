@@ -766,15 +766,15 @@
                 "description": "Tags are a global item, meaning everyone can see your tags. This is why we have tag rules. Read below for tag rules, if you have not run `->help tag`, do that command to see the rules. Or do `->rules`."
             },
             {
-                "title": "->tag [card] #tag",
+                "title": "->tag [card] #your_tag_here",
                 "description": "Upvote or Add a tag to a card"
             },
             {
-                "title": "->tag down [card] #tag",
+                "title": "->tag down [card] #some_tag_here",
                 "description": "Downvote a tag on a card"
             }, 
             {
-                "title": "->tag info #tag [card]",
+                "title": "->tag info #some_tag_here [card]",
                 "description": "View information about a tag"
             },
             {
