@@ -104,7 +104,8 @@ const bid_auc = async (ctx, user, auc, bid) => {
         }
     } else {
         const author = await fetchOnly(auc.author)
-        await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!`, 'green')
+        await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}
+            with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
     }
 
     user.exp -= bid

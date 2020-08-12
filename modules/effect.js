@@ -32,7 +32,10 @@ const mapUserEffects = (ctx, user) => user.effects.map(x => Object.assign({},
 
 const withUserEffects = (callback) => (ctx, user, ...args) => {
     if(!user.hero)
-        return ctx.reply(user, `you don't have a hero yet`, 'red')
+        return ctx.reply(user, `you don't have a hero yet. You can select hero from the list using \`->hero list\`
+            You can search for the hero using \`->hero list [hero name]\`
+            If you cannot find a hero that you want, submit one using \`->hero submit [anilist link](https://anilist.co/)\`
+            For more information type \`->help hero -here\``, 'red')
 
     const map = mapUserEffects(ctx, user)
     return callback(ctx, user, map, ...args)

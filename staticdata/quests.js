@@ -8,10 +8,10 @@ module.exports = {
             actions: ['claim', 'cl'],
             check: (ctx, user) => user.dailystats.claims >= 4,
             resolve: (ctx, user) => {
-                user.exp += 400
+                user.exp += 500
                 user.xp += 2
             },
-            reward: (ctx) => `**400** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**500** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'claim8',
             name: 'Claim 8 cards today',
@@ -20,10 +20,10 @@ module.exports = {
             actions: ['claim', 'cl'],
             check: (ctx, user) => user.dailystats.claims >= 8,
             resolve: (ctx, user) => {
-                user.exp += 1000
+                user.exp += 1200
                 user.xp += 5
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **5** xp`
+            reward: (ctx) => `**1200** ${ctx.symbols.tomato} and **5** xp`
         }, {
             id: 'bid2',
             name: 'Bid on 2 auctions today',
@@ -32,10 +32,10 @@ module.exports = {
             actions: ['auc', 'auction'],
             check: (ctx, user) => user.dailystats.bids >= 2,
             resolve: (ctx, user) => {
-                user.exp += 600
+                user.exp += 1000
                 user.xp += 2
             },
-            reward: (ctx) => `**600** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'bid5',
             name: 'Bid on 5 auctions today',
@@ -57,10 +57,10 @@ module.exports = {
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge1 >= 1,
             resolve: (ctx, user) => {
-                user.exp += 200
+                user.exp += 700
                 user.xp += 1
             },
-            reward: (ctx) => `**200** ${ctx.symbols.tomato} and **1** xp`
+            reward: (ctx) => `**700** ${ctx.symbols.tomato} and **1** xp`
         }, {
             id: 'forge2',
             name: 'Forge 2-star card',
@@ -70,10 +70,10 @@ module.exports = {
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge2 >= 1,
             resolve: (ctx, user) => {
-                user.exp += 300
+                user.exp += 1200
                 user.xp += 2
             },
-            reward: (ctx) => `**300** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**1200** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'forge3',
             name: 'Forge 3-star card',
@@ -83,10 +83,10 @@ module.exports = {
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge3 >= 1,
             resolve: (ctx, user) => {
-                user.vials += 20
+                user.vials += 40
                 user.xp += 4
             },
-            reward: (ctx) => `**20** ${ctx.symbols.vial} and **4** xp`
+            reward: (ctx) => `**40** ${ctx.symbols.vial} and **4** xp`
         }, {
             id: 'tag2',
             name: 'Tag 2 cards',
@@ -95,10 +95,10 @@ module.exports = {
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 2,
             resolve: (ctx, user) => {
-                user.exp += 300
+                user.exp += 600
                 user.xp += 2
             },
-            reward: (ctx) => `**300** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**600** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'tag4',
             name: 'Tag 4 cards',
@@ -107,10 +107,10 @@ module.exports = {
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 4,
             resolve: (ctx, user) => {
-                user.exp += 1000
+                user.exp += 1500
                 user.xp += 4
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **4** xp`
+            reward: (ctx) => `**1500** ${ctx.symbols.tomato} and **4** xp`
         }, {
             id: 'liq2',
             name: 'Liquify 2 cards',
@@ -120,10 +120,10 @@ module.exports = {
             actions: ['liq', 'liquify'],
             check: (ctx, user) => user.dailystats.liquify >= 2,
             resolve: (ctx, user) => {
-                user.vials += 25
+                user.vials += 55
                 user.xp += 3
             },
-            reward: (ctx) => `**25** ${ctx.symbols.vial} and **3** xp`
+            reward: (ctx) => `**55** ${ctx.symbols.vial} and **3** xp`
         },
     ],
 

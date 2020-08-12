@@ -102,7 +102,7 @@ module.exports = [
         name: `Well aren't you special?`,
         desc: 'Get a first 4-star',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id] && !ctx.cards[x.id].level === 4).length > 0,
+        check: (ctx, user) => user.cards.some(x => ctx.cards[x.id] && ctx.cards[x.id].level === 4),
         resolve: (ctx, user) => {
             user.exp += 500
             return `**500** ${ctx.symbols.tomato}`

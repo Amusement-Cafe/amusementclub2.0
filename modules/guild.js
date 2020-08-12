@@ -92,7 +92,20 @@ const addGuildXP = (ctx, user, xp) => {
 
 const bill_guilds = async (ctx, now) => {
     const guild = await Guild.findOne({nextcheck: {$lt: now}, buildings: {$exists: true, $ne: []}})
+
     if(!guild) return;
+    console.log(guild.id)
+
+    const transcleanup = asdate.subtract(new Date(), 15, 'days')
+    const auccleanup = asdate.subtract(new Date(), 5, 'days')
+    const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
+    const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
+
+    if(!guild.buildings || guild.buildings.length === 0) {
+        guild.nextcheck = asdate.add(new Date(), 24, 'hours')
+        await guild.save()
+        return
+    }
 
     const report = []
     const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.guilds.find(x => x.id === guild.id) })
@@ -165,11 +178,6 @@ const bill_guilds = async (ctx, now) => {
     report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
     await guild.save()
 
-    const transcleanup = asdate.subtract(new Date(), 15, 'days')
-    const auccleanup = asdate.subtract(new Date(), 5, 'days')
-    const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
-    const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
-
     m_hero.checkGuildLoyalty(isolatedCtx)
 
     const index = cache.findIndex(x => x.id === guild.id)
@@ -233,6 +241,8 @@ const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
 
+const fetchGuildUsers = (ctx) => User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
+
 const isUserManager = (ctx, user) => {
     const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     return (guildUser && guildUser.roles.includes('manager'))
@@ -265,5 +275,6 @@ module.exports = Object.assign(module.exports, {
     getBuildingInfo,
     isUserManager,
     dropCache,
-    fetchOnly
+    fetchOnly,
+    fetchGuildUsers,
 })

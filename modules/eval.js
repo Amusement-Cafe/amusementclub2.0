@@ -2,8 +2,8 @@ const User      = require('../collections/user')
 const asdate    = require('add-subtract-date')
 
 const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
-const evalUserRate = 0.2
-const evalVialRate = 0.07
+const evalUserRate = 0.25
+const evalVialRate = 0.055
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 
 let userCount

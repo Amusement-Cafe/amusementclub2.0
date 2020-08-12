@@ -5,6 +5,7 @@ const asdate            = require('add-subtract-date')
 const _                 = require('lodash')
 
 const {
+    cap,
     claimCost,
     promoClaimCost,
     XPtoLEVEL
@@ -138,7 +139,7 @@ cmd('daily', async (ctx, user) => {
     if(future < now) {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
-        let amount = gbank? 500 : 300
+        let amount = gbank? 800 : 400
         const promoAmount = 500
         //let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
@@ -161,13 +162,16 @@ cmd('daily', async (ctx, user) => {
         user.dailyquests = []
         user.markModified('dailystats')
 
+        quests.push(getQuest(ctx, user, 1))
+        user.dailyquests.push(quests[0].id)
+
         if(tavern) {
-            quests.push(getQuest(ctx, user, 1))
-            user.dailyquests.push(quests[0].id)
+            quests.push(getQuest(ctx, user, 1, quests[0].id))
+            user.dailyquests.push(quests[1].id)
 
             if(tavern.level > 1) {
                 quests.push(getQuest(ctx, user, 2, quests[0].id))
-                user.dailyquests.push(quests[1].id)
+                user.dailyquests.push(quests[2].id)
             }
         }
         user.markModified('dailyquests')
@@ -185,7 +189,7 @@ cmd('daily', async (ctx, user) => {
         const fields = []
         if(quests.length > 0) {
             fields.push({
-                name: `Daily quests`, 
+                name: `Daily quest(s)`, 
                 value: quests.map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n')
             })
         }
@@ -337,6 +341,9 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
         return ctx.qhelp(ctx, user, 'diff')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
+    if(!otherUser)
+        return ctx.reply(user, 'cannot find user with that ID', 'red')
+
     const otherCards = otherUser.cards
     let mappedCards = filter(mapUserCards(ctx, user), newArgs)
 
@@ -372,6 +379,9 @@ cmd('has', async (ctx, user, ...args) => {
         return ctx.reply(user, 'you can use ->cards to see your own cards', 'red')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
+    if(!otherUser)
+        return ctx.reply(user, 'cannot find user with that ID', 'red')
+
     const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
 
     if (otherCards.length === 0)
@@ -411,11 +421,14 @@ cmd('quest', 'quests', async (ctx, user) => {
 })
 
 cmd('stats', async (ctx, user) => {
+    const keys = Object.keys(user.dailystats).filter(x => !x.startsWith('effect_'))
+    if(keys.length === 0)
+        return ctx.reply(user, `no statistics to display today`)
+
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
         author: { name: `${user.username}, your daily stats:` },
-        description: Object.keys(user.dailystats)
-            .map(x => `${x}: **${user.dailystats[x]}**`).join('\n')
+        description: keys.map(x => `${cap(x)}: **${user.dailystats[x]}**`).join('\n')
     }, user.discord_id)
 })
 

@@ -13,7 +13,8 @@ const {
     guildLock,
     getBuildingInfo,
     isUserManager,
-    dropCache
+    dropCache,
+    fetchGuildUsers,
 } = require('../modules/guild')
 
 const {
@@ -485,9 +486,35 @@ cmd(['guild', 'set', 'prefix'], async (ctx, user, arg1) => {
     if(arg1.length < 1 || arg1.length > 3)
         return ctx.reply(user, `prefix length can be between **1** and **3** charaters`, 'red')
 
+    if(arg1 === '<')
+        return ctx.reply(user, `cannot set prefix to \`<\` as this is a Discord reserved character`, 'red')
+
     ctx.guild.prefix = arg1
     await ctx.guild.save()
     return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
+})
+
+cmd(['guild', 'lead'], async (ctx, user) => {
+    const guildUsers = await fetchGuildUsers(ctx).select('discord_id username hero')
+    const heroes = await Promise.all(guildUsers.map(x => x.hero? get_hero(ctx, x.hero) : {id: -1}))
+    const pages = ctx.pgn.getPages(ctx.guild.userstats
+        .sort((a, b) => b.xp - a.xp)
+        .sort((a, b) => b.rank - a.rank)
+        .map((x, i) => {
+        const curUser = guildUsers.find(y => y.discord_id === x.id)
+        const xpSum = rankXP.slice(0, x.rank).reduce((acc, cur) => acc + cur, 0) + x.xp
+        const hero = heroes.find(y => y.id === curUser.hero)
+        return `${i + 1}. **${curUser.username}** (${xpSum}xp) ${hero? `\`${hero.name}\`` : ''}`
+    }))
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['back', 'forward'],
+        embed: {
+            title: `${ctx.discord_guild.name} leaderboard:`,
+            color: color.blue,
+        }
+    })
 })
 
 pcmd(['admin'], ['sudo', 'guild', 'cache', 'flush'], (ctx, user) => {
