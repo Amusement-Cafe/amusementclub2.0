@@ -183,7 +183,7 @@ const bill_guilds = async (ctx, now) => {
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
 
-    return ctx.send(guild.reportchannel || guild.botchannels[0], {
+    return ctx.send(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
         author: { name: `Receipt for ${now}` },
         description: report.join('\n'),
         color: (ratio < 1? color.red : color.green),

@@ -263,6 +263,8 @@ module.exports.create = async ({
             }
 
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            isolatedCtx.guild.lastcmdchannel = msg.channel.id
+            
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
