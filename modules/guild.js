@@ -90,16 +90,19 @@ const addGuildXP = (ctx, user, xp) => {
     }
 }
 
+const clean_trans = async (ctx, now) => {
+    const transactionTime = asdate.subtract(new Date(), 10, 'days')
+    const trClean = await Transaction.deleteMany({time: {$lt: transactionTime}})
+    const aucClean = await Auction.deleteMany({time: {$lt: transactionTime}})
+    if (trClean.n > 0 || aucClean.n > 0)
+        console.log(`Cleaned ${trClean.n} transactions and ${aucClean.n} auctions`)
+}
+
 const bill_guilds = async (ctx, now) => {
     const guild = await Guild.findOne({nextcheck: {$lt: now}, buildings: {$exists: true, $ne: []}})
 
     if(!guild) return;
     console.log(guild.id)
-
-    const transcleanup = asdate.subtract(new Date(), 15, 'days')
-    const auccleanup = asdate.subtract(new Date(), 5, 'days')
-    const res1 = await Transaction.deleteMany({time: {$lt: transcleanup}, guild_id: guild.id})
-    const res2 = await Auction.deleteMany({time: {$lt: auccleanup}, guild: guild.id})
 
     if(!guild.buildings || guild.buildings.length === 0) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
@@ -187,10 +190,6 @@ const bill_guilds = async (ctx, now) => {
         author: { name: `Receipt for ${now}` },
         description: report.join('\n'),
         color: (ratio < 1? color.red : color.green),
-        fields: [{
-            name: `Cleaned in this guild`,
-            value: `**${res1.n}** transactions\n**${res2.n}** auctions`
-        }]
     })
 }
 
@@ -277,4 +276,5 @@ module.exports = Object.assign(module.exports, {
     dropCache,
     fetchOnly,
     fetchGuildUsers,
+    clean_trans,
 })
