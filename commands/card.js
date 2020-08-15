@@ -458,3 +458,30 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.reply(user, `set rating **${rating}** for ${formatName(card)}`)
 })).access('dm')
+
+cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    const card = bestMatch(cards)
+    const info = await fetchInfo(card.id)
+    if(card.rating) {
+        const oldrating = card.rating
+        user.cards.find(x => x.id === card.id).rating -= oldrating
+        //These are only here because I ran into this causing a negative usercount/rating
+        if (info.ratingsum != 0) {
+            info.ratingsum -= oldrating
+        }
+        if (info.usercount != 0) {
+            info.usercount--
+        }
+    } else {
+        return ctx.reply(user, 'you have not set a rating for that card!', 'red')
+    }
+
+    user.markModified('cards')
+    await user.save()
+    await info.save()
+
+    return ctx.reply(user, `removed rating for ${formatName(card)}`)
+})).access('dm')
