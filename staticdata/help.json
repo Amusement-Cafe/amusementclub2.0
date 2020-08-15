@@ -112,8 +112,8 @@
         ]
     },
     {
-        "type": ["building", "buildings", "castle", "tavern", "auchouse", "heroq", "gbank", "smithhub"],
-        "title": "About buildings",
+        "type": ["heroq"],
+        "title": "About Hero Quarter",
         "description": "If you are here for anything except how guild heroes work. Head on over to `->help store` or just `->store`.",
         "fields": [
             {
@@ -665,6 +665,10 @@
                 "description": "Rate one of your cards from 1 to 10."
             },
             {
+                "title": "->rate remove [card]",
+                "description": "Remove the rating of a card"
+            },
+            {
                 "title": "->cards >rating",
                 "description": "Order your cards by rating."
             }
@@ -717,7 +721,7 @@
         ]
     },
     {
-        "type": ["store", "st"],
+        "type": ["store", "st", "building", "buildings", "castle", "tavern", "auchouse", "gbank", "smithhub"],
         "title": "About store",
         "description": "The store is where you can buy blueprints for guilds, and recipes for effects. To browse the store, use the `category` name or number with the commands below.",
         "fields": [

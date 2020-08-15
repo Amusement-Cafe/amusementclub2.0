@@ -188,7 +188,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
     withTag(async (ctx, user, card, tag, tgTag) => {
         const author = await fetchOnly(tag.author)
-
+        const pages = []
         const resp = []
         resp.push(`Card: **${formatName(card)}**`)
         resp.push(`Upvotes: **${tag.upvotes.length}**`)
@@ -196,11 +196,22 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
         resp.push(`Status: **${tag.status}**`)
 
-        return ctx.send(ctx.msg.channel.id, {
-            title: `#${tag.name}`,
+        const embed = {
+            author: {name: `Info on tag #${tag.name}`},
             description: resp.join('\n'),
-            color: colors['blue']
-        }, user.discord_id)
+            color: colors['blue'],
+            fields: []
+        }
+        tag.upvotes.map((t, i) => {
+            if (i % 10 == 0) pages.push("")
+            pages[Math.floor(i/10)] += `${t}\n`
+        })
+        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+            pages, embed,
+            buttons: ['back', 'forward'],
+            switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum]}
+            })
+
 }))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
