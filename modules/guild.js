@@ -77,7 +77,7 @@ const addGuildXP = (ctx, user, xp) => {
         }
     }
 
-    ctx.guild.xp += xp * .02
+    ctx.guild.xp += xp * .05
     guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 

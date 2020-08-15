@@ -95,6 +95,8 @@ const generateNextId = (lastId, idLength = 4) => {
 //const XPtoLEVEL = (xp) => xp === 0? 0 : Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0)
 const XPtoLEVEL = (xp) => Math.floor(Math.sqrt(xp * 2))
 
+const LEVELtoXP = (lvl) => (lvl * lvl) / 2
+
 const arrayChunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk_size)).fill().map((_, index) => index * chunk_size).map(begin => array.slice(begin, begin + chunk_size));
 
 const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
@@ -108,6 +110,7 @@ module.exports = {
     getAllUserIDs,
     generateNextId,
     XPtoLEVEL,
+    LEVELtoXP,
     arrayChunks,
     escapeRegex
 }

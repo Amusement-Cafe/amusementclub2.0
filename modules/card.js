@@ -50,6 +50,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         sort: (a, b) => b.level - a.level,
         filters: [],
         tags: [],
+        antitags: [],
         extra: [],
         lastcard: false,
         diff: false,
@@ -71,12 +72,19 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '>date': q.sort = (a, b) => b.obtained - a.obtained; q.userQuery = true; break
                 case '<amount': q.sort = (a, b) => a.amount - b.amount; break
                 case '>amount': q.sort = (a, b) => b.amount - a.amount; break
-                case '<rating': q.sort = (a, b) => a.rating - b.rating; q.userQuery = true; break
-                case '>rating': q.sort = (a, b) => b.rating - a.rating; q.userQuery = true; break
                 case '<name': q.sort = (a, b) => nameSort(a, b); break
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
                 case '>star': q.sort = (a, b) => b.level - a.level; break
+                case '<rating': 
+                    q.sort = (a, b) => (a.rating || 0) - (b.rating || 0)
+                    q.userQuery = true
+                    break
+                case '>rating': 
+                    q.sort = (a, b) => (b.rating || 0) - (a.rating || 0)
+                    q.userQuery = true
+                    break
+                
                 default: {
                     const eq = x[1] === '='
                     eq? substr = x.substr(2): substr
@@ -94,27 +102,31 @@ const parseArgs = (ctx, args, lastdaily) => {
                 }
             }
         } else if(x[0] === '-' || x[0] === '!') {
-            const m = x[0] === '-'
-            const mcol = bestColMatchMulti(ctx, substr)
-            switch(substr) {
-                case 'gif': q.filters.push(c => c.animated == m); break
-                case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); q.userQuery = true; break
-                case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
-                case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
-                case 'rated': q.filters.push(c => m? c.rating: !c.rating); break
-                case 'promo': m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
-                case 'diff': q.diff = m; break
-                case 'miss': q.diff = m; break
-                case 'me': q.me = m; break
-                case 'bid': q.bid = m? 1 : 2; break
-                default: {
-                    const pcol = bestColMatch(ctx, substr)
-                    if(m) {
-                        if(parseInt(substr)) levels.push(parseInt(substr))
-                        else if(pcol) cols.push(pcol.id)
-                    } else {
-                        if(parseInt(substr)) antilevels.push(parseInt(substr))
-                        else if(pcol) anticols.push(pcol.id)
+            if(x[0] === '!' && x[1] === '#') {
+                q.antitags.push(substr.substr(1))
+            } else {
+                const m = x[0] === '-'
+                const mcol = bestColMatchMulti(ctx, substr)
+                switch(substr) {
+                    case 'gif': q.filters.push(c => c.animated == m); break
+                    case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); q.userQuery = true; break
+                    case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
+                    case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
+                    case 'rated': q.filters.push(c => m? c.rating: !c.rating); break
+                    case 'promo': m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
+                    case 'diff': q.diff = m; break
+                    case 'miss': q.diff = m; break
+                    case 'me': q.me = m; break
+                    case 'bid': q.bid = m? 1 : 2; break
+                    default: {
+                        const pcol = bestColMatch(ctx, substr)
+                        if(m) {
+                            if(parseInt(substr)) levels.push(parseInt(substr))
+                            else if(pcol) cols.push(pcol.id)
+                        } else {
+                            if(parseInt(substr)) antilevels.push(parseInt(substr))
+                            else if(pcol) anticols.push(pcol.id)
+                        }
                     }
                 }
             }
@@ -137,7 +149,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         q.filters.push(c => (new RegExp(`(_|^)${keywords.map(k => escapeRegex(k)).join('.*')}`, 'gi')).test(c.name))
 
     q.isEmpty = (usetag = true) => {
-        return !q.ids[0] && !q.lastcard && !q.filters[0] && !(q.tags[0] && usetag)
+        return !q.ids[0] && !q.lastcard && !q.filters[0] && !((q.tags[0] || q.antitags[0]) && usetag)
     }
 
     return q
@@ -201,6 +213,11 @@ const withCards = (callback) => async (ctx, user, ...args) => {
         cards = cards.filter(x => tgcards.includes(x.id))
     }
 
+    if(parsedargs.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(parsedargs.antitags)
+        cards = cards.filter(x => !tgcards.includes(x.id))
+    }
+
     if(parsedargs.lastcard)
         cards = map.filter(x => x.id === user.lastcard)
 
@@ -233,6 +250,11 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
     if(parsedargs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(parsedargs.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
+    }
+
+    if(parsedargs.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(parsedargs.antitags)
+        cards = cards.filter(x => !tgcards.includes(x.id))
     }
 
     if(parsedargs.diff) 
@@ -272,6 +294,11 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
                 if(x.tags.length > 0) {
                     const tgcards = await fetchTaggedCards(x.tags)
                     cards[i] = cards[i].filter(x => tgcards.includes(x.id))
+                }
+
+                if(parsedargs.antitags.length > 0) {
+                    const tgcards = await fetchTaggedCards(parsedargs.antitags)
+                    cards = cards.filter(x => !tgcards.includes(x.id))
                 }
             }
 
