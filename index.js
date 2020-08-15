@@ -61,10 +61,10 @@ module.exports.create = async ({
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
         if(content.description)
-            content.description = content.description.replace(/\s\s+/gi, '\n')
+            content.description = content.description.replace(/\s\s+/gm, '\n')
 
         if(content.fields)
-            content.fields.map(x => x.value = x.value.replace(/\s\s+/gi, '\n'))
+            content.fields.map(x => x.value = x.value.replace(/\s\s+/gm, '\n'))
 
         if(userid)
             _.remove(userq, (x) => x.id === userid)

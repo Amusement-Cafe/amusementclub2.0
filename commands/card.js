@@ -159,7 +159,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         You can claim **${max - 1}** more cards
         Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}
         ${activepromo && !promo? `You got **${extra}** ${activepromo.currency}
-        You now have **${user.promoexp}** ${activepromo.currency}` : ""}`})
+        You now have **${user.promoexp}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
