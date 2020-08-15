@@ -286,7 +286,7 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
     const map = mapUserCards(ctx, user)
     try {
         await Promise.all(parsedargs.map(async (x, i) => {
-            if(parsedargs.lastcard)
+            if(x.lastcard)
                 cards.push(map.filter(x => x.id === user.lastcard))
             else {
                 cards.push(filter(map, x).sort(x.sort))
@@ -296,8 +296,8 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
                     cards[i] = cards[i].filter(x => tgcards.includes(x.id))
                 }
 
-                if(parsedargs.antitags.length > 0) {
-                    const tgcards = await fetchTaggedCards(parsedargs.antitags)
+                if(x.antitags.length > 0) {
+                    const tgcards = await fetchTaggedCards(x.antitags)
                     cards = cards.filter(x => !tgcards.includes(x.id))
                 }
             }
