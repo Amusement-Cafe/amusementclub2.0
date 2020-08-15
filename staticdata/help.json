@@ -665,6 +665,10 @@
                 "description": "Rate one of your cards from 1 to 10."
             },
             {
+                "title": "->rate remove [card]",
+                "description": "Remove the rating of a card"
+            },
+            {
                 "title": "->cards >rating",
                 "description": "Order your cards by rating."
             }
