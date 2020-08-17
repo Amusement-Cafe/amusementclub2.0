@@ -159,7 +159,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         You can claim **${max - 1}** more cards
         Your next claim will cost **${promo? promoClaimCost(user, 1) : claimCost(user, ctx.guild.tax, 1)}** ${curr}
         ${activepromo && !promo? `You got **${extra}** ${activepromo.currency}
-        You now have **${user.promoexp}** ${activepromo.currency}` : ""}`})
+        You now have **${user.promoexp}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
@@ -234,11 +234,15 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     if(!id && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
-            First resolve transaction \`${pending[0].id}\``, 'red')
+            First resolve transaction \`${pending[0].id}\`
+            Type \`->trans info ${pending[0].id}\` to see more information
+            \`->confirm ${pending[0].id}\` to confirm
+            \`->decline ${pending[0].id}\` to decline`, 'red')
     else if(pendingto.length >= 5)
         return ctx.reply(user, `you already have pending transactions to **${pendingto[0].to}**. 
             You can have up to **5** pending transactions to the same user.
-            Type \`->pending\` to see them`, 'red')
+            Type \`->pending\` to see them
+            \`->decline [id]\` to decline`, 'red')
 
     cards = cards.filter(x => !pending.some(y => y.card === x.id))
     if(cards.length === 0) {
@@ -418,6 +422,10 @@ cmd('boost', 'boosts', (ctx, user) => {
     const boosts = ctx.boosts
         .filter(x => x.starts < now && x.expires > now)
         .sort((a, b) => a.expires - b.expires)
+
+    if(boosts.length === 0) {
+        return ctx.reply(user, `no current boosts`, 'red')
+    }
 
     const description = boosts.map(x => 
         `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\` (${x.cards.length} cards in pool)`).join('\n')

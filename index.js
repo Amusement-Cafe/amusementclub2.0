@@ -61,10 +61,10 @@ module.exports.create = async ({
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
         if(content.description)
-            content.description = content.description.replace(/\s\s+/gi, '\n')
+            content.description = content.description.replace(/\s\s+/gm, '\n')
 
         if(content.fields)
-            content.fields.map(x => x.value = x.value.replace(/\s\s+/gi, '\n'))
+            content.fields.map(x => x.value = x.value.replace(/\s\s+/gm, '\n'))
 
         if(userid)
             _.remove(userq, (x) => x.id === userid)
@@ -270,6 +270,10 @@ module.exports.create = async ({
             }
 
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            
+            if(isolatedCtx.guild)
+                isolatedCtx.guild.lastcmdchannel = msg.channel.id
+            
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })

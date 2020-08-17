@@ -77,7 +77,7 @@ const addGuildXP = (ctx, user, xp) => {
         }
     }
 
-    ctx.guild.xp += xp * .02
+    ctx.guild.xp += xp * .05
     guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
@@ -186,7 +186,7 @@ const bill_guilds = async (ctx, now) => {
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
 
-    return ctx.send(guild.reportchannel || guild.botchannels[0], {
+    return ctx.send(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
         author: { name: `Receipt for ${now}` },
         description: report.join('\n'),
         color: (ratio < 1? color.red : color.green),
