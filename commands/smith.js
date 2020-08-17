@@ -186,6 +186,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const vials = cost + extra
     const col = ctx.collections.find(x => x.id === card.col)
 
+    if (cost == 'Infinity')
+        return ctx.reply(user, 'impossible to draw until someone claims this card!', 'red')
+    
     if(col.promo)
         return ctx.reply(user, `you cannot draw promo cards`, 'red')
 
