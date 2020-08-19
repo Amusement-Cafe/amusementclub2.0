@@ -397,6 +397,11 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const usercard = user.cards.find(x => x.id === card.id)
     const embed = { color: colors.blue, fields: [] }
 
+    if(usercard) {
+        user.lastcard = card.id
+        await user.save()
+    }
+
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
     resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
