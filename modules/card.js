@@ -316,7 +316,7 @@ const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.le
 
 const fetchInfo = async (id) => {
     let info = await Cardinfo.findOne({id})
-    info = info || (await new Cardinfo())
+    info = info || (new Cardinfo())
     info.id = id
     return info
 }
