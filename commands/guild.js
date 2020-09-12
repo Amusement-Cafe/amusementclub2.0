@@ -48,8 +48,10 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
 
     const resp = [], userstat = [], fields = []
     const guildlvl = XPtoLEVEL(ctx.guild.xp)
+    const prevxp = LEVELtoXP(guildlvl)
+    const nextxp = LEVELtoXP(guildlvl + 1)
     const channels = ctx.guild.botchannels.filter(x => ctx.discord_guild.channels.some(y => y.id === x))
-    resp.push(`Level: **${guildlvl}** (${((1 - ctx.guild.xp/LEVELtoXP(guildlvl + 1)) * 100).toFixed(1)}%)`)
+    resp.push(`Level: **${guildlvl}** (${(((ctx.guild.xp - prevxp)/(nextxp - prevxp)) * 100).toFixed(1)}%)`)
     resp.push(`Players: **${ctx.guild.userstats.length}/${ctx.discord_guild.memberCount}**`)
     resp.push(`Prefix: \`${ctx.guild.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)

@@ -46,6 +46,10 @@ const {
     check_effect
 } = require('../modules/effect')
 
+const {
+    fetchOnly
+} = require('../modules/user')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
@@ -227,15 +231,13 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     let id = parsedargs.ids[0]
     const pending = await getPendingFrom(ctx, user)
     const pendingto = pending.filter(x => x.to_id === id)
+    const targetuser = id? await fetchOnly(id) : null
 
-    if(id && id === user.discord_id) {
+    if(targetuser && targetuser.discord_id === user.discord_id) {
         return ctx.reply(user, `you cannot sell cards to yourself.`, 'red')
     }
 
-    if(id && id === ctx.bot.user.id)
-        id = false
-
-    if(!id && pendingto.length > 0)
+    if(!targetuser && pendingto.length > 0)
         return ctx.reply(user, `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\`
             Type \`->trans info ${pending[0].id}\` to see more information
@@ -277,8 +279,8 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
 
     const perms = { confirm: [id], decline: [user.discord_id, id] }
 
-    const price = await evalCard(ctx, card, id? 1 : .4)
-    const trs = await new_trs(ctx, user, card, price, id)
+    const price = await evalCard(ctx, card, targetuser? 1 : .4)
+    const trs = await new_trs(ctx, user, card, price, targetuser? targetuser.discord_id : null)
 
     let question = ""
     if(trs.to != 'bot') {
@@ -396,6 +398,11 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const extrainfo = await fetchInfo(card.id)
     const usercard = user.cards.find(x => x.id === card.id)
     const embed = { color: colors.blue, fields: [] }
+
+    if(usercard) {
+        user.lastcard = card.id
+        await user.save()
+    }
 
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)

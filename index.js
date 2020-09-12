@@ -203,7 +203,7 @@ module.exports.create = async ({
         let curprefix = prefix
         const curguild = await guild.fetchOnly(msg.channel.guild)
         if(curguild) {
-            curprefix = curguild.prefix
+            curprefix = curguild.prefix || prefix
         }
 
         if (!msg.content.startsWith(curprefix)) return;

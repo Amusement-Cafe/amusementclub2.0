@@ -90,6 +90,11 @@ const bid_auc = async (ctx, user, auc, bid) => {
     auc.price = auc.highbid
     auc.highbid = bid
     auc.lastbidder = user.discord_id
+
+    user.exp -= bid
+    user.dailystats.bids = user.dailystats.bids + 1 || 1
+    user.markModified('dailystats')
+    await user.save()
     await auc.save()
 
     if(lastBidder){
@@ -108,9 +113,6 @@ const bid_auc = async (ctx, user, auc, bid) => {
             with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
     }
 
-    user.exp -= bid
-    user.dailystats.bids = user.dailystats.bids + 1 || 1
-    await user.updateOne({$inc: {exp: -bid, 'dailystats.bids': 1}})
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
 
