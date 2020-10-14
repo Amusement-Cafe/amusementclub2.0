@@ -32,22 +32,22 @@ module.exports = {
             actions: ['auc', 'auction'],
             check: (ctx, user) => user.dailystats.bids >= 2,
             resolve: (ctx, user) => {
-                user.exp += 1000
+                user.exp += 900
                 user.xp += 2
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**900** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'bid5',
-            name: 'Bid on 5 auctions today',
+            name: 'Bid on 4 auctions today',
             desc: '',
             tier: 2,
             actions: ['auc', 'auction'],
-            check: (ctx, user) => user.dailystats.bids >= 5,
+            check: (ctx, user) => user.dailystats.bids >= 4,
             resolve: (ctx, user) => {
-                user.exp += 2500
+                user.exp += 1800
                 user.xp += 5
             },
-            reward: (ctx) => `**2500** ${ctx.symbols.tomato} and **5** xp`
+            reward: (ctx) => `**1800** ${ctx.symbols.tomato} and **5** xp`
         }, {
             id: 'forge1',
             name: 'Forge 1-star card',
@@ -57,10 +57,10 @@ module.exports = {
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge1 >= 1,
             resolve: (ctx, user) => {
-                user.exp += 700
+                user.exp += 300
                 user.xp += 1
             },
-            reward: (ctx) => `**700** ${ctx.symbols.tomato} and **1** xp`
+            reward: (ctx) => `**300** ${ctx.symbols.tomato} and **1** xp`
         }, {
             id: 'forge2',
             name: 'Forge 2-star card',
@@ -70,10 +70,11 @@ module.exports = {
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge2 >= 1,
             resolve: (ctx, user) => {
-                user.exp += 1200
+                user.exp += 400
+                user.vials += 20
                 user.xp += 2
             },
-            reward: (ctx) => `**1200** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**400** ${ctx.symbols.tomato}, **20** ${ctx.symbols.vial} and **2** xp`
         }, {
             id: 'forge3',
             name: 'Forge 3-star card',
@@ -83,10 +84,11 @@ module.exports = {
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge3 >= 1,
             resolve: (ctx, user) => {
+                user.exp += 400
                 user.vials += 40
                 user.xp += 4
             },
-            reward: (ctx) => `**40** ${ctx.symbols.vial} and **4** xp`
+            reward: (ctx) => `**400** ${ctx.symbols.tomato}, **40** ${ctx.symbols.vial} and **4** xp`
         }, {
             id: 'tag2',
             name: 'Tag 2 cards',
@@ -95,10 +97,10 @@ module.exports = {
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 2,
             resolve: (ctx, user) => {
-                user.exp += 600
+                user.exp += 400
                 user.xp += 2
             },
-            reward: (ctx) => `**600** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**400** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'tag4',
             name: 'Tag 4 cards',
@@ -107,10 +109,10 @@ module.exports = {
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 4,
             resolve: (ctx, user) => {
-                user.exp += 1500
+                user.exp += 800
                 user.xp += 4
             },
-            reward: (ctx) => `**1500** ${ctx.symbols.tomato} and **4** xp`
+            reward: (ctx) => `**800** ${ctx.symbols.tomato} and **4** xp`
         }, {
             id: 'liq2',
             name: 'Liquify 2 cards',
@@ -124,6 +126,19 @@ module.exports = {
                 user.xp += 3
             },
             reward: (ctx) => `**55** ${ctx.symbols.vial} and **3** xp`
+        }, {
+            id: 'draw2',
+            name: 'Draw 2 cards',
+            desc: '',
+            tier: 2,
+            building: 'smithhub2',
+            actions: ['draw'],
+            check: (ctx, user) => user.dailystats.draw >= 2,
+            resolve: (ctx, user) => {
+                user.exp += 400
+                user.xp += 3
+            },
+            reward: (ctx) => `**400** ${ctx.symbols.tomato} and **3** xp`
         },
     ],
 

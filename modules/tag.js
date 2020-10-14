@@ -9,7 +9,7 @@ const fetchTaggedCards = async (tags) => {
 const fetchTagNames = async (ctx) => {
     const res = await Tag.find()
     let names = []
-    res.map(t => names.indexOf(t.name) == -1 && t.status != 'banned'? names.push(t.name): t)
+    res.map(t => names.indexOf(t.name) == -1 && t.status != 'banned' && t.status != 'removed'? names.push(t.name): t)
     return names.sort()
 }
 

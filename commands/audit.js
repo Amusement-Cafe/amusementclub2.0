@@ -129,7 +129,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
 
     const list = await Transaction.find(search).sort({ time: -1 })
 
-    if(list.length == 0)
+    if(!list)
         return ctx.reply(user, `there are no transactions found.`, 'red')
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -154,7 +154,7 @@ pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
 
     let list = await Transaction.find(search).sort({ time :-1})
 
-    if(list.length == 0)
+    if(!list)
         return ctx.reply(user, `there are no transactions found.`, 'red')
 
 
@@ -285,7 +285,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
 
     const findUser = await User.findOne({discord_id: arg.id})
 
-    if (findUser.length == 0)
+    if (!findUser)
         return ctx.reply(user, 'no user found with that ID', 'red')
 
     let effects = findUser.effects.map(x => x.id)
@@ -322,7 +322,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ct
     }).sort({ time: -1 }).limit(100)
 
     if(list.length == 0)
-        return ctx.reply(user, `matched ${cards.length} cards and 0 transactions`)
+        return ctx.reply(user, `No matches found`, 'red')
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_guildtrslist(ctx, user, list),
