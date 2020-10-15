@@ -39,6 +39,7 @@ const Anilist = new anilist();
 
 cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
+    await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet. To get one use \`->hero get [hero name]\``, 'red')
@@ -165,6 +166,7 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
 
 cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
+    await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
     const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
