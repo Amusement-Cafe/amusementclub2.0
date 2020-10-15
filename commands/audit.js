@@ -302,6 +302,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
                       Tomatoes: **${findUser.exp}${ctx.symbols.tomato}** 
                       Vials: **${findUser.vials}${ctx.symbols.vial}**
                       Promo Currency: **${findUser.promoexp}**
+                      Join Date: **${findUser.joined}**
                       Last Daily: **${findUser.lastdaily}**
                       Unique Cards: **${findUser.cards.length}**
                       Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
