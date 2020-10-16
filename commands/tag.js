@@ -216,8 +216,19 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
     const tags = await fetchTagNames(ctx);
+    const pages = []
+
+    tags.map((t, i) => {
+        if (i % 100 == 0) pages.push("")
+        if ((i + 1) % 5 == 0) {
+            pages[Math.floor(i/100)] += `**${t}**\n`
+        } else {
+            pages[Math.floor(i/100)] += `**${t}**  | `
+        }
+    })
+
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(tags),
+        pages,
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `List of all tag names: ${tags.length} results` },

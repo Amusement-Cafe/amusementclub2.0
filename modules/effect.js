@@ -25,10 +25,13 @@ const formatUserEffect = (ctx, user, x) => {
     return `\`${eff.id}\` **${eff.name}** ${lasts? `(${lasts})` : ''}`
 }
 
-const mapUserEffects = (ctx, user) => user.effects.map(x => Object.assign({}, 
-    ctx.items.find(y => y.effectid === x.id), 
-    ctx.effects.find(y => y.id === x.id), 
-    x))
+const mapUserEffects = (ctx, user) => {
+    user.effects.map(x => check_effect(ctx, user, x.id))
+    return user.effects.map(x => Object.assign({},
+        ctx.items.find(y => y.effectid === x.id),
+        ctx.effects.find(y => y.id === x.id),
+        x))
+}
 
 const withUserEffects = (callback) => (ctx, user, ...args) => {
     if(!user.hero)

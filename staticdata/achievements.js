@@ -119,6 +119,21 @@ module.exports = [
             user.exp += 500
             return `**500** ${ctx.symbols.tomato}`
         }
+    }, {
+        id: 'firsteffect',
+        name: `Now that's effective!`,
+        desc: 'Create your first effect card',
+        actions: ['inv'],
+        check: (ctx, user) => {
+            const effect = user.effects[0]
+            if (effect)
+                return true
+            return false
+        },
+        resolve: (ctx, user) => {
+            user.exp += 500
+            return `**500** ${ctx.symbols.tomato}`
+        }
     }
 
 

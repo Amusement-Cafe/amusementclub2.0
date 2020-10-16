@@ -141,23 +141,23 @@
         "price": 1500,
         "type": "blueprint",
         "desc": "get quests",
-        "fulldesc": "When built and upgraded, gives players up to **2** daily quests and allows to purchase quest lines",
+        "fulldesc": "When built and upgraded, gives players up to **2** extra daily quests and allows to purchase quest lines",
         "levels": [
             {
                 "price": 1000,
                 "level": 2,
                 "maintenance": 50,
-                "desc": "Adds 2 quests when users run daily in this guild"
+                "desc": "Adds 1 extra quest when users run daily in this guild"
             }, {
                 "price": 2000,
                 "level": 5,
                 "maintenance": 200,
-                "desc": "Adds 3 quests when users run daily in this guild"
+                "desc": "Adds 2 extra quests when users run daily in this guild"
             }, {
                 "price": 20000,
                 "level": 27,
                 "maintenance": 1000,
-                "desc": "Allows to purchase quest lines"
+                "desc": "Allows to purchase quest lines (Not Implemented Currently)"
             }
         ]
     }, {
