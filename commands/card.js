@@ -224,7 +224,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     if(user.ban && user.ban.embargo)
-        return ctx.reply(user, `you are not allowed to list cards at auction.
+        return ctx.reply(user, `you are not allowed to sell cards.
                                 Your dealings were found to be in violation of our community rules.
                                 You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
 
