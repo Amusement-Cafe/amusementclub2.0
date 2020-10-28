@@ -140,7 +140,7 @@ cmd('daily', async (ctx, user) => {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
         let amount = gbank? 800 : 400
-        const promoAmount = 500 + ((user.dailystats.promoclaims * 60|| 0))
+        const promoAmount = 500 + ((user.dailystats.promoclaims * 60) || 0)
         //let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
