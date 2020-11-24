@@ -294,7 +294,7 @@ cmd(['guild', 'set', 'report'], async (ctx, user) => {
 })
 
 cmd(['guild', 'set', 'bot'], async (ctx, user) => {
-    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+    if(ctx.guild.botchannels.length > 0 && !isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can change guild's report channel`, 'red')
 
     if(ctx.guild.botchannels.includes(ctx.msg.channel.id))
