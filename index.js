@@ -8,6 +8,7 @@ const paginator     = require('discord-paginator')
 const _             = require('lodash')
 const {trigger}     = require('./utils/cmd')
 const {check_all}   = require('./modules/secondarycheck')
+const {connectDBL}  = require('./modules/dbl')
 const Filter        = require('bad-words')
 
 const {
@@ -27,7 +28,7 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, invite, data 
+        maintenance, invite, data, dbl
     }) => {
 
     const emitter = new Emitter()
@@ -136,6 +137,7 @@ module.exports.create = async ({
         pgn,
         qhelp,
         invite,
+        dbl,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         settings: {
@@ -185,6 +187,9 @@ module.exports.create = async ({
     setInterval(atick.bind({}, ctx), 600000)
     //setInterval(htick.bind({}, ctx), 6000)
 
+    if(dbl.token)
+        connectDBL(ctx);
+    
     /* events */
     mongoose.connection.on('error', err => {
         emitter.emit('error', err)

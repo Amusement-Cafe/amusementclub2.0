@@ -14,6 +14,7 @@
     "anilist-node": "^1.4.0",
     "bad-words": "^3.0.3",
     "dateformat": "^3.0.3",
+    "dblapi.js": "^2.4.1",
     "discord-paginator": "^0.8.10",
     "eris": "^0.11.2",
     "jikan-node": "^1.2.1",

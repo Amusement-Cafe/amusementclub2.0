@@ -10,5 +10,10 @@
     "maintenance": false,
     "auditc": {
         "channel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+    },
+    "dbl": {
+        "token": "",
+        "port": 2727,
+        "pass": ""
     }
 }
