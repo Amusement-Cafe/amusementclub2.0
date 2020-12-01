@@ -211,6 +211,10 @@ cmd('daily', async (ctx, user) => {
             })
         }
 
+        fields.push({name: `Get rewarded`,
+            value: 'Don\'t forget to vote for the bot every day and get in-game rewards. Check `->vote` for more information.'
+        })
+
         return ctx.reply(user, {
             description: `you received daily **${amount}** ${ctx.symbols.tomato} ${promo? `and **${promoAmount}** ${promo.currency}`: ""}
                 You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato} ${promo? `and **${user.promoexp}** ${promo.currency}`: ""}`,
@@ -442,4 +446,12 @@ cmd('achievements', 'ach', async (ctx, user) => {
         pages: ctx.pgn.getPages(list, 15),
         embed: { author: { name: `${user.username}, completed achievements: (${list.length})` } }
     })
+})
+
+cmd('vote', async (ctx, user) => {
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        description: `You can vote for Amusement Club every 12 hours and get rewards.
+        [Vote on top.gg](${ctx.dbl.url}) to get free cards.`
+    }, user.discord_id)
 })
