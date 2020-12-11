@@ -16,5 +16,8 @@
         "port": 2727,
         "pass": "",
         "url": ""
+    },
+    "analytics": {
+        "mixpanel": ""
     }
 }

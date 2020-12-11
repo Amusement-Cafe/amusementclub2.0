@@ -11,6 +11,8 @@ const {check_all}   = require('./modules/secondarycheck')
 const {connectDBL}  = require('./modules/dbl')
 const Filter        = require('bad-words')
 
+const Mixpanel = require('mixpanel');
+
 const {
     auction,
     audit,
@@ -28,7 +30,7 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, invite, data, dbl
+        maintenance, invite, data, dbl, analytics
     }) => {
 
     const emitter = new Emitter()
@@ -137,9 +139,11 @@ module.exports.create = async ({
         pgn,
         qhelp,
         invite,
+        prefix,
         dbl,
         audit: auditc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
+        mixpanel: Mixpanel.init(analytics.mixpanel),
         settings: {
             wip: maintenance,
         }
@@ -287,8 +291,14 @@ module.exports.create = async ({
             usr.vials = Math.min(usr.vials, 10**6)
 
             console.log(`[${usr.username}]: ${msg.content}`)
+
+            ctx.mixpanel.track('Command', {
+                distinct_id: action,
+                args: args.slice(1).join(' '),
+                guild: isolatedCtx.guild.id,
+            })
+
             await trigger('cmd', isolatedCtx, usr, args, prefix)
-            //usr = await user.fetchOnly(msg.author.id)
             usr.unmarkModified('dailystats')
             await check_all(isolatedCtx, usr, action)
             

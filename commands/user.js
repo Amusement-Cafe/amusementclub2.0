@@ -215,6 +215,14 @@ cmd('daily', async (ctx, user) => {
             value: 'Don\'t forget to vote for the bot every day and get in-game rewards. Check `->vote` for more information.'
         })
 
+        ctx.mixpanel.track(
+            "Daily", { 
+                distinct_id: user.discord_id,
+                guild_id: ctx.guild.id,
+                amount,
+                promo_amount: promoAmount,
+        })
+
         return ctx.reply(user, {
             description: `you received daily **${amount}** ${ctx.symbols.tomato} ${promo? `and **${promoAmount}** ${promo.currency}`: ""}
                 You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato} ${promo? `and **${user.promoexp}** ${promo.currency}`: ""}`,

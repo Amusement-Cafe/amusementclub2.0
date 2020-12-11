@@ -30,11 +30,11 @@ const aucHide   = 5 * 60 * 1000
 const new_auc = async (ctx, user, card, price, fee, time) => {
     const target = await fetchOnly(user.discord_id)
     if(!target.cards.find(x => x.id === card.id))
-        return ctx.reply(user, `seems like you don't have ${formatName(card)} card anymore`, 'red')
+        return false
 
     lockFile.lock('auc.lock', { wait: 5000, stale: 10000 }, async err => {
         if(err)
-            return ctx.reply(user, `failed to create auction. Please try again`, 'red')
+            return false
 
         removeUserCard(target, card.id)
         
@@ -55,8 +55,7 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
 
         unlock()
 
-        return ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** ${ctx.symbols.tomato}
-            Auction ID: \`${auc.id}\``)
+        return auc
     })
 }
 

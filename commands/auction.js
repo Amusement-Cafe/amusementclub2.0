@@ -193,7 +193,26 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
         force: ctx.globals.force,
         question,
         check,
-        onConfirm: () => new_auc(ctx, user, card, price, fee, time),
+        onConfirm: () => { 
+            var auc = new_auc(ctx, user, card, price, fee, time)
+
+            if(!auc) {
+                return ctx.reply(user, `failed to create auction. Card might be missing or there was an internal server error.`, 'red')
+            }
+
+            ctx.mixpanel.track(
+                "Auction Create", { 
+                    distinct_id: user.discord_id,
+                    auction_id: auc.id,
+                    card_id: card.id,
+                    card_name: card.name,
+                    card_collection: card.col,
+                    price,
+            })
+
+            ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** ${ctx.symbols.tomato}
+                Auction ID: \`${auc.id}\``)
+        },
     })
 }))
 

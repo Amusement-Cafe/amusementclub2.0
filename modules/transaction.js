@@ -117,6 +117,16 @@ const confirm_trs = async (ctx, user, trs_id) => {
     await from_user.save()
     await transaction.save()
 
+    ctx.mixpanel.track(
+        "Card Sell", { 
+            distinct_id: user.discord_id,
+            card_id: card.id,
+            card_name: card.name,
+            card_collection: card.col,
+            price: transaction.price,
+            to_user,
+    })
+
     if(to_user) {
         return ctx.reply(from_user, `sold **${formatName(ctx.cards[card.id])}** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
     }

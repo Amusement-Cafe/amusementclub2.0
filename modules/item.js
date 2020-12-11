@@ -97,6 +97,14 @@ const uses = {
         pullInventoryItem(user, item.id)
         await user.save()
 
+        ctx.mixpanel.track(
+            "Building Build", { 
+                distinct_id: user.discord_id,
+                building_id: item.id,
+                price: item.levels[0].price,
+                guild: guild.id,
+        })
+
         return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**
             You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
     },
@@ -152,6 +160,13 @@ const uses = {
         await user.save()
         user.markModified('cards')
         await user.save() //double for cards
+
+        ctx.mixpanel.track(
+            "Effect Craft", { 
+                distinct_id: user.discord_id,
+                effect_id: item.id,
+                is_passive: effect.passive,
+        })
 
         return ctx.reply(user, {
             image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },

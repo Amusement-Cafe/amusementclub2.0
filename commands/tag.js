@@ -74,6 +74,15 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             await tag.save()
             user = await updateUser(user, {$inc: {'dailystats.tags': 1}})
 
+            ctx.mixpanel.track(
+                "Tag Create", { 
+                    distinct_id: user.discord_id,
+                    card_id: card.id,
+                    card_name: card.name,
+                    card_collection: card.col,
+                    tag: tgTag,
+            });
+
             ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
         },
 
