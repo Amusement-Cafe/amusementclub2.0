@@ -296,7 +296,7 @@ module.exports.create = async ({
                 distinct_id: usr.discord_id,
                 command: action,
                 args: args.slice(1).join(' '),
-                guild: isolatedCtx.guild.id,
+                guild: isolatedCtx.guild? isolatedCtx.guild.id : 'direct',
             })
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
