@@ -293,7 +293,8 @@ module.exports.create = async ({
             console.log(`[${usr.username}]: ${msg.content}`)
 
             ctx.mixpanel.track('Command', {
-                distinct_id: action,
+                distinct_id: usr.discord_id,
+                command: action,
                 args: args.slice(1).join(' '),
                 guild: isolatedCtx.guild.id,
             })
