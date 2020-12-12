@@ -186,15 +186,16 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const question = `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? 
         ${timenum? `This auction will last **${time} hours**` : ''}
-        ${card.amount > 1? '' : 'This is the only copy that you have, so your rating will be lost'}`
+        ${card.amount > 1? '' : 'This is the only copy that you have'}
+        ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
         force: ctx.globals.force,
         question,
         check,
-        onConfirm: () => { 
-            var auc = new_auc(ctx, user, card, price, fee, time)
+        onConfirm: async () => { 
+            var auc = await new_auc(ctx, user, card, price, fee, time)
 
             if(!auc) {
                 return ctx.reply(user, `failed to create auction. Card might be missing or there was an internal server error.`, 'red')

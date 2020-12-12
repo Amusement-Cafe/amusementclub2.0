@@ -19,7 +19,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.reply(user, `welcome to **Amusement Club!** Please read \`->rules\` and use \`->help\` to learn more about the game`)
+        await ctx.reply(user, `welcome to **Amusement Club!** Please read \`${ctx.prefix}rules\` and use \`${ctx.prefix}help\` to learn more about the game`)
     }
 
     if(user.username != username) {
