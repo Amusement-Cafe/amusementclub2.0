@@ -19,6 +19,11 @@ const fetchCardTags = async (card) => {
         .sort((a, b) => (b.upvotes.length - b.downvotes.length) - (a.upvotes.length - a.downvotes.length))
 }
 
+const fetchUserTags = async (user) => {
+    const res = await Tag.find({ author: user.discord_id })
+    return res.filter(x => check_tag(x)).reverse()
+}
+
 const new_tag = async (user, name, card) => {
     tag = await new Tag()
     tag.name = name
@@ -79,6 +84,7 @@ module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
     fetchTagNames,
+    fetchUserTags,
     new_tag,
     check_tag,
     withTag,

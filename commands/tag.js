@@ -12,6 +12,7 @@ const {
     fetchCardTags,
     delete_tag,
     fetchTagNames,
+    fetchUserTags,
 } = require('../modules/tag')
 
 const {
@@ -19,6 +20,7 @@ const {
     withGlobalCards,
     bestMatch,
 } = require('../modules/card')
+const card = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
@@ -130,7 +132,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
     })
 }))
 
-cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('tags', ['tag', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 
@@ -146,6 +148,26 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
                 (x.upvotes.includes(user.discord_id) || x.downvotes.includes(user.discord_id))? '*' : ''
             }`)),
         switchPage: (data) => data.embed.description = `**Tags for** ${formatName(card)}:\n\n${data.pages[data.pagenum]}`,
+        buttons: ['back', 'forward'],
+        embed: {
+            color: colors.blue,
+        }
+    })
+}))
+
+cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const userTags = await fetchUserTags(user)
+    const tags = userTags.filter(x => cards.some(y => y.id === x.card))
+
+    if(tags.length === 0)
+        return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(tags.map(x => {
+            const card = cards.find(y => y.id === x.card)
+            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
+        }, 10)),  
+        switchPage: (data) => data.embed.description = `**${user.username}**, tags you created:\n\n${data.pages[data.pagenum]}`,
         buttons: ['back', 'forward'],
         embed: {
             color: colors.blue,
