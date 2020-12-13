@@ -70,23 +70,15 @@ const withItem = (callback) => (ctx, user, ...args) => {
 const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
 const itemInfo = (ctx, user, item) => infos[item.type](ctx, user, item)
 const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
+const checkItem = (ctx, user, item) => checks[item.type](ctx, user, item)
 
 const uses = {
     blueprint: async (ctx, user, item) => {
+        const check = checks.blueprint(ctx, user, item)
+        if(check)
+            return ctx.reply(user, check, 'red')
+
         const guild = ctx.guild
-        if(guild.buildings.find(x => x.id === item.id))
-            return ctx.reply(user, `this guild already has **${item.name}**`, 'red')
-
-        if(user.exp < item.levels[0].price)
-            return ctx.reply(user, `you need at least **${item.levels[0].price}** ${ctx.symbols.tomato} to build **${item.name} level 1**`, 'red')
-
-        if(XPtoLEVEL(guild.xp) < item.levels[0].level)
-            return ctx.reply(user, `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`, 'red')
-
-        const guilduser = getGuildUser(ctx, user)
-        if(!isUserOwner(ctx, user) && guilduser && guilduser.rank < guild.buildperm)
-            return ctx.reply(user, `you have to be at least rank **${guild.buildperm}** to build in this guild`, 'red')
-
         const xp = item.levels[0].price * .1
 
         guild.buildings.push({ id: item.id, level: 1, health: 100 })
@@ -128,9 +120,9 @@ const uses = {
     },
 
     recipe: async (ctx, user, item) => {
-        const hub = getBuilding(ctx, 'smithhub')
-        if(!hub || hub.level < 3)
-            return ctx.reply(user, `you can create effect cards only in guild with **Smithing Hub level 3** or higher`, 'red')
+        const check = checks.recipe(ctx, user, item)
+        if(check)
+            return ctx.reply(user, check, 'red')
 
         const userEffect = user.effects.find(x => x.id === item.effectid)
         if(userEffect && userEffect.expires < new Date()) {
@@ -140,14 +132,7 @@ const uses = {
             user.markModified('effects')
         }
 
-        if(user.effects.some(x => x.id === item.effectid))
-            return ctx.reply(user, `you already have this Effect Card`, 'red')
-
         const effect = ctx.effects.find(x => x.id === item.effectid)
-        if(!item.cards.reduce((val, x) => val && user.cards.some(y => y.id === x), true))
-            return ctx.reply(user, `you don't have all required cards in order to use this item.
-                Type \`->inv info ${item.id}\` to see the list of required cards`, 'red')
-
         const eobject = { id: item.effectid }
         if(!effect.passive) { 
             eobject.uses = item.lasts
@@ -231,6 +216,53 @@ const infos = {
     }
 }
 
+const checks = {
+    blueprint: (ctx, user, item) => {
+        const guild = ctx.guild
+        if(guild.buildings.find(x => x.id === item.id))
+            return `this guild already has **${item.name}**`
+
+        if(user.exp < item.levels[0].price)
+            return `you need at least **${item.levels[0].price}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
+
+        if(XPtoLEVEL(guild.xp) < item.levels[0].level)
+            return `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`
+
+        const guilduser = getGuildUser(ctx, user)
+        if(!isUserOwner(ctx, user) && guilduser && guilduser.rank < guild.buildperm)
+            return `you have to be at least rank **${guild.buildperm}** to build in this guild`
+    },
+
+    claim_ticket: (ctx, user, item) => {
+        return false
+    },
+
+    recipe: (ctx, user, item) => {
+        const hub = getBuilding(ctx, 'smithhub')
+        if(!hub || hub.level < 3)
+            return `you can create effect cards only in guild with **Smithing Hub level 3** or higher`
+
+        if(user.effects.some(x => x.id === item.effectid))
+            return `you already have this Effect Card`
+    
+        const effect = ctx.effects.find(x => x.id === item.effectid)
+        if(!item.cards.reduce((val, x) => val && user.cards.some(y => y.id === x), true))
+            return `you don't have all required cards in order to use this item.
+                Type \`->inv info ${item.id}\` to see the list of required cards`
+        
+        for(let i = 0; i < item.cards.length; i++) {
+            const itemCardID = item.cards[i]
+            const userCard = user.cards.find(y => y.id === itemCardID)
+            
+            if(userCard.fav && userCard.amount === 1) { 
+                const card = ctx.cards.find(y => y.id === itemCardID)
+                return `the last copy of required card ${formatName(card)} is marked as favourite.
+                    Please, use \`->fav remove ${card.name}\` to remove it from favourites first`
+            }
+        }
+    }
+}
+
 const buys = {
     blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
     claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
@@ -265,5 +297,6 @@ module.exports = {
     getQuestion,
     itemInfo,
     buyItem,
-    withItem
+    withItem,
+    checkItem,
 }

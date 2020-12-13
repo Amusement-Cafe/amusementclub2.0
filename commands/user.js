@@ -35,7 +35,8 @@ const {
     withUserItems,
     useItem,
     getQuestion,
-    itemInfo
+    itemInfo,
+    checkItem,
 } = require('../modules/item')
 
 const {
@@ -109,6 +110,10 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
 
 cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
     const item = items[0]
+    const itemCheck = checkItem(ctx, user, item)
+
+    if(itemCheck)
+        return ctx.reply(user, itemCheck, 'red')
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
