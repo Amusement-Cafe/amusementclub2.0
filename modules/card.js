@@ -18,6 +18,10 @@ const {
     fetchTaggedCards 
 } = require('./tag')
 
+const { 
+    evalCardFast,
+} = require('./eval')
+
 const asdate = require('add-subtract-date')
 
 const promoRarity = {
@@ -76,6 +80,8 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
                 case '>star': q.sort = (a, b) => b.level - a.level; break
+                case '<eval': q.sort = (a, b) => evalCardFast(a) - evalCardFast(b); break
+                case '>eval': q.sort = (a, b) => evalCardFast(b) - evalCardFast(a); break
                 case '<rating': 
                     q.sort = (a, b) => (a.rating || 0) - (b.rating || 0)
                     q.userQuery = true

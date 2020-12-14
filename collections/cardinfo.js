@@ -5,6 +5,7 @@ module.exports = model('Cardinfo', {
 
     ratingsum:      { type: Number, default: 0 },
     usercount:      { type: Number, default: 0 },
+    ownercount:     { type: Number, default: -1 },
 
     aucprices:      { type: Array, default: [] },
 })

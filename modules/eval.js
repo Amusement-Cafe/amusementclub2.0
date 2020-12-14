@@ -1,29 +1,55 @@
 const User      = require('../collections/user')
+const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
 
+const userCountTTL = 5000
 const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
 const evalUserRate = 0.25
 const evalVialRate = 0.055
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
+const evalQueue = []
 
-let userCount
+let userCount = 10, userCountUpdated
 
 const evalCard = async (ctx, card, modifier = 1) => {
-    if(card.hasOwnProperty('eval'))
-        return card.eval
-
-    if(!userCount) {
+    if(!userCount && Date.now() - userCountUpdated > userCountTTL) {
         userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
+        userCountUpdated = Date.now()
     }
     
-    const amount = await User.countDocuments({
-        cards: { $elemMatch: { id: card.id }}, 
-        lastdaily: { $gt: evalLastDaily }})
-
-    const price = Math.round(((cardPrices[card.level] + (card.animated? 100 : 0))
-        * limitPriceGrowth((userCount * evalUserRate) / amount)) * modifier)
-
+    const ownerCount = await updateCardUserCount(ctx, card)
+    const price = getEval(card, ownerCount, modifier)
     return price === Infinity? 0 : price
+}
+
+const evalCardFast = (card) => {
+    let ownercount = Math.round(userCount * .5)
+    if(card.ownercount)
+        ownercount = card.ownercount
+    else
+        pushUserCountUpdate(card)
+
+    return getEval(card, ownercount)
+}
+
+const updateCardUserCount = async (ctx, card, count) => {
+    const ownercount = count || (await User.countDocuments({
+        cards: { $elemMatch: { id: card.id }}, 
+        lastdaily: { $gt: evalLastDaily }}))
+
+    const info = await Cardinfo.findOne({id: card.id}) || new Cardinfo()
+    const cachedCard = ctx.cards.find(x => x.id === card.id)
+    info.id = card.id
+    info.ownercount = ownercount
+    cachedCard.ownercount = ownercount
+    await info.save()
+
+    return ownercount
+}
+
+const pushUserCountUpdate = (card) => {
+    if(!evalQueue.includes(card))
+        evalQueue.push(card)
 }
 
 const limitPriceGrowth = x => { 
@@ -46,7 +72,26 @@ const getVialCost = async (ctx, card, cardeval) => {
     return Math.round(10 + diff)
 }
 
+const checkQueue = async (ctx) => {
+    const card = evalQueue[0]
+    if(card) {
+        await updateCardUserCount(ctx, card)
+        evalQueue.shift()
+        console.log(card.id)
+    }
+}
+
+const getEval = (card, ownerCount, modifier = 1) => {
+    const allUsers = userCount || ownerCount * 2
+    return Math.round(((cardPrices[card.level] + (card.animated? 100 : 0))
+        * limitPriceGrowth((allUsers * evalUserRate) / ownerCount)) * modifier)
+}
+
 module.exports = {
     evalCard,
-    getVialCost
+    evalCardFast,
+    updateCardUserCount,
+    pushUserCountUpdate,
+    getVialCost,
+    checkQueue,
 }
