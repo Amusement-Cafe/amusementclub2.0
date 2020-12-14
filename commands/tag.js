@@ -157,14 +157,15 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
 
 cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const userTags = await fetchUserTags(user)
-    const tags = userTags.filter(x => cards.some(y => y.id === x.card))
+    const cardIDs = cards.map(x => x.id)
+    const tags = userTags.filter(x => cardIDs.includes(x.card))
 
     if(tags.length === 0)
         return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(tags.map(x => {
-            const card = cards.find(y => y.id === x.card)
+            const card = ctx.cards[x.card]
             return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
         }, 10)),  
         switchPage: (data) => data.embed.description = `**${user.username}**, tags you created:\n\n${data.pages[data.pagenum]}`,
