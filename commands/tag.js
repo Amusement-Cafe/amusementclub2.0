@@ -132,7 +132,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
     })
 }))
 
-cmd('tags', ['tag', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 
@@ -250,11 +250,11 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
     const pages = []
 
     tags.map((t, i) => {
-        if (i % 100 == 0) pages.push("")
+        if (i % 75 == 0) pages.push("")
         if ((i + 1) % 5 == 0) {
-            pages[Math.floor(i/100)] += `**${t}**\n`
+            pages[Math.floor(i/75)] += `**${t}**\n`
         } else {
-            pages[Math.floor(i/100)] += `**${t}**  | `
+            pages[Math.floor(i/75)] += `**${t}**  | `
         }
     })
 
