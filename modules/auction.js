@@ -27,14 +27,14 @@ const msToTime  = require('pretty-ms')
 
 const aucHide   = 5 * 60 * 1000
 
-const new_auc = async (ctx, user, card, price, fee, time) => {
+const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolve, reject) => {
     const target = await fetchOnly(user.discord_id)
     if(!target.cards.find(x => x.id === card.id))
-        return ctx.reply(user, `seems like you don't have ${formatName(card)} card anymore`, 'red')
+        return reject('no cards found')
 
     lockFile.lock('auc.lock', { wait: 5000, stale: 10000 }, async err => {
         if(err)
-            return ctx.reply(user, `failed to create auction. Please try again`, 'red')
+            return reject(err)
 
         removeUserCard(target, card.id)
         
@@ -55,10 +55,9 @@ const new_auc = async (ctx, user, card, price, fee, time) => {
 
         unlock()
 
-        return ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** ${ctx.symbols.tomato}
-            Auction ID: \`${auc.id}\``)
+        return resolve(auc)
     })
-}
+})
 
 const bid_auc = async (ctx, user, auc, bid) => {
     const lastBidder = await fetchOnly(auc.lastbidder)
@@ -109,8 +108,8 @@ const bid_auc = async (ctx, user, auc, bid) => {
         }
     } else {
         const author = await fetchOnly(auc.author)
-        await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}
-            with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
+        await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
+            ${formatName(ctx.cards[auc.card])} with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
     }
 
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)

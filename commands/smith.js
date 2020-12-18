@@ -65,7 +65,10 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     if(user.exp < cost)
         return ctx.reply(user, `you need at least **${cost}** ${ctx.symbols.tomato} to forge these cards`, 'red')
 
-    const question = `Do you want to forge ${formatName(card1)} and ${formatName(card2)} using **${cost}** ${ctx.symbols.tomato}?
+    if((card1.fav && card1.amount == 1) || (card2.fav && card2.amount == 1))
+        return ctx.reply(user, `your query contains last copy of your favourite card(s). Please remove it from favourites and try again`, 'red')
+
+    const question = `Do you want to forge ${formatName(card1)}**(x${card1.amount})** and ${formatName(card2)}**(x${card2.amount})** using **${cost}** ${ctx.symbols.tomato}?
         You will get **${vialres}** ${ctx.symbols.vial} and a **${card1.level} ${ctx.symbols.star} card**`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
@@ -98,7 +101,6 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await user.save()
 
                 const usercard = user.cards.find(x => x.id === newcard.id)
-
                 return ctx.reply(user, {
                     image: { url: newcard.url },
                     color: colors.blue,
@@ -134,16 +136,15 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
 
-    const usercard = user.cards.find(x => x.id === card.id)
     if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
         vials += vials * .25
 
-    if(usercard.fav && usercard.amount === 1)
+    if(card.fav && card.amount === 1)
         return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
-        ${usercard.amount === 1? 'This is the last copy that you have' : `You will have **${usercard.amount - 1}** card(s) left`}`
+        ${card.amount === 1? 'This is the last copy that you have' : `You will have **${card.amount - 1}** card(s) left`}`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,

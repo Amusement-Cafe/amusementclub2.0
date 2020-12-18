@@ -10,6 +10,13 @@ const check_achievements = async (ctx, user, action, channelID) => {
         user.achievements.push(complete.id)
         await user.save()
 
+        ctx.mixpanel.track('Achievement', {
+            distinct_id: user.discord_id,
+            action: action,
+            achievement_name: complete.id,
+            user_xp: user.xp,
+        })
+
         return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
             author: { name: `New Achievement:` },
@@ -34,6 +41,12 @@ const check_daily = async (ctx, user, action, channelID) => {
         user.dailyquests = user.dailyquests.filter(y => y != x.id)
         rewards.push(x.reward(ctx))
         complete.push(x.name.replace('-star', ctx.symbols.star))
+
+        ctx.mixpanel.track('Quest Complete', {
+            distinct_id: user.discord_id,
+            quest_id: x.id,
+            quest_tier: x.tier,
+        })
     })
 
     if(complete.length === 0)

@@ -202,9 +202,10 @@ const mapUserCards = (ctx, user) => {
  * @return {Promise}
  */
 const withCards = (callback) => async (ctx, user, ...args) => {
-    const parsedargs = parseArgs(ctx, args, user.lastdaily)
+    if(user.cards.length == 0)
+        return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim\``, 'red')
 
-    /* join user cards to actual card types */
+    const parsedargs = parseArgs(ctx, args, user.lastdaily)
     const map = mapUserCards(ctx, user)
     let cards = filter(map, parsedargs)
 

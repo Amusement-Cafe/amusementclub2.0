@@ -53,7 +53,7 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
     const channels = ctx.guild.botchannels.filter(x => ctx.discord_guild.channels.some(y => y.id === x))
     resp.push(`Level: **${guildlvl}** (${(((ctx.guild.xp - prevxp)/(nextxp - prevxp)) * 100).toFixed(1)}%)`)
     resp.push(`Players: **${ctx.guild.userstats.length}/${ctx.discord_guild.memberCount}**`)
-    resp.push(`Prefix: \`${ctx.guild.prefix}\``)
+    resp.push(`Prefix: \`${ctx.guild.prefix || ctx.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
     resp.push(`Bot channels: ${channels.map(x => `<#${x}>`).join(' ')}`)
@@ -171,6 +171,15 @@ cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
 
             await user.save()
             await ctx.guild.save()
+
+            ctx.mixpanel.track(
+                "Building Upgrade", { 
+                    distinct_id: user.discord_id,
+                    building_id: item.id,
+                    building_level: building.level,
+                    price: level.price,
+                    guild: ctx.guild.id,
+            })
 
             return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${building.level}**!
                 This building now *${level.desc.toLowerCase()}*
@@ -294,7 +303,7 @@ cmd(['guild', 'set', 'report'], async (ctx, user) => {
 })
 
 cmd(['guild', 'set', 'bot'], async (ctx, user) => {
-    if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
+    if(ctx.guild.botchannels.length > 0 && !isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can change guild's report channel`, 'red')
 
     if(ctx.guild.botchannels.includes(ctx.msg.channel.id))

@@ -35,7 +35,8 @@ const {
     withUserItems,
     useItem,
     getQuestion,
-    itemInfo
+    itemInfo,
+    checkItem,
 } = require('../modules/item')
 
 const {
@@ -109,6 +110,10 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
 
 cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
     const item = items[0]
+    const itemCheck = checkItem(ctx, user, item)
+
+    if(itemCheck)
+        return ctx.reply(user, itemCheck, 'red')
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
@@ -210,6 +215,18 @@ cmd('daily', async (ctx, user) => {
                 `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\``).join('\n')}`
             })
         }
+
+        fields.push({name: `Get rewarded`,
+            value: 'Don\'t forget to vote for the bot every day and get in-game rewards. Check `->vote` for more information.'
+        })
+
+        ctx.mixpanel.track(
+            "Daily", { 
+                distinct_id: user.discord_id,
+                guild_id: ctx.guild.id,
+                amount,
+                promo_amount: promoAmount,
+        })
 
         return ctx.reply(user, {
             description: `you received daily **${amount}** ${ctx.symbols.tomato} ${promo? `and **${promoAmount}** ${promo.currency}`: ""}
@@ -442,4 +459,12 @@ cmd('achievements', 'ach', async (ctx, user) => {
         pages: ctx.pgn.getPages(list, 15),
         embed: { author: { name: `${user.username}, completed achievements: (${list.length})` } }
     })
+})
+
+cmd('vote', async (ctx, user) => {
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        description: `You can vote for Amusement Club every 12 hours and get rewards.
+        [Vote on top.gg](${ctx.dbl.url}) to get free cards.`
+    }, user.discord_id)
 })

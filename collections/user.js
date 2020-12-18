@@ -36,6 +36,7 @@ module.exports = model('User', {
     lastcard:           { type: Number, default: -1 },
     xp:                 { type: Number, default: 0 },
     vials:              { type: Number, default: 0 },
+    votes:              { type: Number, default: 0 },
 
     dailyquests:        { type: Array, default: [] },
     questlines:         { type: Array, default: [] },

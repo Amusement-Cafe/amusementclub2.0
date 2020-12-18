@@ -12,6 +12,7 @@ const {
     fetchCardTags,
     delete_tag,
     fetchTagNames,
+    fetchUserTags,
 } = require('../modules/tag')
 
 const {
@@ -19,6 +20,7 @@ const {
     withGlobalCards,
     bestMatch,
 } = require('../modules/card')
+const card = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
@@ -73,6 +75,15 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             tag.upvotes.push(user.discord_id)
             await tag.save()
             user = await updateUser(user, {$inc: {'dailystats.tags': 1}})
+
+            ctx.mixpanel.track(
+                "Tag Create", { 
+                    distinct_id: user.discord_id,
+                    card_id: card.id,
+                    card_name: card.name,
+                    card_collection: card.col,
+                    tag: tgTag,
+            });
 
             ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
         },
@@ -137,6 +148,27 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
                 (x.upvotes.includes(user.discord_id) || x.downvotes.includes(user.discord_id))? '*' : ''
             }`)),
         switchPage: (data) => data.embed.description = `**Tags for** ${formatName(card)}:\n\n${data.pages[data.pagenum]}`,
+        buttons: ['back', 'forward'],
+        embed: {
+            color: colors.blue,
+        }
+    })
+}))
+
+cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const userTags = await fetchUserTags(user)
+    const cardIDs = cards.map(x => x.id)
+    const tags = userTags.filter(x => cardIDs.includes(x.card))
+
+    if(tags.length === 0)
+        return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(tags.map(x => {
+            const card = ctx.cards[x.card]
+            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
+        }, 10)),  
+        switchPage: (data) => data.embed.description = `**${user.username}**, tags you created:\n\n${data.pages[data.pagenum]}`,
         buttons: ['back', 'forward'],
         embed: {
             color: colors.blue,
@@ -219,11 +251,11 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
     const pages = []
 
     tags.map((t, i) => {
-        if (i % 100 == 0) pages.push("")
+        if (i % 75 == 0) pages.push("")
         if ((i + 1) % 5 == 0) {
-            pages[Math.floor(i/100)] += `**${t}**\n`
+            pages[Math.floor(i/75)] += `**${t}**\n`
         } else {
-            pages[Math.floor(i/100)] += `**${t}**  | `
+            pages[Math.floor(i/75)] += `**${t}**  | `
         }
     })
 
