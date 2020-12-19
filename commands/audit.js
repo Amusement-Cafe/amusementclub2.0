@@ -13,6 +13,7 @@ const {
 }   = require('../modules/card')
 
 const {
+    auditFetchUserTags,
     formatAucBidList,
     paginate_auditReports,
     paginate_guildtrslist,
@@ -141,7 +142,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
     })
 })
 
-pcmd(['admin', 'auditor'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg) => {
+pcmd(['admin', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -149,7 +150,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
     const auditedUser = await fetchOnly(arg.ids)
-    const userTags = await fetchUserTags(auditedUser)
+    const userTags = await auditFetchUserTags(auditedUser)
     const cardIDs = cards.map(x => x.id)
     const tags = userTags.filter(x => cardIDs.includes(x.card))
 
@@ -159,10 +160,10 @@ pcmd(['admin', 'auditor'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(tags.map(x => {
             const card = ctx.cards[x.card]
-            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
+            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** ${x.status!='clear'? `(${x.status})`: ''} - ${formatName(card)}`
         }, 10)),
         switchPage: (data) => data.embed.description = `**${user.username}**, tags that ${auditedUser.username} created:\n\n${data.pages[data.pagenum]}`,
-        buttons: ['back', 'forward'],
+        buttons: ['first', 'back', 'forward', 'last'],
         embed: {
             color: colors.blue,
         }
