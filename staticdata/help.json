@@ -774,6 +774,10 @@
                 "description": "Upvote or Add a tag to a card"
             },
             {
+                "title": "->tags created",
+                "description": "List all tags you have created"
+            },
+            {
                 "title": "->tag down [card] #some_tag_here",
                 "description": "Downvote a tag on a card"
             }, 
