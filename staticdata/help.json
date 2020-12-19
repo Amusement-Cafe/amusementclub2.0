@@ -11,7 +11,7 @@
             },
             {
                 "title": "Card Management",
-                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help info\n->help query",
+                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help forge\n->help info\n->help query",
                 "inline": true
             },
             {
