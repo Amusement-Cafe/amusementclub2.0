@@ -263,7 +263,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
         pages,
         buttons: ['first', 'back', 'forward', 'last'],
         embed: {
-            author: { name: `List of all tag names: ${tags.length} results` },
+            author: { name: `List of ${arg? `tags starting with "${arg}"`: 'all tag names' }: ${tags.length} results` },
             color: colors.blue,
         }
     })

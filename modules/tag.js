@@ -8,7 +8,7 @@ const fetchTaggedCards = async (tags) => {
 
 const fetchTagNames = async (ctx, start) => {
     let res
-    if (letter) {
+    if (start) {
         res = await Tag.find({name: {$in: new RegExp('^' + start)}})
     } else {
         res = await Tag.find()
