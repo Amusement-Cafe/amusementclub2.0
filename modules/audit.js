@@ -128,7 +128,7 @@ const parseAuditArgs = (ctx, args) => {
                 break
             default:
                 const tryid = tryGetUserID(x)
-                if(tryid && !a.id) a.id = x
+                if(tryid && !a.id) a.id = tryid
                 else a.extraArgs.push(x)
         }
     })
