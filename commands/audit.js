@@ -1,7 +1,6 @@
 const {pcmd}                    = require('../utils/cmd')
 const {evalCard}                = require('../modules/eval')
 const {fetchOnly}               = require('../modules/user')
-const {fetchUserTags}           = require("../modules/tag");
 const colors                    = require('../utils/colors')
 const msToTime                  = require('pretty-ms')
 const {paginate_trslist, ch_map} = require('../modules/transaction')
