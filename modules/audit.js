@@ -3,6 +3,7 @@ const AuditAucSell       = require('../collections/auditAucSell')
 const asdate             = require('add-subtract-date')
 const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
+const Tag                = require("../collections/tag");
 const {ch_map} = require('./transaction')
 const {formatName}       = require('./card')
 const {tryGetUserID}     = require('../utils/tools')
@@ -106,6 +107,11 @@ const formatCompletedList = (ctx, user, audit) => {
     return resp;
 }
 
+const auditFetchUserTags = async (user) => {
+    const res = await Tag.find({ author: user.discord_id })
+    return res.reverse()
+}
+
 const parseAuditArgs = (ctx, args) => {
     const a = {
         id: '',
@@ -128,7 +134,7 @@ const parseAuditArgs = (ctx, args) => {
                 break
             default:
                 const tryid = tryGetUserID(x)
-                if(tryid && !a.id) a.id = x
+                if(tryid && !a.id) a.id = tryid
                 else a.extraArgs.push(x)
         }
     })
@@ -138,6 +144,7 @@ const parseAuditArgs = (ctx, args) => {
 
 
 module.exports = {
+    auditFetchUserTags,
     paginate_auditReports,
     paginate_guildtrslist,
     paginate_closedAudits,

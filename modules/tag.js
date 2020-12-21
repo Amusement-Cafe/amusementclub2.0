@@ -6,10 +6,16 @@ const fetchTaggedCards = async (tags) => {
     return res.filter(x => check_tag(x)).map(x => x.card)
 }
 
-const fetchTagNames = async (ctx) => {
-    const res = await Tag.find()
+const fetchTagNames = async (ctx, start) => {
+    let res
+    if (start) {
+        res = await Tag.find({name: {$in: new RegExp('^' + start)}})
+    } else {
+        res = await Tag.find()
+    }
+
     let names = []
-    res.map(t => names.indexOf(t.name) == -1 && t.status != 'banned' && t.status != 'removed'? names.push(t.name): t)
+    res.map(t => names.indexOf(t.name) == -1 && check_tag(t)? names.push(t.name): t)
     return names.sort()
 }
 

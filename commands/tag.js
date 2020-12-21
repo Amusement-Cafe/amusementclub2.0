@@ -246,8 +246,8 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
 
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
-    const tags = await fetchTagNames(ctx);
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
+    const tags = await fetchTagNames(ctx, arg);
     const pages = []
 
     tags.map((t, i) => {
@@ -261,9 +261,9 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
-        buttons: ['back', 'forward'],
+        buttons: ['first', 'back', 'forward', 'last'],
         embed: {
-            author: { name: `List of all tag names: ${tags.length} results` },
+            author: { name: `List of ${arg? `tags starting with "${arg}"`: 'all tag names' }: ${tags.length} results` },
             color: colors.blue,
         }
     })

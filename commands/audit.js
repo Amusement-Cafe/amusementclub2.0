@@ -8,12 +8,11 @@ const dateFormat                = require(`dateformat`)
 
 const {
     formatName,
-    mapUserCards,
-    parseArgs,
     withGlobalCards
 }   = require('../modules/card')
 
 const {
+    auditFetchUserTags,
     formatAucBidList,
     paginate_auditReports,
     paginate_guildtrslist,
@@ -141,6 +140,34 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
         }
     })
 })
+
+pcmd(['admin', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg) => {
+    if (ctx.msg.channel.id != ctx.audit.channel)
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+
+    if (!arg.ids)
+        return ctx.reply(user, `please submit a valid user ID`, 'red')
+
+    const auditedUser = await fetchOnly(arg.ids)
+    const userTags = await auditFetchUserTags(auditedUser)
+    const cardIDs = cards.map(x => x.id)
+    const tags = userTags.filter(x => cardIDs.includes(x.card))
+
+    if(tags.length === 0)
+        return ctx.reply(user, `cannot find tags for matching cards (${cards.length} cards matched)`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(tags.map(x => {
+            const card = ctx.cards[x.card]
+            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** ${x.status!='clear'? `(${x.status})`: ''} - ${formatName(card)}`
+        }, 10)),
+        switchPage: (data) => data.embed.description = `**${user.username}**, tags that ${auditedUser.username} created:\n\n${data.pages[data.pagenum]}`,
+        buttons: ['first', 'back', 'forward', 'last'],
+        embed: {
+            color: colors.blue,
+        }
+    })
+}))
 
 pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
@@ -372,17 +399,15 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
     })
 })
 
-pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], withGlobalCards(async (ctx, user, cards, arg) => {
     if (ctx.msg.channel.id != ctx.audit.channel)
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    
-    let arg = parseArgs(ctx, args)
+
     if (!arg.ids)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
     const findUser = await User.findOne({discord_id: arg.ids})
     const now = new Date()
-    const cards = mapUserCards(ctx, findUser).sort(arg.sort)
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (findUser.lastdaily || now)
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
@@ -392,4 +417,4 @@ pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${cards.length} results)` } }
     })
-})
+}))
