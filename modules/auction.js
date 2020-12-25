@@ -233,7 +233,6 @@ const format_auc = async(ctx, auc, author, doeval = true) => {
         resp.push(`Expires in **${msdiff > aucHide? timediff : '<5m'}**`)
     }
 
-
     return resp.join('\n')
 }
 
