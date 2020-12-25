@@ -188,10 +188,26 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'],
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
-    tag.status = 'clear'
-    await tag.save()
+        const target = await fetchOnly(tag.author)
+        if (tag.status === 'banned') {
+            target.ban = target.ban || {}
+            target.ban.tags = target.ban.tags - 1 || 0
+            target.markModified('ban')
+            await target.save()
 
-    return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
+            try {
+                await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been cleared by a moderator.
+            Your tag ban count has been lessened by 1.
+            You have **${3 - target.ban.tags}** warning(s) remaining`)
+            } catch {
+                ctx.reply(user, `failed to send a warning to the user.`, 'red')
+            }
+        }
+
+        tag.status = 'clear'
+        await tag.save()
+
+        return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'], 

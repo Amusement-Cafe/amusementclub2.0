@@ -189,7 +189,7 @@ pcmd(['admin'], ['sudo', 'hero', 'score'], async (ctx, user, arg) => {
     return ctx.reply(user, `${hero.name} has **${Math.round(score)}** points in current guild`)
 })
 
-pcmd(['admin'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+pcmd(['admin', 'mod'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
 
     return ctx.reply(user, {

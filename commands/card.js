@@ -349,7 +349,7 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 
 cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
-        return ctx.qhelp(ctx, user, 'draw')
+        return ctx.qhelp(ctx, user, 'fav')
 
     const card = bestMatch(cards)
 
