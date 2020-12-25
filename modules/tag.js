@@ -86,6 +86,32 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     return callback(ctx, user, card, tag, tgTag, parsedargs)
 }
 
+const withPurgeTag = (callback, tagPurge = true) => async(ctx, user, ...args) => {
+    const parsedargs = cardMod.parseArgs(ctx, args)
+
+    let fetchUser, tag, visible
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'tag')
+
+    if(parsedargs.isEmpty('ids') && !tagPurge) {
+        return ctx.reply(user, 'valid user is required')
+    } else if (!tagPurge) {
+        fetchUser = parsedargs.ids[0]
+    }
+
+
+    if(tagPurge) {
+        const tgTag = parsedargs.tags[0]
+        tag = await Tag.find({name: tgTag})
+        visible = tag.filter(x => check_tag(x)).reverse()
+    } else {
+        tag = await Tag.find({author: fetchUser})
+        visible = tag.filter(x => check_tag(x) && x.upvotes.length === 1).reverse()
+    }
+
+    return callback(ctx, user, visible, parsedargs)
+}
+
 module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
@@ -94,5 +120,6 @@ module.exports = Object.assign(module.exports, {
     new_tag,
     check_tag,
     withTag,
+    withPurgeTag,
     delete_tag,
 })

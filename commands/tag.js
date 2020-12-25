@@ -10,6 +10,7 @@ const {
 const { 
     new_tag,
     withTag,
+    withPurgeTag,
     fetchCardTags,
     delete_tag,
     fetchTagNames,
@@ -322,6 +323,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         resp.push(`Downvotes: **${tag.downvotes.length}**`)
         resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
         resp.push(`Status: **${tag.status}**`)
+        resp.push(`Date Created: **${tag._id.getTimestamp()}**`)
 
         const embed = {
             author: {name: `Info on tag #${tag.name}`},
@@ -336,7 +338,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
             pages, embed,
             buttons: ['back', 'forward'],
-            switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum]}
+            switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum] || "no upvotes Found"}
             })
 
 }))
@@ -363,4 +365,44 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
         }
     })
 })
+
+pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, visible, args) => {
+    let question = `Do you want to remove all tags with the name ${args.tags[0]}?`
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
+        question,
+        onConfirm: async (x) => {
+            let cardCount = visible.length
+            visible.map(async (tag) => {
+                tag.status = 'removed'
+                await tag.save()
+            })
+            ctx.reply(user, `removed tag ${args.tags[0]} from ${cardCount} cards.`)
+        },
+        onDecline: async (x) => {
+            ctx.reply(user, `tag purging was declined`, 'red')
+        }
+    })
+}))
+
+pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, visible, args) => {
+    let target = await fetchOnly(args.ids[0])
+    let question = `Do you want to remove all tags made by **${target.username}** with no upvotes?`
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
+        question,
+        onConfirm: async (x) => {
+            visible.map(async (tag) => {
+                    tag.status = 'removed'
+                    await tag.save()
+            })
+            ctx.reply(user, `removed all tags made by **${target.username}** with no upvotes`)
+        },
+        onDecline: async (x) => {
+            ctx.reply(user, `tag purging was declined`, 'red')
+        }
+    })
+}, false))
+
+
 
