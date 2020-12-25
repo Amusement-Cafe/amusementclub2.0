@@ -3,6 +3,7 @@ const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
 
 const userCountTTL = 5000
+const queueTick = 500
 const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
 const evalUserRate = 0.25
 const evalVialRate = 0.055
@@ -87,6 +88,8 @@ const getEval = (card, ownerCount, modifier = 1) => {
         * limitPriceGrowth((allUsers * evalUserRate) / ownerCount)) * modifier)
 }
 
+const getQueueTime = () => evalQueue.length * queueTick
+
 module.exports = {
     evalCard,
     evalCardFast,
@@ -94,4 +97,6 @@ module.exports = {
     pushUserCountUpdate,
     getVialCost,
     checkQueue,
+    getQueueTime,
+    queueTick,
 }

@@ -194,7 +194,7 @@ module.exports.create = async ({
     setInterval(qtick.bind({}, ctx), 1000)
     setInterval(htick.bind({}, ctx), 60000 * 2)
     setInterval(atick.bind({}, ctx), 600000)
-    setInterval(etick.bind({}, ctx), 500)
+    setInterval(etick.bind({}, ctx), eval.queueTick)
 
     if(dbl.token)
         connectDBL(ctx);

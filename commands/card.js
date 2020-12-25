@@ -18,7 +18,8 @@ const {
 
 const {
     evalCard, 
-    getVialCost
+    getVialCost,
+    getQueueTime,
 } = require('../modules/eval')
 
 const {
@@ -211,6 +212,16 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
 
 cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.excluded)
+
+    const evalTime = getQueueTime()
+    if(evalTime > 0 && parsedargs.evalQuery) {
+        ctx.reply(user, {
+            color: colors.yellow,
+            description: `current result might not be accurate because some of the cards are still processing their eval.
+                Please check in **${msToTime(evalTime)}** for more accurate results.`
+        })
+    }
+
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
         embed: {

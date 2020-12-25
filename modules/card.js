@@ -61,6 +61,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         me: false,
         bid: 0,
         fav: false,
+        evalQuery: false,
         userQuery: false,
     }
 
@@ -80,8 +81,14 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
                 case '>star': q.sort = (a, b) => b.level - a.level; break
-                case '<eval': q.sort = (a, b) => evalCardFast(a) - evalCardFast(b); break
-                case '>eval': q.sort = (a, b) => evalCardFast(b) - evalCardFast(a); break
+                case '<eval': 
+                    q.sort = (a, b) => evalCardFast(a) - evalCardFast(b)
+                    q.evalQuery = true
+                    break
+                case '>eval': 
+                    q.sort = (a, b) => evalCardFast(b) - evalCardFast(a)
+                    q.evalQuery = true
+                    break
                 case '<rating': 
                     q.sort = (a, b) => (a.rating || 0) - (b.rating || 0)
                     q.userQuery = true
