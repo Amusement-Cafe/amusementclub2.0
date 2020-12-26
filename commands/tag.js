@@ -16,14 +16,17 @@ const {
     fetchTagNames,
     fetchUserTags,
     logTagAudit,
+    logTagAdd
 } = require('../modules/tag')
 
 const {
     formatName,
     withGlobalCards,
     bestMatch,
+    parseArgs,
 } = require('../modules/card')
 const card = require('../modules/card')
+const {parseAuditArgs} = require("../modules/audit");
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
@@ -65,12 +68,15 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
         if(tgTag.length < 2)
             return ctx.reply(user, `tag can't be shorter than **2** characters`, 'red') 
     }
+    let question = `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`
+    console.log(parsedargs)
+    if (parsedargs.firstTag)
+        question = question + `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
         force: ctx.globals.force,
-        question: `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`,
-
+        question,
         onConfirm: async (x) => {
             tag = tag || await new_tag(user, tgTag, card)
 
@@ -381,7 +387,6 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
 pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, visible, args) => {
     let question = `Do you want to remove all tags with the name ${args.tags[0]}?`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        force: ctx.globals.force,
         question,
         onConfirm: async (x) => {
             let cardCount = visible.length
@@ -401,7 +406,6 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, 
     let target = await fetchOnly(args.ids[0])
     let question = `Do you want to remove all tags made by **${target.username}** with no upvotes?`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        force: ctx.globals.force,
         question,
         onConfirm: async () => {
             await visible.map(async (tag, i) => {
@@ -417,6 +421,49 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, 
         }
     })
 }, false))
+
+pcmd(['admin', 'mod'], ['tag', 'log', 'removed'],async (ctx, user, ...args) => {
+    let parsedArgs = parseAuditArgs(ctx, args)
+
+    if (!parsedArgs.id)
+        return ctx.reply(user, 'valid user is required!', 'red')
+
+    let target = await fetchOnly(parsedArgs.id)
+
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to add **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log?`,
+        onConfirm: async () => {
+            let auditlog = await logTagAdd(ctx, user, target, parsedArgs, false)
+            await auditlog.save()
+            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log`)
+        },
+        onDecline: async () => {
+            ctx.reply(user, `tag log adding was declined`, 'red')
+        }
+    })
+})
+
+pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
+    let parsedArgs = parseAuditArgs(ctx, args)
+
+    if (!parsedArgs.id)
+        return ctx.reply(user, 'valid user is required!', 'red')
+
+    let target = await fetchOnly(parsedArgs.id)
+
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to add **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log?`,
+        onConfirm: async () => {
+            let auditlog = await logTagAdd(ctx, user, target, parsedArgs, true)
+            await auditlog.save()
+            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log`)
+        },
+        onDecline: async () => {
+            ctx.reply(user, `tag log adding was declined`, 'red')
+        }
+    })
+})
+
 
 
 

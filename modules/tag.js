@@ -3,6 +3,7 @@ const {Tag, AuditTags}      = require('../collections')
 const cardMod               = require('./card')
 const colors                = require("../utils/colors");
 const dateFormat            = require(`dateformat`)
+const {fetchOnly}           = require('../modules/user')
 
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
@@ -86,6 +87,10 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
     if(forceFind && !tag)
         return ctx.reply(user, `tag #${tgTag} wasn't found for ${cardMod.formatName(card)}`, 'red')
 
+    const priorTags = await Tag.findOne({author: user.discord_id, status: 'clear'})
+    if (!priorTags)
+        parsedargs.firstTag = true
+
     return callback(ctx, user, card, tag, tgTag, parsedargs)
 }
 
@@ -125,14 +130,15 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
     let baseEmbed = {
         author: { name: `Tag Log for ${targetUser.username}(${targetUser.discord_id}}` },
         fields: [
-             {
-                name: "Removed",
-                value: 'N/A'
-            },
             {
                 name: "Banned",
                 value: 'N/A'
+            },
+            {
+                name: "Removed",
+                value: 'N/A'
             }
+
         ],
         footer: {
             text: `Last edited by ${user.username} at ${dateFormat(now, "yyyy-mm-dd HH:MM:ss")}`
@@ -148,7 +154,7 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
     let validBanned = !(log.tagsBanned.length === 0)
     let banned = validBanned? log.tagsBanned: []
     let removed = validRemoved? log.tagsRemoved: []
-    let validChange = asdate.add(log.last_edited, 5, 'seconds') < now
+    let validChange = asdate.add(log.last_edited, 3, 'seconds') < now
     if (log && !restore) {
         if (ban && !log.tagsBanned.includes(tag)) {
             banned.push(tag)
@@ -163,8 +169,8 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
         }
 
         if (change) {
-            validRemoved? baseEmbed.fields[0].value = formatAuditTags(removed): baseEmbed.fields[0].value="N/A"
-            validBanned? baseEmbed.fields[1].value = formatAuditTags(banned): baseEmbed.fields[1].value="N/A"
+            validRemoved? baseEmbed.fields[1].value = formatAuditTags(removed): baseEmbed.fields[1].value="N/A"
+            validBanned? baseEmbed.fields[0].value = formatAuditTags(banned): baseEmbed.fields[0].value="N/A"
             log.tagsRemoved = removed
             log.tagsBanned = banned
             log.last_edited = now
@@ -188,8 +194,8 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
         validBanned = !(banned.length === 0)
 
         if (change) {
-            !validRemoved? baseEmbed.fields[0].value="N/A": baseEmbed.fields[0].value = formatAuditTags(removed)
-            !validBanned? baseEmbed.fields[1].value="N/A": baseEmbed.fields[1].value = formatAuditTags(banned)
+            !validRemoved? baseEmbed.fields[1].value="N/A": baseEmbed.fields[1].value = formatAuditTags(removed)
+            !validBanned? baseEmbed.fields[0].value="N/A": baseEmbed.fields[0].value = formatAuditTags(banned)
             log.tagsRemoved = removed
             log.tagsBanned = banned
 
@@ -213,7 +219,7 @@ const newAuditTag = async (ctx, user, tag, target, ban, embed, now) => {
     auditTag.commandRunner = user.discord_id
     auditTag.last_edited = now
     ban? auditTag.tagsBanned.push(tag): auditTag.tagsRemoved.push(tag)
-    ban? embed.fields[1].value = tag: embed.fields[0].value = tag
+    ban? embed.fields[0].value = tag: embed.fields[1].value = tag
 
     let newMessage = await ctx.send(ctx.audit.taglogchannel, embed)
 
@@ -236,6 +242,32 @@ const formatAuditTags = (tagList) =>{
     return text
 }
 
+const logTagAdd = async (ctx, user, target, parsedArgs,  ban) => {
+    let tagLog = await AuditTags.findOne({affectedUser: target.discord_id})
+    if (!tagLog) {
+        let lastTag = parsedArgs.extraArgs.pop()
+        let tagLog = await logTagAudit(ctx, user, lastTag, ban, target)
+        if (parsedArgs.extraArgs.length === 0)
+            return tagLog
+    }
+    let tags = []
+    parsedArgs.extraArgs.map((x, i) => {
+        let lastItem = i === (parsedArgs.extraArgs.length - 1)
+        if (lastItem)
+            tags.push(x)
+        if (!tagLog.tagsBanned.includes(x) && ban && !lastItem)
+            tagLog.tagsBanned.push(x)
+        if (!tagLog.tagsRemoved.includes(x) && !ban && !lastItem)
+            tagLog.tagsRemoved.push(x)
+    })
+    if (ban)
+        tagLog.markModified('tagsBanned')
+    else
+        tagLog.markModified('tagsRemoved')
+    await tagLog.save()
+    return await logTagAudit(ctx, user, tags[0], ban, target)
+}
+
 module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
@@ -247,4 +279,5 @@ module.exports = Object.assign(module.exports, {
     withPurgeTag,
     delete_tag,
     logTagAudit,
+    logTagAdd
 })
