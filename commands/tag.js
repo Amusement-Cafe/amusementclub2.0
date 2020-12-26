@@ -1,6 +1,7 @@
-const {cmd, pcmd}   = require('../utils/cmd')
-const colors        = require('../utils/colors')
-const Tag           = require('../collections/tag')
+const {cmd, pcmd}       = require('../utils/cmd')
+const colors            = require('../utils/colors')
+const Tag               = require('../collections/tag')
+const {parseAuditArgs}  = require("../modules/audit");
 
 const {
     fetchOnly,
@@ -23,10 +24,7 @@ const {
     formatName,
     withGlobalCards,
     bestMatch,
-    parseArgs,
 } = require('../modules/card')
-const card = require('../modules/card')
-const {parseAuditArgs} = require("../modules/audit");
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)

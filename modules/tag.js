@@ -3,7 +3,6 @@ const {Tag, AuditTags}      = require('../collections')
 const cardMod               = require('./card')
 const colors                = require("../utils/colors");
 const dateFormat            = require(`dateformat`)
-const {fetchOnly}           = require('../modules/user')
 
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
