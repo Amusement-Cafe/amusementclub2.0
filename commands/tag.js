@@ -15,6 +15,7 @@ const {
     delete_tag,
     fetchTagNames,
     fetchUserTags,
+    logTagAudit,
 } = require('../modules/tag')
 
 const {
@@ -259,21 +260,27 @@ cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) =>
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
-    tag.status = 'removed'
-    await tag.save()
+        const targetUser = await fetchOnly(tag.author)
+        let log = await logTagAudit(ctx, user, tgTag, false, targetUser)
+        tag.status = 'removed'
+        await tag.save()
+        await log.save()
 
-    return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
+        return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
         const target = await fetchOnly(tag.author)
+
         if (tag.status === 'banned') {
             target.ban = target.ban || {}
             target.ban.tags = target.ban.tags - 1 || 0
             target.markModified('ban')
             await target.save()
+            let log = await logTagAudit(ctx, user, tgTag, true, target, true)
+            await log.save()
 
             try {
                 await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been cleared by a moderator.
@@ -282,7 +289,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'],
             } catch {
                 ctx.reply(user, `failed to send a warning to the user.`, 'red')
             }
+        } else{
+            await logTagAudit(ctx, user, tgTag, false, target, true)
         }
+
 
         tag.status = 'clear'
         await tag.save()
@@ -300,6 +310,8 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
     target.markModified('ban')
     await tag.save()
     await target.save()
+    let log = await logTagAudit(ctx, user, tgTag, true, target)
+    await log.save()
 
     try {
         await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
@@ -323,7 +335,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         resp.push(`Downvotes: **${tag.downvotes.length}**`)
         resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
         resp.push(`Status: **${tag.status}**`)
-        resp.push(`Date Created: **${tag._id.getTimestamp()}**`)
+        resp.push(`Date Created: **${dateFormat(tag._id.getTimestamp(), "yyyy-mm-dd HH:MM:ss")}**`)
 
         const embed = {
             author: {name: `Info on tag #${tag.name}`},
@@ -391,14 +403,16 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
         question,
-        onConfirm: async (x) => {
-            visible.map(async (tag) => {
+        onConfirm: async () => {
+            await visible.map(async (tag, i) => {
                     tag.status = 'removed'
                     await tag.save()
             })
+            let log = await logTagAudit(ctx, user, '**User Purged**', false, target)
+            await log.save()
             ctx.reply(user, `removed all tags made by **${target.username}** with no upvotes`)
         },
-        onDecline: async (x) => {
+        onDecline: async () => {
             ctx.reply(user, `tag purging was declined`, 'red')
         }
     })

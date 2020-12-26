@@ -1,5 +1,8 @@
-const {Tag}     = require('../collections')
-const cardMod   = require('./card')
+const asdate                = require('add-subtract-date')
+const {Tag, AuditTags}      = require('../collections')
+const cardMod               = require('./card')
+const colors                = require("../utils/colors");
+const dateFormat            = require(`dateformat`)
 
 const fetchTaggedCards = async (tags) => {
     const res = await Tag.find({ name: { $in: tags }})
@@ -112,6 +115,127 @@ const withPurgeTag = (callback, tagPurge = true) => async(ctx, user, ...args) =>
     return callback(ctx, user, visible, parsedargs)
 }
 
+const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
+    let log = await AuditTags.findOne({affectedUser: targetUser.discord_id})
+
+    if (restore && !log || !ctx.audit.taglogchannel)
+        return
+
+    let now = new Date()
+    let baseEmbed = {
+        author: { name: `Tag Log for ${targetUser.username}(${targetUser.discord_id}}` },
+        fields: [
+             {
+                name: "Removed",
+                value: 'N/A'
+            },
+            {
+                name: "Banned",
+                value: 'N/A'
+            }
+        ],
+        footer: {
+            text: `Last edited by ${user.username} at ${dateFormat(now, "yyyy-mm-dd HH:MM:ss")}`
+        },
+        color: colors.green
+    }
+
+    if (!log && !restore)
+        return await newAuditTag(ctx, user, tag, targetUser, ban, baseEmbed, now)
+
+    let change = false
+    let validRemoved = !(log.tagsRemoved.length === 0)
+    let validBanned = !(log.tagsBanned.length === 0)
+    let banned = validBanned? log.tagsBanned: []
+    let removed = validRemoved? log.tagsRemoved: []
+    let validChange = asdate.add(log.last_edited, 5, 'seconds') < now
+    if (log && !restore) {
+        if (ban && !log.tagsBanned.includes(tag)) {
+            banned.push(tag)
+            validBanned = true
+            change = true
+        }
+
+        if (!ban && !log.tagsRemoved.includes(tag)) {
+            tag === '**User Purged**'? removed=['**User Purged**']: removed.push(tag)
+            validRemoved = true
+            change = true
+        }
+
+        if (change) {
+            validRemoved? baseEmbed.fields[0].value = formatAuditTags(removed): baseEmbed.fields[0].value="N/A"
+            validBanned? baseEmbed.fields[1].value = formatAuditTags(banned): baseEmbed.fields[1].value="N/A"
+            log.tagsRemoved = removed
+            log.tagsBanned = banned
+            log.last_edited = now
+            if (validChange)
+                await ctx.bot.editMessage(ctx.audit.taglogchannel, log.message_id, {embed: baseEmbed})
+            return log
+        }
+    }
+
+    if (restore) {
+        if (ban && banned.includes(tag)) {
+            banned = banned.filter(x => x !== tag)
+            change = true
+        }
+
+        if (!ban && removed.includes(tag)) {
+            removed = removed.filter(x => x !== tag)
+            change = true
+        }
+        validRemoved = !(removed.length === 0)
+        validBanned = !(banned.length === 0)
+
+        if (change) {
+            !validRemoved? baseEmbed.fields[0].value="N/A": baseEmbed.fields[0].value = formatAuditTags(removed)
+            !validBanned? baseEmbed.fields[1].value="N/A": baseEmbed.fields[1].value = formatAuditTags(banned)
+            log.tagsRemoved = removed
+            log.tagsBanned = banned
+
+            if (!validRemoved && !validBanned) {
+                await ctx.bot.deleteMessage(ctx.audit.taglogchannel, log.message_id)
+                await AuditTags.deleteOne({affectedUser: targetUser.discord_id})
+                return log
+            } else {
+                if (validChange)
+                    await ctx.bot.editMessage(ctx.audit.taglogchannel, log.message_id, {embed: baseEmbed})
+                return log
+            }
+
+        }
+    }
+}
+
+const newAuditTag = async (ctx, user, tag, target, ban, embed, now) => {
+    const auditTag = await new AuditTags()
+    auditTag.affectedUser = target.discord_id
+    auditTag.commandRunner = user.discord_id
+    auditTag.last_edited = now
+    ban? auditTag.tagsBanned.push(tag): auditTag.tagsRemoved.push(tag)
+    ban? embed.fields[1].value = tag: embed.fields[0].value = tag
+
+    let newMessage = await ctx.send(ctx.audit.taglogchannel, embed)
+
+    auditTag.message_id = newMessage.id
+    return auditTag
+}
+
+const formatAuditTags = (tagList) =>{
+    let text = ''
+    let amount = 0
+    tagList.map((x, i) => {
+        if (i >= 10)
+            amount += 1
+        else if (i === (tagList.length - 1))
+            text += `${x}`
+        else
+            text += `${x}, `
+    })
+    text += amount>0 ? `and ${amount} more`: ''
+    return text
+}
+
 module.exports = Object.assign(module.exports, {
     fetchTaggedCards,
     fetchCardTags,
@@ -122,4 +246,5 @@ module.exports = Object.assign(module.exports, {
     withTag,
     withPurgeTag,
     delete_tag,
+    logTagAudit,
 })

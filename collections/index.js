@@ -9,4 +9,5 @@ module.exports = {
     Cardinfo: require('./cardinfo'),
     Audit: require('./audit'),
     AuditAucSell: require('./auditAucSell'),
+    AuditTags: require('./auditTag'),
 }
