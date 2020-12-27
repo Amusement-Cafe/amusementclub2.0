@@ -343,7 +343,6 @@ const removeRating = async (id, rating) => {
     info.ratingsum -= rating
     info.usercount--
     await info.save()
-    
 }
 
 module.exports = Object.assign(module.exports, {

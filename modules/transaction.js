@@ -1,7 +1,13 @@
-const {Auction, Audit, User, Transaction}   = require('../collections')
-const {generateNextId} = require('../utils/tools')
 const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
+
+const {
+    User, Transaction
+}   = require('../collections')
+
+const {
+    generateNextId
+} = require('../utils/tools')
 
 const {
     addUserCard, 
@@ -12,10 +18,6 @@ const {
 const {
     completed
 } = require('./collection')
-
-const {
-    bulkIncrementUserCount
-} = require('./eval')
 
 const new_trs = async (ctx, user, cards, price, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
@@ -137,10 +139,10 @@ const confirm_trs = async (ctx, user, trs_id) => {
     })*/
 
     if(to_user) {
-        return ctx.reply(from_user, `sold **${transaction.cards.length} cards** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
+        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
     }
 
-    return ctx.reply(user, `sold **${transaction.cards.length} cards** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
+    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
 }
 
 const decline_trs = async (ctx, user, trs_id) => {
@@ -167,6 +169,49 @@ const check_trs = async (ctx, user, target) => {
     return await Transaction.find({ from_id: user.discord_id, status: 'pending', to_id: target })
 }
 
+const validate_trs = async (ctx, user, cards, id, targetuser) => {
+    if(user.ban && user.ban.embargo)
+        return `you are not allowed to sell cards.
+                Your dealings were found to be in violation of our community rules.
+                You can inquire further on our [Bot Discord](${ctx.cafe})`
+    
+    if(!ctx.msg.channel.guild)
+        return `transactions are possible only in guild channel`
+
+    const pending = await getPendingFrom(ctx, user)
+    const pendingto = pending.filter(x => x.to_id === id)
+    cards.splice(25, cards.length)
+
+    if(targetuser && targetuser.discord_id === user.discord_id) {
+        return `you cannot sell cards to yourself.`
+    }
+
+    if(!targetuser && pendingto.length > 0)
+        return `you already have pending transaction to **BOT**. 
+            First resolve transaction \`${pending[0].id}\`
+            Type \`->trans info ${pending[0].id}\` to see more information
+            \`->confirm ${pending[0].id}\` to confirm
+            \`->decline ${pending[0].id}\` to decline`
+
+    else if(pendingto.length >= 5)
+        return `you already have pending transactions to **${pendingto[0].to}**. 
+            You can have up to **5** pending transactions to the same user.
+            Type \`->pending\` to see them
+            \`->decline [id]\` to decline`
+
+    if(pending.length > 0) {
+        const pengingCards = pending.reduce((acc, cur) => acc.concat(cur.cards), [])
+        cards = cards.filter(x => !pengingCards.some(x => x == cards[0].id))
+
+        if(cards.length == 0) {
+            return `all cards from this query are already put up on sale.
+                Check your \`${ctx.prefix}pending\` transactions and use \`->dcl [transaction id]\` to decline them.`
+        }
+    }
+
+    // TODO: warn about fav sells
+}
+
 const paginate_trslist = (ctx, user, list) => {
     const pages = []
     list.map((t, i) => {
@@ -182,7 +227,7 @@ const format_listtrs = (ctx, user, trans) => {
     const timediff = msToTime(new Date() - trans.time, {compact: true})
     const isget = trans.from_id != user.discord_id
 
-    resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${trans.cards.length} cards`
+    resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${trans.cards.length} card(s)`
     resp += isget ? ` \`<-\` **${trans.from}**` : ` \`->\` **${trans.to}**`;
     return resp;
 }
@@ -215,6 +260,7 @@ module.exports = {
     confirm_trs,
     decline_trs,
     check_trs,
+    validate_trs,
     format_listtrs,
     paginate_trslist,
     ch_map,

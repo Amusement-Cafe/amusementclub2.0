@@ -28,6 +28,7 @@ const {
     new_trs,
     confirm_trs,
     decline_trs,
+    validate_trs,
     getPendingFrom
 } = require('../modules/transaction')
 
@@ -240,64 +241,17 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
-    if(user.ban && user.ban.embargo)
-        return ctx.reply(user, `you are not allowed to sell cards.
-                                Your dealings were found to be in violation of our community rules.
-                                You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
-
-    let id = parsedargs.ids[0]
-    const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to_id === id)
-    const targetuser = id? await fetchOnly(id) : null
-
-    if(targetuser && targetuser.discord_id === user.discord_id) {
-        return ctx.reply(user, `you cannot sell cards to yourself.`, 'red')
-    }
-
-    if(!targetuser && pendingto.length > 0)
-        return ctx.reply(user, `you already have pending transaction to **BOT**. 
-            First resolve transaction \`${pending[0].id}\`
-            Type \`->trans info ${pending[0].id}\` to see more information
-            \`->confirm ${pending[0].id}\` to confirm
-            \`->decline ${pending[0].id}\` to decline`, 'red')
-    else if(pendingto.length >= 5)
-        return ctx.reply(user, `you already have pending transactions to **${pendingto[0].to}**. 
-            You can have up to **5** pending transactions to the same user.
-            Type \`->pending\` to see them
-            \`->decline [id]\` to decline`, 'red')
-
-    cards = cards.filter(x => !pending.some(y => y.card === x.id))
-    if(cards.length === 0) {
-        return ctx.reply(user, `cannot find unique cards for this request.
-            You cannot put the same card for sale several times`, 'red')
+    const id = parsedargs.ids[0]
+    const targetuser = id? await User.findOne({ discord_id: to_id }) : null
+    const err = await validate_trs(ctx, user, cards, id, targetuser)
+    if(err) {
+        return ctx.reply(user, err, 'red')
     }
 
     const card = bestMatch(cards)
-    const usercard = user.cards.find(x => x.id === card.id)
-
-    if(pending.length > 0) {
-        const cursales = pending.filter(x => x.card === card.id)
-        const diff = usercard.amount - cursales.length
-        if(diff <= 0)
-            return ctx.reply(user, `you cannot put up more sales of this card. 
-                You have **${cursales.length}** copies that are already on sale (${cursales.map(x => `\`${x.id}\``).join(' | ')})`, 'red')
-        else if(diff === 1 && usercard.fav)
-            return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
-                Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
-    }
-
-    if(usercard.fav && usercard.amount === 1) {
-        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
-            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
-    }
-
-    if(!ctx.msg.channel.guild)
-        return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
-
     const perms = { confirm: [id], decline: [user.discord_id, id] }
-
     const price = await evalCard(ctx, card, targetuser? 1 : .4)
-    const trs = await new_trs(ctx, user, card, price, targetuser? targetuser.discord_id : null)
+    const trs = await new_trs(ctx, user, [card], price, targetuser? targetuser.discord_id : null)
 
     let question = ""
     if(trs.to != 'bot') {
@@ -321,68 +275,20 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
-    if(user.ban && user.ban.embargo)
-        return ctx.reply(user, `you are not allowed to sell cards.
-                                Your dealings were found to be in violation of our community rules.
-                                You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
-
-    let id = parsedargs.ids[0]
-    const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to_id === id)
-    const targetuser = id? await fetchOnly(id) : null
-    cards.splice(25, cards.length)
-
-    if(targetuser && targetuser.discord_id === user.discord_id) {
-        return ctx.reply(user, `you cannot sell cards to yourself.`, 'red')
+    const id = parsedargs.ids[0]
+    const targetuser = id? await User.findOne({ discord_id: to_id }) : null
+    const err = await validate_trs(ctx, user, cards, id, targetuser)
+    if(err) {
+        return ctx.reply(user, err, 'red')
     }
-
-    if(!targetuser && pendingto.length > 0)
-        return ctx.reply(user, `you already have pending transaction to **BOT**. 
-            First resolve transaction \`${pending[0].id}\`
-            Type \`->trans info ${pending[0].id}\` to see more information
-            \`->confirm ${pending[0].id}\` to confirm
-            \`->decline ${pending[0].id}\` to decline`, 'red')
-    else if(pendingto.length >= 5)
-        return ctx.reply(user, `you already have pending transactions to **${pendingto[0].to}**. 
-            You can have up to **5** pending transactions to the same user.
-            Type \`->pending\` to see them
-            \`->decline [id]\` to decline`, 'red')
-
-    //cards = cards.filter(x => !pending.some(y => y.card === x.id))
-    if(cards.length === 0) {
-        return ctx.reply(user, `cannot find unique cards for this request.
-            You cannot put the same card for sale several times`, 'red')
-    }
-
-    const card = bestMatch(cards)
-    /*const usercard = user.cards.find(x => x.id === card.id)
-
-    if(pending.length > 0) {
-        const cursales = pending.filter(x => x.card === card.id)
-        const diff = usercard.amount - cursales.length
-        if(diff <= 0)
-            return ctx.reply(user, `you cannot put up more sales of this card. 
-                You have **${cursales.length}** copies that are already on sale (${cursales.map(x => `\`${x.id}\``).join(' | ')})`, 'red')
-        else if(diff === 1 && usercard.fav)
-            return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
-                Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
-    }
-
-    if(usercard.fav && usercard.amount === 1) {
-        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
-            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
-    }*/
-
-    if(!ctx.msg.channel.guild)
-        return ctx.reply(user, `transactions are possible only in guild channel`, 'red')
 
     const perms = { confirm: [id], decline: [user.discord_id, id] }
 
     let price = 0
     cards.forEach(card => {
-        const eval = Math.round(evalCardFast(ctx, card) * (targetuser? 1 : .4))
+        const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
         if(eval >= 0) {
-            price += eval
+            price += Math.round(eval)
         } else {
             price = NaN
         }
@@ -406,7 +312,7 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         embed: { footer: { text: `ID: \`${trs.id}\`` } },
-        force: trs.to === 'bot'? ctx.globals.force : false,
+        force: ctx.globals.force,
         question,
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id),
