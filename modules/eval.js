@@ -2,11 +2,8 @@ const User      = require('../collections/user')
 const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
 
-const userCountTTL = 5000
+const userCountTTL = 360000
 const queueTick = 500
-const cardPrices = [ 30, 80, 150, 400, 1000, 2500 ]
-const evalUserRate = 0.25
-const evalVialRate = 0.055
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 const evalQueue = []
 
@@ -19,18 +16,18 @@ const evalCard = async (ctx, card, modifier = 1) => {
     }
     
     const ownerCount = await updateCardUserCount(ctx, card)
-    const price = getEval(card, ownerCount, modifier)
+    const price = getEval(ctx, card, ownerCount, modifier)
     return price === Infinity? 0 : price
 }
 
-const evalCardFast = (card) => {
-    let ownercount = Math.round(userCount * .5)
-    if(card.ownercount)
+const evalCardFast = (ctx, card) => {
+    if(card.ownercount > -1) {
         ownercount = card.ownercount
-    else
-        pushUserCountUpdate(card)
+        return getEval(ctx, card, ownercount)
+    }
 
-    return getEval(card, ownercount)
+    pushUserCountUpdate(card)
+    return -1
 }
 
 const updateCardUserCount = async (ctx, card, count) => {
@@ -48,9 +45,27 @@ const updateCardUserCount = async (ctx, card, count) => {
     return ownercount
 }
 
+const bulkIncrementUserCount = async (ctx, cardIds, inc = 1) => {
+    const operations = cardIds.filter(x => ctx.cards[x].ownercount).map(x => {
+        ctx.cards[x].ownercount += inc
+        return {
+            updateOne: {
+                filter: { id: x },
+                update: { $set: { ownercount: ctx.cards[x].ownercount }},
+                upsert: false,
+            }
+        }
+    })
+
+    if(operations.length > 0) {
+        await Cardinfo.bulkWrite(operations)
+    }
+}
+
 const pushUserCountUpdate = (card) => {
-    if(!evalQueue.includes(card))
+    if(!evalQueue.some(x => x.id == card.id)) {
         evalQueue.push(card)
+    }
 }
 
 const limitPriceGrowth = x => { 
@@ -66,7 +81,7 @@ const getVialCost = async (ctx, card, cardeval) => {
     if(cardeval === 0)
         return Infinity
 
-    let diff = cardeval / (cardPrices.slice().reverse()[card.level] * evalVialRate)
+    let diff = cardeval / (ctx.eval.cardPrices.slice().reverse()[card.level] * ctx.eval.evalVialRate)
     if(diff === Infinity) 
         diff = 0
 
@@ -82,10 +97,10 @@ const checkQueue = async (ctx) => {
     }
 }
 
-const getEval = (card, ownerCount, modifier = 1) => {
+const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
-    return Math.round(((cardPrices[card.level] + (card.animated? 100 : 0))
-        * limitPriceGrowth((allUsers * evalUserRate) / ownerCount)) * modifier)
+    return Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+        * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
 }
 
 const getQueueTime = () => evalQueue.length * queueTick
@@ -97,6 +112,7 @@ module.exports = {
     pushUserCountUpdate,
     getVialCost,
     checkQueue,
+    bulkIncrementUserCount,
     getQueueTime,
     queueTick,
 }

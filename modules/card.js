@@ -82,11 +82,11 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '<star': q.sort = (a, b) => a.level - b.level; break
                 case '>star': q.sort = (a, b) => b.level - a.level; break
                 case '<eval': 
-                    q.sort = (a, b) => evalCardFast(a) - evalCardFast(b)
+                    q.sort = (a, b) => evalCardFast(ctx, a) - evalCardFast(ctx, b)
                     q.evalQuery = true
                     break
                 case '>eval': 
-                    q.sort = (a, b) => evalCardFast(b) - evalCardFast(a)
+                    q.sort = (a, b) => evalCardFast(ctx, b) - evalCardFast(ctx, a)
                     q.evalQuery = true
                     break
                 case '<rating': 
@@ -335,6 +335,8 @@ const fetchInfo = async (id) => {
     return info
 }
 
+const fetchAllInfos = () => Cardinfo.find()
+
 const removeRating = async (id, rating) => {
     console.log(`removing rating ${id} ${rating}`)
     const info = await Cardinfo.findOne({id})
@@ -358,4 +360,5 @@ module.exports = Object.assign(module.exports, {
     withMultiQuery,
     fetchInfo,
     removeRating,
+    fetchAllInfos,
 })

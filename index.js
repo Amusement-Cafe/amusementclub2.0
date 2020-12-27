@@ -19,7 +19,8 @@ const {
     user,
     guild,
     hero,
-    eval
+    eval,
+    card,
 } = require('./modules')
 
 var userq = []
@@ -31,7 +32,8 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, invite, data, dbl, analytics
+        maintenance, invite, data, dbl, 
+        analytics, evalc
     }) => {
 
     const emitter = new Emitter()
@@ -52,8 +54,19 @@ module.exports.create = async ({
         })
     }
 
+    const fillCardOwnerCount = async (carddata) => {
+        const infos = await card.fetchAllInfos().select('ownercount id')
+        infos.map(x => {
+            if(x.ownercount > -1) {
+                carddata[x.id].ownercount = x.ownercount
+            }
+        })
+    }
+
     /* prefill in the urls */
     fillCardData(data.cards)
+    /* prefill in the card owner count */
+    fillCardOwnerCount(data.cards)
 
     const mongoUri = database
     const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true}
@@ -143,6 +156,7 @@ module.exports.create = async ({
         prefix,
         dbl,
         audit: auditc,
+        eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel: Mixpanel.init(analytics.mixpanel),
         settings: {
