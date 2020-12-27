@@ -122,8 +122,8 @@ const withPurgeTag = (callback, tagPurge = true) => async(ctx, user, ...args) =>
 const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
     let log = await AuditTags.findOne({affectedUser: targetUser.discord_id})
 
-    if (restore && !log || !ctx.audit.taglogchannel)
-        return
+    if ((restore && !log) || !ctx.audit.taglogchannel)
+        return false
 
     let now = new Date()
     let baseEmbed = {

@@ -268,7 +268,8 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'],
         let log = await logTagAudit(ctx, user, tgTag, false, targetUser)
         tag.status = 'removed'
         await tag.save()
-        await log.save()
+        if (log)
+            await log.save()
 
         return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
 }))
@@ -284,7 +285,8 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'],
             target.markModified('ban')
             await target.save()
             let log = await logTagAudit(ctx, user, tgTag, true, target, true)
-            await log.save()
+            if (log)
+                await log.save()
 
             try {
                 await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been cleared by a moderator.
@@ -315,7 +317,8 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
     await tag.save()
     await target.save()
     let log = await logTagAudit(ctx, user, tgTag, true, target)
-    await log.save()
+    if (log)
+        await log.save()
 
     try {
         await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
