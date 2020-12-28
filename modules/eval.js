@@ -78,6 +78,16 @@ const getVialCost = async (ctx, card, cardeval) => {
     if(!cardeval)
         cardeval = await evalCard(ctx, card)
 
+    return getVialCostFast(ctx, card, cardeval)
+}
+
+const getVialCostFast = (ctx, card, cardeval) => {
+    if(!cardeval)
+        cardeval = evalCardFast(ctx, card)
+
+    if(cardeval == -1)
+        return -1
+
     if(cardeval === 0)
         return Infinity
 
@@ -115,4 +125,5 @@ module.exports = {
     bulkIncrementUserCount,
     getQueueTime,
     queueTick,
+    getVialCostFast,
 }
