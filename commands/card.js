@@ -29,7 +29,6 @@ const {
     confirm_trs,
     decline_trs,
     validate_trs,
-    getPendingFrom
 } = require('../modules/transaction')
 
 const {
@@ -458,13 +457,43 @@ cmd('boost', 'boosts', (ctx, user) => {
     }
 
     const description = boosts.map(x => 
-        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\` (${x.cards.length} cards in pool)`).join('\n')
+        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim ${x.id}\`)`).join('\n')
 
     return ctx.send(ctx.msg.channel.id, {
         description,
         color: colors.blue,
         title: `Current boosts`
     }, user.discord_id)
+})
+
+cmd(['boost', 'info'], (ctx, user, args) => {
+    const now = new Date()
+    const id = args.split(' ')[0]
+    const boost = ctx.boosts.find(x => x.id === id)
+
+    if(!boost) {
+        return ctx.reply(user, `boost with ID \`${id}\` was not found.`, 'red')
+    }
+
+    const list = []
+    list.push(`Rate: **${boost.rate * 100}%**`)
+    list.push(`Cards in pool: **${boost.cards.length}**`)
+    list.push(`Command: \`${ctx.prefix}claim ${boost.id}\``)
+    list.push(`Expires in **${msToTime(boost.expires - now)}**`)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10),
+        switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
+        embed: {
+            author: { name: `${boost.name} boost` },
+            description: list.join('\n'),
+            color: colors.blue,
+            fields: [{
+                name: "You can get any of these cards:",
+                value: ""
+            }]
+        }
+    })
 })
 
 cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
