@@ -21,6 +21,7 @@ const {
     hero,
     eval,
     card,
+    webhooks,
 } = require('./modules')
 
 var userq = []
@@ -210,8 +211,10 @@ module.exports.create = async ({
     setInterval(atick.bind({}, ctx), 600000)
     setInterval(etick.bind({}, ctx), eval.queueTick)
 
-    if(dbl.token)
-        connectDBL(ctx);
+    webhooks.listen(ctx)
+
+    // if(dbl.token)
+    //     connectDBL(ctx);
     
     /* events */
     mongoose.connection.on('error', err => {

@@ -10,4 +10,5 @@ module.exports = {
     collection: require('./collection'),
     transaction: require('./transaction'),
     audit: require('./audit'),
+    webhooks: require('./webhooks'),
 }
