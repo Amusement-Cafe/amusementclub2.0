@@ -330,10 +330,13 @@ cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'fav')
 
-    const card = bestMatch(cards)
+    const unfaved = cards.filter(x => !x.fav)
+    let card = bestMatch(unfaved)
 
-    if(card.fav)
+    if(!card) {
+        card = bestMatch(cards)
         return ctx.reply(user, `card ${formatName(card)} is already marked as favourite`, 'red')
+    }
 
     user.cards[user.cards.findIndex(x => x.id == card.id)].fav = true
     user.markModified('cards')
@@ -369,11 +372,14 @@ cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) =
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
 
-    const card = bestMatch(cards)
+    const faved = cards.filter(x => x.fav)
+    let card = bestMatch(faved)
 
-    if(!card.fav)
+    if(!card) {
+        card = bestMatch(cards)
         return ctx.reply(user, `card ${formatName(card)} is not marked as favourite`, 'red')
-
+    }
+    
     user.cards[user.cards.findIndex(x => x.id == card.id)].fav = false
     user.markModified('cards')
     await user.save()
