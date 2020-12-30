@@ -1,12 +1,11 @@
 const Danbooru  = require('danbooru')
-const {Tag}     = require('../collections')
 
 const {
-    fetchInfo,
-} = require('./card')
+    Tag, 
+    Cardinfo
+} = require('../collections')
 
 const {
-    new_tag,
     fetchCardTags,
 } = require('./tag')
 
@@ -17,7 +16,7 @@ const getBooruPost = (ctx, booruID) => booru.posts(booruID)
 const getPostURL = (post) => booru.url(post.file_url)
 
 const setCardBooruData = async (ctx, cardID, post) => {
-    const info = await fetchInfo(cardID)
+    const info = fetchInfo(ctx, cardID)
     info.meta.booruid = post.id
     info.meta.booruscore = post.score
     info.meta.boorurating = post.rating
@@ -45,14 +44,29 @@ const setCardBooruData = async (ctx, cardID, post) => {
 }
 
 const setCardSource = async (ctx, cardID, source) => {
-    const info = await fetchInfo(cardID)
+    const info = fetchInfo(ctx, cardID)
     info.meta.source = source
     await info.save()
 }
+
+const fetchInfo = (ctx, id) => {
+    let info = ctx.cardInfos[id]
+    if(!info) {
+        info = new Cardinfo()
+        info.id = id
+        ctx.cardInfos[id] = info
+    }
+
+    return info
+}
+
+const fetchAllInfos = () => Cardinfo.find()
 
 module.exports = {
     getBooruPost,
     getPostURL,
     setCardBooruData,
     setCardSource,
+    fetchInfo,
+    fetchAllInfos,
 }

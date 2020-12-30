@@ -117,7 +117,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
     }
 
-    transaction.cards.map(x => removeUserCard(from_user, x))
+    transaction.cards.map(x => removeUserCard(ctx, from_user, x))
     await from_user.save()
     from_user.markModified('cards')
     await from_user.save()

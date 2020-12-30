@@ -2,6 +2,10 @@ const User      = require('../collections/user')
 const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
 
+const {
+    fetchInfo,
+} = require('./meta')
+
 const userCountTTL = 360000
 const queueTick = 500
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
@@ -21,9 +25,9 @@ const evalCard = async (ctx, card, modifier = 1) => {
 }
 
 const evalCardFast = (ctx, card) => {
-    if(card.ownercount > -1) {
-        ownercount = card.ownercount
-        return getEval(ctx, card, ownercount)
+    const info = fetchInfo(ctx, card.id)
+    if(info.ownercount > -1) {
+        return getEval(ctx, card, info.ownercount)
     }
 
     pushUserCountUpdate(card)
@@ -35,7 +39,7 @@ const updateCardUserCount = async (ctx, card, count) => {
         cards: { $elemMatch: { id: card.id }}, 
         lastdaily: { $gt: evalLastDaily }}))
 
-    const info = await Cardinfo.findOne({id: card.id}) || new Cardinfo()
+    const info = fetchInfo(ctx, card.id)
     const cachedCard = ctx.cards.find(x => x.id === card.id)
     info.id = card.id
     info.ownercount = ownercount

@@ -20,8 +20,8 @@ const {
     guild,
     hero,
     eval,
-    card,
     webhooks,
+    meta,
 } = require('./modules')
 
 var userq = []
@@ -38,6 +38,7 @@ module.exports.create = async ({
     }) => {
 
     const emitter = new Emitter()
+    const cardInfos = []
 
     const fillCardData = (carddata) => {
         data.cards = carddata.map((x, i) => {
@@ -56,11 +57,9 @@ module.exports.create = async ({
     }
 
     const fillCardOwnerCount = async (carddata) => {
-        const infos = await card.fetchAllInfos().select('ownercount id')
+        const infos = await meta.fetchAllInfos()
         infos.map(x => {
-            if(x.ownercount > -1) {
-                carddata[x.id].ownercount = x.ownercount
-            }
+            cardInfos[x.id] = x
         })
     }
 
@@ -147,6 +146,7 @@ module.exports.create = async ({
         effects: require('./staticdata/effects'),
         promos: data.promos,
         boosts: data.boosts,
+        cardInfos,
         filter,
         direct, /* DM reply function to the user */
         symbols,

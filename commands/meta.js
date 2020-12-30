@@ -22,13 +22,13 @@ const {
     getPostURL,
     setCardBooruData,
     setCardSource,
+    fetchInfo,
 } = require('../modules/meta')
 
 const {
     formatName,
     withGlobalCards,
     bestMatch,
-    fetchInfo,
 } = require('../modules/card')
 
 cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -41,7 +41,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const col = bestColMatch(ctx, card.col)
 
     const resp = []
-    const extrainfo = await fetchInfo(card.id)
+    const extrainfo = fetchInfo(ctx, card.id)
     const usercard = user.cards.find(x => x.id === card.id)
     const embed = { color: colors.blue, fields: [] }
 

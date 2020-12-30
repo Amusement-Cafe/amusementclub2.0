@@ -92,8 +92,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 if(!newcard)
                     return ctx.reply(user, `an error occured, please try again`, 'red')
 
-                removeUserCard(user, card1.id)
-                removeUserCard(user, card2.id)
+                removeUserCard(ctx, user, card1.id)
+                removeUserCard(ctx, user, card2.id)
                 await user.save()
 
                 addUserCard(user, newcard.id)
@@ -154,7 +154,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
             try {
                 user.vials += vials
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-                removeUserCard(user, card.id)
+                removeUserCard(ctx, user, card.id)
                 await updateUser(user, {
                     $inc: {'dailystats.liquify': 1}, 
                     $set: {vials: user.vials, cards: user.cards}
@@ -223,7 +223,7 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
             try {
                 user.vials += vials
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-                cards.map(c => removeUserCard(user, c.id))
+                cards.map(c => removeUserCard(ctx, user, c.id))
                 await updateUser(user, {
                     $inc: {'dailystats.liquify': cards.length}, 
                     $set: {vials: user.vials, cards: user.cards}

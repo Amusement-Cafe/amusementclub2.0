@@ -1,13 +1,11 @@
+const asdate = require('add-subtract-date')
+
 const {
     cap,
     tryGetUserID,
     nameSort,
     escapeRegex
 } = require('../utils/tools')
-
-const { 
-    Cardinfo 
-} = require('../collections')
 
 const { 
     bestColMatch, 
@@ -22,7 +20,9 @@ const {
     evalCardFast,
 } = require('./eval')
 
-const asdate = require('add-subtract-date')
+const { 
+    fetchInfo,
+} = require('./meta')
 
 const promoRarity = {
     halloween: '🎃',
@@ -190,7 +190,7 @@ const addUserCard = (user, cardID) => {
     return 1
 }
 
-const removeUserCard = (user, cardID) => {
+const removeUserCard = (ctx, user, cardID) => {
     const matched = user.cards.findIndex(x => x.id == cardID)
     const card = user.cards[matched]
     user.cards[matched].amount--
@@ -198,8 +198,7 @@ const removeUserCard = (user, cardID) => {
     user.markModified('cards')
 
     if(card.amount === 0 && card.rating) {
-        console.log("calling remove rating")
-        removeRating(cardID, card.rating)
+        removeRating(ctx, cardID, card.rating)
     }
 
     return user.cards[matched]? user.cards[matched].amount : 0
@@ -328,18 +327,9 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
-const fetchInfo = async (id) => {
-    let info = await Cardinfo.findOne({id})
-    info = info || (new Cardinfo())
-    info.id = id
-    return info
-}
-
-const fetchAllInfos = () => Cardinfo.find()
-
-const removeRating = async (id, rating) => {
+const removeRating = async (ctx, id, rating) => {
     console.log(`removing rating ${id} ${rating}`)
-    const info = await Cardinfo.findOne({id})
+    const info = fetchInfo(ctx, id)
     info.ratingsum -= rating
     info.usercount--
     await info.save()
@@ -359,5 +349,4 @@ module.exports = Object.assign(module.exports, {
     withMultiQuery,
     fetchInfo,
     removeRating,
-    fetchAllInfos,
 })

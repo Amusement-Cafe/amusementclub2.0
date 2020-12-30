@@ -37,7 +37,6 @@ const {
     withCards,
     withGlobalCards,
     bestMatch,
-    fetchInfo,
 } = require('../modules/card')
 
 const {
@@ -50,8 +49,8 @@ const {
 } = require('../modules/effect')
 
 const {
-    fetchOnly
-} = require('../modules/user')
+    fetchInfo,
+} = require('../modules/meta')
 
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
@@ -466,7 +465,7 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `please specify rating from 1 to 10`, 'red')
 
     const card = bestMatch(cards)
-    const info = await fetchInfo(card.id)
+    const info = fetchInfo(ctx, card.id)
     if(card.rating) {
         const oldrating = card.rating
         info.ratingsum -= oldrating
@@ -489,7 +488,7 @@ cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedarg
         return ctx.qhelp(ctx, user, 'rate')
 
     const card = bestMatch(cards)
-    const info = await fetchInfo(card.id)
+    const info = fetchInfo(ctx, card.id)
     if(card.rating) {
         const oldrating = card.rating
         user.cards.find(x => x.id === card.id).rating -= oldrating
