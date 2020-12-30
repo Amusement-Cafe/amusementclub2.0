@@ -7,5 +7,16 @@ module.exports = model('Cardinfo', {
     usercount:      { type: Number, default: 0 },
     ownercount:     { type: Number, default: -1 },
 
+    meta:           {
+                        booruid:        { type: Number },
+                        booruscore:     { type: Number },
+                        boorurating:    { type: String },
+                        
+                        artist:         { type: String },
+                        pixivid:        { type: String },
+                        source:         { type: String },
+                        image:          { type: String },
+                    },
+
     aucprices:      { type: Array, default: [] },
 })

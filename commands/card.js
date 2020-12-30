@@ -404,48 +404,6 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
     })
 })).access('dm')
 
-cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    if(parsedargs.isEmpty())
-        return ctx.qhelp(ctx, user, 'info')
-
-    const card = bestMatch(cards)
-    const price = await evalCard(ctx, card)
-    const tags = await fetchCardTags(card)
-    const col = bestColMatch(ctx, card.col)
-
-    const resp = []
-    const extrainfo = await fetchInfo(card.id)
-    const usercard = user.cards.find(x => x.id === card.id)
-    const embed = { color: colors.blue, fields: [] }
-
-    if(usercard) {
-        user.lastcard = card.id
-        await user.save()
-    }
-
-    resp.push(formatName(card))
-    resp.push(`Fandom: **${col.name}**`)
-    resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
-
-    if(extrainfo.ratingsum > 0)
-        resp.push(`Average Rating: **${(extrainfo.ratingsum / extrainfo.usercount).toFixed(2)}**`)
-
-    if(usercard && usercard.rating)
-        resp.push(`Your Rating: **${usercard.rating}**`)
-
-    if(card.added)
-        resp.push(`Added: **${dateFormat(card.added, "yyyy-mm-dd")}** (${msToTime(new Date() - card.added, {compact: true})})`)
-
-    resp.push(`ID: ${card.id}`)
-    embed.description = resp.join('\n')
-
-    if(tags && tags.length > 0) {
-        embed.fields.push({name: `Tags`, value: `#${tags.slice(0, 4).map(x => x.name).join('\n#')}${tags.length > 4? '\n...' : ''}`})
-    }
-
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
-}))
-
 cmd('boost', 'boosts', (ctx, user) => {
     const now = new Date()
     const boosts = ctx.boosts
