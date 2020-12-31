@@ -321,6 +321,9 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'eval')
+
     const card = bestMatch(cards)
     const price = await evalCard(ctx, card)
     const vials = await getVialCost(ctx, card, price)
@@ -329,6 +332,9 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'eval')
+
     let price = 0
     let vials = 0
     cards.map(card => {
@@ -354,6 +360,9 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'eval')
+
     let price = 0
     let vials = 0
     cards.map(card => {
@@ -566,4 +575,101 @@ cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedarg
     await info.save()
 
     return ctx.reply(user, `removed rating for ${formatName(card)}`)
+})).access('dm')
+
+cmd(['wish'], ['wishlist'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(user.wishlist.length === 0) {
+        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+    }
+
+    cards = cards.filter(x => user.wishlist.some(y => y === x.id))
+    if(cards.length === 0) {
+        return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
+    }
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(cards.map(x => `${formatName(x)}`), 15),
+        embed: { author: { name: `${user.username}, your wishlist (${cards.length} results)` } }
+    })
+})).access('dm')
+
+cmd(['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'wishlist')
+
+    const card = bestMatch(cards)
+    if(user.wishlist.some(x => x === card.id)) {
+        return ctx.reply(user, `you already have ${formatName(card)} in your wishlist.
+            To remove is use \`${ctx.prefix}wish remove [card]\``, 'red')
+    }
+
+    const userHasCard = user.cards.some(x => x.id === card.id)
+    user.wishlist.push(card.id)
+    await user.save()
+
+    return ctx.reply(user, `added ${formatName(card)} to the wishlist ${userHasCard? '(you own this card)' : ''}`)
+})).access('dm')
+
+cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'wishlist')
+
+    cards = cards.filter(x => !user.wishlist.some(y => y === x.id))
+
+    if(cards.length === 0)
+        return ctx.reply(user, `all cards from that request are already in your wishlist`, 'red')
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
+        question: `**${user.username}**, do you want add **${cards.length}** cards to your wishlist?`,
+        onConfirm: async (_x) => {
+            cards.map(c => {
+                user.wishlist.push(c.id)
+            })
+            await user.save()
+
+            return ctx.reply(user, `added **${cards.length}** cards to your wishlist`)
+        }
+    })
+})).access('dm')
+
+cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'wishlist')
+
+    if(user.wishlist.length === 0) {
+        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`, 'red')
+    }
+
+    const card = bestMatch(cards)
+    if(!user.wishlist.some(x => x === card.id)) {
+        return ctx.reply(user, `you don't have ${formatName(card)} in your wishlist`, 'red')
+    }
+
+    user.wishlist = user.wishlist.filter(x => x != card.id)
+    await user.save()
+
+    return ctx.reply(user, `removed ${formatName(card)} from your wishlist`)
+})).access('dm')
+
+cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => user.wishlist.some(y => y === x.id))
+
+    if(user.wishlist.length === 0) {
+        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`, 'red')
+    }
+
+    if(cards.length === 0)
+        return ctx.reply(user, `none of the requested cards are in your wishlist`, 'red')
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        force: ctx.globals.force,
+        question: `**${user.username}**, do you want remove **${cards.length}** cards from your wishlist?`,
+        onConfirm: async (_x) => {
+            user.wishlist = user.wishlist.filter(y => !cards.some(c => c.id === y))
+            await user.save()
+
+            return ctx.reply(user, `removed **${cards.length}** cards from your wishlist`)
+        }
+    })
 })).access('dm')
