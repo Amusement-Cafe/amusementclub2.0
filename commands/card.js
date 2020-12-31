@@ -22,6 +22,7 @@ const {
     getQueueTime,
     evalCardFast,
     bulkIncrementUserCount,
+    getVialCostFast,
 } = require('../modules/eval')
 
 const {
@@ -215,7 +216,8 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd(['ls', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
+    withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.excluded)
 
     const evalTime = getQueueTime()
@@ -326,6 +328,56 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         `card ${formatName(card)} is worth: **${price}** ${ctx.symbols.tomato} ${card.level < 4? `or **${vials}** ${ctx.symbols.vial}` : ``}`)
 }))
 
+cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    let price = 0
+    let vials = 0
+    cards.map(card => {
+        const eval = evalCardFast(ctx, card)
+        price += eval
+        if(card.level < 4) {
+            vials += getVialCostFast(ctx, card, eval)
+        }
+    })
+    
+    if(isNaN(price)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, {
+            color: colors.yellow,
+            description: `some of your cards are still processing their eval.
+                Please check in **${msToTime(evalTime)}** for more accurate results.`
+        }, 'yellow')
+    }
+
+    return ctx.reply(user, 
+        `request contains **${cards.length}** of your cards worth **${price}** ${ctx.symbols.tomato} 
+        ${vials > 0? `or **${vials}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
+}))
+
+cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let price = 0
+    let vials = 0
+    cards.map(card => {
+        const eval = evalCardFast(ctx, card)
+        price += eval
+        if(card.level < 4) {
+            vials += getVialCostFast(ctx, card, eval)
+        }
+    })
+    
+    if(isNaN(price)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, {
+            color: colors.yellow,
+            description: `some cards are still processing their eval.
+                Please check in **${msToTime(evalTime)}** for more accurate results.`
+        }, 'yellow')
+    }
+
+    return ctx.reply(user, 
+        `your request contains **${cards.length}** cards worth **${price}** ${ctx.symbols.tomato} 
+        ${vials > 0? `or **${vials}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
+}))
+
 cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'fav')
@@ -379,7 +431,7 @@ cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) =
         card = bestMatch(cards)
         return ctx.reply(user, `card ${formatName(card)} is not marked as favourite`, 'red')
     }
-    
+
     user.cards[user.cards.findIndex(x => x.id == card.id)].fav = false
     user.markModified('cards')
     await user.save()
