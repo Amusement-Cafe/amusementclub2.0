@@ -53,7 +53,7 @@ const from_auc = async (auc, from, to) => {
     
     transaction.status = 'auction'
     transaction.time = new Date()
-    transaction.card = auc.card
+    transaction.cards = [auc.card]
     transaction.price = auc.price
     transaction.guild_id = auc.guild
 
@@ -105,7 +105,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
                 auditDB.transprice =  transaction.price
                 auditDB.audited = false
                 auditDB.user = transaction.to
-                auditDB.card = ctx.cards[x].name
+                auditDB.card = x
                 await auditDB.save()
             }
         })

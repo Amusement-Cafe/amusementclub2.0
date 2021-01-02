@@ -257,7 +257,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
 
     try {
         await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
-            Please make sure you add valid tags in the future. Learn more with \`->help tag\`
+            Please make sure you add valid tags in the future as tags are not personal. Learn more with \`->rules\`
             You have **${3 - target.ban.tags}** warning(s) remaining`, 'red')
     } catch {
         ctx.reply(user, `failed to send a warning to the user.`, 'red')
