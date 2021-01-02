@@ -33,8 +33,8 @@ const fetchUserTags = async (user) => {
     return res.filter(x => check_tag(x)).reverse()
 }
 
-const new_tag = async (user, name, card) => {
-    tag = await new Tag()
+const new_tag = (user, name, card) => {
+    const tag = new Tag()
     tag.name = name
     tag.author = user.discord_id
     tag.card = card.id

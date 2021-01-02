@@ -55,6 +55,10 @@ const {
     check_effect
 } = require('../modules/effect')
 
+const {
+    getQueueTime,
+} = require('../modules/eval')
+
 cmd('bal', 'balance', (ctx, user) => {
     let max = 1
     const now = new Date()
@@ -245,6 +249,14 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
         const isnew = c.obtained > (user.lastdaily || now)
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
+
+    const evalTime = getQueueTime()
+    if(evalTime > 0 && parsedargs.evalQuery) {
+        ctx.reply(user, {
+            description: `current result might not be accurate because some of the cards are still processing their eval.
+                Please check in **${msToTime(evalTime)}** for more accurate results.`
+        }, 'yellow')
+    }
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),

@@ -1,13 +1,11 @@
+const asdate = require('add-subtract-date')
+
 const {
     cap,
     tryGetUserID,
     nameSort,
     escapeRegex
 } = require('../utils/tools')
-
-const { 
-    Cardinfo 
-} = require('../collections')
 
 const { 
     bestColMatch, 
@@ -18,7 +16,13 @@ const {
     fetchTaggedCards 
 } = require('./tag')
 
-const asdate = require('add-subtract-date')
+const { 
+    evalCardFast,
+} = require('./eval')
+
+const { 
+    fetchInfo,
+} = require('./meta')
 
 const promoRarity = {
     halloween: '🎃',
@@ -31,6 +35,7 @@ const promoRarity = {
     halloween19: '👻',
     christmas19: '☃️',
     birthday20: '🎈',
+    christmas20: '🎁',
 }
 
 const formatName = (x) => {
@@ -57,6 +62,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         me: false,
         bid: 0,
         fav: false,
+        evalQuery: false,
         userQuery: false,
     }
 
@@ -76,6 +82,14 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
                 case '>star': q.sort = (a, b) => b.level - a.level; break
+                case '<eval': 
+                    q.sort = (a, b) => evalCardFast(ctx, a) - evalCardFast(ctx, b)
+                    q.evalQuery = true
+                    break
+                case '>eval': 
+                    q.sort = (a, b) => evalCardFast(ctx, b) - evalCardFast(ctx, a)
+                    q.evalQuery = true
+                    break
                 case '<rating': 
                     q.sort = (a, b) => (a.rating || 0) - (b.rating || 0)
                     q.userQuery = true
@@ -176,7 +190,7 @@ const addUserCard = (user, cardID) => {
     return 1
 }
 
-const removeUserCard = (user, cardID) => {
+const removeUserCard = (ctx, user, cardID) => {
     const matched = user.cards.findIndex(x => x.id == cardID)
     const card = user.cards[matched]
     user.cards[matched].amount--
@@ -184,8 +198,7 @@ const removeUserCard = (user, cardID) => {
     user.markModified('cards')
 
     if(card.amount === 0 && card.rating) {
-        console.log("calling remove rating")
-        removeRating(cardID, card.rating)
+        removeRating(ctx, cardID, card.rating)
     }
 
     return user.cards[matched]? user.cards[matched].amount : 0
@@ -314,20 +327,12 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
-const fetchInfo = async (id) => {
-    let info = await Cardinfo.findOne({id})
-    info = info || (await new Cardinfo())
-    info.id = id
-    return info
-}
-
-const removeRating = async (id, rating) => {
+const removeRating = async (ctx, id, rating) => {
     console.log(`removing rating ${id} ${rating}`)
-    const info = await Cardinfo.findOne({id})
+    const info = fetchInfo(ctx, id)
     info.ratingsum -= rating
     info.usercount--
     await info.save()
-    
 }
 
 module.exports = Object.assign(module.exports, {

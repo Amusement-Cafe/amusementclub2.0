@@ -36,7 +36,7 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
         if(err)
             return reject(err)
 
-        removeUserCard(target, card.id)
+        removeUserCard(ctx, target, card.id)
         
         await target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}})
         await target.save()

@@ -60,10 +60,14 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
     const userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
     const card = _.sample(colCards)
     const clout = user.completedcols.find(x => x.id === col.id)
+    const colInfos = colCards.map(x => ctx.cardInfos[x.id]).filter(x => x)
+    const ratingSum = colInfos.reduce((acc, cur) => acc + cur.ratingsum, 0)
+    const ratingAvg = ratingSum / colInfos.reduce((acc, cur) => acc + cur.usercount, 0)
 
     const resp = []
     resp.push(`Overall cards: **${colCards.length}**`)
     resp.push(`You have: **${userCards.length} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
+    resp.push(`Average rating: **${ratingAvg.toFixed(2)}**`)
 
     if(clout && clout.amount > 0)
         resp.push(`Your clout: **${new Array(clout.amount + 1).join('★')}** (${clout.amount})`)

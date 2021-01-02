@@ -1,5 +1,6 @@
 const {cmd}     = require('../utils/cmd')
 const colors    = require('../utils/colors')
+const msToTime  = require('pretty-ms')
 const _         = require('lodash')
 
 const {
@@ -18,7 +19,9 @@ const {
 
 const {
     evalCard, 
-    getVialCost 
+    getVialCost,
+    getVialCostFast,
+    getQueueTime,
 } = require('../modules/eval')
 
 const {
@@ -89,8 +92,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 if(!newcard)
                     return ctx.reply(user, `an error occured, please try again`, 'red')
 
-                removeUserCard(user, card1.id)
-                removeUserCard(user, card2.id)
+                removeUserCard(ctx, user, card1.id)
+                removeUserCard(ctx, user, card2.id)
                 await user.save()
 
                 addUserCard(user, newcard.id)
@@ -130,9 +133,6 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     if(vials === Infinity)
         vials = 5
 
-    if(parsedargs.isEmpty())
-        return ctx.reply(user, `please specify a card`, 'red')
-
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
 
@@ -154,7 +154,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
             try {
                 user.vials += vials
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-                removeUserCard(user, card.id)
+                removeUserCard(ctx, user, card.id)
                 await updateUser(user, {
                     $inc: {'dailystats.liquify': 1}, 
                     $set: {vials: user.vials, cards: user.cards}
@@ -168,6 +168,124 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                     Please try again`, 'red')
             }
         },
+    })
+}))
+
+cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    const hub = getBuilding(ctx, 'smithhub')
+
+    //if(!hub || hub.level < 2)
+        //return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
+
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'liq')
+
+    cards.splice(25, cards.length)
+    
+    if(cards.some(x => x.level > 3))
+        return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
+    
+    if(cards.some(x => x.fav && x.amount === 1))
+        return ctx.reply(user, `you are about to liquify the last copy of your favourite card. 
+            Please, use \`->liq all !fav\` to include only non-favourite cards.`, 'yellow')
+
+    let vials = 0
+    cards.forEach(card => {
+        let cost = getVialCostFast(ctx, card)
+        if(cost >= 0) {
+            if(cost === Infinity)
+                cost = 5
+
+            if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+                cost += cost * .25
+
+            cost = Math.round(cost * .25)
+            vials += cost
+        } else {
+            vials = NaN
+        }
+    })
+
+    if(isNaN(vials)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, `some cards from this request need price evaluation.
+            Please try again in **${msToTime(evalTime)}**.`, 'yellow')
+    }
+
+    const question = `Do you want to liquify **${cards.length} card(s)** into **${vials}** ${ctx.symbols.vial}?
+        To view cards that are going to be liquified, use \`->liq preview [query]\``
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        force: ctx.globals.force,
+        embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
+        onConfirm: async (x) => { 
+            try {
+                user.vials += vials
+                user.dailystats.liquify = user.dailystats.liquify + 1 || 1
+                cards.map(c => removeUserCard(ctx, user, c.id))
+                await updateUser(user, {
+                    $inc: {'dailystats.liquify': cards.length}, 
+                    $set: {vials: user.vials, cards: user.cards}
+                })
+
+                ctx.reply(user, `${cards.length} cards were liquified. You got **${vials}** ${ctx.symbols.vial}
+                    You have **${user.vials}** ${ctx.symbols.vial}
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+            } catch(e) {
+                return ctx.reply(user, `an error occured while executing this command. 
+                    Please try again`, 'red')
+            }
+        },
+    })
+}))
+
+cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'liq')
+
+    cards.splice(25, cards.length)
+    
+    if(cards.some(x => x.level > 3))
+        return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
+
+    let vials = 0
+    const resp = cards.map(card => {
+        let cost = getVialCostFast(ctx, card)
+        if(cost >= 0) {
+            if(cost === Infinity)
+                cost = 5
+
+            if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+                cost += cost * .25
+
+            cost = Math.round(cost * .25)
+            vials += cost
+        } else {
+            vials = NaN
+        }
+
+        return {
+            cost,
+            cardname: `**${cost}** ${ctx.symbols.vial} - ${formatName(card)}`,
+        }
+    })
+
+    if(isNaN(vials)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, `some cards from this request need price evaluation.
+            Please try again in **${msToTime(evalTime)}**.`, 'yellow')
+    }
+
+    resp.sort((a, b) => b.cost - a.cost)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(resp.map(x => x.cardname), 10),
+        embed: {
+            author: { name: `Liquify preview (total ${vials} ${ctx.symbols.vial})` },
+            description: '',
+            color: colors.blue,
+        }
     })
 }))
 

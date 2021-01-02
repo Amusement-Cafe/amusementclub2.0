@@ -12,6 +12,11 @@
         "channel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
         "taglogchannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
     },
+    "evalc": {
+        "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],
+        "evalUserRate": 0.25,
+        "evalVialRate": 0.055
+    },
     "dbl": {
         "token": "",
         "port": 2727,

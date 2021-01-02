@@ -18,7 +18,10 @@ const {
     audit,
     user,
     guild,
-    hero
+    hero,
+    eval,
+    webhooks,
+    meta,
 } = require('./modules')
 
 var userq = []
@@ -30,10 +33,12 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, invite, data, dbl, analytics
+        maintenance, invite, data, dbl, 
+        analytics, evalc
     }) => {
 
     const emitter = new Emitter()
+    const cardInfos = []
 
     const fillCardData = (carddata) => {
         data.cards = carddata.map((x, i) => {
@@ -51,8 +56,17 @@ module.exports.create = async ({
         })
     }
 
+    const fillCardOwnerCount = async (carddata) => {
+        const infos = await meta.fetchAllInfos()
+        infos.map(x => {
+            cardInfos[x.id] = x
+        })
+    }
+
     /* prefill in the urls */
     fillCardData(data.cards)
+    /* prefill in the card owner count */
+    fillCardOwnerCount(data.cards)
 
     const mongoUri = database
     const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true}
@@ -118,6 +132,18 @@ module.exports.create = async ({
     const filter = new Filter()
     filter.addWords(...data.bannedwords)
 
+    let mixpanel = {
+        track: () => { }
+    }
+
+    if(analytics.mixpanel) {
+        try {
+            mixpanel = Mixpanel.init(analytics.mixpanel)
+        } catch(e) {
+            console.log(e)
+        }
+    }
+
     /* create our context */
     const ctx = {
         mcn, /* mongoose database connection */
@@ -132,6 +158,7 @@ module.exports.create = async ({
         effects: require('./staticdata/effects'),
         promos: data.promos,
         boosts: data.boosts,
+        cardInfos,
         filter,
         direct, /* DM reply function to the user */
         symbols,
@@ -142,8 +169,9 @@ module.exports.create = async ({
         prefix,
         dbl,
         audit: auditc,
+        eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
-        mixpanel: Mixpanel.init(analytics.mixpanel),
+        mixpanel,
         settings: {
             wip: maintenance,
         }
@@ -184,15 +212,21 @@ module.exports.create = async ({
         guild.clean_trans(ctx, now)
     }
 
+    const etick = () => {
+        eval.checkQueue(ctx)
+    }
+
     setInterval(tick.bind({}, ctx), 5000)
     setInterval(gtick.bind({}, ctx), 10000)
     setInterval(qtick.bind({}, ctx), 1000)
     setInterval(htick.bind({}, ctx), 60000 * 2)
     setInterval(atick.bind({}, ctx), 600000)
-    //setInterval(htick.bind({}, ctx), 6000)
+    setInterval(etick.bind({}, ctx), eval.queueTick)
 
-    if(dbl.token)
-        connectDBL(ctx);
+    webhooks.listen(ctx)
+
+    // if(dbl.token)
+    //     connectDBL(ctx);
     
     /* events */
     mongoose.connection.on('error', err => {

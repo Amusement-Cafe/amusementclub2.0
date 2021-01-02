@@ -129,7 +129,7 @@ pcmd(['admin', 'mod'], ['sudo', 'remove', 'card'], withGlobalCards(async (ctx, u
         throw new Error(`cannot find user with that ID`)
 
     const card = bestMatch(cards)
-    removeUserCard(target, card.id)
+    removeUserCard(ctx, target, card.id)
     await target.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from **${target.username}**`)

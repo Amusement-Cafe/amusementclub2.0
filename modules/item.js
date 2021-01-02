@@ -139,7 +139,7 @@ const uses = {
             eobject.cooldownends = new Date()
         }
 
-        item.cards.map(x => removeUserCard(user, x))
+        item.cards.map(x => removeUserCard(ctx, user, x))
         pullInventoryItem(user, item.id)
         user.effects.push(eobject)
         await user.save()

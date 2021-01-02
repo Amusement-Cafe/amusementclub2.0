@@ -16,6 +16,7 @@ module.exports = model('User', {
     completedcols:      { type: Array, default: [] },
     achievements:       { type: Array, default: [] },
     effects:            { type: Array, default: [] },
+    wishlist:           { type: Array, default: [] },
 
     lastdaily:          { type: Date },
     lastmsg:            { type: String },

@@ -31,10 +31,17 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
 
     const resp = []
     resp.push(`Card: **${formatName(card)}**`)
+
+    if(author) {
+        resp.push(`Author: **${author.username}**`)
+    } 
     resp.push(`Upvotes: **${tag.upvotes.length}**`)
     resp.push(`Downvotes: **${tag.downvotes.length}**`)
-    resp.push(`Author: **${author.username}**`)
     resp.push(`Status: **${tag.status}**`)
+
+    if(!author) {
+        resp.push(`**This tag was automatically added by the system**`)
+    } 
 
     return ctx.send(ctx.msg.channel.id, {
         title: `#${tag.name}`,
@@ -233,6 +240,11 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
     withTag(async (ctx, user, card, tag, tgTag) => {
 
     const target = await fetchOnly(tag.author)
+
+    if(!target) {
+        return ctx.reply(user, `cannot ban system added tag. Please use remove function.`, 'red')
+    }
+
     target.ban = target.ban || {}
     target.ban.tags = target.ban.tags + 1 || 1
     tag.status = 'banned'
