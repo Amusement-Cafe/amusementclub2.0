@@ -1,7 +1,8 @@
 const {cmd, pcmd}       = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const Tag               = require('../collections/tag')
-const {parseAuditArgs}  = require("../modules/audit");
+const {parseAuditArgs}  = require("../modules/audit")
+const dateFormat        = require('dateformat')
 
 const {
     fetchOnly,

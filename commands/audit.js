@@ -141,7 +141,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
     })
 })
 
-pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg) => {
+pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg, fullArgs) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -149,7 +149,8 @@ pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGloba
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
     const auditedUser = await fetchOnly(arg.ids)
-    const userTags = await auditFetchUserTags(auditedUser)
+    const auditArgs = parseAuditArgs(ctx, fullArgs)
+    const userTags = await auditFetchUserTags(auditedUser, auditArgs)
     const cardIDs = cards.map(x => x.id)
     const tags = userTags.filter(x => cardIDs.includes(x.card))
 
