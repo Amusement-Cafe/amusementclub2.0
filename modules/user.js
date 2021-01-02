@@ -59,9 +59,19 @@ const getQuest = (ctx, user, tier, exclude) => {
     
     const available = ctx.quests.daily.filter(x => 
         (!x.building || levels.includes(x.building))
-        && (!exclude || !x.id.includes(exclude.slice(0, -1)))
-        && x.tier === tier)
-    return _.sample(available)
+        && (!exclude || x.id != exclude)
+        && x.tier === tier
+        && x.id != 'tag2'
+        && x.id != 'tag4')
+
+    if(available.length > 0) {
+        return _.sample(available)
+    }
+    
+    return _.sample(ctx.quests.daily.filter(x => 
+        x.id != exclude
+        && x.id != 'tag2'
+        && x.id != 'tag4'))
 }
 
 module.exports = {

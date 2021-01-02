@@ -152,12 +152,12 @@
                 "price": 2000,
                 "level": 5,
                 "maintenance": 200,
-                "desc": "Adds 2 extra quests when users run daily in this guild"
+                "desc": "Adds a tier II quest when users run daily in this guild"
             }, {
                 "price": 20000,
                 "level": 27,
                 "maintenance": 1000,
-                "desc": "Allows to purchase quest lines (Not Implemented Currently)"
+                "desc": "Allows to purchase quest lines (Coming soon)"
             }
         ]
     }, {
