@@ -372,7 +372,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
         return ctx.reply(user, `seems like this character doesn't have any associated anime.
             Only characters with valid animeography are allowed`, 'red')
 
-    const media = char.media.find(x => x.format === 'TV' || x.format === 'MOVIE')
+    const media = char.media.find(x => x.type === 'ANIME')
     if(!media)
         return ctx.reply(user, `seems like this character doesn't have any associated anime.
             Only characters with valid animeography are allowed`, 'red')

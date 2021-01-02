@@ -138,7 +138,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
     })
 }))
 
-cmd('tags', ['tag', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 
@@ -163,14 +163,15 @@ cmd('tags', ['tag', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs
 
 cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const userTags = await fetchUserTags(user)
-    const tags = userTags.filter(x => cards.some(y => y.id === x.card))
+    const cardIDs = cards.map(x => x.id)
+    const tags = userTags.filter(x => cardIDs.includes(x.card))
 
     if(tags.length === 0)
         return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(tags.map(x => {
-            const card = cards.find(y => y.id === x.card)
+            const card = ctx.cards[x.card]
             return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
         }, 10)),  
         switchPage: (data) => data.embed.description = `**${user.username}**, tags you created:\n\n${data.pages[data.pagenum]}`,
@@ -193,10 +194,26 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'],
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
-    tag.status = 'clear'
-    await tag.save()
+        const target = await fetchOnly(tag.author)
+        if (tag.status === 'banned') {
+            target.ban = target.ban || {}
+            target.ban.tags = target.ban.tags - 1 || 0
+            target.markModified('ban')
+            await target.save()
 
-    return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
+            try {
+                await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been cleared by a moderator.
+            Your tag ban count has been lessened by 1.
+            You have **${3 - target.ban.tags}** warning(s) remaining`)
+            } catch {
+                ctx.reply(user, `failed to send a warning to the user.`, 'red')
+            }
+        }
+
+        tag.status = 'clear'
+        await tag.save()
+
+        return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'], 
@@ -256,24 +273,24 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
 
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user) => {
-    const tags = await fetchTagNames(ctx);
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
+    const tags = await fetchTagNames(ctx, arg);
     const pages = []
 
     tags.map((t, i) => {
-        if (i % 100 == 0) pages.push("")
+        if (i % 75 == 0) pages.push("")
         if ((i + 1) % 5 == 0) {
-            pages[Math.floor(i/100)] += `**${t}**\n`
+            pages[Math.floor(i/75)] += `**${t}**\n`
         } else {
-            pages[Math.floor(i/100)] += `**${t}**  | `
+            pages[Math.floor(i/75)] += `**${t}**  | `
         }
     })
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages,
-        buttons: ['back', 'forward'],
+        buttons: ['first', 'back', 'forward', 'last'],
         embed: {
-            author: { name: `List of all tag names: ${tags.length} results` },
+            author: { name: `List of ${arg? `tags starting with "${arg}"`: 'all tag names' }: ${tags.length} results` },
             color: colors.blue,
         }
     })

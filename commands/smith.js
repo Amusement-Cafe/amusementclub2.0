@@ -51,7 +51,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
     if(!card1 || !card2)
         return ctx.reply(user, `not enough cards found matching this query.
-            You can specify one query that can get 2+ cards, or 2 queries using \`,\` as separator`, 'red')
+            You can specify one query that can get 2+ unique cards, or 2 queries using \`,\` as separator`, 'red')
 
     if(card1.level != card2.level)
         return ctx.reply(user, `you can forge only cards of the same star count`, 'red')

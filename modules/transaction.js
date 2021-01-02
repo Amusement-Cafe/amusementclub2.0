@@ -96,8 +96,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         await to_user.save()
 
         //await completed(ctx, to_user, fullCard)
-
-        /*const auditCheck = await Auction.findOne({ author: transaction.to_id, card: card.id, bids: {$gte: 0}})
+        /*const auditCheck = await Auction.findOne({ author: transaction.to_id, card: card.id,  "bids.0": { $exists: true }})
         if (auditCheck) {
             const auditDB = await new Audit()
             const last_audit = (await Audit.find().sort({ _id: -1 }))[0]

@@ -16,22 +16,22 @@
             }, {
                 "price": 2000,
                 "level": 5,
-                "maintenance": 100,
+                "maintenance": 15,
                 "desc": "Allows claim tax to be set up to 10%"
             }, {
                 "price": 5000,
                 "level": 20,
-                "maintenance": 150,
+                "maintenance": 20,
                 "desc": "Reduces building maintenance by 10%"
             }, {
                 "price": 10000,
                 "level": 30,
-                "maintenance": 200,
+                "maintenance": 25,
                 "desc": "Allows claim tax to be set up to 25%"
             }, {
                 "price": 25000,
                 "level": 50,
-                "maintenance": 250,
+                "maintenance": 50,
                 "desc": "Reduces building maintenance by 30%"
             }
         ]
@@ -81,7 +81,7 @@
             }, {
                 "price": 5000,
                 "level": 15,
-                "maintenance": 100,
+                "maintenance": 50,
                 "desc": "Allows users to specify auction length (1 to 10 hours)"
             }
         ]
@@ -96,17 +96,17 @@
             {
                 "price": 1000,
                 "level": 3,
-                "maintenance": 100,
+                "maintenance": 10,
                 "desc": "Allows users to forge two cards"
             }, {
                 "price": 5000,
                 "level": 17,
-                "maintenance": 220,
+                "maintenance": 50,
                 "desc": "Allows users to liquefy cards and draw a card using vials"
             }, {
                 "price": 10000,
                 "level": 33,
-                "maintenance": 500,
+                "maintenance": 100,
                 "desc": "Allows users to forge effects using recipes"
             }
         ]
@@ -119,19 +119,19 @@
         "fulldesc": "When built and upgraded, adds rare collection cards to a claim pool and increases default daily",
         "levels": [
             {
-                "price": 1000,
+                "price": 2000,
                 "level": 10,
-                "maintenance": 200,
+                "maintenance": 100,
                 "desc": "Increases user daily to **800** {currency}"
             }, {
-                "price": 5000,
+                "price": 7000,
                 "level": 15,
-                "maintenance": 400,
+                "maintenance": 150,
                 "desc": "Enables rare collection card drops when claiming in this guild"
             }, {
-                "price": 12000,
+                "price": 16000,
                 "level": 30,
-                "maintenance": 800,
+                "maintenance": 300,
                 "desc": "Adds user level amount of {currency} to guild balance when user runs `->daily`"
             }
         ]
@@ -151,13 +151,13 @@
             }, {
                 "price": 2000,
                 "level": 5,
-                "maintenance": 200,
-                "desc": "Adds 2 extra quests when users run daily in this guild"
+                "maintenance": 70,
+                "desc": "Adds a tier II quest when users run daily in this guild"
             }, {
                 "price": 20000,
                 "level": 27,
-                "maintenance": 1000,
-                "desc": "Allows to purchase quest lines (Not Implemented Currently)"
+                "maintenance": 100,
+                "desc": "Allows to purchase quest lines (Coming soon)"
             }
         ]
     }, {

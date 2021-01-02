@@ -40,8 +40,8 @@ module.exports = [
         }
     }, {
         id: 'allcards',
-        name: 'Did I win?',
-        desc: 'Collect All Cards',
+        name: 'Sketchy Collector!',
+        desc: 'Collect All Cards, the Sachi way!',
         actions: ['cl', 'claim', 'cards', 'ls'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id] && !ctx.cards[x.id].excluded).length 
             >= ctx.cards.filter(x => !x.excluded).length,

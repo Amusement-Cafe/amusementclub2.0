@@ -132,6 +132,18 @@ module.exports.create = async ({
     const filter = new Filter()
     filter.addWords(...data.bannedwords)
 
+    let mixpanel = {
+        track: () => { }
+    }
+
+    if(analytics.mixpanel) {
+        try {
+            mixpanel = Mixpanel.init(analytics.mixpanel)
+        } catch(e) {
+            console.log(e)
+        }
+    }
+
     /* create our context */
     const ctx = {
         mcn, /* mongoose database connection */
@@ -159,7 +171,7 @@ module.exports.create = async ({
         audit: auditc,
         eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
-        mixpanel: Mixpanel.init(analytics.mixpanel),
+        mixpanel,
         settings: {
             wip: maintenance,
         }
