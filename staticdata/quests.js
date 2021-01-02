@@ -71,7 +71,7 @@ module.exports = {
             check: (ctx, user) => user.dailystats.forge2 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 800
-                user.vials += 20
+                user.vials += 30
                 user.xp += 2
             },
             reward: (ctx) => `**800** ${ctx.symbols.tomato}, **30** ${ctx.symbols.vial} and **2** xp`
