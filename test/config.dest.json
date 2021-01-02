@@ -9,7 +9,8 @@
     "invite": "",
     "maintenance": false,
     "auditc": {
-        "channel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+        "channel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+        "taglogchannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
     },
     "evalc": {
         "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],

@@ -226,10 +226,12 @@ const format_auc = async(ctx, auc, author, doeval = true) => {
     if(doeval)
         resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
 
-    if(auc.finished)
+    if(auc.finished) {
+        resp.push(`Winning bid: **${auc.highbid}**${ctx.symbols.tomato}`)
         resp.push(`**This auction has finished**`)
-    else
+    } else {
         resp.push(`Expires in **${msdiff > aucHide? timediff : '<5m'}**`)
+    }
 
     return resp.join('\n')
 }
