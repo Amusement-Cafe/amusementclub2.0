@@ -2,7 +2,7 @@ const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
 
 const {
-    User, Transaction
+    User, Transaction, Audit, Auction
 }   = require('../collections')
 
 const {
@@ -90,27 +90,31 @@ const confirm_trs = async (ctx, user, trs_id) => {
         
         to_user.exp -= transaction.price
 
-        transaction.cards.map(x => addUserCard(to_user, x))
+        transaction.cards.map(async (x) => {
+            addUserCard(to_user, x)
+            await completed(ctx, to_user, ctx.cards[x])
+            const auditCheck = await Auction.findOne({ author: transaction.to_id, card: x,  "bids.0": { $exists: true }})
+            if (auditCheck) {
+                const auditDB = await new Audit()
+                const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+                auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
+                auditDB.report_type = 3
+                auditDB.transid = transaction.id
+                auditDB.id = auditCheck.id
+                auditDB.price = auditCheck.price
+                auditDB.transprice =  transaction.price
+                auditDB.audited = false
+                auditDB.user = transaction.to
+                auditDB.card = ctx.cards[x].name
+                await auditDB.save()
+            }
+        })
         await to_user.save()
         to_user.markModified('cards')
         await to_user.save()
 
-        //await completed(ctx, to_user, fullCard)
-        /*const auditCheck = await Auction.findOne({ author: transaction.to_id, card: card.id,  "bids.0": { $exists: true }})
-        if (auditCheck) {
-            const auditDB = await new Audit()
-            const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
-            auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
-            auditDB.report_type = 3
-            auditDB.transid = transaction.id
-            auditDB.id = auditCheck.id
-            auditDB.price = auditCheck.price
-            auditDB.transprice =  transaction.price
-            auditDB.audited = false
-            auditDB.user = transaction.to
-            auditDB.card = fullCard.name
-            await auditDB.save()
-        }*/
+
+
 
     } else if(user.discord_id != transaction.from_id) {
         return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')

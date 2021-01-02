@@ -3,6 +3,7 @@ const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
 const msToTime              = require('pretty-ms')
 const dateFormat            = require(`dateformat`)
+const User                  = require('../collections/user')
 
 const _ = require('lodash')
 
@@ -242,7 +243,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
-    const targetuser = id? await User.findOne({ discord_id: to_id }) : null
+    const targetuser = id? await User.findOne({ discord_id: id }) : null
     const err = await validate_trs(ctx, user, cards, id, targetuser)
     if(err) {
         return ctx.reply(user, err, 'red')
@@ -276,7 +277,7 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
-    const targetuser = id? await User.findOne({ discord_id: to_id }) : null
+    const targetuser = id? await User.findOne({ discord_id: id }) : null
     const err = await validate_trs(ctx, user, cards, id, targetuser)
     if(err) {
         return ctx.reply(user, err, 'red')
