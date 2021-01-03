@@ -75,9 +75,9 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             return ctx.reply(user, `tag can't be shorter than **2** characters`, 'red') 
     }
     let question = `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`
-    console.log(parsedargs)
+
     if (parsedargs.firstTag)
-        question = question + `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
+        question += `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,

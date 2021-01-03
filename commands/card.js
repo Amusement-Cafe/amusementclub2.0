@@ -339,7 +339,7 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
         price += eval * card.amount
-        if(card.level < 4) {
+        if(card.level < 4 && eval !== 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })
