@@ -1,4 +1,5 @@
 const _             = require('lodash')
+const https         = require('https')
 const msToTime      = require('pretty-ms')
 const dateFormat    = require('dateformat')
 
@@ -23,6 +24,7 @@ const {
     setCardBooruData,
     setCardSource,
     fetchInfo,
+    setSourcesFromRawData,
 } = require('../modules/meta')
 
 const {
@@ -163,3 +165,27 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
 
     return ctx.reply(user, `successfully set source image for ${formatName(card)}`)
 }))
+
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, ...args) => {
+    https.get(ctx.msg.attachments[0].url, res => {
+        res.setEncoding('utf8')
+
+        let rawData = ''
+        res.on('data', (chunk) => { rawData += chunk })
+        res.on('end', () => {
+            try {
+                const res = setSourcesFromRawData(ctx, rawData)
+                if(res.problems.length > 0) {
+                    ctx.reply(user, `following cards were not found:
+                        ${res.problems.join('\n')}`, 'yellow')
+                }
+
+                return ctx.reply(user, `successfully set sources for **${res.count}** cards`)
+
+            } catch (e) {
+                return ctx.reply(user, `an error occured while scanning the sources:
+                    ${e.message}`, 'red')
+            }
+        });
+    })
+})
