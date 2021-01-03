@@ -338,7 +338,11 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     let vials = 0
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
-        price += eval * card.amount
+        if(eval >= 0) {
+            price += Math.round(eval) * card.amount
+        } else {
+            price = NaN
+        }
         if(card.level < 4 && eval !== 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
@@ -359,15 +363,17 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    if(parsedargs.isEmpty())
-        return ctx.qhelp(ctx, user, 'eval')
 
     let price = 0
     let vials = 0
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
-        price += eval
-        if(card.level < 4) {
+        if(eval >= 0) {
+            price += Math.round(eval)
+        } else {
+            price = NaN
+        }
+        if(card.level < 4 && eval !== 0) {
             vials += getVialCostFast(ctx, card, eval)
         }
     })
