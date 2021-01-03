@@ -113,8 +113,9 @@ const checkQueue = async (ctx) => {
 
 const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
-    return Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+    let eval = Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
         * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+    return eval === Infinity? 0: eval
 }
 
 const getQueueTime = () => evalQueue.length * queueTick

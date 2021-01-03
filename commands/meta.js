@@ -47,10 +47,6 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     const usercard = user.cards.find(x => x.id === card.id)
     const embed = { color: colors.blue, fields: [] }
 
-    if(usercard) {
-        user.lastcard = card.id
-        await user.save()
-    }
 
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
@@ -64,6 +60,9 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
 
     if(card.added)
         resp.push(`Added: **${dateFormat(card.added, "yyyy-mm-dd")}** (${msToTime(new Date() - card.added, {compact: true})})`)
+
+    if (extrainfo.ownercount > 0)
+        resp.push(`Owner Count: **${extrainfo.ownercount}**`)
 
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')

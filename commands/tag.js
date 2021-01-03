@@ -1,7 +1,8 @@
 const {cmd, pcmd}       = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const Tag               = require('../collections/tag')
-const {parseAuditArgs}  = require("../modules/audit");
+const {parseAuditArgs}  = require("../modules/audit")
+const dateFormat        = require('dateformat')
 
 const {
     fetchOnly,
@@ -74,9 +75,9 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
             return ctx.reply(user, `tag can't be shorter than **2** characters`, 'red') 
     }
     let question = `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`
-    console.log(parsedargs)
+
     if (parsedargs.firstTag)
-        question = question + `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
+        question += `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
@@ -257,7 +258,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
 
     try {
         await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
-            Please make sure you add valid tags in the future. Learn more with \`->help tag\`
+            Please make sure you add valid tags in the future as tags are not personal. Learn more with \`->rules\`
             You have **${3 - target.ban.tags}** warning(s) remaining`, 'red')
     } catch {
         ctx.reply(user, `failed to send a warning to the user.`, 'red')

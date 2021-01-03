@@ -4,9 +4,10 @@ const asdate             = require('add-subtract-date')
 const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
 const Tag                = require("../collections/tag");
-const {ch_map} = require('./transaction')
+const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
 const {tryGetUserID}     = require('../utils/tools')
+const {byAlias}          = require('./collection')
 
 
 
@@ -35,7 +36,7 @@ const paginate_auditReports = (ctx, user, list, report) => {
             break
         case 3:
             list.map((t, i) => {
-                if (i % 10 == 0) pages.push("")
+                if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Trans Id | Trans Amount | Promo?**\n")
                 pages[Math.floor(i/10)] += `${format_rebuys(ctx, user, t)}\n`
             })
             break
@@ -80,8 +81,11 @@ const format_overPrice = (ctx, user, auc) => {
 
 const format_rebuys = (ctx, user, auc) => {
     let resp = ""
+    let col
+    if (!isNaN(auc.card[0]))
+        col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
 
-    resp += `AuditID: \`${auc.audit_id}\`, ${auc.user} sold ${auc.card} on auction at \`${auc.id}\` for ${auc.price} and bought it back for ${auc.transprice} at ${auc.transid}`
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | ${auc.price} | ${auc.transid} | ${auc.transprice} | ${col? col.promo : 'unknown'}`
 
     return resp;
 }
@@ -107,9 +111,24 @@ const formatCompletedList = (ctx, user, audit) => {
     return resp;
 }
 
-const auditFetchUserTags = async (user) => {
-    const res = await Tag.find({ author: user.discord_id })
-    return res.reverse()
+const auditFetchUserTags = async (user, args) => {
+    let res = await Tag.find({ author: user.discord_id })
+    let tagList = []
+    if (args.tagQuery) {
+        if (args.clear !== 0) {
+            args.clear === 1 ? res.map(x => x.status === 'clear'? tagList.includes(x)? null: tagList.push(x) : null) : res.map(x => x.status !== 'clear'? tagList.includes(x)? null: tagList.push(x) : null)
+        }
+        if (args.banned !== 0) {
+            args.banned === 1 ? res.map(x => x.status === 'banned'? tagList.includes(x)? null: tagList.push(x) : null) : res.map(x => x.status !== 'banned'? tagList.includes(x)? null: tagList.push(x) : null)
+        }
+        if (args.removed !== 0) {
+            args.removed === 1 ? res.map(x => x.status === 'removed'? tagList.includes(x)? null: tagList.push(x) : null) : res.map(x => x.status !== 'removed'? tagList.includes(x)? null: tagList.push(x) : null)
+        }
+    } else {
+        tagList = res
+    }
+
+    return tagList.sort().reverse()
 }
 
 const parseAuditArgs = (ctx, args) => {
@@ -118,24 +137,37 @@ const parseAuditArgs = (ctx, args) => {
         auction: false,
         gets: false,
         sends: false,
+        tagQuery: false,
+        banned: 0,
+        removed: 0,
+        clear: 0,
         extraArgs: []
     }
 
     args.map( x => {
-        switch (x) {
-            case 'auction':
-                a.auction = true
-                break
-            case 'gets':
-                a.gets = true
-                break
-            case 'sends':
-                a.sends = true
-                break
-            default:
-                const tryid = tryGetUserID(x)
-                if(tryid && !a.id) a.id = tryid
-                else a.extraArgs.push(x)
+        if (x[0] === '!' || x[0] === '-') {
+            let q = x[0] === '-'
+            switch (x.substr(1)) {
+                case 'clear': q? a.clear = 1: a.clear = 2; a.tagQuery = true; break
+                case 'banned': q? a.banned = 1: a.banned = 2; a.tagQuery = true; break
+                case 'removed': q? a.removed = 1: a.removed = 2; a.tagQuery = true; break
+            }
+        } else {
+            switch (x) {
+                case 'auction':
+                    a.auction = true
+                    break
+                case 'gets':
+                    a.gets = true
+                    break
+                case 'sends':
+                    a.sends = true
+                    break
+                default:
+                    const tryid = tryGetUserID(x)
+                    if(tryid && !a.id) a.id = tryid
+                    else a.extraArgs.push(x)
+            }
         }
     })
     return a

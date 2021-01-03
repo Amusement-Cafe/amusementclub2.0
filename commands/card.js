@@ -3,6 +3,7 @@ const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
 const msToTime              = require('pretty-ms')
 const dateFormat            = require(`dateformat`)
+const User                  = require('../collections/user')
 
 const _ = require('lodash')
 
@@ -242,7 +243,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
-    const targetuser = id? await User.findOne({ discord_id: to_id }) : null
+    const targetuser = id? await User.findOne({ discord_id: id }) : null
     const err = await validate_trs(ctx, user, cards, id, targetuser)
     if(err) {
         return ctx.reply(user, err, 'red')
@@ -276,7 +277,7 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.qhelp(ctx, user, 'sell')
 
     const id = parsedargs.ids[0]
-    const targetuser = id? await User.findOne({ discord_id: to_id }) : null
+    const targetuser = id? await User.findOne({ discord_id: id }) : null
     const err = await validate_trs(ctx, user, cards, id, targetuser)
     if(err) {
         return ctx.reply(user, err, 'red')
@@ -332,20 +333,18 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
-    if(parsedargs.isEmpty())
-        return ctx.qhelp(ctx, user, 'eval')
 
     let price = 0
     let vials = 0
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
         if(eval >= 0) {
-            price += Math.round(eval)
+            price += Math.round(eval) * card.amount
         } else {
             price = NaN
         }
-        if(card.level < 4) {
-            vials += getVialCostFast(ctx, card, eval)
+        if(card.level < 4 && eval !== 0) {
+            vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })
     
@@ -364,8 +363,6 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    if(parsedargs.isEmpty())
-        return ctx.qhelp(ctx, user, 'eval')
 
     let price = 0
     let vials = 0
@@ -376,7 +373,7 @@ cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedar
         } else {
             price = NaN
         }
-        if(card.level < 4) {
+        if(card.level < 4 && eval !== 0) {
             vials += getVialCostFast(ctx, card, eval)
         }
     })

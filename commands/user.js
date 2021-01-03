@@ -57,6 +57,8 @@ const {
 
 const {
     getQueueTime,
+    getVialCostFast,
+    evalCardFast
 } = require('../modules/eval')
 
 cmd('bal', 'balance', (ctx, user) => {
@@ -293,10 +295,24 @@ cmd('profile', async (ctx, user, ...args) => {
     const stamp = user.joined || user._id.getTimestamp()
     const cards = mapUserCards(ctx, user)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
-
+    let price = 0
+    let vials = 0
+    cards.map(card => {
+        const eval = evalCardFast(ctx, card)
+        if(eval >= 0) {
+            price += Math.round(eval) * card.amount
+        }
+        if(card.level < 4 && eval !== 0) {
+            vials += getVialCostFast(ctx, card, eval) * card.amount
+        }
+    })
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
+    if (pargs.ids.length > 0 && !isNaN(price))
+        resp.push(`Cards Worth: **${price}** ${ctx.symbols.tomato} or **${vials} ${ctx.symbols.vial}**`)
+    else if (!isNaN(price))
+        resp.push(`Net Worth: **${price + user.exp}** ${ctx.symbols.tomato} or **${vials + user.vials} ${ctx.symbols.vial}**`)
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
     if(completedSum > 0) {

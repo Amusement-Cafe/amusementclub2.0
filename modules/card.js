@@ -237,12 +237,13 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     if(cards.length == 0)
         return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
+    cards.sort(parsedargs.sort)
+
     if(!parsedargs.lastcard && cards.length > 0) {
-        user.lastcard = bestMatch(cards).id
+        user.lastcard = cards[0].id
         await user.save()
     }
 
-    cards.sort(parsedargs.sort)
     return callback(ctx, user, cards, parsedargs, args)
 }
 
@@ -280,6 +281,12 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
     cards.sort(parsedargs.sort)
+
+    if(!parsedargs.lastcard && cards.length > 0) {
+        user.lastcard = cards[0].id
+        await user.save()
+    }
+
     return callback(ctx, user, cards, parsedargs, args)
 }
 

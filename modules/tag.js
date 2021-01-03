@@ -87,6 +87,7 @@ const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
         return ctx.reply(user, `tag #${tgTag} wasn't found for ${cardMod.formatName(card)}`, 'red')
 
     const priorTags = await Tag.findOne({author: user.discord_id, status: 'clear'})
+
     if (!priorTags)
         parsedargs.firstTag = true
 

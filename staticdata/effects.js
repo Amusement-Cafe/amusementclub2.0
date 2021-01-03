@@ -119,7 +119,7 @@ module.exports = [
     }, {
         id: 'judgeday',
         name: 'The Judgment Day',
-        desc: 'Grants effect of any useable card',
+        desc: 'Grants effect of any usable card',
         passive: false,
         cooldown: 48,
         use: async (ctx, user, args) => {
