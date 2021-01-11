@@ -49,6 +49,34 @@ const setCardSource = async (ctx, cardID, source) => {
     await info.save()
 }
 
+const setSourcesFromRawData = (ctx, data) => {
+    const entrees = data.split('\n')
+    const problems = []
+    let count = 0
+    entrees.filter(x => x.split('-').length === 2).map(x => {
+        const contents = x.split('-')
+        const cardName = contents[0].trim()
+        const link = contents[1].trim()
+        const card = ctx.cards.find(c => c.level == cardName[0] && c.name === cardName.substring(2))
+
+        if(!card) {
+            problems.push(cardName)
+        } else {
+            const info = fetchInfo(ctx, card.id)
+            if(!info.source) {
+                info.meta.source = link
+                count++
+                info.save()
+            }
+        }
+    })
+
+    return {
+        count,
+        problems,
+    }
+}
+
 const fetchInfo = (ctx, id) => {
     let info = ctx.cardInfos[id]
     if(!info) {
@@ -69,4 +97,5 @@ module.exports = {
     setCardSource,
     fetchInfo,
     fetchAllInfos,
+    setSourcesFromRawData,
 }
