@@ -61,8 +61,7 @@ const getQuest = (ctx, user, tier, exclude) => {
         (!x.building || levels.includes(x.building))
         && (!exclude || x.id != exclude)
         && x.tier === tier
-        && x.id != 'tag2'
-        && x.id != 'tag4')
+        && x.can_drop)
 
     if(available.length > 0) {
         return _.sample(available)

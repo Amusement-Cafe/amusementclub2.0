@@ -302,5 +302,45 @@
         "fulldesc": "When used gives you **Claim Recall** effect card. This is a usable card",
         "recipe": [1, 1, 1, 2, 2, 2],
         "lasts": 28
+    }, {
+        "id": "memoryxmas",
+        "effectid": "memoryxmas",
+        "name": "Memories of Christmas Cheer",
+        "price": 10000,
+        "type": "recipe",
+        "desc": "gives free christmas card",
+        "fulldesc": "When used gives you **Memories of Christmas Cheer** effect card. This is a usable card",
+        "recipe": [3, 3, 3, 3],
+        "lasts": 12
+    }, {
+        "id": "memoryhall",
+        "effectid": "memoryhall",
+        "name": "Memories of Halloween Frights",
+        "price": 10000,
+        "type": "recipe",
+        "desc": "gives free halloween card",
+        "fulldesc": "When used gives you **Memories of Halloween Frights** effect card. This is a usable card",
+        "recipe": [3, 3, 3, 3],
+        "lasts": 12
+    }, {
+        "id": "memorybday",
+        "effectid": "memorybday",
+        "name": "Memories of Birthdays Past",
+        "price": 10000,
+        "type": "recipe",
+        "desc": "gives free birthday card",
+        "fulldesc": "When used gives you **Memories of Birthdays Past** effect card. This is a usable card",
+        "recipe": [3, 3, 3, 3],
+        "lasts": 12
+    }, {
+        "id": "memoryval",
+        "effectid": "memoryval",
+        "name": "Memories of Valentines Day",
+        "price": 10000,
+        "type": "recipe",
+        "desc": "gives free valentine card",
+        "fulldesc": "When used gives you **Memories of Valentines Day** effect card. This is a usable card",
+        "recipe": [3, 3, 3, 3],
+        "lasts": 12
     }
 ]

@@ -151,7 +151,7 @@ cmd('daily', async (ctx, user) => {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
         let amount = gbank? 800 : 400
-        const promoAmount = 500 + ((user.dailystats.promoclaims * 60) || 0)
+        const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
         //let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
@@ -301,18 +301,26 @@ cmd('profile', async (ctx, user, ...args) => {
         const eval = evalCardFast(ctx, card)
         if(eval >= 0) {
             price += Math.round(eval) * card.amount
+        } else {
+            price = NaN
         }
-        if(card.level < 4 && eval !== 0) {
+        if(card.level < 4) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
-    if (pargs.ids.length > 0 && !isNaN(price))
+    if (pargs.ids.length > 0 && !isNaN(price)) {
         resp.push(`Cards Worth: **${price}** ${ctx.symbols.tomato} or **${vials} ${ctx.symbols.vial}**`)
-    else if (!isNaN(price))
+    }
+    else if (!isNaN(price)) {
         resp.push(`Net Worth: **${price + user.exp}** ${ctx.symbols.tomato} or **${vials + user.vials} ${ctx.symbols.vial}**`)
+    }
+    else {
+        const evalTime = getQueueTime()
+        resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
+    }
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
     if(completedSum > 0) {
