@@ -203,12 +203,10 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 
     if (!trans)
         return ctx.reply(user, `transaction ID \`${arg[0]}\` was not found`, 'red')
-
-    const card = ctx.cards[trans.card]
+    
     const timediff = msToTime(new Date() - trans.time, {compact: true})
 
     const resp = []
-    resp.push(`Card: ${formatName(card)}`)
     resp.push(`Price: **${trans.price}** ${ctx.symbols.tomato}`)
     resp.push(`From: **${trans.from}** \`${trans.from_id}\``)
     resp.push(`To: **${trans.to}** \`${trans.to_id}\``)
@@ -222,12 +220,20 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 
     resp.push(`Date: **${trans.time}**`)
 
-    return ctx.send(ctx.msg.channel.id, {
-        title: `Transaction [${trans.id}] (${timediff})`,
-        image: { url: card.url },
-        description: resp.join('\n'),
-        color: colors['blue']
-    }, user.discord_id)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(trans.cards.map(c => formatName(ctx.cards[c])), 10),
+        switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
+        embed : {
+            title: `Transaction [${trans.id}] (${timediff})`,
+            description: resp.join('\n'),
+            color: colors['blue'],
+            fields: [{
+                name: "Cards",
+                value: ""
+            }]
+        }
+
+    })
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
