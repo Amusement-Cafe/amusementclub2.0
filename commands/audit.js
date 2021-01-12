@@ -203,7 +203,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 
     if (!trans)
         return ctx.reply(user, `transaction ID \`${arg[0]}\` was not found`, 'red')
-    
+
     const timediff = msToTime(new Date() - trans.time, {compact: true})
 
     const resp = []
