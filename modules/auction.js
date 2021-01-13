@@ -1,4 +1,4 @@
-const {Auction, Audit, AuditAucSell}  = require('../collections')
+const {Auction, AuditAucSell}  = require('../collections')
 const {evalCard}                      = require("../modules/eval");
 const {generateNextId}                = require('../utils/tools')
 const {fetchOnly}                     = require('./user')
@@ -12,19 +12,24 @@ const {
 } = require('../modules/effect')
 
 const {
+    eval_fraud_check,
+    audit_auc_stats
+} = require('./audit')
+
+const {
     formatName,
     removeUserCard,
     addUserCard
 } = require('./card')
 
 const {
+    fetchInfo
+} = require('./meta')
+
+const {
     from_auc
 } = require('./transaction')
 
-const {
-    eval_fraud_check,
-    audit_auc_stats
-} = require('./audit')
 
 const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
@@ -136,6 +141,8 @@ const finish_aucs = async (ctx, now) => {
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
+        const cardInfo = fetchInfo(ctx, auc.card)
+        cardInfo.aucprices.push(auc.price)
         //Audit Logic Start
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
@@ -150,6 +157,7 @@ const finish_aucs = async (ctx, now) => {
         await lastBidder.save()
         await author.save()
         await from_auc(auc, author, lastBidder)
+        await cardInfo.save()
 
         await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
