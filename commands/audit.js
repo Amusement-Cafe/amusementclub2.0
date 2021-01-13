@@ -7,7 +7,10 @@ const {paginate_trslist, ch_map} = require('../modules/transaction')
 const dateFormat                = require(`dateformat`)
 
 const {
+    filter,
     formatName,
+    mapUserCards,
+    parseArgs,
     withGlobalCards
 }   = require('../modules/card')
 
@@ -444,22 +447,25 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
     })
 })
 
-pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], withGlobalCards(async (ctx, user, cards, arg) => {
+pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
+    let arg = parseArgs(ctx, args)
     if (!arg.ids)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    const findUser = await User.findOne({discord_id: arg.ids})
+    const findUser = await User.findOne({discord_id: arg.ids[0]})
     const now = new Date()
-    const cardstr = cards.map(c => {
+    let findCards = filter(mapUserCards(ctx, findUser).sort(arg.sort), arg)
+
+    const cardstr = findCards.map(c => {
         const isnew = c.obtained > (findUser.lastdaily || now)
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
-        embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${cards.length} results)` } }
+        embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${findCards.length} results)` } }
     })
-}))
+})
