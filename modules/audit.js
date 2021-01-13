@@ -91,7 +91,6 @@ const paginate_auditReports = (ctx, user, list, report) => {
             })
             break
     }
-
     return pages;
 }
 
