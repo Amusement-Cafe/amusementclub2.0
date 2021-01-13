@@ -245,7 +245,7 @@
             },
             {
                 "title": "Useful to know",
-                "description": "You can’t combine cards of different level\nMinimum amount of cards is 2"
+                "description": "You can’t combine cards of different levels, both cards need to be unique\nMinimum amount of cards is 2"
             }
         ]
     },
@@ -350,6 +350,10 @@
             {
                 "title": "->eval [card query]",
                 "description": "Get evaluated card price"
+            },
+            {
+                "title": "->eval all [card query]",
+                "description": "Get combined eval of all cards in query"
             }
         ]
     },
@@ -558,6 +562,10 @@
             {
                 "title": "->liquify [card]",
                 "description": "Liquify a card of your choosing"
+            },
+            {
+                "title": "->liquify all [card query]",
+                "description": "Liquify all(limit 100) cards of your choosing"
             }
         ]
     },
@@ -620,6 +628,10 @@
             {
                 "title": "->cards ![collection] !fav !gif !craft",
                 "description": "Make NEGATIVE request"
+            },
+            {
+                "title": "->cards >eval or ->cards <eval",
+                "description": "Sort by eval amount"
             },
             {
                 "title": "->cards >date or ->cards <date",
@@ -715,8 +727,16 @@
                 "description": "Sell a card to the bot for a percentage of eval"
             },
             {
+                "title": "->sell all [card query]",
+                "description": "Sell all cards(limit 100) in a query to the bot for a percentage of eval"
+            },
+            {
                 "title": "->sell @user [card query]",
                 "description": "Sell a card to another user. Target user will be asked to confirm or decline your transaction. You can **not** send more than 5 requests to the same user. Selling price is decided by bot using **eval algorithm**. You can always run `->eval [card query]` to find out card cost before trading it"
+            },
+            {
+                "title": "->sell all @user [card query]",
+                "description": "Sell all cards(limit 100) in a query to another user. Target user will be asked to confirm or decline your transaction. You can **not** send more than 5 requests to the same user. Selling price is decided by bot using **eval algorithm**. You can always run `->eval [card query]` to find out card cost before trading it"
             }
         ]
     },

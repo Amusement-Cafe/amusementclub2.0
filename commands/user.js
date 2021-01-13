@@ -311,16 +311,16 @@ cmd('profile', async (ctx, user, ...args) => {
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
+
     if (pargs.ids.length > 0 && !isNaN(price)) {
         resp.push(`Cards Worth: **${price}** ${ctx.symbols.tomato} or **${vials} ${ctx.symbols.vial}**`)
-    }
-    else if (!isNaN(price)) {
+    } else if (!isNaN(price)) {
         resp.push(`Net Worth: **${price + user.exp}** ${ctx.symbols.tomato} or **${vials + user.vials} ${ctx.symbols.vial}**`)
-    }
-    else {
+    } else {
         const evalTime = getQueueTime()
         resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
     }
+
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
     if(completedSum > 0) {

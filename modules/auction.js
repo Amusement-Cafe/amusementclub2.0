@@ -1,4 +1,4 @@
-const {Auction, AuditAucSell}  = require('../collections')
+const {Auction, AuditAucSell}         = require('../collections')
 const {evalCard}                      = require("../modules/eval");
 const {generateNextId}                = require('../utils/tools')
 const {fetchOnly}                     = require('./user')

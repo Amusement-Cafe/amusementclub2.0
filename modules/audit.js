@@ -3,7 +3,6 @@ const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
 const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
-
 const {byAlias}          = require('./collection')
 
 const {
