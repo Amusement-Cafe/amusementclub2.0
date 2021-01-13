@@ -21,6 +21,11 @@ const {
     from_auc
 } = require('./transaction')
 
+const {
+    eval_fraud_check,
+    audit_auc_stats
+} = require('./audit')
+
 const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
@@ -134,28 +139,9 @@ const finish_aucs = async (ctx, now) => {
         //Audit Logic Start
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
-        if (auc.price > eval * 4) {
-            const auditDB = await new Audit()
-            const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
-            auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
-            auditDB.id = auc.id
-            auditDB.card = aucCard.name
-            auditDB.bids = auc.bids.length
-            auditDB.finished = auc.finished
-            auditDB.eval = eval
-            auditDB.price = auc.price
-            auditDB.price_over = auc.price / eval
-            auditDB.report_type = 2
-            auditDB.time = new Date()
-            await auditDB.save()
-        }
+        await eval_fraud_check(ctx, auc, eval, aucCard)
         if(!findSell){
-            const sellDB = await new AuditAucSell()
-            sellDB.user = author.discord_id
-            sellDB.name = author.username
-            sellDB.sold = 1
-            sellDB.time = new Date()
-            await sellDB.save()
+            await audit_auc_stats(ctx, author, true)
         }else {
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
         }
@@ -171,12 +157,7 @@ const finish_aucs = async (ctx, now) => {
             ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
     } else {
         if(!findSell){
-            const sellDB = await new AuditAucSell()
-            sellDB.user = author.discord_id
-            sellDB.name = author.username
-            sellDB.unsold = 1
-            sellDB.time = new Date()
-            await sellDB.save()
+            await audit_auc_stats(ctx, author, false)
         }else {
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
         }

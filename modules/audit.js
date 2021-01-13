@@ -1,13 +1,18 @@
-const Audit              = require('../collections/audit')
-const AuditAucSell       = require('../collections/auditAucSell')
 const asdate             = require('add-subtract-date')
 const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
-const Tag                = require("../collections/tag");
 const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
-const {tryGetUserID}     = require('../utils/tools')
+
 const {byAlias}          = require('./collection')
+
+const {
+    generateNextId, tryGetUserID
+} = require('../utils/tools')
+
+const {
+    Audit, AuditAucSell, Auction, Tag
+} = require('../collections')
 
 
 
@@ -17,6 +22,51 @@ const clean_audits = async (ctx, now) => {
     const auditAucSellClean = await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
     if (auditClean.n > 0 || auditAucSellClean.n > 0)
         console.log(`Cleaned ${auditClean.n} audit entries and ${auditAucSellClean.n} oversell entries`)
+}
+
+const trans_fraud_check = async (ctx, user, trans, card) => {
+    const auditCheck = await Auction.findOne({ author: trans.to_id, card: card,  "bids.0": { $exists: true }})
+    if (auditCheck) {
+        const auditDB = await new Audit()
+        const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+        auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
+        auditDB.report_type = auditCheck.lastbidder === trans.from_id? 4:3
+        auditDB.transid = trans.id
+        auditDB.id = auditCheck.id
+        auditDB.price = auditCheck.price
+        auditDB.transprice =  trans.price
+        auditDB.audited = false
+        auditDB.user = trans.to
+        auditDB.card = card
+        await auditDB.save()
+    }
+}
+
+const eval_fraud_check = async (ctx, auc, eval, card) => {
+    if (auc.price < eval * 4)
+        return
+    const auditDB = await new Audit()
+    const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+    auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
+    auditDB.id = auc.id
+    auditDB.card = card.name
+    auditDB.bids = auc.bids.length
+    auditDB.finished = auc.finished
+    auditDB.eval = eval
+    auditDB.price = auc.price
+    auditDB.price_over = auc.price / eval
+    auditDB.report_type = 2
+    auditDB.time = new Date()
+    await auditDB.save()
+}
+
+const audit_auc_stats = async (ctx, user, sold) => {
+    const sellDB = await new AuditAucSell()
+    sellDB.user = user.discord_id
+    sellDB.name = user.username
+    sold? sellDB.sold = 1: sellDB.unsold = 1
+    sellDB.time = new Date()
+    await sellDB.save()
 }
 
 const paginate_auditReports = (ctx, user, list, report) => {
@@ -35,6 +85,7 @@ const paginate_auditReports = (ctx, user, list, report) => {
             })
             break
         case 3:
+        case 4:
             list.map((t, i) => {
                 if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Trans Id | Trans Amount | Promo?**\n")
                 pages[Math.floor(i/10)] += `${format_rebuys(ctx, user, t)}\n`
@@ -176,11 +227,14 @@ const parseAuditArgs = (ctx, args) => {
 
 module.exports = {
     auditFetchUserTags,
+    audit_auc_stats,
+    eval_fraud_check,
     paginate_auditReports,
     paginate_guildtrslist,
     paginate_closedAudits,
     parseAuditArgs,
     clean_audits,
     formatAucBidList,
-    formatGuildTrsList
+    formatGuildTrsList,
+    trans_fraud_check
 }

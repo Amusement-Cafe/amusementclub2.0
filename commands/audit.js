@@ -47,6 +47,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
 
     let overSell = await AuditAucSell.find({sold: {$gt:5}}).sort({sold: -1, unsold: 1})
 
+    if (overSell.length === 0)
+        return ctx.reply(user, 'nothing found for fraud report 1!')
+
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_auditReports(ctx, user, overSell, 1),
         buttons: ['back', 'forward'],
@@ -62,6 +65,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let overPrice = (await Audit.find({ audited: false, report_type: 2 }).sort({price_over : -1}))
+
+    if (overPrice.length === 0)
+        return ctx.reply(user, 'nothing found for fraud report 2!')
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_auditReports(ctx, user, overPrice, 2),
@@ -79,11 +85,33 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
 
     let buybacks = await Audit.find({audited: false, report_type: 3}).sort({price: -1})
 
+    if (buybacks.length === 0)
+        return ctx.reply(user, 'nothing found for fraud report 3!')
+
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_auditReports(ctx, user, buybacks, 3),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 3 audits: (${buybacks.length} results)` },
+            color: colors.blue,
+        }
+    })
+})
+
+pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) => {
+    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+
+    let buybacks = await Audit.find({audited: false, report_type: 4}).sort({price: -1})
+
+    if (buybacks.length === 0)
+        return ctx.reply(user, 'nothing found for fraud report 4!')
+
+    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_auditReports(ctx, user, buybacks, 4),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, open report 4 audits: (${buybacks.length} results)` },
             color: colors.blue,
         }
     })
