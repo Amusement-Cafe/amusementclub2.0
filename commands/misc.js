@@ -122,3 +122,7 @@ const pats = [
     '(*´・ω・)ノ(-ω-｀*)',
     '(o・_・)ノ”(ノ_＜。)'
 ]
+
+module.exports = {
+    getHelpEmbed
+}

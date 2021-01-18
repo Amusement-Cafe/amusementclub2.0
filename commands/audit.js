@@ -1,10 +1,15 @@
 const {pcmd}                    = require('../utils/cmd')
 const {evalCard}                = require('../modules/eval')
+const {getHelpEmbed}            = require('../commands/misc')
 const {fetchOnly}               = require('../modules/user')
 const colors                    = require('../utils/colors')
 const msToTime                  = require('pretty-ms')
-const {paginate_trslist, ch_map} = require('../modules/transaction')
 const dateFormat                = require(`dateformat`)
+
+const {
+    paginate_trslist,
+    ch_map
+} = require('../modules/transaction')
 
 const {
     filter,
@@ -31,6 +36,15 @@ const {
     User
 }     = require('../collections')
 
+pcmd(['admin', 'auditor'], ['audit', 'help'], async (ctx, user, ...args) => {
+    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+
+    const help = ctx.audithelp.find(x => x.type === 'audit')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+})
 
 pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
@@ -124,7 +138,10 @@ pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
-    return ctx.reply(user, "Current audit options are: auction, guild, trans, user, warn, find user, find trans, confirm")
+    const help = ctx.audithelp.find(x => x.type === 'audit')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
@@ -377,6 +394,56 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
                       Currency: **${findUser.exp}${ctx.symbols.tomato}**, **${findUser.vials}${ctx.symbols.vial}**
                       Promo Currency: **${findUser.promoexp}**
                       Embargoed?: **${findUser.ban.embargo}**
+                      Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
+                      Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
+                      Unique Cards: **${findUser.cards.length}**
+                      Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
+                      Effects List: **${effects.length !== 0? effects: 'none'}**
+                      __Daily Stats__: 
+                      ${dailyStats}`,
+        color: colors['green']
+    }
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
+
+pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object'], async (ctx, user, ...args) => {
+    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+    let arg = parseAuditArgs(ctx, args)
+    if (!arg.extraArgs)
+        return ctx.reply(user, `please submit a valid user ID`, 'red')
+
+    const findUser = await User.findOne({_id: arg.extraArgs[0]})
+
+    if (!findUser)
+        return ctx.reply(user, 'no user found with that ID', 'red')
+
+    let effects = findUser.effects.map(x => x.id)
+
+    let dailies = {
+        claims: findUser.dailystats.claims ? findUser.dailystats.claims : 0,
+        pclaims: findUser.dailystats.promoclaims ? findUser.dailystats.promoclaims : 0,
+        bids: findUser.dailystats.bids ? findUser.dailystats.bids : 0,
+        auctions: findUser.dailystats['aucs'] ? findUser.dailystats['aucs'] : 0,
+        liq: findUser.dailystats.liquify ? findUser.dailystats.liquify : 0,
+        draw: findUser.dailystats['draw'] ? findUser.dailystats['draw'] : 0,
+        tags: findUser.dailystats.tags ? findUser.dailystats.tags : 0,
+        forge1: findUser.dailystats['forge1'] ? findUser.dailystats['forge1'] : 0,
+        forge2: findUser.dailystats['forge2'] ? findUser.dailystats['forge2'] : 0,
+        forge3: findUser.dailystats['forge3'] ? findUser.dailystats['forge3'] : 0
+    }
+    const dailyStats = `
+    Claims: **${dailies.claims}** (+${dailies.pclaims} Promo), Bids: **${dailies.bids}**, Auctions: **${dailies.auctions}**
+    Liq: **${dailies.liq}**, Draw: **${dailies.draw}**, Tags: **${dailies.tags}**
+    Forge1: **${dailies.forge1}**, Forge2: **${dailies.forge2}**, Forge3: **${dailies.forge3}**`
+
+
+    let embed = {
+        author: {name: `${user.username} here is the info for ${findUser.username}`},
+        description: `**${findUser.username}** \`${findUser.discord_id}\`
+                      Currency: **${findUser.exp}${ctx.symbols.tomato}**, **${findUser.vials}${ctx.symbols.vial}**
+                      Promo Currency: **${findUser.promoexp}**
+                      Embargoed?: **${findUser.ban.embargo? findUser.ban.embargo: false}**
                       Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
                       Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
                       Unique Cards: **${findUser.cards.length}**

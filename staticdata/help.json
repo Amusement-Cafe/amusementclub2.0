@@ -630,6 +630,10 @@
                 "description": "Make NEGATIVE request"
             },
             {
+                "title": "->cards >col or ->cards <col",
+                "description": "Sort by collection name"
+            },
+            {
                 "title": "->cards >eval or ->cards <eval",
                 "description": "Sort by eval amount"
             },

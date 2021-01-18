@@ -1,0 +1,101 @@
+[
+    {
+        "type": "audit",
+        "title": "Audit Help Guid",
+        "description": "Welcome to the Audit Zone",
+        "fields": [
+            {
+                "title": "->fraud report 1",
+                "description": "Displays a list of users with a high auction sell percentage"
+            },
+            {
+                "title": "->fraud report 2",
+                "description": "Displays a list of auctions selling for a certain amount over eval"
+            },
+            {
+                "title": "->fraud report 3",
+                "description": "Displays where a user sells a card on auction, and re-purchases that same card"
+            },
+            {
+                "title": "->fraud report 4",
+                "description": "Same as report 3, but the person has to be the same person the auction went to"
+            },
+            {
+                "title": "->audit user [user_id]",
+                "description": "Lists all transactions done by the user"
+            },
+            {
+                "title": "->audit list [user_id]",
+                "description": "Acts as if you are the user running list/cards. Accepts queries as well"
+            },
+            {
+                "title": "->audit guild [guild_id]",
+                "description": "Lists all transactions done in a specific guild"
+            },
+            {
+                "title": "->audit auc [auc_id]",
+                "description": "Shows detailed information on the auction, including bids, time of bids, id's of bidders etc."
+            },
+            {
+                "title": "->audit trans [trans_id]",
+                "description": "Lists more detailed information about a transaction"
+            },
+            {
+                "title": "->audit find user [user_id]",
+                "description": "Brings up a quick overview page of a user to show base profile info"
+            },
+            {
+                "title": "->audit find obj",
+                "description": "Used if you have the Mongo object ID but not the user ID (added purely to find users caught with errors)"
+            },
+            {
+                "title": "->audit find trans [user_id] [query]",
+                "description": "Search a user's transactions for a specific card/collection/etc"
+            },
+            {
+                "title": "->audit confirm [audit_id]",
+                "description": "Marks a fraud report item as audited"
+            },
+            {
+                "title": "->audit closed",
+                "description": "Lists all recent fraud report items that were marked as confirmed"
+            }
+        ]
+    },
+    {
+        "type": "tagmod",
+        "title": "Tagmod Help Guid",
+        "description": "Welcome to the Tagmod Zone",
+        "fields": [
+            {
+                "title": "->tag mod info #tag [card]",
+                "description": "Displays info about a tag as well as the user ID of the person who created it"
+            },
+            {
+                "title": "->tag list [starts_with]",
+                "description": "Displays a list of unique tag names that are visible on cards. Starts_with will filter to only those that start with your query"
+            },
+            {
+                "title": "->tag remove #tag [card]",
+                "description": "Removes a tag from a card"
+            },
+            {
+                "title": "->tag ban #tag [card]",
+                "description": "Removes a tag from a card, and gives the user a strike on their account, as well as a PM. 3 strikes and they are out"
+            },
+            {
+                "title": "->tag restore #tag [card]",
+                "description": "Restores a tag, if the tag was banned. Removes a strike and DM's the user to let them know"
+            },
+            {
+                "title": "->audit user tags [user_id]",
+                "description": "Acts like `->tags created` but as the queried user. Lists in order of date created"
+            },
+            {
+                "title": "Now-written edge cases",
+                "description": "**Collection name** can bypass the need for underscores if it is as displayed in col info.\n**#incest may be valid**, delete it anyway\n**#meme is nox allowed**, for cards that are funny/art that is funny\n**English only**, unless a borrowed word used commonly in english\n**Card name tags**, Remove, especially if broken into multiple pieces(e.g. Gift of Senko = #gift #of #senko, gift and senko would be valid because of the art, of would not) "
+            }
+
+        ]
+    }
+]

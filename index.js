@@ -169,6 +169,7 @@ module.exports.create = async ({
         prefix,
         dbl,
         audit: auditc,
+        audithelp: require('./staticdata/auditHelp'),
         eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel,
