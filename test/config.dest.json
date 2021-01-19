@@ -15,7 +15,15 @@
     "evalc": {
         "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],
         "evalUserRate": 0.25,
-        "evalVialRate": 0.055
+        "evalVialRate": 0.055,
+        "aucEval": {
+            "minSamples": 5,
+            "maxSamples": 15,
+            "lowerBoundary": 0.5,
+            "upperBoundary": 4.0,
+            "aucFailMultiplier": 0.95,
+            "evalUpdateChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+        }
     },
     "dbl": {
         "token": "",

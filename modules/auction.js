@@ -23,8 +23,8 @@ const {
 } = require('./card')
 
 const {
-    fetchInfo
-} = require('./meta')
+    aucEvalChecks
+} = require("./eval");
 
 const {
     from_auc
@@ -34,6 +34,7 @@ const {
 const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
+
 
 const aucHide   = 5 * 60 * 1000
 
@@ -141,8 +142,6 @@ const finish_aucs = async (ctx, now) => {
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
-        const cardInfo = fetchInfo(ctx, auc.card)
-        cardInfo.aucprices.push(auc.price)
         //Audit Logic Start
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
@@ -157,7 +156,7 @@ const finish_aucs = async (ctx, now) => {
         await lastBidder.save()
         await author.save()
         await from_auc(auc, author, lastBidder)
-        await cardInfo.save()
+        await aucEvalChecks(ctx, auc.card, auc.price)
 
         await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
@@ -171,6 +170,7 @@ const finish_aucs = async (ctx, now) => {
         }
         addUserCard(author, auc.card)
         await author.save()
+        await aucEvalChecks(ctx, auc.card, auc.price, false)
         return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
             You got your card back.`, 'yellow')
     }

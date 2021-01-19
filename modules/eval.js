@@ -113,14 +113,38 @@ const checkQueue = async (ctx) => {
 
 const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
-    return Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
-        * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+    const info = fetchInfo(ctx, card.id)
+    if (info.aucprices.length < ctx.eval.aucEval.minSamples) {
+        return Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+    } else {
+        return Math.round(((info.aucprices.reduce((a, b) => a + b) / info.aucprices.length)
+            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+    }
 
+
+}
+
+const aucEvalChecks = async (ctx, card_id, aucPrice, success = true) => {
+    const info = fetchInfo(ctx, card_id)
+    const card = ctx.cards[card_id]
+    let eval = evalCardFast(ctx, card)
+    if (!success) {
+        info.aucprices.push(eval * ctx.eval.aucEval.aucFailMultiplier)
+    } else {
+        const withinBounds = aucPrice > (eval * ctx.eval.aucEval.minBounds) && aucPrice < (eval * ctx.eval.aucEval.maxBounds)
+        if (withinBounds)
+            info.aucprices.push(aucPrice)
+    }
+    if (info.aucprices.length > ctx.eval.aucEval.maxSamples)
+        info.aucprices.shift()
+    await info.save()
 }
 
 const getQueueTime = () => evalQueue.length * queueTick
 
 module.exports = {
+    aucEvalChecks,
     evalCard,
     evalCardFast,
     updateCardUserCount,
