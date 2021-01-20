@@ -20,8 +20,8 @@
             "minSamples": 5,
             "maxSamples": 15,
             "lowerBoundary": 0.5,
-            "upperBoundary": 4.0,
-            "aucFailMultiplier": 0.95,
+            "upperBoundary": 5.0,
+            "aucFailMultiplier": 0.78,
             "evalUpdateChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
         }
     },

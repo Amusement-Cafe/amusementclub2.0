@@ -114,11 +114,20 @@ const checkQueue = async (ctx) => {
 const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
     const info = fetchInfo(ctx, card.id)
+
+
+    let priceFloor = (ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0)) / 2
+
     if (info.aucprices.length < ctx.eval.aucEval.minSamples) {
+        console.log("Rarity Eval")
         return Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
     } else {
-        return Math.round(((info.aucprices.reduce((a, b) => a + b) / info.aucprices.length)
+        let evalCalc = ((info.aucprices.reduce((a, b) => a + b) / info.aucprices.length)) / 2
+        if (evalCalc < priceFloor)
+            evalCalc = priceFloor
+        console.log("auction Eval")
+        return Math.round((evalCalc
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
     }
 
@@ -129,8 +138,9 @@ const aucEvalChecks = async (ctx, card_id, aucPrice, success = true) => {
     const info = fetchInfo(ctx, card_id)
     const card = ctx.cards[card_id]
     let eval = evalCardFast(ctx, card)
-    if (!success) {
-        info.aucprices.push(eval * ctx.eval.aucEval.aucFailMultiplier)
+    if (!success && eval !== 0) {
+        let float = parseFloat((eval * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
+        info.aucprices.push(float)
     } else {
         const withinBounds = aucPrice > (eval * ctx.eval.aucEval.minBounds) && aucPrice < (eval * ctx.eval.aucEval.maxBounds)
         if (withinBounds)
