@@ -152,7 +152,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     if(newCards.length > 0) {
-        bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
+        await bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
     }
 
     if(price != normalprice) {
