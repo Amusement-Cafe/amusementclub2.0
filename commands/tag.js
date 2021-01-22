@@ -402,7 +402,7 @@ pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
     })
 })
 
-pcmd(['admin','mod', 'tagmod', 'auditor'], ['tagmod', 'help'], async (ctx, user) => {
+pcmd(['admin','mod', 'tagmod'], ['tagmod', 'help'], async (ctx, user) => {
 
     const help = ctx.audithelp.find(x => x.type === 'tagmod')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
