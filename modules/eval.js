@@ -136,15 +136,25 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
 
 }
 
-const aucEvalChecks = async (ctx, card_id, aucPrice, success = true) => {
+const aucEvalChecks = async (ctx, auc, success = true) => {
+    if (!success && auc.cancelled)
+        return
+
+    let card_id = auc.card
+    let aucPrice = auc.price
     const info = fetchInfo(ctx, card_id)
     const card = ctx.cards[card_id]
     let eval = evalCardFast(ctx, card)
+
     let lastEval, evalDiff
     info.lasttoldeval < 0? lastEval = eval: lastEval = info.lasttoldeval
     info.auccount += 1
     if (!success && eval !== 0) {
         let float = parseFloat((eval * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
+
+        if (auc.price > eval)
+            float = eval
+
         info.aucprices.push(float)
     } else {
         const withinBounds = aucPrice > (eval * ctx.eval.aucEval.minBounds) && aucPrice < (eval * ctx.eval.aucEval.maxBounds)

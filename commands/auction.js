@@ -286,6 +286,7 @@ cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
         check,
         onConfirm: async () => {
             auc.expires = new Date(0)
+            auc.cancelled = true
             await auc.save()
 
             return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)

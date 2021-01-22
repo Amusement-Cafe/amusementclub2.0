@@ -4,6 +4,7 @@ module.exports = model('Auction', {
     id:             { type: String },
 
     finished:       { type: Boolean, default: false },
+    cancelled:      { type: Boolean, default: false },
     price:          { type: Number, default: 0 },
     highbid:        { type: Number, default: 0 },
 

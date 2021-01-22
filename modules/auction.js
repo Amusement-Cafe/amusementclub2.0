@@ -156,7 +156,7 @@ const finish_aucs = async (ctx, now) => {
         await lastBidder.save()
         await author.save()
         await from_auc(auc, author, lastBidder)
-        await aucEvalChecks(ctx, auc.card, auc.price)
+        await aucEvalChecks(ctx, auc)
 
         await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
@@ -170,7 +170,7 @@ const finish_aucs = async (ctx, now) => {
         }
         addUserCard(author, auc.card)
         await author.save()
-        await aucEvalChecks(ctx, auc.card, auc.price, false)
+        await aucEvalChecks(ctx, auc, false)
         return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
             You got your card back.`, 'yellow')
     }
