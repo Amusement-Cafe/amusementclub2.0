@@ -117,18 +117,20 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
     const info = fetchInfo(ctx, card.id)
 
-
+    let price
     let priceFloor = (ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0)) / 2
 
     if (info.aucprices.length < ctx.eval.aucEval.minSamples) {
-        return Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+        price = Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+        return price === Infinity? 0 : price
     } else {
         let evalCalc = ((info.aucprices.reduce((a, b) => a + b) / info.aucprices.length)) / 2
         if (evalCalc < priceFloor)
             evalCalc = priceFloor
-        return Math.round((evalCalc
+        price =  Math.round((evalCalc
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+        return price === Infinity? 0 : price
     }
 
 

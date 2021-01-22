@@ -344,7 +344,7 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         } else {
             price = NaN
         }
-        if(card.level < 4) {
+        if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })
@@ -374,7 +374,7 @@ cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedar
         } else {
             price = NaN
         }
-        if(card.level < 4) {
+        if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval)
         }
     })
