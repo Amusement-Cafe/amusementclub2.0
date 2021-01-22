@@ -28,7 +28,7 @@ const evalCard = async (ctx, card, modifier = 1) => {
 
 const evalCardFast = (ctx, card) => {
     const info = fetchInfo(ctx, card.id)
-    if(info.ownercount > -1) {
+    if(info.ownercount > 0) {
         return getEval(ctx, card, info.ownercount)
     }
 

@@ -154,7 +154,7 @@ module.exports = [
 
             user.dailystats.claims -= 4
 
-            return { msg: `claim cost has been reset to **${claimCost(user, 0, user.dailystats.claims)}**`, used: true }
+            return { msg: `claim cost has been reset to **${user.dailystats.claims * 50}**`, used: true }
         }
     }, {
         id: 'memoryxmas',
