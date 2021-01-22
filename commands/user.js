@@ -474,7 +474,8 @@ cmd('quest', 'quests', async (ctx, user) => {
 })
 
 cmd('stats', async (ctx, user) => {
-    const keys = Object.keys(user.dailystats).filter(x => !x.startsWith('effect_'))
+    const keys = Object.keys(user.dailystats).filter(x => user.dailystats[x] > 0 && user.dailystats[x] !== true)
+
     if(keys.length === 0)
         return ctx.reply(user, `no statistics to display today`)
 
