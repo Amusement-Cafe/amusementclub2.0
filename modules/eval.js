@@ -147,7 +147,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     let eval = evalCardFast(ctx, card)
 
     let lastEval, evalDiff
-    
+
     info.lasttoldeval < 0? lastEval = eval: lastEval = info.lasttoldeval
     info.auccount += 1
 

@@ -28,6 +28,12 @@ module.exports = model('User', {
         forge2:         {type: Number, default: 0},
         forge3:         {type: Number, default: 0},
     },
+    effectusecount:     {
+        memoryxmas:     {type: Number, default: 0},
+        memoryhall:     {type: Number, default: 0},
+        memorybday:     {type: Number, default: 0},
+        memoryval:      {type: Number, default: 0},
+    },
 
     cards:              { type: Array, default: [] },
     inventory:          { type: Array, default: [] },
