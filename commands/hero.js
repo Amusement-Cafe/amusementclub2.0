@@ -227,11 +227,6 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     if(effect.cooldownends > now)
         return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
 
-    const dailystatname = `effect_${effect.id}`
-    if(user.dailystats[dailystatname])
-        return ctx.reply(user, `effects can be used only once per day. 
-            Try using it once again after you run \`->daily\``, 'red')
-
     const res = await effect.use(ctx, user, args.slice(1))
     if(!res.used)
         return ctx.reply(user, res.msg, 'red')
@@ -242,9 +237,6 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
     user.effects = user.effects.filter(x => x.uses === undefined || x.uses > 0)
     user.markModified('effects')
-
-    user.dailystats[dailystatname] = true
-    user.markModified('dailystats')
 
     await user.save()
 

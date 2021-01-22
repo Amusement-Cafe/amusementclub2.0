@@ -7,7 +7,7 @@ module.exports = {
             tier: 1,
             can_drop: true,
             actions: ['claim', 'cl'],
-            check: (ctx, user) => user.dailystats.claims >= 4,
+            check: (ctx, user) => user.dailystats.totalregclaims >= 4,
             resolve: (ctx, user) => {
                 user.exp += 600
                 user.xp += 2
@@ -20,7 +20,7 @@ module.exports = {
             tier: 2,
             can_drop: true,
             actions: ['claim', 'cl'],
-            check: (ctx, user) => user.dailystats.claims >= 8,
+            check: (ctx, user) => user.dailystats.totalregclaims >= 8,
             resolve: (ctx, user) => {
                 user.exp += 1400
                 user.xp += 5

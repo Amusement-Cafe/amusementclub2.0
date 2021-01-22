@@ -135,7 +135,7 @@ module.exports = [
             let excludedEffects = ["memoryval", "memoryxmas", "memorybday", "memoryhall", "judgeday"]
 
             if(excludedEffects.includes(effect.id))
-                return { msg: `you cannot use that effect card`, used: false }
+                return { msg: `you cannot use that effect card with Judgment Day`, used: false }
 
             const res = await effect.use(ctx, user, args.slice(1))
             return res
@@ -143,13 +143,18 @@ module.exports = [
     }, {
         id: 'claimrecall',
         name: 'Claim Recall',
-        desc: 'Refunds previous claim cost (excluding tax) when used. For multiple card claims it refunds cost of the last card claimed',
+        desc: 'Claim cost gets recalled by 4 claims, as if they never happened',
         passive: false,
         cooldown: 15,
         use: async (ctx, user) => {
-            const cost = claimCost(user, 0, 1, user.dailystats.claims - 1 || 0)
-            user.exp += cost
-            return { msg: `you got **${cost}** ${ctx.symbols.tomato} back`, used: true }
+            let validUse = user.dailystats.claims > 4
+
+            if (!validUse)
+                return { msg: `you can only use Claim Recall when you have claimed more than 4 cards!`, used: false }
+
+            user.dailystats.claims -= 4
+
+            return { msg: `claim cost has been reset to **${claimCost(user, 0, user.dailystats.claims)}**`, used: true }
         }
     }, {
         id: 'memoryxmas',

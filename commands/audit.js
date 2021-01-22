@@ -370,22 +370,12 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
 
     let effects = findUser.effects.map(x => x.id)
 
-    let dailies = {
-        claims: findUser.dailystats.claims ? findUser.dailystats.claims : 0,
-        pclaims: findUser.dailystats.promoclaims ? findUser.dailystats.promoclaims : 0,
-        bids: findUser.dailystats.bids ? findUser.dailystats.bids : 0,
-        auctions: findUser.dailystats['aucs'] ? findUser.dailystats['aucs'] : 0,
-        liq: findUser.dailystats.liquify ? findUser.dailystats.liquify : 0,
-        draw: findUser.dailystats['draw'] ? findUser.dailystats['draw'] : 0,
-        tags: findUser.dailystats.tags ? findUser.dailystats.tags : 0,
-        forge1: findUser.dailystats['forge1'] ? findUser.dailystats['forge1'] : 0,
-        forge2: findUser.dailystats['forge2'] ? findUser.dailystats['forge2'] : 0,
-        forge3: findUser.dailystats['forge3'] ? findUser.dailystats['forge3'] : 0
-    }
     const dailyStats = `
-    Claims: **${dailies.claims}** (+${dailies.pclaims} Promo), Bids: **${dailies.bids}**, Auctions: **${dailies.auctions}**
-    Liq: **${dailies.liq}**, Draw: **${dailies.draw}**, Tags: **${dailies.tags}**
-    Forge1: **${dailies.forge1}**, Forge2: **${dailies.forge2}**, Forge3: **${dailies.forge3}**`
+    Claims: (Current: **${findUser.dailystats.claims}**, Total: **${findUser.dailystats.totalregclaims}**, Promo: **${findUser.dailystats.promoclaims}**) 
+    Bids: **${findUser.dailystats.bids}**, Auctions: **${findUser.dailystats.aucs}**, Tags: **${findUser.dailystats.tags}**
+    Liq: **${findUser.dailystats.liquify}**, Liq1: **${findUser.dailystats.liquify1}**, Liq2: **${findUser.dailystats.liquify2}**, Liq3: **${findUser.dailystats.liquify3}**
+    Draw: **${findUser.dailystats.draw}**, Draw1: **${findUser.dailystats.draw1}**, Draw2: **${findUser.dailystats.draw2}**, Draw3: **${findUser.dailystats.draw3}**
+    Forge1: **${findUser.dailystats.forge1}**, Forge2: **${findUser.dailystats.forge2}**, Forge3: **${findUser.dailystats.forge3}**`
 
 
     let embed = {

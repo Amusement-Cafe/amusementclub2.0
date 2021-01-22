@@ -298,7 +298,7 @@
         "name": "Claim Recall",
         "price": 6200,
         "type": "recipe",
-        "desc": "refund claims",
+        "desc": "recalls claims",
         "fulldesc": "When used gives you **Claim Recall** effect card. This is a usable card",
         "recipe": [1, 1, 1, 2, 2, 2],
         "lasts": 28

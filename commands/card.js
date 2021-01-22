@@ -138,6 +138,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         }
         await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
+        user.dailystats.totalregclaims += amount
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
             max++
     }

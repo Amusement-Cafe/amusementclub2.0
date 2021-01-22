@@ -73,13 +73,13 @@ const paginate_auditReports = (ctx, user, list, report) => {
     switch (report) {
         case 1:
             list.map((t, i) => {
-                if (i % 10 == 0) pages.push("")
+                if (i % 10 == 0) pages.push("**Username | User ID | Sold | Unsold | Sell %**\n")
                 pages[Math.floor(i/10)] += `${format_overSell(ctx, user, t)}\n`
             })
             break
         case 2:
             list.map((t, i) => {
-                if (i % 10 == 0) pages.push("")
+                if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Over Eval X | Eval | Promo?**\n")
                 pages[Math.floor(i/10)] += `${format_overPrice(ctx, user, t)}\n`
             })
             break
@@ -115,15 +115,17 @@ const paginate_closedAudits = (ctx, user, list) => {
 const format_overSell = (ctx, user, auc) => {
     let resp = ""
     let sellPerc = (auc.sold / (auc.sold + auc.unsold)) * 100
-    resp += `${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell% ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
+    resp += `${auc.name} | \`${auc.user}\` | ${auc.sold} | ${auc.unsold} | ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
 
     return resp;
 }
 
 const format_overPrice = (ctx, user, auc) => {
     let resp = ""
-
-    resp += `AuditID: \`${auc.audit_id}\` **${auc.id}** sold \`${auc.card}\` for ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})}x eval of ${auc.eval} with ${auc.price} finishing in ${auc.bids} bids`
+    let col
+    if (!isNaN(auc.card[0]))
+        col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${auc.price}**${ctx.symbols.tomato} | ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})} | ${auc.eval} | ${col? col.promo : 'false'} `
 
     return resp;
 }
@@ -134,7 +136,7 @@ const format_rebuys = (ctx, user, auc) => {
     if (!isNaN(auc.card[0]))
         col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
 
-    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | ${auc.price} | ${auc.transid} | ${auc.transprice} | ${col? col.promo : 'unknown'}`
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${auc.price}**${ctx.symbols.tomato} | ${auc.transid} | **${auc.transprice}**${ctx.symbols.tomato} | ${col? col.promo : 'false'}`
 
     return resp;
 }
