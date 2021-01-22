@@ -147,8 +147,10 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     let eval = evalCardFast(ctx, card)
 
     let lastEval, evalDiff
+    
     info.lasttoldeval < 0? lastEval = eval: lastEval = info.lasttoldeval
     info.auccount += 1
+
     if (!success && eval !== 0) {
         let float = parseFloat((eval * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
 
@@ -158,6 +160,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         info.aucprices.push(float)
     } else {
         const withinBounds = aucPrice > (eval * ctx.eval.aucEval.minBounds) && aucPrice < (eval * ctx.eval.aucEval.maxBounds)
+
         if (withinBounds)
             info.aucprices.push(aucPrice)
     }
@@ -166,10 +169,12 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
 
     if (info.auccount % 5 === 0) {
         let newEval = await evalCard(ctx, card)
+
         if (lastEval > newEval)
             evalDiff = `-${lastEval - newEval}`
         else
             evalDiff = `+${newEval - lastEval}`
+
         let pricesEmbed = {
             author: { name: `New Eval for card ${card.name}, ID: ${card.id}` },
             fields: [
@@ -201,7 +206,9 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
             ],
             color: colors.green
         }
+
         info.lasttoldeval = newEval
+
         if (ctx.eval.aucEval.evalUpdateChannel)
             await ctx.send(ctx.eval.aucEval.evalUpdateChannel, pricesEmbed)
     }
