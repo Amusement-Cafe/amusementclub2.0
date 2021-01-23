@@ -4,16 +4,16 @@ const {
     cap,
     tryGetUserID,
     nameSort,
-    escapeRegex
+    escapeRegex,
 } = require('../utils/tools')
 
 const { 
     bestColMatch, 
-    bestColMatchMulti 
+    bestColMatchMulti,
 } = require('./collection')
 
 const { 
-    fetchTaggedCards 
+    fetchTaggedCards,
 } = require('./tag')
 
 const { 

@@ -1,7 +1,7 @@
 const User      = require('../collections/user')
 const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
-const cardMod   = require("./card");
+const cardMod   = require('./card');
 const colors    = require('../utils/colors')
 
 const {

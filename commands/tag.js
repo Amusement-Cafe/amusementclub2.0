@@ -19,7 +19,7 @@ const {
     fetchTagNames,
     fetchUserTags,
     logTagAudit,
-    logTagAdd
+    logTagAdd,
 } = require('../modules/tag')
 
 const {

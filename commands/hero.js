@@ -6,16 +6,16 @@ const colors        = require('../utils/colors')
 const Guild         = require('../collections/guild')
 
 const {
-    fetchOnly
+    fetchOnly,
 } = require('../modules/user')
 
 const {
-    XPtoLEVEL
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
     formatUserEffect,
-    withUserEffects
+    withUserEffects,
 } = require('../modules/effect')
 
 const { 
@@ -24,15 +24,15 @@ const {
     get_userSubmissions,
     withHeroes,
     getInfo,
-    reloadCache
+    reloadCache,
 } = require('../modules/hero')
 
 const { 
-    itemInfo
+    itemInfo,
 } = require('../modules/item')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const Anilist = new anilist();

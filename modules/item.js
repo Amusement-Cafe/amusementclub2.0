@@ -7,13 +7,13 @@ const {
     getGuildUser,
     isUserOwner,
     addGuildXP,
-    getBuilding
+    getBuilding,
 } = require('./guild')
 
 const {
     addUserCard,
     removeUserCard,
-    formatName
+    formatName,
 } = require('./card')
 
 const mapUserInventory = (ctx, user) => {

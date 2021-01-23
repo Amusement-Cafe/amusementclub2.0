@@ -9,12 +9,12 @@ const _ = require('lodash')
 
 const {
     claimCost, 
-    promoClaimCost
+    promoClaimCost,
 } = require('../utils/tools')
 
 const {
     bestColMatch,
-    completed
+    completed,
 } = require('../modules/collection')
 
 const {
@@ -43,11 +43,11 @@ const {
 
 const {
     addGuildXP,
-    getBuilding
+    getBuilding,
 } = require('../modules/guild')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {

@@ -4,30 +4,30 @@ const {generateNextId}                = require('../utils/tools')
 const {fetchOnly}                     = require('./user')
 
 const {
-    completed
+    completed,
 } = require('../modules/collection')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {
     eval_fraud_check,
-    audit_auc_stats
+    audit_auc_stats,
 } = require('./audit')
 
 const {
     formatName,
     removeUserCard,
-    addUserCard
+    addUserCard,
 } = require('./card')
 
 const {
-    aucEvalChecks
+    aucEvalChecks,
 } = require("./eval");
 
 const {
-    from_auc
+    from_auc,
 } = require('./transaction')
 
 

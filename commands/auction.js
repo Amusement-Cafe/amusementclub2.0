@@ -10,18 +10,18 @@ const {
     new_auc,
     paginate_auclist,
     bid_auc,
-    format_auc
+    format_auc,
 } = require('../modules/auction')
 
 const {
     formatName,
     withCards,
     bestMatch,
-    withGlobalCards
+    withGlobalCards,
 } = require('../modules/card')
 
 const {
-    getBuilding
+    getBuilding,
 } = require('../modules/guild')
 
 cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {

@@ -5,7 +5,7 @@ const colors    = require('../utils/colors')
 const { 
     itemInfo,
     buyItem,
-    withItem
+    withItem,
 } = require('../modules/item')
 
 cmd('store', 'shop', async (ctx, user, cat) => {

@@ -6,7 +6,7 @@ const pjson             = require('../package.json');
 const { fetchOnly }     = require('../modules/user')
 const { 
     arrayChunks, 
-    getAllUserIDs 
+    getAllUserIDs,
 } = require('../utils/tools')
 
 cmd('help', async (ctx, user, ...args) => {

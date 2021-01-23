@@ -2,25 +2,25 @@ const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
 
 const {
-    User, Transaction, Audit, Auction
+    User, Transaction, Audit, Auction,
 }   = require('../collections')
 
 const {
-    generateNextId
+    generateNextId,
 } = require('../utils/tools')
 
 const {
     addUserCard, 
     removeUserCard,
-    formatName
+    formatName,
 } = require('./card')
 
 const {
-    completed
+    completed,
 } = require('./collection')
 
 const {
-    trans_fraud_check
+    trans_fraud_check,
 } = require('./audit')
 
 const new_trs = async (ctx, user, cards, price, to_id) => {

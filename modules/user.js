@@ -3,7 +3,7 @@ const _         = require('lodash')
 const asdate    = require('add-subtract-date')
 
 const {
-    getAllUserIDs
+    getAllUserIDs,
 } = require('../utils/tools')
 
 const fetchOrCreate = async (ctx, userid, username) => {

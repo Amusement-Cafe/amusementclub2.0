@@ -8,7 +8,7 @@ const dateFormat                = require(`dateformat`)
 
 const {
     paginate_trslist,
-    ch_map
+    ch_map,
 } = require('../modules/transaction')
 
 const {
@@ -16,7 +16,7 @@ const {
     formatName,
     mapUserCards,
     parseArgs,
-    withGlobalCards
+    withGlobalCards,
 }   = require('../modules/card')
 
 const {
@@ -25,7 +25,7 @@ const {
     paginate_auditReports,
     paginate_guildtrslist,
     paginate_closedAudits,
-    parseAuditArgs
+    parseAuditArgs,
 }   = require("../modules/audit");
 
 const {

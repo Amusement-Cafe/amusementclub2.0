@@ -2,17 +2,17 @@ const {pcmd} = require('../utils/cmd')
 
 const {
     onUsersFromArgs,
-    fetchOnly
+    fetchOnly,
 } = require('../modules/user')
 
 const {
-    byAlias
+    byAlias,
 } = require('../modules/collection')
 
 const {
     checkGuildLoyalty,
     get_hero,
-    getGuildScore
+    getGuildScore,
 } = require('../modules/hero')
 
 const {
@@ -24,7 +24,7 @@ const {
 } = require('../modules/card')
 
 const {
-    fetchInfo
+    fetchInfo,
 } = require("../modules/meta");
 
 const colors = require('../utils/colors')

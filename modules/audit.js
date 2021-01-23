@@ -6,11 +6,15 @@ const {formatName}       = require('./card')
 const {byAlias}          = require('./collection')
 
 const {
-    generateNextId, tryGetUserID
+    generateNextId,
+    tryGetUserID,
 } = require('../utils/tools')
 
 const {
-    Audit, AuditAucSell, Auction, Tag
+    Audit,
+    AuditAucSell,
+    Auction,
+    Tag,
 } = require('../collections')
 
 

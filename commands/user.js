@@ -8,7 +8,7 @@ const {
     cap,
     claimCost,
     promoClaimCost,
-    XPtoLEVEL
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
@@ -17,18 +17,18 @@ const {
     withGlobalCards,
     parseArgs,
     filter,
-    mapUserCards
+    mapUserCards,
 } = require('../modules/card')
 
 const {
     fetchOnly,
-    getQuest
+    getQuest,
 } = require('../modules/user')
 
 const {
     addGuildXP,
     getBuilding,
-    rankXP
+    rankXP,
 } = require('../modules/guild')
 
 const {
@@ -40,25 +40,25 @@ const {
 } = require('../modules/item')
 
 const {
-    getPending
+    getPending,
 } = require('../modules/transaction')
 
 const {
-    fetchTaggedCards
+    fetchTaggedCards,
 } = require('../modules/tag')
 
 const { 
-    get_hero
+    get_hero,
 }   = require('../modules/hero')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {
     getQueueTime,
     getVialCostFast,
-    evalCardFast
+    evalCardFast,
 } = require('../modules/eval')
 
 cmd('bal', 'balance', (ctx, user) => {
