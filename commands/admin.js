@@ -209,6 +209,7 @@ pcmd(['admin', 'mod'], ['sudo', 'reset', 'eval'], async (ctx, user, arg) => {
     if (!info)
         return ctx.reply(user, 'card not found!', 'red')
     info.aucprices = []
+    info.auccount = 0
     await info.save()
     return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
 })
