@@ -5,7 +5,7 @@ const asdate            = require('add-subtract-date')
 
 const {
     XPtoLEVEL,
-    LEVELtoXP
+    LEVELtoXP,
 } = require('../utils/tools')
 
 const {
@@ -22,20 +22,20 @@ const {
 } = require('../modules/guild')
 
 const {
-    fetchOnly
+    fetchOnly,
 } = require('../modules/user')
 
 const {
-    parseArgs
+    parseArgs,
 } = require('../modules/card')
 
 const {
-    get_hero
+    get_hero,
 } = require('../modules/hero')
 
 const {
     byAlias,
-    bestColMatch
+    bestColMatch,
 } = require('../modules/collection')
 
 cmd(['guild'], async (ctx, user) => {

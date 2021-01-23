@@ -6,7 +6,7 @@ const pjson             = require('../package.json');
 const { fetchOnly }     = require('../modules/user')
 const { 
     arrayChunks, 
-    getAllUserIDs 
+    getAllUserIDs,
 } = require('../utils/tools')
 
 cmd('help', async (ctx, user, ...args) => {
@@ -122,3 +122,7 @@ const pats = [
     '(*´・ω・)ノ(-ω-｀*)',
     '(o・_・)ノ”(ノ_＜。)'
 ]
+
+module.exports = {
+    getHelpEmbed
+}

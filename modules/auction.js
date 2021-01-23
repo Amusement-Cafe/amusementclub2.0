@@ -1,29 +1,40 @@
-const {Auction, Audit, AuditAucSell}  = require('../collections')
+const {Auction, AuditAucSell}         = require('../collections')
 const {evalCard}                      = require("../modules/eval");
 const {generateNextId}                = require('../utils/tools')
 const {fetchOnly}                     = require('./user')
 
 const {
-    completed
+    completed,
 } = require('../modules/collection')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
+
+const {
+    eval_fraud_check,
+    audit_auc_stats,
+} = require('./audit')
 
 const {
     formatName,
     removeUserCard,
-    addUserCard
+    addUserCard,
 } = require('./card')
 
 const {
-    from_auc
+    aucEvalChecks,
+} = require("./eval");
+
+const {
+    from_auc,
 } = require('./transaction')
+
 
 const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
+
 
 const aucHide   = 5 * 60 * 1000
 
@@ -134,28 +145,9 @@ const finish_aucs = async (ctx, now) => {
         //Audit Logic Start
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
-        if (auc.price > eval * 4) {
-            const auditDB = await new Audit()
-            const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
-            auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
-            auditDB.id = auc.id
-            auditDB.card = aucCard.name
-            auditDB.bids = auc.bids.length
-            auditDB.finished = auc.finished
-            auditDB.eval = eval
-            auditDB.price = auc.price
-            auditDB.price_over = auc.price / eval
-            auditDB.report_type = 2
-            auditDB.time = new Date()
-            await auditDB.save()
-        }
+        await eval_fraud_check(ctx, auc, eval, aucCard)
         if(!findSell){
-            const sellDB = await new AuditAucSell()
-            sellDB.user = author.discord_id
-            sellDB.name = author.username
-            sellDB.sold = 1
-            sellDB.time = new Date()
-            await sellDB.save()
+            await audit_auc_stats(ctx, author, true)
         }else {
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
         }
@@ -164,6 +156,7 @@ const finish_aucs = async (ctx, now) => {
         await lastBidder.save()
         await author.save()
         await from_auc(auc, author, lastBidder)
+        await aucEvalChecks(ctx, auc)
 
         await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
@@ -171,17 +164,13 @@ const finish_aucs = async (ctx, now) => {
             ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
     } else {
         if(!findSell){
-            const sellDB = await new AuditAucSell()
-            sellDB.user = author.discord_id
-            sellDB.name = author.username
-            sellDB.unsold = 1
-            sellDB.time = new Date()
-            await sellDB.save()
+            await audit_auc_stats(ctx, author, false)
         }else {
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
         }
         addUserCard(author, auc.card)
         await author.save()
+        await aucEvalChecks(ctx, auc, false)
         return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
             You got your card back.`, 'yellow')
     }

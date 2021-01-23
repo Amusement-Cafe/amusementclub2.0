@@ -2,22 +2,26 @@ const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
 
 const {
-    User, Transaction, Audit, Auction
+    User, Transaction, Audit, Auction,
 }   = require('../collections')
 
 const {
-    generateNextId
+    generateNextId,
 } = require('../utils/tools')
 
 const {
     addUserCard, 
     removeUserCard,
-    formatName
+    formatName,
 } = require('./card')
 
 const {
-    completed
+    completed,
 } = require('./collection')
+
+const {
+    trans_fraud_check,
+} = require('./audit')
 
 const new_trs = async (ctx, user, cards, price, to_id) => {
     const target = await User.findOne({ discord_id: to_id })
@@ -93,21 +97,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         transaction.cards.map(async (x) => {
             addUserCard(to_user, x)
             await completed(ctx, to_user, ctx.cards[x])
-            const auditCheck = await Auction.findOne({ author: transaction.to_id, card: x,  "bids.0": { $exists: true }})
-            if (auditCheck) {
-                const auditDB = await new Audit()
-                const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
-                auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
-                auditDB.report_type = 3
-                auditDB.transid = transaction.id
-                auditDB.id = auditCheck.id
-                auditDB.price = auditCheck.price
-                auditDB.transprice =  transaction.price
-                auditDB.audited = false
-                auditDB.user = transaction.to
-                auditDB.card = x
-                await auditDB.save()
-            }
+            await trans_fraud_check(ctx, user, transaction, x)
         })
         await to_user.save()
         to_user.markModified('cards')

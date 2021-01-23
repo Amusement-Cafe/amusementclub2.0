@@ -10,11 +10,11 @@ const {
     withGlobalCards,
     bestMatch,
     removeUserCard,
-    withMultiQuery
+    withMultiQuery,
 } = require('../modules/card')
 
 const {
-    completed
+    completed,
 } = require('../modules/collection')
 
 const {
@@ -26,15 +26,15 @@ const {
 
 const {
     addGuildXP,
-    getBuilding
+    getBuilding,
 } = require('../modules/guild')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {
-    updateUser
+    updateUser,
 } = require('../modules/user')
 
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {

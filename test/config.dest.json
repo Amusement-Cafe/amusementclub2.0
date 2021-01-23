@@ -8,6 +8,7 @@
     "debug": true,
     "invite": "",
     "maintenance": false,
+    "uniqueFrequency": 10,
     "auditc": {
         "channel": ["DISCORD_VALID_CHANNEL_ID_GOES_HERE", "CAN TAKE MULTIPLE"],
         "taglogchannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
@@ -15,7 +16,15 @@
     "evalc": {
         "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],
         "evalUserRate": 0.25,
-        "evalVialRate": 0.055
+        "evalVialRate": 0.055,
+        "aucEval": {
+            "minSamples": 5,
+            "maxSamples": 15,
+            "minBounds": 0.5,
+            "maxBounds": 5.0,
+            "aucFailMultiplier": 0.78,
+            "evalUpdateChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+        }
     },
     "dbl": {
         "token": "",

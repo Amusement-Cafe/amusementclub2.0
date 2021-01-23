@@ -4,16 +4,16 @@ const {
     cap,
     tryGetUserID,
     nameSort,
-    escapeRegex
+    escapeRegex,
 } = require('../utils/tools')
 
 const { 
     bestColMatch, 
-    bestColMatchMulti 
+    bestColMatchMulti,
 } = require('./collection')
 
 const { 
-    fetchTaggedCards 
+    fetchTaggedCards,
 } = require('./tag')
 
 const { 
@@ -82,6 +82,8 @@ const parseArgs = (ctx, args, lastdaily) => {
                 case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
                 case '<star': q.sort = (a, b) => a.level - b.level; break
                 case '>star': q.sort = (a, b) => b.level - a.level; break
+                case '<col': q.sort = (a, b) => nameSort(a , b, "col"); break
+                case '>col': q.sort = (a, b) => nameSort(a , b, "col") * -1; break
                 case '<eval': 
                     q.sort = (a, b) => evalCardFast(ctx, a) - evalCardFast(ctx, b)
                     q.evalQuery = true

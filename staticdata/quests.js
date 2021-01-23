@@ -5,8 +5,9 @@ module.exports = {
             name: 'Claim 4 cards today',
             desc: '',
             tier: 1,
+            can_drop: true,
             actions: ['claim', 'cl'],
-            check: (ctx, user) => user.dailystats.claims >= 4,
+            check: (ctx, user) => user.dailystats.totalregclaims >= 4,
             resolve: (ctx, user) => {
                 user.exp += 600
                 user.xp += 2
@@ -17,8 +18,9 @@ module.exports = {
             name: 'Claim 8 cards today',
             desc: '',
             tier: 2,
+            can_drop: true,
             actions: ['claim', 'cl'],
-            check: (ctx, user) => user.dailystats.claims >= 8,
+            check: (ctx, user) => user.dailystats.totalregclaims >= 8,
             resolve: (ctx, user) => {
                 user.exp += 1400
                 user.xp += 5
@@ -29,6 +31,7 @@ module.exports = {
             name: 'Bid on 2 auctions today',
             desc: '',
             tier: 1,
+            can_drop: true,
             actions: ['auc', 'auction'],
             check: (ctx, user) => user.dailystats.bids >= 2,
             resolve: (ctx, user) => {
@@ -41,6 +44,7 @@ module.exports = {
             name: 'Bid on 4 auctions today',
             desc: '',
             tier: 2,
+            can_drop: true,
             actions: ['auc', 'auction'],
             check: (ctx, user) => user.dailystats.bids >= 4,
             resolve: (ctx, user) => {
@@ -53,6 +57,7 @@ module.exports = {
             name: 'Forge 1-star card',
             desc: '',
             tier: 1,
+            can_drop: true,
             building: 'smithhub1',
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge1 >= 1,
@@ -66,6 +71,7 @@ module.exports = {
             name: 'Forge 2-star card',
             desc: '',
             tier: 1,
+            can_drop: true,
             building: 'smithhub1',
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge2 >= 1,
@@ -80,6 +86,7 @@ module.exports = {
             name: 'Forge 3-star card',
             desc: '',
             tier: 2,
+            can_drop: true,
             building: 'smithhub1',
             actions: ['forge'],
             check: (ctx, user) => user.dailystats.forge3 >= 1,
@@ -94,6 +101,7 @@ module.exports = {
             name: 'Tag 2 cards',
             desc: '',
             tier: 1,
+            can_drop: false,
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 2,
             resolve: (ctx, user) => {
@@ -106,6 +114,7 @@ module.exports = {
             name: 'Tag 4 cards',
             desc: '',
             tier: 2,
+            can_drop: false,
             actions: ['tag'],
             check: (ctx, user) => user.dailystats.tags >= 4,
             resolve: (ctx, user) => {
@@ -118,6 +127,7 @@ module.exports = {
             name: 'Liquify 2 cards',
             desc: '',
             tier: 2,
+            can_drop: true,
             building: 'smithhub2',
             actions: ['liq', 'liquify'],
             check: (ctx, user) => user.dailystats.liquify >= 2,
@@ -131,6 +141,7 @@ module.exports = {
             name: 'Draw 2 cards',
             desc: '',
             tier: 2,
+            can_drop: true,
             building: 'smithhub2',
             actions: ['draw'],
             check: (ctx, user) => user.dailystats.draw >= 2,

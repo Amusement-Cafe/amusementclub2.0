@@ -1,12 +1,12 @@
 const {
     byAlias, 
     bestColMatch,
-    reset
+    reset,
 } = require('../modules/collection')
 
 const {
     formatName,
-    mapUserCards
+    mapUserCards,
 } = require('../modules/card')
 
 const {cmd}         = require('../utils/cmd')

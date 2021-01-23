@@ -6,7 +6,7 @@ const dateFormat            = require(`dateformat`)
 
 const {
     formatName,
-    withGlobalCards
+    withGlobalCards,
 }  = require('../modules/card')
 
 const {
@@ -14,7 +14,7 @@ const {
     decline_trs,
     paginate_trslist,
     ch_map,
-    getPending
+    getPending,
 } = require('../modules/transaction')
 
 cmd(['trans', 'confirm'], 'confirm', 'cfm', 'accept', (ctx, user, arg1) => {

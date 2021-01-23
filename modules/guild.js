@@ -8,7 +8,7 @@ const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
 
 const {
-    check_effect
+    check_effect,
 } = require('./effect')
 
 const m_hero = require('./hero')

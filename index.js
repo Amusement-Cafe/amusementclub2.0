@@ -34,7 +34,7 @@ module.exports.create = async ({
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
         maintenance, invite, data, dbl, 
-        analytics, evalc
+        analytics, evalc, uniqueFrequency
     }) => {
 
     const emitter = new Emitter()
@@ -152,6 +152,7 @@ module.exports.create = async ({
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: require('./staticdata/help'),
+        audithelp: require('./staticdata/auditHelp'),
         items: require('./staticdata/items'),
         achievements: require('./staticdata/achievements'),
         quests: require('./staticdata/quests'),
@@ -168,6 +169,7 @@ module.exports.create = async ({
         invite,
         prefix,
         dbl,
+        uniqueFrequency,
         audit: auditc,
         eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */

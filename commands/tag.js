@@ -3,6 +3,7 @@ const colors            = require('../utils/colors')
 const Tag               = require('../collections/tag')
 const {parseAuditArgs}  = require("../modules/audit")
 const dateFormat        = require('dateformat')
+const {getHelpEmbed}    = require('./misc')
 
 const {
     fetchOnly,
@@ -18,7 +19,7 @@ const {
     fetchTagNames,
     fetchUserTags,
     logTagAudit,
-    logTagAdd
+    logTagAdd,
 } = require('../modules/tag')
 
 const {
@@ -401,6 +402,13 @@ pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
     })
 })
 
+pcmd(['admin','mod', 'tagmod'], ['tagmod', 'help'], async (ctx, user) => {
+
+    const help = ctx.audithelp.find(x => x.type === 'tagmod')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+})
 
 
 

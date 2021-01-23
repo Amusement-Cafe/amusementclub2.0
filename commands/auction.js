@@ -10,18 +10,18 @@ const {
     new_auc,
     paginate_auclist,
     bid_auc,
-    format_auc
+    format_auc,
 } = require('../modules/auction')
 
 const {
     formatName,
     withCards,
     bestMatch,
-    withGlobalCards
+    withGlobalCards,
 } = require('../modules/card')
 
 const {
-    getBuilding
+    getBuilding,
 } = require('../modules/guild')
 
 cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -286,6 +286,7 @@ cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
         check,
         onConfirm: async () => {
             auc.expires = new Date(0)
+            auc.cancelled = true
             await auc.save()
 
             return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)

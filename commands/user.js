@@ -8,7 +8,7 @@ const {
     cap,
     claimCost,
     promoClaimCost,
-    XPtoLEVEL
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
@@ -17,18 +17,18 @@ const {
     withGlobalCards,
     parseArgs,
     filter,
-    mapUserCards
+    mapUserCards,
 } = require('../modules/card')
 
 const {
     fetchOnly,
-    getQuest
+    getQuest,
 } = require('../modules/user')
 
 const {
     addGuildXP,
     getBuilding,
-    rankXP
+    rankXP,
 } = require('../modules/guild')
 
 const {
@@ -40,25 +40,25 @@ const {
 } = require('../modules/item')
 
 const {
-    getPending
+    getPending,
 } = require('../modules/transaction')
 
 const {
-    fetchTaggedCards
+    fetchTaggedCards,
 } = require('../modules/tag')
 
 const { 
-    get_hero
+    get_hero,
 }   = require('../modules/hero')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {
     getQueueTime,
     getVialCostFast,
-    evalCardFast
+    evalCardFast,
 } = require('../modules/eval')
 
 cmd('bal', 'balance', (ctx, user) => {
@@ -151,7 +151,7 @@ cmd('daily', async (ctx, user) => {
         const quests = []
         const gbank = getBuilding(ctx, 'gbank')
         let amount = gbank? 800 : 400
-        const promoAmount = 500 + ((user.dailystats.promoclaims * 60) || 0)
+        const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
         //let amount = 5000
         const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
@@ -301,18 +301,26 @@ cmd('profile', async (ctx, user, ...args) => {
         const eval = evalCardFast(ctx, card)
         if(eval >= 0) {
             price += Math.round(eval) * card.amount
+        } else {
+            price = NaN
         }
-        if(card.level < 4 && eval !== 0) {
+        if(card.level < 4) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
-    if (pargs.ids.length > 0 && !isNaN(price))
+
+    if (pargs.ids.length > 0 && !isNaN(price)) {
         resp.push(`Cards Worth: **${price}** ${ctx.symbols.tomato} or **${vials} ${ctx.symbols.vial}**`)
-    else if (!isNaN(price))
+    } else if (!isNaN(price)) {
         resp.push(`Net Worth: **${price + user.exp}** ${ctx.symbols.tomato} or **${vials + user.vials} ${ctx.symbols.vial}**`)
+    } else {
+        const evalTime = getQueueTime()
+        resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
+    }
+
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
     if(completedSum > 0) {
@@ -466,7 +474,8 @@ cmd('quest', 'quests', async (ctx, user) => {
 })
 
 cmd('stats', async (ctx, user) => {
-    const keys = Object.keys(user.dailystats).filter(x => !x.startsWith('effect_'))
+    const keys = Object.keys(user.dailystats).filter(x => user.dailystats[x] > 0 && user.dailystats[x] !== true)
+
     if(keys.length === 0)
         return ctx.reply(user, `no statistics to display today`)
 

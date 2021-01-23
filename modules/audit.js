@@ -1,13 +1,21 @@
-const Audit              = require('../collections/audit')
-const AuditAucSell       = require('../collections/auditAucSell')
 const asdate             = require('add-subtract-date')
 const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
-const Tag                = require("../collections/tag");
 const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
-const {tryGetUserID}     = require('../utils/tools')
 const {byAlias}          = require('./collection')
+
+const {
+    generateNextId,
+    tryGetUserID,
+} = require('../utils/tools')
+
+const {
+    Audit,
+    AuditAucSell,
+    Auction,
+    Tag,
+} = require('../collections')
 
 
 
@@ -19,29 +27,74 @@ const clean_audits = async (ctx, now) => {
         console.log(`Cleaned ${auditClean.n} audit entries and ${auditAucSellClean.n} oversell entries`)
 }
 
+const trans_fraud_check = async (ctx, user, trans, card) => {
+    const auditCheck = await Auction.findOne({ author: trans.to_id, card: card,  "bids.0": { $exists: true }})
+    if (auditCheck) {
+        const auditDB = await new Audit()
+        const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+        auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
+        auditDB.report_type = auditCheck.lastbidder === trans.from_id? 4:3
+        auditDB.transid = trans.id
+        auditDB.id = auditCheck.id
+        auditDB.price = auditCheck.price
+        auditDB.transprice =  trans.price
+        auditDB.audited = false
+        auditDB.user = trans.to
+        auditDB.card = card
+        await auditDB.save()
+    }
+}
+
+const eval_fraud_check = async (ctx, auc, eval, card) => {
+    if (auc.price < eval * 4)
+        return
+    const auditDB = await new Audit()
+    const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
+    auditDB.audit_id = last_audit? generateNextId(last_audit.audit_id, 7) : generateNextId('aaaaaaa', 7)
+    auditDB.id = auc.id
+    auditDB.card = card.name
+    auditDB.bids = auc.bids.length
+    auditDB.finished = auc.finished
+    auditDB.eval = eval
+    auditDB.price = auc.price
+    auditDB.price_over = auc.price / eval
+    auditDB.report_type = 2
+    auditDB.time = new Date()
+    await auditDB.save()
+}
+
+const audit_auc_stats = async (ctx, user, sold) => {
+    const sellDB = await new AuditAucSell()
+    sellDB.user = user.discord_id
+    sellDB.name = user.username
+    sold? sellDB.sold = 1: sellDB.unsold = 1
+    sellDB.time = new Date()
+    await sellDB.save()
+}
+
 const paginate_auditReports = (ctx, user, list, report) => {
     const pages = []
     switch (report) {
         case 1:
             list.map((t, i) => {
-                if (i % 10 == 0) pages.push("")
+                if (i % 10 == 0) pages.push("**Username | User ID | Sold | Unsold | Sell %**\n")
                 pages[Math.floor(i/10)] += `${format_overSell(ctx, user, t)}\n`
             })
             break
         case 2:
             list.map((t, i) => {
-                if (i % 10 == 0) pages.push("")
+                if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Over Eval X | Eval | Promo?**\n")
                 pages[Math.floor(i/10)] += `${format_overPrice(ctx, user, t)}\n`
             })
             break
         case 3:
+        case 4:
             list.map((t, i) => {
                 if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Trans Id | Trans Amount | Promo?**\n")
                 pages[Math.floor(i/10)] += `${format_rebuys(ctx, user, t)}\n`
             })
             break
     }
-
     return pages;
 }
 
@@ -66,15 +119,17 @@ const paginate_closedAudits = (ctx, user, list) => {
 const format_overSell = (ctx, user, auc) => {
     let resp = ""
     let sellPerc = (auc.sold / (auc.sold + auc.unsold)) * 100
-    resp += `${auc.name}, \`${auc.user}\` has ${auc.sold} sold and ${auc.unsold} unsold auctions, Sell% ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
+    resp += `${auc.name} | \`${auc.user}\` | ${auc.sold} | ${auc.unsold} | ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
 
     return resp;
 }
 
 const format_overPrice = (ctx, user, auc) => {
     let resp = ""
-
-    resp += `AuditID: \`${auc.audit_id}\` **${auc.id}** sold \`${auc.card}\` for ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})}x eval of ${auc.eval} with ${auc.price} finishing in ${auc.bids} bids`
+    let col
+    if (!isNaN(auc.card[0]))
+        col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${auc.price}**${ctx.symbols.tomato} | ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})} | ${auc.eval} | ${col? col.promo : 'false'} `
 
     return resp;
 }
@@ -85,7 +140,7 @@ const format_rebuys = (ctx, user, auc) => {
     if (!isNaN(auc.card[0]))
         col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
 
-    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | ${auc.price} | ${auc.transid} | ${auc.transprice} | ${col? col.promo : 'unknown'}`
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${auc.price}**${ctx.symbols.tomato} | ${auc.transid} | **${auc.transprice}**${ctx.symbols.tomato} | ${col? col.promo : 'false'}`
 
     return resp;
 }
@@ -94,8 +149,7 @@ const formatGuildTrsList = (ctx, user, gtrans) => {
     let resp = ""
     const timediff = msToTime(new Date() - gtrans.time, {compact: true})
 
-    resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${formatName(ctx.cards[gtrans.card])}`
-    resp += `**${gtrans.from}** \`->\` **${gtrans.to}**`
+    resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${gtrans.cards.length} card(s) **${gtrans.from}** \`->\` **${gtrans.to}**`
     return resp;
 }
 
@@ -177,11 +231,14 @@ const parseAuditArgs = (ctx, args) => {
 
 module.exports = {
     auditFetchUserTags,
+    audit_auc_stats,
+    eval_fraud_check,
     paginate_auditReports,
     paginate_guildtrslist,
     paginate_closedAudits,
     parseAuditArgs,
     clean_audits,
     formatAucBidList,
-    formatGuildTrsList
+    formatGuildTrsList,
+    trans_fraud_check
 }

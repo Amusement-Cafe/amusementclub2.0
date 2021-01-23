@@ -9,12 +9,12 @@ const _ = require('lodash')
 
 const {
     claimCost, 
-    promoClaimCost
+    promoClaimCost,
 } = require('../utils/tools')
 
 const {
     bestColMatch,
-    completed
+    completed,
 } = require('../modules/collection')
 
 const {
@@ -43,11 +43,11 @@ const {
 
 const {
     addGuildXP,
-    getBuilding
+    getBuilding,
 } = require('../modules/guild')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {
@@ -138,6 +138,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         }
         await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
+        user.dailystats.totalregclaims += amount
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
             max++
     }
@@ -152,7 +153,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     if(newCards.length > 0) {
-        bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
+        await bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
     }
 
     if(price != normalprice) {
@@ -343,7 +344,7 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         } else {
             price = NaN
         }
-        if(card.level < 4 && eval !== 0) {
+        if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })
@@ -373,7 +374,7 @@ cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedar
         } else {
             price = NaN
         }
-        if(card.level < 4 && eval !== 0) {
+        if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval)
         }
     })

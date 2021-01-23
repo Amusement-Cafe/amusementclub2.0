@@ -1,6 +1,8 @@
 const User      = require('../collections/user')
 const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
+const cardMod   = require('./card');
+const colors    = require('../utils/colors')
 
 const {
     fetchInfo,
@@ -113,14 +115,111 @@ const checkQueue = async (ctx) => {
 
 const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
-    let eval = Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
-        * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
-    return eval === Infinity? 0: eval
+    const info = fetchInfo(ctx, card.id)
+
+    let price
+    let priceFloor = (ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0)) / 2
+
+    if (info.aucprices.length < ctx.eval.aucEval.minSamples) {
+        price = Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+        return price === Infinity? 0 : price
+    } else {
+        let evalCalc = ((info.aucprices.reduce((a, b) => a + b) / info.aucprices.length)) / 2
+        if (evalCalc < priceFloor)
+            evalCalc = priceFloor
+        price =  Math.round((evalCalc
+            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+        return price === Infinity? 0 : price
+    }
+
+
+}
+
+const aucEvalChecks = async (ctx, auc, success = true) => {
+    if (!success && auc.cancelled)
+        return
+
+    let card_id = auc.card
+    let aucPrice = auc.price
+    const info = fetchInfo(ctx, card_id)
+    const card = ctx.cards[card_id]
+    let eval = evalCardFast(ctx, card)
+
+    let lastEval, evalDiff
+
+    info.lasttoldeval < 0? lastEval = eval: lastEval = info.lasttoldeval
+    info.auccount += 1
+
+    if (!success && eval !== 0) {
+        let float = parseFloat((eval * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
+
+        if (auc.price > eval)
+            float = eval
+
+        info.aucprices.push(float)
+    } else {
+        const withinBounds = aucPrice > (eval * ctx.eval.aucEval.minBounds) && aucPrice < (eval * ctx.eval.aucEval.maxBounds)
+
+        if (withinBounds)
+            info.aucprices.push(aucPrice)
+    }
+    if (info.aucprices.length > ctx.eval.aucEval.maxSamples)
+        info.aucprices.shift()
+
+    if (info.auccount % 5 === 0) {
+        let newEval = await evalCard(ctx, card)
+
+        if (lastEval > newEval)
+            evalDiff = `-${lastEval - newEval}`
+        else
+            evalDiff = `+${newEval - lastEval}`
+
+        let pricesEmbed = {
+            author: { name: `New Eval for card ${card.name}, ID: ${card.id}` },
+            fields: [
+                {
+                    name: "Card Link",
+                    value: `${cardMod.formatName(card)}`,
+                    inline: true
+                },
+                {
+                    name: "Current Prices List",
+                    value: `${info.aucprices.join(', ')}`
+                },
+                {
+                    name: "Old Eval",
+                    value: `${lastEval}`,
+                    inline: true
+                },
+                {
+                    name: "New Eval",
+                    value: `${newEval}`,
+                    inline: true
+                },
+                {
+                    name: "Eval Diff",
+                    value: evalDiff,
+                    inline: true
+                }
+
+            ],
+            color: colors.green
+        }
+
+        info.lasttoldeval = newEval
+
+        if (ctx.eval.aucEval.evalUpdateChannel)
+            await ctx.send(ctx.eval.aucEval.evalUpdateChannel, pricesEmbed)
+    }
+
+    await info.save()
 }
 
 const getQueueTime = () => evalQueue.length * queueTick
 
 module.exports = {
+    aucEvalChecks,
     evalCard,
     evalCardFast,
     updateCardUserCount,

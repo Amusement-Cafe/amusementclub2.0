@@ -1,17 +1,18 @@
 const {pcmd} = require('../utils/cmd')
 
 const {
-    onUsersFromArgs
+    onUsersFromArgs,
+    fetchOnly,
 } = require('../modules/user')
 
 const {
-    byAlias
+    byAlias,
 } = require('../modules/collection')
 
 const {
     checkGuildLoyalty,
     get_hero,
-    getGuildScore
+    getGuildScore,
 } = require('../modules/hero')
 
 const {
@@ -22,8 +23,12 @@ const {
     bestMatch,
 } = require('../modules/card')
 
-const {fetchOnly} = require('../modules/user')
+const {
+    fetchInfo,
+} = require("../modules/meta");
+
 const colors = require('../utils/colors')
+
 
 pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
@@ -198,6 +203,16 @@ pcmd(['admin', 'mod'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards,
         description: `summons **${formatName(card)}**!`
     })
 }))
+
+pcmd(['admin', 'mod'], ['sudo', 'reset', 'eval'], async (ctx, user, arg) => {
+    const info = fetchInfo(ctx, arg)
+    if (!info)
+        return ctx.reply(user, 'card not found!', 'red')
+    info.aucprices = []
+    info.auccount = 0
+    await info.save()
+    return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
+})
 
 pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
     throw `This is a test exception`
