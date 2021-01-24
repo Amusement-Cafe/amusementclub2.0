@@ -350,7 +350,7 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, 
                     tag.status = 'removed'
                     await tag.save()
             })
-            let log = await logTagAudit(ctx, user, '**User Purged**', false, target)
+            let log = await logTagAudit(ctx, user, `**User Purged** ${visible.length} tags removed`, false, target)
             await log.save()
             ctx.reply(user, `removed all tags made by **${target.username}** with no upvotes`)
         },

@@ -18,7 +18,10 @@ module.exports = model('Cardinfo', {
                         image:          { type: String },
                     },
 
-    aucprices:      { type: Array, default: [] },
-    auccount:       { type: Number, default: 0 },
-    lasttoldeval:   { type: Number, default: -1 }
+    aucevalinfo:    {
+                        newaucprices:   { type: Array, default: [] },
+                        evalprices:     { type: Array, default: [] },
+                        auccount:       { type: Number, default: 0 },
+                        lasttoldeval:   { type: Number, default: -1 },
+                    },
 })
