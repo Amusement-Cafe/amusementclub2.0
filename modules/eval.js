@@ -1,6 +1,7 @@
 const User      = require('../collections/user')
 const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
+const _         = require('lodash')
 const cardMod   = require('./card');
 const colors    = require('../utils/colors')
 
@@ -13,10 +14,10 @@ const queueTick = 500
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 const evalQueue = []
 
-let userCount = 10, userCountUpdated
+let userCount, userCountUpdated
 
 const evalCard = async (ctx, card, modifier = 1) => {
-    if(!userCount && Date.now() - userCountUpdated > userCountTTL) {
+    if((!userCount && Date.now() - userCountUpdated > userCountTTL) || !userCountUpdated) {
         userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
         userCountUpdated = Date.now()
     }
@@ -28,7 +29,7 @@ const evalCard = async (ctx, card, modifier = 1) => {
 
 const evalCardFast = (ctx, card) => {
     const info = fetchInfo(ctx, card.id)
-    if(info.ownercount > -1) {
+    if(info.ownercount > 0) {
         return getEval(ctx, card, info.ownercount)
     }
 
@@ -117,57 +118,79 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     const allUsers = userCount || ownerCount * 2
     const info = fetchInfo(ctx, card.id)
 
-    let price
-    let priceFloor = (ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0)) / 2
+    let price =  Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+        * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
 
-    if (info.aucprices.length < ctx.eval.aucEval.minSamples) {
-        price = Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
-            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
-        return price === Infinity? 0 : price
-    } else {
-        let evalCalc = ((info.aucprices.reduce((a, b) => a + b) / info.aucprices.length)) / 2
+    if (info.aucevalinfo.evalprices.length >= ctx.eval.aucEval.minSamples) {
+
+        let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * 0.689) * modifier)
+
+        let evalCalc = (info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length) / 2
+
         if (evalCalc < priceFloor)
             evalCalc = priceFloor
+
         price =  Math.round((evalCalc
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
+
+        return price === Infinity? 0 : price
+    } else {
         return price === Infinity? 0 : price
     }
+}
 
-
+const evalAucOutlierCheck = (ctx, number, index, info) => {
+    let othSum = 0
+    info.aucevalinfo.newaucprices.map((b, i) => {
+        if (i !== index)
+            othSum += b
+    })
+    let othAvg = othSum / ((ctx.eval.aucEval.minSamples * 2) - 1)
+    return _.inRange(number, othAvg * ctx.eval.aucEval.minBounds, othAvg * ctx.eval.aucEval.maxBounds)
 }
 
 const aucEvalChecks = async (ctx, auc, success = true) => {
     if (!success && auc.cancelled)
         return
 
-    let card_id = auc.card
-    let aucPrice = auc.price
-    const info = fetchInfo(ctx, card_id)
-    const card = ctx.cards[card_id]
+    const info = fetchInfo(ctx, auc.card)
+    const card = ctx.cards[auc.card]
     let eval = evalCardFast(ctx, card)
+
+    if (!success && eval !== 0) {
+        let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
+
+        if (auc.price > eval)
+            float = Math.round(eval * ctx.eval.aucEval.aucFailMultiplier)
+
+        info.aucevalinfo.newaucprices.push(float)
+    } else {
+        info.aucevalinfo.newaucprices.push(auc.price)
+    }
 
     let lastEval, evalDiff
 
-    info.lasttoldeval < 0? lastEval = eval: lastEval = info.lasttoldeval
-    info.auccount += 1
+    info.aucevalinfo.auccount += 1
+    info.aucevalinfo.lasttoldeval < 0? lastEval = eval: lastEval = info.aucevalinfo.lasttoldeval
 
-    if (!success && eval !== 0) {
-        let float = parseFloat((eval * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
+    if (info.aucevalinfo.newaucprices.length > ctx.eval.aucEval.maxSamples)
+        info.aucevalinfo.newaucprices.shift()
 
-        if (auc.price > eval)
-            float = eval
-
-        info.aucprices.push(float)
-    } else {
-        const withinBounds = aucPrice > (eval * ctx.eval.aucEval.minBounds) && aucPrice < (eval * ctx.eval.aucEval.maxBounds)
-
-        if (withinBounds)
-            info.aucprices.push(aucPrice)
+    if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples * 2 || info.aucevalinfo.newaucprices.length === ctx.eval.aucEval.maxSamples) {
+        info.aucevalinfo.newaucprices = info.aucevalinfo.newaucprices.filter((a, b) => evalAucOutlierCheck(ctx, a, b, info))
+        if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples) {
+            info.aucevalinfo.newaucprices.map(x => {
+                info.aucevalinfo.evalprices.push(x)
+                if (info.aucevalinfo.evalprices.length > ctx.eval.aucEval.maxSamples)
+                    info.aucevalinfo.evalprices.shift()
+            })
+            info.aucevalinfo.newaucprices = []
+        }
     }
-    if (info.aucprices.length > ctx.eval.aucEval.maxSamples)
-        info.aucprices.shift()
 
-    if (info.auccount % 5 === 0) {
+
+    if (info.aucevalinfo.auccount % 5 === 0 && info.aucevalinfo.evalprices.length > ctx.eval.aucEval.minSamples) {
         let newEval = await evalCard(ctx, card)
 
         if (lastEval > newEval)
@@ -184,8 +207,12 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
                     inline: true
                 },
                 {
-                    name: "Current Prices List",
-                    value: `${info.aucprices.join(', ')}`
+                    name: "Currently Used Eval Prices List",
+                    value: `${info.aucevalinfo.evalprices.join(', ')}`
+                },
+                {
+                    name: "Current Auc Prices List",
+                    value: `${info.aucevalinfo.newaucprices.join(', ')}`
                 },
                 {
                     name: "Old Eval",
@@ -207,7 +234,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
             color: colors.green
         }
 
-        info.lasttoldeval = newEval
+        info.aucevalinfo.lasttoldeval = newEval
 
         if (ctx.eval.aucEval.evalUpdateChannel)
             await ctx.send(ctx.eval.aucEval.evalUpdateChannel, pricesEmbed)

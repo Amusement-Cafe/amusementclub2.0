@@ -64,6 +64,9 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     if (extrainfo.ownercount > 0)
         resp.push(`Owner Count: **${extrainfo.ownercount}**`)
 
+    if (extrainfo.auccount > 0)
+        resp.push(`Times Auctioned: **${extrainfo.aucevalinfo.auccount}**`)
+
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')
 

@@ -220,7 +220,10 @@ const format_listtrs = (ctx, user, trans) => {
     const timediff = msToTime(new Date() - trans.time, {compact: true})
     const isget = trans.from_id != user.discord_id
 
-    resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${trans.cards.length} card(s)`
+    if (trans.cards.length === 1)
+        resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${formatName(ctx.cards[trans.cards[0]])}`
+    else
+        resp += `[${timediff}] ${ch_map[trans.status]} \`${trans.id}\` ${trans.cards.length} card(s)`
     resp += isget ? ` \`<-\` **${trans.from}**` : ` \`->\` **${trans.to}**`;
     return resp;
 }

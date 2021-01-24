@@ -128,7 +128,7 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
 
     let now = new Date()
     let baseEmbed = {
-        author: { name: `Tag Log for ${targetUser.username}(${targetUser.discord_id}}` },
+        author: { name: `Tag Log for ${targetUser.username} (${targetUser.discord_id})` },
         fields: [
             {
                 name: "Banned",
