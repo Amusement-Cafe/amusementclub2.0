@@ -28,6 +28,7 @@ const {
 } = require("../modules/meta");
 
 const {
+    evalCard,
     evalCardFast,
 } = require("../modules/eval");
 
@@ -217,6 +218,7 @@ pcmd(['admin', 'mod'], ['sudo', 'reset', 'eval'], async (ctx, user, arg) => {
     info.aucevalinfo.auccount = 0
     info.aucevalinfo.lasttoldeval = -1
     await info.save()
+    await evalCard(ctx, ctx.cards[arg])
     return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
 })
 
