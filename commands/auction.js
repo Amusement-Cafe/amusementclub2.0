@@ -20,10 +20,6 @@ const {
     withGlobalCards,
 } = require('../modules/card')
 
-const {
-    getBuilding,
-} = require('../modules/guild')
-
 cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
@@ -131,10 +127,6 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
 })).access('dm')
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
-    const auchouse = getBuilding(ctx, 'auchouse')
-    if(!auchouse || auchouse.health < 50)
-        return ctx.reply(user, `you can sell cards only in a guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
-
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
@@ -151,16 +143,14 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
         price *= ceval
 
     price = Math.round(price)
-    const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
+    //const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
+    const fee = Math.round(price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
     const timenum = -parsedargs.extra.filter(x => x[0] === '-').map(x => parseInt(x))[0]
     let time = 6
 
     if(timenum) {
-        if(auchouse.level < 3)
-            return ctx.reply(user, `you can specify auction time only in a guild that has **Auction House** level 3 or higher!`, 'red')
-
         time = Math.min(Math.max(timenum, 1), 10);
     }
 

@@ -149,11 +149,8 @@ cmd('daily', async (ctx, user) => {
 
     if(future < now) {
         const quests = []
-        const gbank = getBuilding(ctx, 'gbank')
-        let amount = gbank? 800 : 400
+        let amount = 500
         const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
-        //let amount = 5000
-        const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
@@ -176,20 +173,18 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
 
-        if(tavern) {
-            quests.push(getQuest(ctx, user, 1, quests[0].id))
-            user.dailyquests.push(quests[1].id)
+        quests.push(getQuest(ctx, user, 1, quests[0].id))
+        user.dailyquests.push(quests[1].id)
 
-            if(tavern.level > 1) {
-                quests.push(getQuest(ctx, user, 2, quests[0].id))
-                user.dailyquests.push(quests[2].id)
-            }
-        }
+        //if(tavern.level > 1) {
+            //quests.push(getQuest(ctx, user, 2, quests[0].id))
+            //user.dailyquests.push(quests[2].id)
+        //}
         user.markModified('dailyquests')
         await user.save()
 
         addGuildXP(ctx, user, 10)
-        ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
+        ctx.guild.balance += XPtoLEVEL(user.xp)
         await ctx.guild.save()
 
         if(hero) {

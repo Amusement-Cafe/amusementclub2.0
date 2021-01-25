@@ -43,7 +43,6 @@ const {
 
 const {
     addGuildXP,
-    getBuilding,
 } = require('../modules/guild')
 
 const {
@@ -72,7 +71,6 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const amount = args.filter(x => x.length < 3 && !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
-    const gbank = getBuilding(ctx, 'gbank')
     const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
     const activepromo = ctx.promos.find(x => x.starts < now && x.expires > now)
 
@@ -95,7 +93,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
-        const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
+        const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
         let card, boostdrop = false

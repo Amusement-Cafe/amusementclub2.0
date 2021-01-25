@@ -25,11 +25,6 @@ const {
 } = require('../modules/eval')
 
 const {
-    addGuildXP,
-    getBuilding,
-} = require('../modules/guild')
-
-const {
     check_effect,
 } = require('../modules/effect')
 
@@ -38,11 +33,6 @@ const {
 } = require('../modules/user')
 
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub)
-        return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**. Buy one in the \`->store\``, 'red')
-
     const card1 = bestMatch(cards[0])
     let card2 = bestMatch(cards[1])
 
@@ -120,11 +110,6 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub || hub.level < 2)
-        return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -172,11 +157,6 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    //if(!hub || hub.level < 2)
-        //return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -290,11 +270,6 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, card
 }))
 
 cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub || hub.level < 2)
-        return ctx.reply(user, `drawing cards is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
 
