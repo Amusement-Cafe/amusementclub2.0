@@ -29,7 +29,7 @@ const evalCard = async (ctx, card, modifier = 1) => {
 
 const evalCardFast = (ctx, card) => {
     const info = fetchInfo(ctx, card.id)
-    if(info.ownercount > 0) {
+    if(info.ownercount > -1) {
         return getEval(ctx, card, info.ownercount)
     }
 
@@ -92,10 +92,7 @@ const getVialCostFast = (ctx, card, cardeval) => {
     if(!cardeval)
         cardeval = evalCardFast(ctx, card)
 
-    if(cardeval == -1)
-        return -1
-
-    if(cardeval === 0)
+    if(cardeval <= 0)
         return Infinity
 
     let diff = cardeval / (ctx.eval.cardPrices.slice().reverse()[card.level] * ctx.eval.evalVialRate)
@@ -106,6 +103,9 @@ const getVialCostFast = (ctx, card, cardeval) => {
 }
 
 const checkQueue = async (ctx) => {
+    if (!userCount)
+        userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
+
     const card = evalQueue[0]
     if(card) {
         await updateCardUserCount(ctx, card)
@@ -161,10 +161,10 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     if (!success && eval !== 0) {
         let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
 
-        if (auc.price > eval)
+        if (auc.price > eval * 1.5)
             float = Math.round(eval * ctx.eval.aucEval.aucFailMultiplier)
 
-        info.aucevalinfo.newaucprices.push(float)
+        info.aucevalinfo.evalprices.push(float)
     } else {
         info.aucevalinfo.newaucprices.push(auc.price)
     }
@@ -190,7 +190,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     }
 
 
-    if (info.aucevalinfo.auccount % 5 === 0 && info.aucevalinfo.newaucprices.length > ctx.eval.aucEval.minSamples) {
+    if (info.aucevalinfo.auccount % 5 === 0 && info.aucevalinfo.auccount.length !== 0){
         let newEval = await evalCard(ctx, card)
 
         if (lastEval > newEval)
