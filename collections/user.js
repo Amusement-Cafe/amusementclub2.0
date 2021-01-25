@@ -28,6 +28,7 @@ module.exports = model('User', {
         forge2:         {type: Number, default: 0},
         forge3:         {type: Number, default: 0},
     },
+    
     effectusecount:     {
         memoryxmas:     {type: Number, default: 0},
         memoryhall:     {type: Number, default: 0},
@@ -65,4 +66,13 @@ module.exports = model('User', {
 
     dailyquests:        { type: Array, default: [] },
     questlines:         { type: Array, default: [] },
+
+    prefs:              {
+        notifications:   {
+            aucbidme:   { type: Boolean, default: true },
+            aucoutbid:  { type: Boolean, default: true },
+            announce:   { type: Boolean, default: false },
+            daily:      { type: Boolean, default: false },
+        },
+    }
 })
