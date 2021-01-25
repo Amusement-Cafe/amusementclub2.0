@@ -18,8 +18,8 @@
         "evalUserRate": 0.25,
         "evalVialRate": 0.055,
         "aucEval": {
-            "minSamples": 5,
-            "maxSamples": 15,
+            "minSamples": 4,
+            "maxSamples": 16,
             "minBounds": 0.5,
             "maxBounds": 5.0,
             "aucFailMultiplier": 0.78,

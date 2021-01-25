@@ -190,13 +190,16 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     }
 
 
-    if (info.aucevalinfo.auccount % 5 === 0 && info.aucevalinfo.evalprices.length > ctx.eval.aucEval.minSamples) {
+    if (info.aucevalinfo.auccount % 5 === 0 && info.aucevalinfo.newaucprices.length > ctx.eval.aucEval.minSamples) {
         let newEval = await evalCard(ctx, card)
 
         if (lastEval > newEval)
             evalDiff = `-${lastEval - newEval}`
         else
             evalDiff = `+${newEval - lastEval}`
+
+        let evalPrices = info.aucevalinfo.evalprices.length > 0? info.aucevalinfo.evalprices.join(', '): 'empty'
+        let aucPrices = info.aucevalinfo.newaucprices.length > 0? info.aucevalinfo.newaucprices.join(', '): 'empty'
 
         let pricesEmbed = {
             author: { name: `New Eval for card ${card.name}, ID: ${card.id}` },
@@ -208,11 +211,11 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
                 },
                 {
                     name: "Currently Used Eval Prices List",
-                    value: `${info.aucevalinfo.evalprices.join(', ')}`
+                    value: `${evalPrices}`
                 },
                 {
                     name: "Current Auc Prices List",
-                    value: `${info.aucevalinfo.newaucprices.join(', ')}`
+                    value: `${aucPrices}`
                 },
                 {
                     name: "Old Eval",
