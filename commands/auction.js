@@ -28,11 +28,14 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
 
-    if(parsedargs.me)
+    if(parsedargs.me === 1)
         req.author = user.discord_id
 
     let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
+
+    if (parsedargs.me === 2)
+        list = list.filter(x => x.author !== user.discord_id)
 
     if(parsedargs.diff)
         list = list.filter(x => !user.cards.some(y => x.card === y.id))
@@ -82,11 +85,14 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
     const now = new Date();
     const req = {finished: false}
 
-    if(parsedargs.me)
+    if(parsedargs.me === 1)
         req.author = user.discord_id
 
     let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
+
+    if (parsedargs.me === 2)
+        list = list.filter(x => x.author !== user.discord_id)
 
     if(parsedargs.diff)
         list = list.filter(x => !user.cards.some(y => x.card === y.id))

@@ -131,7 +131,7 @@ const parseArgs = (ctx, args, lastdaily) => {
                     case 'promo': const mcol = bestColMatchMulti(ctx, substr); m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
                     case 'diff': q.diff = m; break
                     case 'miss': q.diff = m; break
-                    case 'me': q.me = m; break
+                    case 'me':  q.me = m? 1: 2; break
                     case 'bid': q.bid = m? 1 : 2; break
                     default: {
                         const pcol = bestColMatch(ctx, substr)
