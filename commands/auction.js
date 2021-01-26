@@ -239,7 +239,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(!auc)
         return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
 
-    if(user.exp < bid)
+    if(user.exp < bid && (!auc.lastbidder === user.discord_id && user.exp < bid - auc.highbid))
         return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')        
 
     if(auc.expires < now || auc.finished)
@@ -251,10 +251,14 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(auc.price >= bid)
         return ctx.reply(user, `your bid should be higher than **${auc.price}** ${ctx.symbols.tomato}`, 'red')
 
-    if(auc.lastbidder === user.discord_id)
-        return ctx.reply(user, `you already have the highest bid on this auction`, 'red')
+    if(auc.lastbidder === user.discord_id){
+        if (bid < auc.highbid)
+            return ctx.reply(user, `you cannot lower how much you bid!`, 'red')
+        await bid_auc(ctx, user, auc, bid, true)
+    } else {
+        await bid_auc(ctx, user, auc, bid)
+    }
 
-    await bid_auc(ctx, user, auc, bid)
 }).access('dm')
 
 cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
