@@ -154,11 +154,9 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
             try {
                 user.vials += vials
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
+                user.dailystats[`liquify${card.level}`] += 1
                 removeUserCard(ctx, user, card.id)
-                await updateUser(user, {
-                    $inc: {'dailystats.liquify': 1}, 
-                    $set: {vials: user.vials, cards: user.cards}
-                })
+                await user.save()
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
                     You have **${user.vials}** ${ctx.symbols.vial}
@@ -222,12 +220,13 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
         onConfirm: async (x) => { 
             try {
                 user.vials += vials
-                user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-                cards.map(c => removeUserCard(ctx, user, c.id))
-                await updateUser(user, {
-                    $inc: {'dailystats.liquify': cards.length}, 
-                    $set: {vials: user.vials, cards: user.cards}
+
+                cards.map(c => {
+                    removeUserCard(ctx, user, c.id)
+                    user.dailystats.liquify += 1
+                    user.dailystats[`liquify${c.level}`] += 1
                 })
+                await user.save()
 
                 ctx.reply(user, `${cards.length} cards were liquified. You got **${vials}** ${ctx.symbols.vial}
                     You have **${user.vials}** ${ctx.symbols.vial}
@@ -331,10 +330,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             addUserCard(user, card.id)
             user.lastcard = card.id
             await completed(ctx, user, card)
+            user.dailystats.draw += 1
+            user.dailystats[`draw${card.level}`] += 1
             await user.save()
-            await updateUser(user, {$inc: {'dailystats.draw': 1}})
-            
-            user.dailystats.draw = user.dailystats.draw + 1 || 1
 
             return ctx.reply(user, {
                 image: { url: card.url },
