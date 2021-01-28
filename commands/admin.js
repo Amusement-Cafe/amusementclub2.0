@@ -276,6 +276,20 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, use
     await ctx.send(ctx.msg.channel.id, pricesEmbed)
 }))
 
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `Run \`->sudo eval info\`first to make sure you have the correct card! ` } },
+        question: `**${user.username}**, do you want to force waiting auction prices into eval for ${formatName(cards[0])}?`,
+        onConfirm: async (x) => {
+            const info = fetchInfo(ctx, cards[0].id)
+            info.aucevalinfo.newaucprices.map(x => info.aucevalinfo.evalprices.push(x))
+            info.aucevalinfo.newaucprices = []
+            await info.save()
+            return ctx.reply(user, `all awaiting auction prices are now set for eval!`)
+        }
+    })
+}))
+
 pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
     throw `This is a test exception`
 })
