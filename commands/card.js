@@ -322,6 +322,48 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
+cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'sell')
+
+    cards.splice(25, cards.length)
+
+    const id = parsedargs.ids[0]
+
+    let price = 0
+    const resp = cards.map(card => {
+        const eval = evalCardFast(ctx, card) * (id? 1 : .4)
+        if(eval >= 0) {
+            price += Math.round(eval)
+        } else {
+            price = NaN
+        }
+
+        return {
+            eval,
+            cardname: `**${eval.toFixed(0)}** ${ctx.symbols.tomato} - ${formatName(card)}`,
+        }
+    })
+
+    if(isNaN(price)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, `some cards from this request need price evaluation.
+            Please try again in **${msToTime(evalTime)}**.`, 'yellow')
+    }
+
+    resp.sort((a, b) => b.eval - a.eval)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(resp.map(x => x.cardname), 10),
+        embed: {
+            author: { name: `Sell all preview (total ${price} ${ctx.symbols.tomato})` },
+            description: '',
+            color: colors.blue,
+        }
+    })
+
+}))
+
 cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'eval')
