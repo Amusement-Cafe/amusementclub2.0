@@ -149,6 +149,9 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
 
+    if (user.dailystats.aucs >= 100)
+        return ctx.reply(user, `you have reached the maximum amount of auctions you can create in one daily. Please wait until your next daily to create more!`, 'red')
+
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
     let price = parsedargs.extra.filter(x => x.length < 7 && !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
