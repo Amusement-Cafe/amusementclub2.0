@@ -238,10 +238,6 @@ const checks = {
     },
 
     recipe: (ctx, user, item) => {
-        const hub = getBuilding(ctx, 'smithhub')
-        if(!hub || hub.level < 3)
-            return `you can create effect cards only in guild with **Smithing Hub level 3** or higher`
-
         if(user.effects.some(x => x.id === item.effectid))
             return `you already have this Effect Card`
     

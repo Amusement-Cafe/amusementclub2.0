@@ -10,11 +10,11 @@ const {
 } = require('./meta')
 
 const userCountTTL = 360000
-const queueTick = 500
+const queueTick = 200
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 const evalQueue = []
 
-let userCount, userCountUpdated
+let userCount, userCountUpdated, evalPromise
 
 const evalCard = async (ctx, card, modifier = 1) => {
     if((!userCount && Date.now() - userCountUpdated > userCountTTL) || !userCountUpdated) {
@@ -107,10 +107,12 @@ const getVialCostFast = (ctx, card, cardeval) => {
 
 const checkQueue = async (ctx) => {
     const card = evalQueue[0]
-    if(card) {
-        await updateCardUserCount(ctx, card)
+    if(card && (!evalPromise || !evalPromise.pending)) {
         evalQueue.shift()
-        console.log(card.id)
+        evalPromise = updateCardUserCount(ctx, card)
+        await evalPromise
+
+        console.log(`${card.id} (${evalQueue.length} left)`)
     }
 }
 

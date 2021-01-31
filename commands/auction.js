@@ -181,7 +181,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        embed: { footer: { text: `This will cost ${fee} (10% fee)` } },
         force: ctx.globals.force,
         question,
         check,
