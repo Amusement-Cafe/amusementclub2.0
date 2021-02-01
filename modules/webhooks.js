@@ -20,7 +20,7 @@ const listen = (ctx) => {
     app.use(bodyParser.urlencoded({ extended: true })); 
 
     // Webhook handle for https://top.gg/
-    app.post("/topgg", (req, res) => {
+    app.post("/topgg", topggWebhook.middleware(), (req, res) => {
         const vote = req.vote
         registerTopggVote(ctx, vote)
         res.status(200).end()
@@ -44,8 +44,7 @@ const listen = (ctx) => {
 }
 
 const registerTopggVote = async (ctx, vote) => {
-    //var votingUser = await fetchOnly(vote.user)
-    var votingUser = await fetchOnly("135401616214982656")
+    var votingUser = await fetchOnly(vote.user)
 
     if(!votingUser) 
         return
