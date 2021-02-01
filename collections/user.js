@@ -44,7 +44,13 @@ module.exports = model('User', {
     wishlist:           { type: Array, default: [] },
 
     lastdaily:          { type: Date },
+    lastvote:           { type: Date },
+    lastannounce:       { type: Date },
     lastmsg:            { type: String },
+
+    dailynotified:      { type: Boolean, default: true },
+    votenotified:       { type: Boolean, default: false },
+
     heroslots:          { type: Array, default: [] },
     herocooldown:       { type: Array, default: [] },
 
@@ -68,11 +74,12 @@ module.exports = model('User', {
     questlines:         { type: Array, default: [] },
 
     prefs:              {
-        notifications:   {
+        notifications:  {
             aucbidme:   { type: Boolean, default: true },
             aucoutbid:  { type: Boolean, default: true },
             announce:   { type: Boolean, default: false },
             daily:      { type: Boolean, default: false },
+            vote:       { type: Boolean, default: false },
         },
     }
 })

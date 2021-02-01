@@ -2,6 +2,7 @@ const express       = require("express")
 const bodyParser    = require("body-parser")
 const Topgg         = require('@top-gg/sdk')
 const color         = require('../utils/colors')
+const _             = require('lodash')
 
 const {
     formatName,
@@ -19,7 +20,7 @@ const listen = (ctx) => {
     app.use(bodyParser.urlencoded({ extended: true })); 
 
     // Webhook handle for https://top.gg/
-    app.post("/topgg", topggWebhook.middleware(), (req, res) => {
+    app.post("/topgg", (req, res) => {
         const vote = req.vote
         registerTopggVote(ctx, vote)
         res.status(200).end()
@@ -43,7 +44,8 @@ const listen = (ctx) => {
 }
 
 const registerTopggVote = async (ctx, vote) => {
-    var votingUser = await fetchOnly(vote.user)
+    //var votingUser = await fetchOnly(vote.user)
+    var votingUser = await fetchOnly("135401616214982656")
 
     if(!votingUser) 
         return
@@ -63,6 +65,8 @@ const registerTopggVote = async (ctx, vote) => {
     }
 
     addUserCard(votingUser, card.id)
+    votingUser.lastvote = new Date()
+    votingUser.votenotified = false
     votingUser.save()
 
     return ctx.direct(votingUser, {

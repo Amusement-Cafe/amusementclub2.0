@@ -6,6 +6,7 @@ const desc = {
     aucoutbid: `someone outbid you on the auction`,
     announce: `there is a new bot announcement`,
     daily: `you can claim your daily`,
+    vote: `you can vote for the bot`,
 }
 
 cmd('prefs', (ctx, user) => {
@@ -38,7 +39,7 @@ cmd(['prefs', 'notify'], (ctx, user) => {
 cmd(['prefs', 'set', 'notify'], async (ctx, user, type, switcher) => {
     const notify = user.prefs.notifications
     if(!notify.hasOwnProperty(type)) {
-        return ctx.reply(user, `notify setting \`{type}\` doesn't exist.`, 'red')
+        return ctx.reply(user, `notify setting \`${type}\` doesn't exist.`, 'red')
     }
 
     if(switcher != 'true' && switcher != 'false') {
@@ -46,6 +47,16 @@ cmd(['prefs', 'set', 'notify'], async (ctx, user, type, switcher) => {
     }
 
     const enable = switcher == 'true'
+
+    if(enable) {
+        try {
+            await ctx.direct(user, `this is a test notification. If you are reading this it means that direct messages are working fine!`)
+        } catch (e) {
+            return ctx.reply(user, `cannot enable DM notifications. 
+                Make sure you have 'Allow direct messages from server members' enabled in privacy settings of the server with the bot`, 'red')
+        }
+    }
+
     user.prefs.notifications[type] = enable
     await user.save()
 

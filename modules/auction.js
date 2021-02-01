@@ -111,7 +111,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
         lastBidder.exp += auc.price
         await lastBidder.save()
 
-        const { aucoutbid } = lastBidder.settings.notifications
+        const { aucoutbid } = lastBidder.prefs.notifications
         if(aucoutbid && lastBidder.discord_id != user.discord_id) {
             await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
@@ -120,7 +120,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
         }
     } else {
         const author = await fetchOnly(auc.author)
-        const { aucbidme } = author.settings.notifications
+        const { aucbidme } = author.prefs.notifications
         if(aucbidme) {
             await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
                 ${formatName(ctx.cards[auc.card])} with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
