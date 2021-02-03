@@ -1,4 +1,5 @@
-const {pcmd} = require('../utils/cmd')
+const {pcmd}        = require('../utils/cmd')
+const Announcement  = require('../collections/announcement')
 
 const {
     onUsersFromArgs,
@@ -321,4 +322,27 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
 pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) => {
     ctx.settings.wip = !ctx.settings.wip
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
+})
+
+pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
+    const split = args.join(' ').split(',')
+    const title = split[0]
+    const body = split[1]
+
+    if(!title || !body) {
+        return ctx.reply(`required format: \`->sudo announce title text, body text\``, '')
+    }
+
+    const announcement = new Announcement()
+    announcement.date = new Date()
+    announcement.title = title
+    announcement.body = body
+    await announcement.save()
+
+    return ctx.reply(user, {
+        title,
+        author: { name: `New announcement set` },
+        description: body,
+        footer: { text: `Date: ${announcement.date}` },
+    })
 })
