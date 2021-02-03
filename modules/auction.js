@@ -107,6 +107,8 @@ const bid_auc = async (ctx, user, auc, bid) => {
     await user.save()
     await auc.save()
 
+    const author = await fetchOnly(auc.author)
+
     if(lastBidder){
         lastBidder.exp += auc.price
         await lastBidder.save()
@@ -118,8 +120,13 @@ const bid_auc = async (ctx, user, auc, bid) => {
                 Use \`->auc bid ${auc.id} [new bid]\`
                 This auction will end in **${diff > 60000? msToTime(diff) : '<1m'}**`, 'yellow')
         }
+
+        const { aucnewbid } = author.prefs.notifications
+        if(aucnewbid) {
+            await ctx.direct(author, `your auction \`${auc.id}\` for card 
+                ${formatName(ctx.cards[auc.card])} got a new bid. New listed price: **${auc.price} ${ctx.symbols.tomato}**.`, 'blue')
+        }
     } else {
-        const author = await fetchOnly(auc.author)
         const { aucbidme } = author.prefs.notifications
         if(aucbidme) {
             await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
@@ -162,7 +169,10 @@ const finish_aucs = async (ctx, now) => {
         await from_auc(auc, author, lastBidder)
         await aucEvalChecks(ctx, auc)
 
-        await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+        if(author.prefs.notifications.aucend) {
+            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+        }
+        
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
             You ended up paying **${Math.round(auc.price)}** ${ctx.symbols.tomato} and got **${Math.round(auc.highbid - auc.price)}** ${ctx.symbols.tomato} back.
             ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)

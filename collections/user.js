@@ -77,6 +77,8 @@ module.exports = model('User', {
         notifications:  {
             aucbidme:   { type: Boolean, default: true },
             aucoutbid:  { type: Boolean, default: true },
+            aucnewbid:  { type: Boolean, default: false },
+            aucend:     { type: Boolean, default: true },
             announce:   { type: Boolean, default: false },
             daily:      { type: Boolean, default: false },
             vote:       { type: Boolean, default: false },

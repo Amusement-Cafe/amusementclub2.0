@@ -4,6 +4,8 @@ const colors    = require('../utils/colors')
 const desc = {
     aucbidme: `someone bid on your auction`,
     aucoutbid: `someone outbid you on the auction`,
+    aucend: `your auction has finished`,
+    aucnewbid: `when a current highest bidder in your auction gets outbid`,
     announce: `there is a new bot announcement`,
     daily: `you can claim your daily`,
     vote: `you can vote for the bot`,
@@ -42,11 +44,14 @@ cmd(['prefs', 'set', 'notify'], async (ctx, user, type, switcher) => {
         return ctx.reply(user, `notify setting \`${type}\` doesn't exist.`, 'red')
     }
 
-    if(switcher != 'true' && switcher != 'false') {
-        return ctx.reply(user, `please use either 'true' or 'false' to enable or disable the setting.` , 'red')
-    }
+    let enable = switcher == 'true'
 
-    const enable = switcher == 'true'
+    if(switcher != 'true' && switcher != 'false') {
+        if(switcher)
+            return ctx.reply(user, `please use either 'true' or 'false' to enable or disable the setting.` , 'red')
+
+        enable = !user.prefs.notifications[type]
+    }
 
     if(enable) {
         try {
