@@ -61,6 +61,10 @@ const {
     evalCardFast,
 } = require('../modules/eval')
 
+const {
+    getLastAnnouncement,
+} = require('../modules/preferences')
+
 cmd('bal', 'balance', (ctx, user) => {
     let max = 1
     const now = new Date()
@@ -185,8 +189,6 @@ cmd('daily', async (ctx, user) => {
                 user.dailyquests.push(quests[2].id)
             }
         }
-        user.markModified('dailyquests')
-        await user.save()
 
         addGuildXP(ctx, user, 10)
         ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
@@ -222,9 +224,23 @@ cmd('daily', async (ctx, user) => {
             })
         }
 
-        fields.push({name: `Get rewarded`,
-            value: 'Don\'t forget to vote for the bot every day and get in-game rewards. Check `->vote` for more information.'
+        const announce = await getLastAnnouncement(ctx, user)
+        if(announce) {
+            fields.push({
+                name: announce.title,
+                value: announce.body,
+            })
+
+            user.lastannounce = announce.date
+        }
+
+        fields.push({
+            name: `Get rewarded`,
+            value: `Don\'t forget to vote for the bot every day and get in-game rewards. Check \`->vote\` for more information.`,
         })
+
+        user.dailynotified = false
+        await user.save()
 
         ctx.mixpanel.track(
             "Daily", { 
