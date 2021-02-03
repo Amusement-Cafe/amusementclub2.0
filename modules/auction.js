@@ -158,11 +158,10 @@ const finish_aucs = async (ctx, now) => {
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
         await eval_fraud_check(ctx, auc, eval, aucCard)
-        if(!findSell){
+        if(!findSell)
             await audit_auc_stats(ctx, author, true)
-        }else {
+        else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
-        }
         // End audit logic
         await completed(ctx, lastBidder, aucCard)
         await lastBidder.save()
@@ -175,11 +174,10 @@ const finish_aucs = async (ctx, now) => {
             You ended up paying **${Math.round(auc.price)}** ${ctx.symbols.tomato} and got **${Math.round(auc.highbid - auc.price)}** ${ctx.symbols.tomato} back.
             ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
     } else {
-        if(!findSell){
+        if(!findSell)
             await audit_auc_stats(ctx, author, false)
-        }else {
+        else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
-        }
         addUserCard(author, auc.card)
         await author.save()
         await aucEvalChecks(ctx, auc, false)

@@ -22,7 +22,7 @@
             "maxSamples": 16,
             "minBounds": 0.5,
             "maxBounds": 5.0,
-            "aucFailMultiplier": 0.78,
+            "aucFailMultiplier": 0.90,
             "evalUpdateChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
         }
     },
