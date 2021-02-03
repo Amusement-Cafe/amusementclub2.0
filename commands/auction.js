@@ -248,8 +248,8 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(!auc)
         return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
 
-    if(user.exp < bid && (!auc.lastbidder === user.discord_id && user.exp < bid - auc.highbid))
-        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')        
+    if(user.exp < bid || (auc.lastbidder === user.discord_id && user.exp < bid - auc.highbid))
+        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')
 
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
