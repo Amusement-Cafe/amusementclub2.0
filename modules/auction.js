@@ -70,7 +70,7 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
     })
 })
 
-const bid_auc = async (ctx, user, auc, bid) => {
+const bid_auc = async (ctx, user, auc, bid, add = false) => {
     const lastBidder = await fetchOnly(auc.lastbidder)
     let diff = auc.expires - new Date()
 
@@ -97,11 +97,19 @@ const bid_auc = async (ctx, user, auc, bid) => {
         auc.markModified('expires')
     }
 
-    auc.price = auc.highbid
-    auc.highbid = bid
-    auc.lastbidder = user.discord_id
+    if (!add) {
+        auc.price = auc.highbid
+        auc.lastbidder = user.discord_id
+    }
 
-    user.exp -= bid
+
+    if (add)
+        user.exp -= bid - auc.highbid
+    else
+        user.exp -= bid
+
+    auc.highbid = bid
+
     user.dailystats.bids = user.dailystats.bids + 1 || 1
     user.markModified('dailystats')
     await user.save()
@@ -109,7 +117,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
 
     const author = await fetchOnly(auc.author)
 
-    if(lastBidder){
+    if(lastBidder && !add){
         lastBidder.exp += auc.price
         await lastBidder.save()
 
@@ -126,7 +134,7 @@ const bid_auc = async (ctx, user, auc, bid) => {
             await ctx.direct(author, `your auction \`${auc.id}\` for card 
                 ${formatName(ctx.cards[auc.card])} got a new bid. New listed price: **${auc.price} ${ctx.symbols.tomato}**.`, 'blue')
         }
-    } else {
+    } else if (!add) {
         const { aucbidme } = author.prefs.notifications
         if(aucbidme) {
             await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
@@ -134,7 +142,11 @@ const bid_auc = async (ctx, user, auc, bid) => {
         }
     }
 
-    return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
+    if (add)
+        return ctx.reply(user, `you successfully increased your bid on auction \`${auc.id}\` to **${bid}** ${ctx.symbols.tomato}!
+                                You can add to your bid **${bidsLeft}** more times!`)
+    else
+        return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
 
 const finish_aucs = async (ctx, now) => {

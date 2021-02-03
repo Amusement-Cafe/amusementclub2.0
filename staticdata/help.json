@@ -858,6 +858,32 @@
                 "description": "Gets detailed info about transaction using TransactionID"
             }
         ]
+    },
+    {
+        "type": ["wishlist", "wish"],
+        "title": "About wishlists",
+        "description": "Wishlists are a way to store a list of cards you don't own but would like to own. More information will be filled out as the feature matures",
+        "fields": [
+            {
+                "title": "->wishlist",
+                "description": "Display your own wishlist"
+            },
+            {
+                "title": "->wishlist add [card]",
+                "description": "Add a card to your wishlist"
+            },
+            {
+                "title": "->wishlist add all [query]",
+                "description": "Add all cards in a query to your wishlist"
+            },
+            {
+                "title": "->wishlist remove [card]",
+                "description": "Remove a card from your wishlist"
+            },
+            {
+                "title": "->wishlist remove all [query]",
+                "description": "Remove all cards in a query from your wishlist"
+            }
+        ]
     }
-
 ]

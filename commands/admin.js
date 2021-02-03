@@ -28,6 +28,11 @@ const {
     fetchInfo,
 } = require("../modules/meta");
 
+const {
+    evalCard,
+    evalCardFast,
+} = require("../modules/eval");
+
 const colors = require('../utils/colors')
 
 
@@ -209,11 +214,82 @@ pcmd(['admin', 'mod'], ['sudo', 'reset', 'eval'], async (ctx, user, arg) => {
     const info = fetchInfo(ctx, arg)
     if (!info)
         return ctx.reply(user, 'card not found!', 'red')
-    info.aucprices = []
-    info.auccount = 0
+    info.aucevalinfo.newaucprices = []
+    info.aucevalinfo.evalprices= []
+    info.aucevalinfo.auccount = 0
+    info.aucevalinfo.lasttoldeval = -1
     await info.save()
+    await evalCard(ctx, ctx.cards[arg])
     return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
 })
+
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    const info = fetchInfo(ctx, cards[0].id)
+    let evalDiff
+    let newEval = await evalCardFast(ctx, cards[0])
+    let lastEval = info.aucevalinfo.lasttoldeval > 0? info.aucevalinfo.lasttoldeval: newEval
+
+
+
+    if (lastEval > newEval)
+        evalDiff = `-${lastEval - newEval}`
+    else
+        evalDiff = `+${newEval - lastEval}`
+
+    let evalPrices = info.aucevalinfo.evalprices.length > 0? info.aucevalinfo.evalprices.join(', '): 'empty'
+    let aucPrices = info.aucevalinfo.newaucprices.length > 0? info.aucevalinfo.newaucprices.join(', '): 'empty'
+    let pricesEmbed = {
+        author: { name: `Eval info for card ${cards[0].name}, ID: ${cards[0].id}` },
+        fields: [
+            {
+                name: "Card Link",
+                value: `${formatName(cards[0])}`,
+                inline: true
+            },
+            {
+                name: "Currently Used Eval Prices List",
+                value: `${evalPrices}`
+            },
+            {
+                name: "Current Auc Prices List",
+                value: `${aucPrices}`
+            },
+            {
+                name: "Old Eval",
+                value: `${lastEval}`,
+                inline: true
+            },
+            {
+                name: "New Eval",
+                value: `${newEval}`,
+                inline: true
+            },
+            {
+                name: "Eval Diff",
+                value: evalDiff,
+                inline: true
+            }
+
+        ],
+        color: colors.green
+    }
+
+    await ctx.send(ctx.msg.channel.id, pricesEmbed)
+}))
+
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `Run \`->sudo eval info\`first to make sure you have the correct card! ` } },
+        question: `**${user.username}**, do you want to force waiting auction prices into eval for ${formatName(cards[0])}?`,
+        onConfirm: async (x) => {
+            const info = fetchInfo(ctx, cards[0].id)
+            info.aucevalinfo.newaucprices.map(x => info.aucevalinfo.evalprices.push(x))
+            info.aucevalinfo.newaucprices = []
+            await info.save()
+            return ctx.reply(user, `all awaiting auction prices are now set for eval!`)
+        }
+    })
+}))
 
 pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
     throw `This is a test exception`

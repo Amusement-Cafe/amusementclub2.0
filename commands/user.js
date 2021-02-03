@@ -329,9 +329,9 @@ cmd('profile', async (ctx, user, ...args) => {
     resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
 
     if (pargs.ids.length > 0 && !isNaN(price)) {
-        resp.push(`Cards Worth: **${price}** ${ctx.symbols.tomato} or **${vials} ${ctx.symbols.vial}**`)
+        resp.push(`Cards Worth: **${price.toLocaleString('en-US')}** ${ctx.symbols.tomato} or **${vials.toLocaleString('en-US')} ${ctx.symbols.vial}**`)
     } else if (!isNaN(price)) {
-        resp.push(`Net Worth: **${price + user.exp}** ${ctx.symbols.tomato} or **${vials + user.vials} ${ctx.symbols.vial}**`)
+        resp.push(`Net Worth: **${(price + user.exp).toLocaleString('en-US')}** ${ctx.symbols.tomato} or **${(vials + user.vials).toLocaleString('en-US')} ${ctx.symbols.vial}**`)
     } else {
         const evalTime = getQueueTime()
         resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
@@ -389,6 +389,11 @@ cmd('diff', async (ctx, user, ...args) => {
         otherCards = otherCards.filter(x => tgcards.includes(x.id))
     }
 
+    if(newArgs.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(newArgs.antitags)
+        otherCards = otherCards.filter(x => !tgcards.includes(x.id))
+    }
+
     const ids = user.cards.map(x => x.id)
     const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
         .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
@@ -422,6 +427,11 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
     if(newArgs.tags.length > 0) {
         const tgcards = await fetchTaggedCards(newArgs.tags)
         mappedCards = mappedCards.filter(x => tgcards.includes(x.id))
+    }
+
+    if(newArgs.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(newArgs.antitags)
+        mappedCards = mappedCards.filter(x => !tgcards.includes(x.id))
     }
 
     const ids = otherCards.map(x => x.id)
