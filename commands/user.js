@@ -320,7 +320,7 @@ cmd('profile', async (ctx, user, ...args) => {
         } else {
             price = NaN
         }
-        if(card.level < 4) {
+        if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
         }
     })

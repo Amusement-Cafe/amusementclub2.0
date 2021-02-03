@@ -21,6 +21,10 @@
                 "description": "Same as report 3, but the person has to be the same person the auction went to"
             },
             {
+                "title": "->fraud report 5",
+                "description": "Displays when a user purchases a card via direct sale or auction and sells the card to bot"
+            },
+            {
                 "title": "->audit user [user_id]",
                 "description": "Lists all transactions done by the user"
             },

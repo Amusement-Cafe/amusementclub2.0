@@ -46,15 +46,14 @@ pcmd(['admin', 'auditor'], ['audit', 'help'], async (ctx, user, ...args) => {
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
 })
 
-pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
+    const help = ctx.audithelp.find(x => x.type === 'audit')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
-    return ctx.reply(user, `**__Choose a fraud report__**
-                            Fraud Report 1: Lists users who have more auction sales than returns
-                            Fraud Report 2: Lists overpriced auctions
-                            Fraud Report 3: Lists users who sold a card on auction and then bought the card back`)
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
 
 })
 
@@ -129,6 +128,25 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) 
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 4 audits: (${buybacks.length} results)` },
+            color: colors.blue,
+        }
+    })
+})
+
+pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) => {
+    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+
+    let botsells = await Audit.find({audited: false, report_type: 5})
+
+    if (botsells.length === 0)
+        return ctx.reply(user, 'nothing found for fraud report 5!')
+
+    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_auditReports(ctx, user, botsells, 5),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: `${user.username}, open report 5 audits: (${botsells.length} results)` },
             color: colors.blue,
         }
     })
