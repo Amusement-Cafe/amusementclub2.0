@@ -24,11 +24,14 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
 
-    if(parsedargs.me)
+    if(parsedargs.me === 1)
         req.author = user.discord_id
 
     let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
+
+    if (parsedargs.me === 2)
+        list = list.filter(x => x.author !== user.discord_id)
 
     if(parsedargs.diff)
         list = list.filter(x => !user.cards.some(y => x.card === y.id))
@@ -78,11 +81,14 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
     const now = new Date();
     const req = {finished: false}
 
-    if(parsedargs.me)
+    if(parsedargs.me === 1)
         req.author = user.discord_id
 
     let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
+
+    if (parsedargs.me === 2)
+        list = list.filter(x => x.author !== user.discord_id)
 
     if(parsedargs.diff)
         list = list.filter(x => !user.cards.some(y => x.card === y.id))
@@ -134,6 +140,9 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
+
+    if (user.dailystats.aucs >= 100)
+        return ctx.reply(user, `you have reached the maximum amount of auctions you can create in one daily. Please wait until your next daily to create more!`, 'red')
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
@@ -226,11 +235,12 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
 
     const auc = await Auction.findOne({id: id})
 
+    const lastBidder = auc.lastbidder === user.discord_id
     if(!auc)
         return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
 
-    if(user.exp < bid)
-        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')        
+    if((!lastBidder && user.exp < bid) || (lastBidder && user.exp < bid - auc.highbid))
+        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')
 
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
@@ -241,10 +251,14 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(auc.price >= bid)
         return ctx.reply(user, `your bid should be higher than **${auc.price}** ${ctx.symbols.tomato}`, 'red')
 
-    if(auc.lastbidder === user.discord_id)
-        return ctx.reply(user, `you already have the highest bid on this auction`, 'red')
+    if(lastBidder){
+        if (bid < auc.highbid)
+            return ctx.reply(user, `you cannot lower how much you bid!`, 'red')
+        await bid_auc(ctx, user, auc, bid, true)
+    } else {
+        await bid_auc(ctx, user, auc, bid)
+    }
 
-    await bid_auc(ctx, user, auc, bid)
 }).access('dm')
 
 cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {

@@ -22,7 +22,9 @@ const {
     eval,
     webhooks,
     meta,
+    preferences,
 } = require('./modules')
+const announcement = require('./collections/announcement')
 
 var userq = []
 var guildq = []
@@ -218,12 +220,17 @@ module.exports.create = async ({
         eval.checkQueue(ctx)
     }
 
+    const notifytick = () => {
+        preferences.notifyCheck(ctx)
+    }
+
     setInterval(tick.bind({}, ctx), 5000)
     setInterval(gtick.bind({}, ctx), 10000)
     setInterval(qtick.bind({}, ctx), 1000)
     setInterval(htick.bind({}, ctx), 60000 * 2)
     setInterval(atick.bind({}, ctx), 600000)
     setInterval(etick.bind({}, ctx), eval.queueTick)
+    setInterval(notifytick.bind({}, ctx), 6000)
 
     webhooks.listen(ctx)
 

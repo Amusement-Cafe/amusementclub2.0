@@ -70,7 +70,7 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
     })
 })
 
-const bid_auc = async (ctx, user, auc, bid) => {
+const bid_auc = async (ctx, user, auc, bid, add = false) => {
     const lastBidder = await fetchOnly(auc.lastbidder)
     let diff = auc.expires - new Date()
 
@@ -97,33 +97,56 @@ const bid_auc = async (ctx, user, auc, bid) => {
         auc.markModified('expires')
     }
 
-    auc.price = auc.highbid
-    auc.highbid = bid
-    auc.lastbidder = user.discord_id
+    if (!add) {
+        auc.price = auc.highbid
+        auc.lastbidder = user.discord_id
+    }
 
-    user.exp -= bid
+
+    if (add)
+        user.exp -= bid - auc.highbid
+    else
+        user.exp -= bid
+
+    auc.highbid = bid
+
     user.dailystats.bids = user.dailystats.bids + 1 || 1
     user.markModified('dailystats')
     await user.save()
     await auc.save()
 
-    if(lastBidder){
+    const author = await fetchOnly(auc.author)
+
+    if(lastBidder && !add){
         lastBidder.exp += auc.price
         await lastBidder.save()
 
-        if(lastBidder.discord_id != user.discord_id) {
+        const { aucoutbid } = lastBidder.prefs.notifications
+        if(aucoutbid && lastBidder.discord_id != user.discord_id) {
             await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
                 Use \`->auc bid ${auc.id} [new bid]\`
                 This auction will end in **${diff > 60000? msToTime(diff) : '<1m'}**`, 'yellow')
         }
-    } else {
-        const author = await fetchOnly(auc.author)
-        await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
-            ${formatName(ctx.cards[auc.card])} with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
+
+        const { aucnewbid } = author.prefs.notifications
+        if(aucnewbid) {
+            await ctx.direct(author, `your auction \`${auc.id}\` for card 
+                ${formatName(ctx.cards[auc.card])} got a new bid. New listed price: **${auc.price} ${ctx.symbols.tomato}**.`, 'blue')
+        }
+    } else if (!add) {
+        const { aucbidme } = author.prefs.notifications
+        if(aucbidme) {
+            await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
+                ${formatName(ctx.cards[auc.card])} with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
+        }
     }
 
-    return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
+    if (add)
+        return ctx.reply(user, `you successfully increased your bid on auction \`${auc.id}\` to **${bid}** ${ctx.symbols.tomato}!
+                                You can add to your bid **${bidsLeft}** more times!`)
+    else
+        return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
 }
 
 const finish_aucs = async (ctx, now) => {
@@ -146,11 +169,10 @@ const finish_aucs = async (ctx, now) => {
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
         await eval_fraud_check(ctx, auc, eval, aucCard)
-        if(!findSell){
+        if(!findSell)
             await audit_auc_stats(ctx, author, true)
-        }else {
+        else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
-        }
         // End audit logic
         await completed(ctx, lastBidder, aucCard)
         await lastBidder.save()
@@ -158,16 +180,18 @@ const finish_aucs = async (ctx, now) => {
         await from_auc(auc, author, lastBidder)
         await aucEvalChecks(ctx, auc)
 
-        await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+        if(author.prefs.notifications.aucend) {
+            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+        }
+        
         return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
             You ended up paying **${Math.round(auc.price)}** ${ctx.symbols.tomato} and got **${Math.round(auc.highbid - auc.price)}** ${ctx.symbols.tomato} back.
             ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
     } else {
-        if(!findSell){
+        if(!findSell)
             await audit_auc_stats(ctx, author, false)
-        }else {
+        else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
-        }
         addUserCard(author, auc.card)
         await author.save()
         await aucEvalChecks(ctx, auc, false)

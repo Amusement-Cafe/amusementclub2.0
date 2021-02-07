@@ -1,4 +1,5 @@
-const {pcmd} = require('../utils/cmd')
+const {pcmd}        = require('../utils/cmd')
+const Announcement  = require('../collections/announcement')
 
 const {
     onUsersFromArgs,
@@ -28,6 +29,7 @@ const {
 } = require("../modules/meta");
 
 const {
+    evalCard,
     evalCardFast,
 } = require("../modules/eval");
 
@@ -217,6 +219,7 @@ pcmd(['admin', 'mod'], ['sudo', 'reset', 'eval'], async (ctx, user, arg) => {
     info.aucevalinfo.auccount = 0
     info.aucevalinfo.lasttoldeval = -1
     await info.save()
+    await evalCard(ctx, ctx.cards[arg])
     return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
 })
 
@@ -274,6 +277,20 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, use
     await ctx.send(ctx.msg.channel.id, pricesEmbed)
 }))
 
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `Run \`->sudo eval info\`first to make sure you have the correct card! ` } },
+        question: `**${user.username}**, do you want to force waiting auction prices into eval for ${formatName(cards[0])}?`,
+        onConfirm: async (x) => {
+            const info = fetchInfo(ctx, cards[0].id)
+            info.aucevalinfo.newaucprices.map(x => info.aucevalinfo.evalprices.push(x))
+            info.aucevalinfo.newaucprices = []
+            await info.save()
+            return ctx.reply(user, `all awaiting auction prices are now set for eval!`)
+        }
+    })
+}))
+
 pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
     throw `This is a test exception`
 })
@@ -305,4 +322,27 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
 pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) => {
     ctx.settings.wip = !ctx.settings.wip
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
+})
+
+pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
+    const split = args.join(' ').split(',')
+    const title = split[0]
+    const body = split[1]
+
+    if(!title || !body) {
+        return ctx.reply(`required format: \`->sudo announce title text, body text\``, '')
+    }
+
+    const announcement = new Announcement()
+    announcement.date = new Date()
+    announcement.title = title
+    announcement.body = body
+    await announcement.save()
+
+    return ctx.reply(user, {
+        title,
+        author: { name: `New announcement set` },
+        description: body,
+        footer: { text: `Date: ${announcement.date}` },
+    })
 })

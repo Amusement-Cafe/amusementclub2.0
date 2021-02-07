@@ -2,6 +2,7 @@ const express       = require("express")
 const bodyParser    = require("body-parser")
 const Topgg         = require('@top-gg/sdk')
 const color         = require('../utils/colors')
+const _             = require('lodash')
 
 const {
     formatName,
@@ -63,6 +64,8 @@ const registerTopggVote = async (ctx, vote) => {
     }
 
     addUserCard(votingUser, card.id)
+    votingUser.lastvote = new Date()
+    votingUser.votenotified = false
     votingUser.save()
 
     return ctx.direct(votingUser, {
