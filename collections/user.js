@@ -39,6 +39,7 @@ module.exports = model('User', {
     cards:              { type: Array, default: [] },
     inventory:          { type: Array, default: [] },
     completedcols:      { type: Array, default: [] },
+    cloutedcols:        { type: Array, default: [] },
     achievements:       { type: Array, default: [] },
     effects:            { type: Array, default: [] },
     wishlist:           { type: Array, default: [] },
@@ -82,6 +83,7 @@ module.exports = model('User', {
             announce:   { type: Boolean, default: false },
             daily:      { type: Boolean, default: false },
             vote:       { type: Boolean, default: false },
+            completed:  { type: Boolean, default: true },
         },
     }
 })

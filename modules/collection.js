@@ -21,47 +21,51 @@ const bestColMatchMulti = (ctx, name) => {
     userCards is mainly a copy/paste of mapUserCards from module Cards, but it would break on require so I stole it since it's only 1 line
  */
 const completed = async (ctx, user, card) => {
+    const legendary = ctx.cards.some(x => x.col === card.col && x.level === 5)
     const colCards = ctx.cards.filter(x => x.col === card.col && x.level < 5)
+    const preCompleted = user.completedcols.find(x => x.id === card.col)
+    const userCards = user.cards.filter(x => x.id < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.id], x)).filter(x => x.col === card.col && x.level < 5)
+    let msg
 
-    const message = "You just completed the _"+ card.col +"_ collection!\n"+
-        "You now have the option to reset this collection in exchange for a clout star. One copy of each card will be consumed if you do. To proceed, type:\n"+
-        "`->col reset "+ card.col +"`"
+    if (!preCompleted && userCards.length < colCards.length)
+        return
 
-    let userCards = user.cards.filter(x => x.id < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.id], x)).filter(x => x.col === card.col && x.level < 5)
-
-    if(userCards.length < colCards.length) {
-        return false
+    if (preCompleted && preCompleted.amount) {
+        if (preCompleted.amount !== 0)
+            user.cloutedcols.push({id: card.col, amount: preCompleted.amount})
+        preCompleted.amount = 0
     }
 
-    const completedCol = user.completedcols.find(x => x.id === card.col)
 
-    if (!completedCol) {
-        await ctx.direct(user, message)
-        user.completedcols.push({ id: card.col, amount: 0, notified: true })
-        user.markModified('completedcols')
+    if (preCompleted && userCards.length < colCards.length){
+        msg = `you no longer have all of the cards required for full completion of **${card.col}**! This collection has now been removed from your completed list.`
+        user.completedcols = user.completedcols.filter(x => x.id !== card.col)
     }
-    else {
-        if (!completedCol.notified) {
-            await ctx.direct(user, message)
-            completedCol.notified = true
-            user.markModified('completedcols')
-        }
+
+    if (!preCompleted && userCards.length >= colCards.length) {
+        msg = `You have just completed the **${card.col}** collection! 
+        You can now decide if you want to reset the collection for a clout star${legendary? 'and a legendary ticket to claim a legendary card from this collection!': '.'}
+        One copy of each card below 5 stars will be consumed.
+        To reset type:
+        \`->col reset ${card.col}\``
+        user.completedcols.push({id: card.col})
     }
-    return
+
+    if(user.prefs.notifications.completed && msg) {
+        await ctx.direct(user, msg)
+    }
 }
 
 const reset = async (ctx, user, col) => {
-    const completed = user.completedcols.find(x => x.id === col.id)
+    const clouted = user.cloutedcols.find(x => x.id === col.id)
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
 
-    if(completed) {
-        completed.amount = completed.amount + 1 || 1
-        completed.notified = false
-    }
-    else {
-        user.completedcols.push({id: col.id, amount: 1, notified: false})
-    }
-    user.markModified('completedcols')
+    if(clouted)
+        clouted.amount = clouted.amount + 1 || 1
+    else
+        user.cloutedcols.push({id: col.id, amount: 1})
+
+    user.markModified('cloutedcols')
 
     user.cards.map(x => { 
         if(ctx.cards[x.id] && ctx.cards[x.id].col === col.id && ctx.cards[x.id].level < 5) 

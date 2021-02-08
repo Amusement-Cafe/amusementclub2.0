@@ -16,7 +16,8 @@ const _             = require('lodash')
 
 cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     const completed = args.find(x => x === '-completed' || x === '!completed')
-    args = args.filter(x => x != '-completed' && x != '!completed')
+    const clouted = args.find(x => x === '-clouted' || x === '!clouted')
+    args = args.filter(x => x != '-completed' && x != '!completed' && x != '-clouted' && x != '!clouted')
 
     let cols = byAlias(ctx, args.join().replace('-', ''))
         .sort((a, b) => nameSort(a, b, 'id'))
@@ -28,17 +29,24 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
             cols = cols.filter(x => !user.completedcols.some(y => y.id === x.id))
     }
 
+    if (clouted) {
+        if(clouted[0] === '-')
+            cols = cols.filter(x => user.cloutedcols.some(y => y.id === x.id))
+        else
+            cols = cols.filter(x => !user.cloutedcols.some(y => y.id === x.id))
+    }
+
     if(cols.length === 0)
         return ctx.reply(user, `no collections found`, 'red')
 
     const cardmap = mapUserCards(ctx, user)
     const pages = ctx.pgn.getPages(cols.map(x => {
-        const complete = user.completedcols.find(y => x.id === y.id)
+        const clout = user.cloutedcols.find(y => x.id === y.id)
         const overall = ctx.cards.filter(c => c.col === x.id).length
         const usercount = cardmap.filter(c => c.col === x.id).length
         const rate = usercount / overall
-        const completestars = complete && complete.amount > 0? `[${complete.amount}${ctx.symbols.star}] ` : ''
-        return `${completestars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.round(rate * 100)}%)` : ''}`
+        const cloutstars = clout && clout.amount > 0? `[${clout.amount}${ctx.symbols.star}] ` : ''
+        return `${cloutstars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.round(rate * 100)}%)` : ''}`
     }))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -59,7 +67,7 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
     const userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
     const card = _.sample(colCards)
-    const clout = user.completedcols.find(x => x.id === col.id)
+    const clout = user.cloutedcols.find(x => x.id === col.id)
     const colInfos = colCards.map(x => ctx.cardInfos[x.id]).filter(x => x)
     const ratingSum = colInfos.reduce((acc, cur) => acc + cur.ratingsum, 0)
     const ratingAvg = ratingSum / colInfos.reduce((acc, cur) => acc + cur.usercount, 0)
