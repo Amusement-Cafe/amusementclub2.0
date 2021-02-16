@@ -15,7 +15,7 @@
     "bad-words": "^3.0.3",
     "dateformat": "^4.5.1",
     "dblapi.js": "^2.4.1",
-    "discord-paginator": "^0.8.11",
+    "discord-paginator": "^0.8.13",
     "eris": "^0.14.0",
     "lockfile": "^1.0.4",
     "lodash": "^4.17.19",
