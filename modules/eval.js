@@ -177,6 +177,9 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     if (info.aucevalinfo.newaucprices.length > ctx.eval.aucEval.maxSamples)
         info.aucevalinfo.newaucprices.shift()
 
+    if (info.aucevalinfo.evalprices.length > ctx.eval.aucEval.maxSamples)
+        info.aucevalinfo.evalprices.shift()
+
     if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples * 2 || info.aucevalinfo.newaucprices.length === ctx.eval.aucEval.maxSamples) {
         info.aucevalinfo.newaucprices = info.aucevalinfo.newaucprices.filter((a, b) => evalAucOutlierCheck(ctx, a, b, info))
         if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples) {

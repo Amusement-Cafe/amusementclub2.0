@@ -138,6 +138,8 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const auchouse = getBuilding(ctx, 'auchouse')
+    const timelimit = asdate.subtract(new Date(), 1, 'hour')
+    const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
     if(!auchouse || auchouse.health < 50)
         return ctx.reply(user, `you can sell cards only in a guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
 
@@ -151,6 +153,9 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
 
     if (user.dailystats.aucs >= 100)
         return ctx.reply(user, `you have reached the maximum amount of auctions you can create in one daily. Please wait until your next daily to create more!`, 'red')
+
+    if (curaucs.length >= 15)
+        return ctx.reply(user, `you have reached the maximum amount of auctions you can have listed at a time per hour. Please wait an hour before listing again!`, 'red')
 
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
