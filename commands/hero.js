@@ -174,8 +174,8 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
 
 cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
-    await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
+
     const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
         .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
@@ -306,7 +306,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     }
 
     const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
-    if(oldEffect) {
+    if(oldEffect && oldEffect.expires > now) {
         return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
             force: ctx.globals.force,
             question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
