@@ -44,25 +44,15 @@ const trans_fraud_check = async (ctx, user, trans, card) => {
         auditDB.card = card
         await auditDB.save()
     }
-    if (buyCheck && trans.to_id === null) {
+    if ((buyCheck || auditCheck) && trans.to_id === null) {
         const botSell = await new Audit()
         botSell.audit_id = audit_ID_gen(last_audit)
         botSell.report_type = 5
         botSell.transid = trans.id
-        botSell.id = buyCheck.id
+        botSell.id = buyCheck? buyCheck.id : auditCheck.id
         botSell.user = trans.from
         botSell.card = card
         await botSell.save()
-    }
-    if (auditCheck && trans.to_id === null) {
-        const botSells = await new Audit()
-        botSells.audit_id = audit_ID_gen(last_audit)
-        botSells.report_type = 5
-        botSells.transid = trans.id
-        botSells.id = auditCheck.id
-        botSells.user = trans.from
-        botSells.card = card
-        await botSells.save()
     }
 }
 

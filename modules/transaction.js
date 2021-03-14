@@ -111,7 +111,8 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
     transaction.cards.map(async (x) => {
         removeUserCard(ctx, from_user, x)
-        await trans_fraud_check(ctx, user, transaction, x)
+        await completed(ctx, from_user, ctx.cards[x])
+        await trans_fraud_check(ctx, from_user, transaction, x)
     })
     await from_user.save()
     from_user.markModified('cards')

@@ -87,6 +87,10 @@
                 "description": "List the auctions you have bid on.\n"
             },
             {
+                "title": "->auc -diff/->auc -miss",
+                "description": "List the auctions for cards you do not own\n"
+            },
+            {
                 "title": "Diamond marks",
                 "description": "Auctions in the list has diamond marks on them:\n🔹 means that you created that auction\n🔸 means that your bid is leading in this auction\n▪️ means you can bid on this auction.\n"
             }

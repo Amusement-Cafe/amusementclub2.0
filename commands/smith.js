@@ -104,6 +104,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
                 removeUserCard(ctx, user, card1.id)
                 removeUserCard(ctx, user, card2.id)
+                await completed(ctx, user, card1)
+                await completed(ctx, user, card2)
                 await user.save()
 
                 addUserCard(user, newcard.id)
@@ -166,6 +168,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
                 user.dailystats[`liquify${card.level}`] += 1
                 removeUserCard(ctx, user, card.id)
+                await completed(ctx, user, card)
                 await user.save()
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
