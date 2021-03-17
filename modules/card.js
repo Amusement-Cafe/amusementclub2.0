@@ -311,17 +311,20 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
             if(x.lastcard)
                 cards.push(map.filter(x => x.id === user.lastcard))
             else {
-                cards.push(filter(map, x).sort(x.sort))
+                let batch = filter(map, x)
 
                 if(x.tags.length > 0) {
                     const tgcards = await fetchTaggedCards(x.tags)
-                    cards[i] = cards[i].filter(x => tgcards.includes(x.id))
+                    batch = batch.filter(x => tgcards.includes(x.id))
                 }
 
                 if(x.antitags.length > 0) {
                     const tgcards = await fetchTaggedCards(x.antitags)
-                    cards = cards.filter(x => !tgcards.includes(x.id))
+                    batch = batch.filter(x => !tgcards.includes(x.id))
                 }
+
+                batch.sort(x.sort)
+                cards.push(batch)
             }
 
             if(cards[i].length == 0)

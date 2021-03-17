@@ -25,7 +25,6 @@ const {
 } = require('../modules/eval')
 
 const {
-    addGuildXP,
     getBuilding,
 } = require('../modules/guild')
 
@@ -43,11 +42,22 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     if(!hub)
         return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**. Buy one in the \`->store\``, 'red')
 
-    const card1 = bestMatch(cards[0])
-    let card2 = bestMatch(cards[1])
+    const batch1 = cards[0]
+    const batch2 = cards[1]
 
-    if(!card2 || card1.id === card2.id)
-        card2 = bestMatch(cards[0].filter(x => x.id != card1.id))
+    let card1, card2
+
+    if(!batch1 || batch1.length == 0) {
+        return ctx.reply(user, `couldn't find any matching cards`, 'red')
+    }
+
+    card1 = batch1[0]
+
+    if(batch2 && batch2.length > 0) {
+        card2 = batch2[0]
+    } else {
+        card2 = batch1.filter(x => x.id != card1.id)[0]
+    }
 
     if(!card1 || !card2)
         return ctx.reply(user, `not enough cards found matching this query.

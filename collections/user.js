@@ -52,7 +52,10 @@ module.exports = model('User', {
     dailynotified:      { type: Boolean, default: true },
     votenotified:       { type: Boolean, default: false },
 
-    heroslots:          { type: Array, default: [] },
+    heroslots:          [
+                            { type: String, default: null }
+                        ],
+
     herocooldown:       { type: Array, default: [] },
 
     hero:               { type: String },
