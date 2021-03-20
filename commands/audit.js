@@ -401,7 +401,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
         description: `**${findUser.username}** \`${findUser.discord_id}\`
                       Currency: **${findUser.exp}${ctx.symbols.tomato}**, **${findUser.vials}${ctx.symbols.vial}**
                       Promo Currency: **${findUser.promoexp}**
-                      Embargoed?: **${findUser.ban.embargo}**
+                      Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
                       Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
                       Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
                       Unique Cards: **${findUser.cards.length}**

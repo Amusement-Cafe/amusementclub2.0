@@ -304,7 +304,7 @@ cmd(['guild', 'set', 'report'], async (ctx, user) => {
 
 cmd(['guild', 'set', 'bot'], async (ctx, user) => {
     if(ctx.guild.botchannels.length > 0 && !isUserOwner(ctx, user) && !user.roles.includes('admin'))
-        return ctx.reply(user, `only owner can change guild's report channel`, 'red')
+        return ctx.reply(user, `only server owner can add bot channels`, 'red')
 
     if(ctx.guild.botchannels.includes(ctx.msg.channel.id))
         return ctx.reply(user, `this channel is already marked as bot channel`, 'red')
@@ -317,7 +317,7 @@ cmd(['guild', 'set', 'bot'], async (ctx, user) => {
 
 cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
     if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
-        return ctx.reply(user, `only owner can change guild's report channel`, 'red')
+        return ctx.reply(user, `only server owner can remove bot channels`, 'red')
 
     const pulled = ctx.guild.botchannels.pull(ctx.msg.channel.id)
     if(pulled.length === 0)

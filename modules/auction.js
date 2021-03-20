@@ -127,7 +127,7 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
             await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
                 Use \`->auc bid ${auc.id} [new bid]\`
-                This auction will end in **${diff > 60000? msToTime(diff) : '<1m'}**`, 'yellow')
+                This auction will end in **${formatAucTime(auc.expires)}**`, 'yellow')
         }
 
         const { aucnewbid } = author.prefs.notifications
@@ -166,7 +166,17 @@ const finish_aucs = async (ctx, now) => {
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
-        //Audit Logic Start
+        await lastBidder.save()
+        await author.save()
+
+        if(author.prefs.notifications.aucend) {
+            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+        }
+
+        await ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
+            You ended up paying **${Math.round(auc.price)}** ${ctx.symbols.tomato} and got **${Math.round(auc.highbid - auc.price)}** ${ctx.symbols.tomato} back.
+            ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
+
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
         await eval_fraud_check(ctx, auc, eval, aucCard)
@@ -174,20 +184,11 @@ const finish_aucs = async (ctx, now) => {
             await audit_auc_stats(ctx, author, true)
         else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
-        // End audit logic
-        await completed(ctx, lastBidder, aucCard)
-        await lastBidder.save()
-        await author.save()
-        await from_auc(auc, author, lastBidder)
-        await aucEvalChecks(ctx, auc)
 
-        if(author.prefs.notifications.aucend) {
-            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
-        }
-        
-        return ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
-            You ended up paying **${Math.round(auc.price)}** ${ctx.symbols.tomato} and got **${Math.round(auc.highbid - auc.price)}** ${ctx.symbols.tomato} back.
-            ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
+        await completed(ctx, lastBidder, aucCard)
+        await aucEvalChecks(ctx, auc)
+        await from_auc(auc, author, lastBidder)
+
     } else {
         if(!findSell)
             await audit_auc_stats(ctx, author, false)
@@ -209,7 +210,7 @@ const paginate_auclist = (ctx, user, list) => {
 
         const msdiff = auc.expires - new Date()
         const timediff = msToTime(msdiff, {compact: true})
-        const diffstr = msdiff > aucHide? timediff : '<5m'
+        const diffstr = formatAucTime(auc.expires, true)
         let char = ctx.symbols.auc_wss
 
         if(auc.author === user.discord_id) {
@@ -228,7 +229,7 @@ const paginate_auclist = (ctx, user, list) => {
 const format_auc = async(ctx, auc, author, doeval = true) => {
     const card = ctx.cards[auc.card]
     const msdiff = auc.expires - new Date()
-    const timediff = msToTime(msdiff)
+    const timediff = formatAucTime(auc.expires)
 
     console.log(msdiff)
 
@@ -244,10 +245,29 @@ const format_auc = async(ctx, auc, author, doeval = true) => {
         resp.push(`Winning bid: **${auc.highbid}**${ctx.symbols.tomato}`)
         resp.push(`**This auction has finished**`)
     } else {
-        resp.push(`Expires in **${msdiff > aucHide? timediff : '<5m'}**`)
+        resp.push(`Expires in **${timediff}**`)
     }
 
     return resp.join('\n')
+}
+
+const formatAucTime = (time, compact = false) => {
+    const timeToEndMS = time - new Date()
+
+    if (timeToEndMS <= 0)
+        return `0s`
+
+    const hours = Math.floor((timeToEndMS / (1000 * 60)) / 60)
+    const minutes = Math.floor((timeToEndMS / (1000 * 60)) % 60)
+
+    if (hours === 0 && minutes <= 5)
+        return `<5m`
+
+    if (compact) {
+        return `~${hours <= 0? `~${minutes}m` : `${minutes > 45? hours + 1: minutes < 15? hours - 1: `${hours}.5`}h`}`
+    }
+
+    return `${hours <= 0? '': `${hours}h`} ${minutes}m`
 }
 
 const unlock = () => {

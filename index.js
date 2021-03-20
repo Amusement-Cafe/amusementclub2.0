@@ -272,6 +272,7 @@ module.exports.create = async ({
                 && !cntnt.includes(setbotmsg)
                 && !cntnt.includes(setreportmsg)
                 && !cntnt.startsWith('sum')
+                && !cntnt.startsWith('pat')
                 && !curguild.botchannels.some(x => x === msg.channel.id)) {
 
                 /* skip cooldown guilds */
@@ -295,15 +296,14 @@ module.exports.create = async ({
 
                 return
             }
-
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
                 reply, /* quick reply function to the channel */
                 globals: {}, /* global parameters */
                 discord_guild: msg.channel.guild,  /* current discord guild */
+                prefix: curprefix, /* current prefix */
             })
-
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
 

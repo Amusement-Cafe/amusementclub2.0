@@ -265,7 +265,7 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '') + (parsedargs.evalQuery? `${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: '')
     })
 
     const evalTime = getQueueTime()
@@ -370,7 +370,7 @@ cmd('profile', async (ctx, user, ...args) => {
 }).access('dm')
 
 cmd('diff', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
@@ -409,7 +409,7 @@ cmd('diff', async (ctx, user, ...args) => {
 })
 
 cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
@@ -449,7 +449,7 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
 })
 
 cmd('has', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'has')

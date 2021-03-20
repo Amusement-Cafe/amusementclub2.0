@@ -625,7 +625,7 @@ cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedarg
     return ctx.reply(user, `removed rating for ${formatName(card)}`)
 })).access('dm')
 
-cmd(['wish'], ['wishlist'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(user.wishlist.length === 0) {
         return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
     }
@@ -641,7 +641,7 @@ cmd(['wish'], ['wishlist'], withGlobalCards(async (ctx, user, cards, parsedargs)
     })
 })).access('dm')
 
-cmd(['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
