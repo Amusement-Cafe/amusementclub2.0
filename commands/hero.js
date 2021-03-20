@@ -11,6 +11,7 @@ const {
 
 const {
     XPtoLEVEL,
+    numFmt,
 } = require('../utils/tools')
 
 const {
@@ -326,7 +327,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
-        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbols.tomato} to submit a hero`, 'red')
+        return ctx.reply(user, `you have to have at least **${numFmt(price)}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)
@@ -372,6 +373,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     const embed = { 
         title: `Submitting a hero`,
         description: `You are about to submit **${char.name.english}** from **${media.title.english}**.
+        > This submission will cost you **${numFmt(price)}** ${ctx.symbols.tomato}
         > It may take up some time to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,
         image: { url: char.image.large }

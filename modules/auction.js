@@ -1,7 +1,11 @@
 const {Auction, AuditAucSell}         = require('../collections')
 const {evalCard}                      = require("../modules/eval");
-const {generateNextId}                = require('../utils/tools')
 const {fetchOnly}                     = require('./user')
+
+const {
+    generateNextId,
+    numFmt,
+} = require('../utils/tools')
 
 const {
     completed,
@@ -125,7 +129,7 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
         const { aucoutbid } = lastBidder.prefs.notifications
         if(aucoutbid && lastBidder.discord_id != user.discord_id) {
             await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
-                To remain in the auction, try bidding higher than ${auc.price} ${ctx.symbols.tomato}
+                To remain in the auction, try bidding higher than ${numFmt(auc.price)} ${ctx.symbols.tomato}
                 Use \`->auc bid ${auc.id} [new bid]\`
                 This auction will end in **${formatAucTime(auc.expires)}**`, 'yellow')
         }
@@ -133,21 +137,21 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
         const { aucnewbid } = author.prefs.notifications
         if(aucnewbid) {
             await ctx.direct(author, `your auction \`${auc.id}\` for card 
-                ${formatName(ctx.cards[auc.card])} got a new bid. New listed price: **${auc.price} ${ctx.symbols.tomato}**.`, 'blue')
+                ${formatName(ctx.cards[auc.card])} got a new bid. New listed price: **${numFmt(auc.price)} ${ctx.symbols.tomato}**.`, 'blue')
         }
     } else if (!add) {
         const { aucbidme } = author.prefs.notifications
         if(aucbidme) {
             await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
-                ${formatName(ctx.cards[auc.card])} with minimum ${auc.price} ${ctx.symbols.tomato}!`, 'green')
+                ${formatName(ctx.cards[auc.card])} with minimum ${numFmt(auc.price)} ${ctx.symbols.tomato}!`, 'green')
         }
     }
 
     if (add)
-        return ctx.reply(user, `you successfully increased your bid on auction \`${auc.id}\` to **${bid}** ${ctx.symbols.tomato}!
+        return ctx.reply(user, `you successfully increased your bid on auction \`${auc.id}\` to **${numFmt(bid)}** ${ctx.symbols.tomato}!
                                 You can add to your bid **${bidsLeft}** more times!`)
     else
-        return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${bid}** ${ctx.symbols.tomato}!`)
+        return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${numFmt(bid)}** ${ctx.symbols.tomato}!`)
 }
 
 const finish_aucs = async (ctx, now) => {
@@ -170,12 +174,12 @@ const finish_aucs = async (ctx, now) => {
         await author.save()
 
         if(author.prefs.notifications.aucend) {
-            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${auc.price}** ${ctx.symbols.tomato}`)
+            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${numFmt(auc.price)}** ${ctx.symbols.tomato}`)
         }
 
         await ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
-            You ended up paying **${Math.round(auc.price)}** ${ctx.symbols.tomato} and got **${Math.round(auc.highbid - auc.price)}** ${ctx.symbols.tomato} back.
-            ${tback > 0? `You got additional **${tback}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
+            You ended up paying **${numFmt(Math.round(auc.price))}** ${ctx.symbols.tomato} and got **${numFmt(Math.round(auc.highbid - auc.price))}** ${ctx.symbols.tomato} back.
+            ${tback > 0? `You got additional **${numFmt(tback)}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
 
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
@@ -220,7 +224,7 @@ const paginate_auclist = (ctx, user, list) => {
             char = ctx.symbols.auc_sod
         }
 
-        pages[Math.floor(i/10)] += `${char} [${diffstr}] \`${auc.id}\` [${auc.price}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
+        pages[Math.floor(i/10)] += `${char} [${diffstr}] \`${auc.id}\` [${numFmt(auc.price)}${ctx.symbols.tomato}] ${formatName(ctx.cards[auc.card])}\n`
     })
 
     return pages;
@@ -235,14 +239,14 @@ const format_auc = async(ctx, auc, author, doeval = true) => {
 
     const resp = []
     resp.push(`Seller: **${author.username}**`)
-    resp.push(`Price: **${auc.price}** ${ctx.symbols.tomato}`)
+    resp.push(`Price: **${numFmt(auc.price)}** ${ctx.symbols.tomato}`)
     resp.push(`Card: ${formatName(card)}`)
 
     if(doeval)
-        resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
+        resp.push(`Card value: **${numFmt(await evalCard(ctx, card))}** ${ctx.symbols.tomato}`)
 
     if(auc.finished) {
-        resp.push(`Winning bid: **${auc.highbid}**${ctx.symbols.tomato}`)
+        resp.push(`Winning bid: **${numFmt(auc.highbid)}**${ctx.symbols.tomato}`)
         resp.push(`**This auction has finished**`)
     } else {
         resp.push(`Expires in **${timediff}**`)

@@ -43,7 +43,7 @@ const checkDaily = async (ctx) => {
 
     if(!userToDaily) return
 
-    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim you daily bonus now with \`->daily\`!`)
+    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim your daily bonus now with \`->daily\`!`)
     userToDaily.dailynotified = true
     await userToDaily.save()
 }

@@ -128,7 +128,7 @@ const parseArgs = (ctx, args, user) => {
                     case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
                     case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
                     case 'rated': q.filters.push(c => m? c.rating: !c.rating); q.userQuery = true; break
-                    case 'wish': q.filters.push(c => m? user.wishlist.includes(c.id): !user.wishlist.includes(c.id)); q.userQuery = true; break
+                    case 'wish': q.filters.push(c => m? user.wishlist.includes(c.id): !user.wishlist.includes(c.id)); break
                     case 'promo': const mcol = bestColMatchMulti(ctx, substr); m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
                     case 'diff': q.diff = m; break
                     case 'miss': q.diff = m; break

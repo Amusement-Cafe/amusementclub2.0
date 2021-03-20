@@ -1,4 +1,5 @@
 const {cmd}             = require('../utils/cmd')
+const {numFmt}          = require('../utils/tools')
 const {evalCard}        = require('../modules/eval')
 const {Auction}         = require('../collections')
 const {fetchOnly}       = require('../modules/user')
@@ -186,13 +187,13 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
             return ctx.reply(user, `impossible to proceed with confirmation: ${formatName(card)} not found in your list`, 'red')
 
         if(price < min)
-            return ctx.reply(user, `you can't set price less than **${min}** ${ctx.symbols.tomato} for this card`, 'red')
+            return ctx.reply(user, `you can't set price less than **${numFmt(min)}** ${ctx.symbols.tomato} for this card`, 'red')
 
         if(price > max)
-            return ctx.reply(user, `you can't set price higher than **${max}** ${ctx.symbols.tomato} for this card`, 'red')
+            return ctx.reply(user, `you can't set price higher than **${numFmt(max)}** ${ctx.symbols.tomato} for this card`, 'red')
 
         if(user.exp < fee)
-            return ctx.reply(user, `you have to have at least **${fee}** ${ctx.symbols.tomato} to auction for that price`, 'red')
+            return ctx.reply(user, `you have to have at least **${numFmt(fee)}** ${ctx.symbols.tomato} to auction for that price`, 'red')
 
         if(usercard.fav && usercard.amount === 1)
             return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
@@ -205,7 +206,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (${auchouse.level > 1? 5 : 10}% fee)` } },
         force: ctx.globals.force,
         question,
         check,
@@ -226,7 +227,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
                     price,
             })
 
-            ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** ${ctx.symbols.tomato}
+            ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
                 Auction ID: \`${auc.id}\``)
         },
     })
@@ -257,7 +258,7 @@ cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
     const lastBidder = auc.lastbidder === user.discord_id
 
     if((!lastBidder && user.exp < bid) || (lastBidder && user.exp < bid - auc.highbid))
-        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')
+        return ctx.reply(user, `you don't have \`${numFmt(bid)}\` ${ctx.symbols.tomato} to bid`, 'red')
 
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
@@ -266,7 +267,7 @@ cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `you cannot bid on your own auction`, 'red')
 
     if(auc.price >= bid)
-        return ctx.reply(user, `your bid should be higher than **${auc.price}** ${ctx.symbols.tomato}`, 'red')
+        return ctx.reply(user, `your bid should be higher than **${numFmt(auc.price)}** ${ctx.symbols.tomato}`, 'red')
 
     if(lastBidder){
         if (bid < auc.highbid)

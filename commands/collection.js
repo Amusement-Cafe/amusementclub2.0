@@ -9,8 +9,12 @@ const {
     mapUserCards,
 } = require('../modules/card')
 
+const {
+    nameSort,
+    numFmt,
+}    = require('../utils/tools')
+
 const {cmd}         = require('../utils/cmd')
-const {nameSort}    = require('../utils/tools')
 const colors        = require('../utils/colors')
 const _             = require('lodash')
 
@@ -73,8 +77,8 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
     const ratingAvg = ratingSum / colInfos.reduce((acc, cur) => acc + cur.usercount, 0)
 
     const resp = []
-    resp.push(`Overall cards: **${colCards.length}**`)
-    resp.push(`You have: **${userCards.length} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
+    resp.push(`Overall cards: **${numFmt(colCards.length)}**`)
+    resp.push(`You have: **${numFmt(userCards.length)} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
     resp.push(`Average rating: **${ratingAvg.toFixed(2)}**`)
 
     if(clout && clout.amount > 0)

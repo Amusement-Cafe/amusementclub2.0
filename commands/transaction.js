@@ -1,4 +1,5 @@
 const {cmd, pcmd}           = require('../utils/cmd')
+const {numFmt}              = require('../utils/tools')
 const {Transaction}         = require('../collections')
 const msToTime              = require('pretty-ms')
 const colors                = require('../utils/colors')
@@ -162,7 +163,7 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
 
     const resp = []
     resp.push(`Cards: **${trs.cards.length}**`)
-    resp.push(`Price: **${trs.price}** ${ctx.symbols.tomato}`)
+    resp.push(`Price: **${numFmt(trs.price)}** ${ctx.symbols.tomato}`)
     resp.push(`From: **${trs.from}**`)
     resp.push(`To: **${trs.to}**`)
 

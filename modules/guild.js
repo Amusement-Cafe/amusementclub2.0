@@ -11,6 +11,10 @@ const {
     check_effect,
 } = require('./effect')
 
+const {
+    numFmt
+} = require('../utils/tools')
+
 const m_hero = require('./hero')
 
 let cache = []
@@ -122,12 +126,12 @@ const bill_guilds = async (ctx, now) => {
     if(ratio == Infinity)
         ratio = 0
 
-    report.push(`Maintenance cost: **${total}** ${ctx.symbols.tomato}`)
+    report.push(`Maintenance cost: **${numFmt(total)}** ${ctx.symbols.tomato}`)
     if(guild.discount > 0) {
-        report.push(`Applied discount: **${guild.discount * 100}%** (${discount} ${ctx.symbols.tomato})`)
+        report.push(`Applied discount: **${guild.discount * 100}%** (${numFmt(discount)} ${ctx.symbols.tomato})`)
     }
 
-    report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
+    report.push(`Remaining guild balance: **${numFmt(guild.balance)}** ${ctx.symbols.tomato}`)
 
     const past = asdate.subtract(new Date(), 7, 'days')
     const activeUsers = await User.countDocuments({ 
@@ -219,8 +223,8 @@ const getBuildingInfo = (ctx, user, args) => {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
+                Maintenance: **${numFmt(x.maintenance)}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
     }))}

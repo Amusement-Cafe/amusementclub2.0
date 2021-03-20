@@ -1,7 +1,11 @@
-const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
+
+const {
+    XPtoLEVEL,
+    numFmt,
+} = require('../utils/tools')
 
 const {
     getGuildUser,
@@ -188,8 +192,8 @@ const infos = {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
+                Maintenance: **${numFmt(x.maintenance)}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
         }))
@@ -222,9 +226,9 @@ const infos = {
         ]
 
         if(effect.passive) {
-            fields.push({ name: `Lasts`, value: `**${item.lasts}** days after being crafted` })
+            fields.push({ name: `Lasts`, value: `**${numFmt(item.lasts)}** days after being crafted` })
         } else {
-            fields.push({ name: `Can be used`, value: `**${item.lasts}** times` })
+            fields.push({ name: `Can be used`, value: `**${numFmt(item.lasts)}** times` })
             fields.push({ name: `Cooldown`, value: `**${effect.cooldown}** hours` })
         }
         
@@ -243,7 +247,7 @@ const checks = {
             return `this guild already has **${item.name}**`
 
         if(user.exp < item.levels[0].price)
-            return `you need at least **${item.levels[0].price}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
+            return `you need at least **${numFmt(item.levels[0].price)}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
 
         if(XPtoLEVEL(guild.xp) < item.levels[0].level)
             return `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`
@@ -263,6 +267,7 @@ const checks = {
         if(!hub || hub.level < 3)
             return `you can create effect cards only in guild with **Smithing Hub level 3** or higher`
 
+        //Keeping this here in case we for some reason need to revert to not allowing stacking effects
         // if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))
         //     return `you already have this Effect Card`
     
