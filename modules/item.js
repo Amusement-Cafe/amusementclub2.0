@@ -217,9 +217,9 @@ const infos = {
 }
 
 const checks = {
-    blueprint: (ctx, user, item) => {
+    blueprint: async (ctx, user, item) => {
         const guild = ctx.guild
-        if(guild.buildings.find(x => x.id === item.id))
+        if(guild.userbuildings.find(x => x.id === item.id))
             return `this guild already has **${item.name}**`
 
         if(user.exp < item.levels[0].price)

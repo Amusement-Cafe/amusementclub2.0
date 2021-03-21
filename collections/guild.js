@@ -21,6 +21,7 @@ module.exports = model('Guild', {
         level:          { type: Number, default: 1 },
         health:         { type: Number, default: 100 },
     }],
+    userbuildings:  [{ type: String }],
 
     nextcheck:      { type: Date, default: new Date() },
     reportchannel:  { type: String },
