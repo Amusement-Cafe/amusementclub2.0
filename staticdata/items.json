@@ -250,6 +250,16 @@
         "fulldesc": "When used gives you **Impossible Spell Card**. This is a passive item, so make sure you equip it into hero's effect card slot",
         "recipe": [2, 2, 2, 3, 3, 3],
         "lasts": 20
+    }, {
+        "id": "festivewish",
+        "effectid": "festivewish",
+        "name": "Festival of Wishes",
+        "price": 3000,
+        "type": "recipe",
+        "desc": "wishlist auc notifications",
+        "fulldesc": "When used gives you **Festival of Wishes** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
+        "recipe": [1, 1, 1, 1],
+        "lasts": 30
     },
 
     {

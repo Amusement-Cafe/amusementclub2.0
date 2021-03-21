@@ -1,11 +1,15 @@
 const {cmd}             = require('../utils/cmd')
 const {numFmt}          = require('../utils/tools')
 const {evalCard}        = require('../modules/eval')
-const {Auction}         = require('../collections')
 const {fetchOnly}       = require('../modules/user')
 const msToTime          = require('pretty-ms')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
+
+const {
+    Auction,
+    User,
+} = require('../collections')
 
 const {
     new_auc,
@@ -229,6 +233,8 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
 
             ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
                 Auction ID: \`${auc.id}\``)
+            const wishes = await User.find({heroslots: "festivewish", wishlist: card.id})
+            wishes.map(async (x) => await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`))
         },
     })
 }))
