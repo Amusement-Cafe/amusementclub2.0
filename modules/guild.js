@@ -37,7 +37,6 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
         guild.botchannels = [ctx.msg.channel.id]
         guild.reportchannel = ctx.msg.channel.id
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
-        guild.prefix = "->"
 
         await guild.save()
         await ctx.reply(user, `new guild added. This channel was marked as bot and report channel.
