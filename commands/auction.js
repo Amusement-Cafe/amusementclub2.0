@@ -1,10 +1,15 @@
 const {cmd}             = require('../utils/cmd')
+const {numFmt}          = require('../utils/tools')
 const {evalCard}        = require('../modules/eval')
-const {Auction}         = require('../collections')
 const {fetchOnly}       = require('../modules/user')
 const msToTime          = require('pretty-ms')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
+
+const {
+    Auction,
+    User,
+} = require('../collections')
 
 const {
     new_auc,
@@ -24,7 +29,7 @@ const {
     getBuilding,
 } = require('../modules/guild')
 
-cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
 
@@ -63,7 +68,7 @@ cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd(['auc', 'info'], async (ctx, user, arg1) => {
+cmd(['auc', 'info'], ['auction', 'info'], async (ctx, user, arg1) => {
     const auc = await Auction.findOne({ id: arg1 })
 
     if(!auc)
@@ -81,7 +86,7 @@ cmd(['auc', 'info'], async (ctx, user, arg1) => {
     }, user.discord_id)
 }).access('dm')
 
-cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
 
@@ -136,7 +141,7 @@ cmd(['auc', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs)
     })
 })).access('dm')
 
-cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const auchouse = getBuilding(ctx, 'auchouse')
     const timelimit = asdate.subtract(new Date(), 1, 'hour')
     const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
@@ -186,13 +191,13 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
             return ctx.reply(user, `impossible to proceed with confirmation: ${formatName(card)} not found in your list`, 'red')
 
         if(price < min)
-            return ctx.reply(user, `you can't set price less than **${min}** ${ctx.symbols.tomato} for this card`, 'red')
+            return ctx.reply(user, `you can't set price less than **${numFmt(min)}** ${ctx.symbols.tomato} for this card`, 'red')
 
         if(price > max)
-            return ctx.reply(user, `you can't set price higher than **${max}** ${ctx.symbols.tomato} for this card`, 'red')
+            return ctx.reply(user, `you can't set price higher than **${numFmt(max)}** ${ctx.symbols.tomato} for this card`, 'red')
 
         if(user.exp < fee)
-            return ctx.reply(user, `you have to have at least **${fee}** ${ctx.symbols.tomato} to auction for that price`, 'red')
+            return ctx.reply(user, `you have to have at least **${numFmt(fee)}** ${ctx.symbols.tomato} to auction for that price`, 'red')
 
         if(usercard.fav && usercard.amount === 1)
             return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
@@ -205,7 +210,7 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        embed: { footer: { text: `This will cost ${fee} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (${auchouse.level > 1? 5 : 10}% fee)` } },
         force: ctx.globals.force,
         question,
         check,
@@ -226,13 +231,15 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
                     price,
             })
 
-            ctx.reply(user, `you put ${formatName(card)} on auction for **${price}** ${ctx.symbols.tomato}
+            ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
                 Auction ID: \`${auc.id}\``)
+            const wishes = await User.find({heroslots: "festivewish", wishlist: card.id})
+            wishes.map(async (x) => await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`))
         },
     })
 }))
 
-cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
+cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
@@ -250,12 +257,14 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
 
     const auc = await Auction.findOne({id: id})
 
-    const lastBidder = auc.lastbidder === user.discord_id
+
     if(!auc)
         return ctx.reply(user, `auction with ID \`${id}\` wasn't found`, 'red')
 
+    const lastBidder = auc.lastbidder === user.discord_id
+
     if((!lastBidder && user.exp < bid) || (lastBidder && user.exp < bid - auc.highbid))
-        return ctx.reply(user, `you don't have \`${bid}\` ${ctx.symbols.tomato} to bid`, 'red')
+        return ctx.reply(user, `you don't have \`${numFmt(bid)}\` ${ctx.symbols.tomato} to bid`, 'red')
 
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
@@ -264,7 +273,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
         return ctx.reply(user, `you cannot bid on your own auction`, 'red')
 
     if(auc.price >= bid)
-        return ctx.reply(user, `your bid should be higher than **${auc.price}** ${ctx.symbols.tomato}`, 'red')
+        return ctx.reply(user, `your bid should be higher than **${numFmt(auc.price)}** ${ctx.symbols.tomato}`, 'red')
 
     if(lastBidder){
         if (bid < auc.highbid)
@@ -276,7 +285,7 @@ cmd(['auc', 'bid'], 'bid', async (ctx, user, ...args) => {
 
 }).access('dm')
 
-cmd(['auc', 'cancel'], async (ctx, user, arg1, arg2) => {
+cmd(['auc', 'cancel'], ['auction', 'cancel'], async (ctx, user, arg1, arg2) => {
     let auc = await Auction.findOne({ id: arg1 })
 
     if(!auc)

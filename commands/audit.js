@@ -2,6 +2,7 @@ const {pcmd}                    = require('../utils/cmd')
 const {evalCard}                = require('../modules/eval')
 const {getHelpEmbed}            = require('../commands/misc')
 const {fetchOnly}               = require('../modules/user')
+const {numFmt}                  = require('../utils/tools')
 const colors                    = require('../utils/colors')
 const msToTime                  = require('pretty-ms')
 const dateFormat                = require(`dateformat`)
@@ -70,7 +71,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
         pages: paginate_auditReports(ctx, user, overSell, 1),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, open report 1 audits: (${overSell.length} results)` },
+            author: { name: `${user.username}, open report 1 audits: (${numFmt(overSell.length)} results)` },
             color: colors.blue,
         }
     })
@@ -89,7 +90,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
         pages: paginate_auditReports(ctx, user, overPrice, 2),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, open report 2 audits: (${overPrice.length} results)` },
+            author: { name: `${user.username}, open report 2 audits: (${numFmt(overPrice.length)} results)` },
             color: colors.blue,
         }
     })
@@ -108,7 +109,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
         pages: paginate_auditReports(ctx, user, buybacks, 3),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, open report 3 audits: (${buybacks.length} results)` },
+            author: { name: `${user.username}, open report 3 audits: (${numFmt(buybacks.length)} results)` },
             color: colors.blue,
         }
     })
@@ -127,7 +128,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) 
         pages: paginate_auditReports(ctx, user, buybacks, 4),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, open report 4 audits: (${buybacks.length} results)` },
+            author: { name: `${user.username}, open report 4 audits: (${numFmt(buybacks.length)} results)` },
             color: colors.blue,
         }
     })
@@ -146,7 +147,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) 
         pages: paginate_auditReports(ctx, user, botsells, 5),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, open report 5 audits: (${botsells.length} results)` },
+            author: { name: `${user.username}, open report 5 audits: (${numFmt(botsells.length)} results)` },
             color: colors.blue,
         }
     })
@@ -201,7 +202,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
         pages: paginate_trslist(ctx, auditedUser, list),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, here are the results for ${auditedUser.username} (${list.length} results)` },
+            author: { name: `${user.username}, here are the results for ${auditedUser.username} (${numFmt(list.length)} results)` },
             color: colors.blue,
         }
     })
@@ -274,7 +275,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
     const corespAudit = await Audit.findOne({transid: arg[0]})
 
     const resp = []
-    resp.push(`Price: **${trans.price}** ${ctx.symbols.tomato}`)
+    resp.push(`Price: **${numFmt(trans.price)}** ${ctx.symbols.tomato}`)
     resp.push(`From: **${trans.from}** \`${trans.from_id}\``)
     resp.push(`To: **${trans.to}** \`${trans.to_id}\``)
     resp.push(`On server: **${trans.guild}** \`${trans.guild_id}\``)
@@ -338,7 +339,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
     const resp = []
 
     resp.push(`Seller: **${author.username}** \`${author.discord_id}\``)
-    resp.push(`Price: **${auc.price}** ${ctx.symbols.tomato}`)
+    resp.push(`Price: **${numFmt(auc.price)}** ${ctx.symbols.tomato}`)
     resp.push(`Card: ${formatName(card)}`)
     resp.push(`Card value: **${await evalCard(ctx, card)}** ${ctx.symbols.tomato}`)
 
@@ -399,12 +400,12 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
     let embed = {
         author: {name: `${user.username} here is the info for ${findUser.username}`},
         description: `**${findUser.username}** \`${findUser.discord_id}\`
-                      Currency: **${findUser.exp}${ctx.symbols.tomato}**, **${findUser.vials}${ctx.symbols.vial}**
-                      Promo Currency: **${findUser.promoexp}**
-                      Embargoed?: **${findUser.ban.embargo}**
+                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
+                      Promo Currency: **${numFmt(findUser.promoexp)}**
+                      Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
                       Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
                       Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
-                      Unique Cards: **${findUser.cards.length}**
+                      Unique Cards: **${numFmt(findUser.cards.length)}**
                       Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
                       Effects List: **${effects.length !== 0? effects: 'none'}**
                       __Daily Stats__: 
@@ -439,12 +440,12 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object']
     let embed = {
         author: {name: `${user.username} here is the info for ${findUser.username}`},
         description: `**${findUser.username}** \`${findUser.discord_id}\`
-                      Currency: **${findUser.exp}${ctx.symbols.tomato}**, **${findUser.vials}${ctx.symbols.vial}**
-                      Promo Currency: **${findUser.promoexp}**
-                      Embargoed?: **${findUser.ban.embargo}**
+                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
+                      Promo Currency: **${numFmt(findUser.promoexp)}**
+                      Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
                       Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
                       Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
-                      Unique Cards: **${findUser.cards.length}**
+                      Unique Cards: **${numFmt(findUser.cards.length)}**
                       Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
                       Effects List: **${effects.length !== 0? effects: 'none'}**
                       __Daily Stats__: 
@@ -469,7 +470,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ct
         pages: paginate_guildtrslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, matched ${cards.length} cards and ${list.length} transactions` },
+            author: { name: `${user.username}, matched ${cards.length} cards and ${numFmt(list.length)} transactions` },
             color: colors.blue,
         }
     })
@@ -531,6 +532,6 @@ pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
-        embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${findCards.length} results)` } }
+        embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${numFmt(findCards.length)} results)` } }
     })
 })

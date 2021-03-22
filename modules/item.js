@@ -1,7 +1,11 @@
-const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
+
+const {
+    XPtoLEVEL,
+    numFmt,
+} = require('../utils/tools')
 
 const {
     getGuildUser,
@@ -120,31 +124,45 @@ const uses = {
     },
 
     recipe: async (ctx, user, item) => {
+        let eobject, desc
         const check = checks.recipe(ctx, user, item)
         if(check)
             return ctx.reply(user, check, 'red')
 
-        const userEffect = user.effects.find(x => x.id === item.effectid)
+        let userEffect = user.effects.find(x => x.id === item.effectid)
         if(userEffect && userEffect.expires < new Date()) {
             user.heroslots = user.heroslots.filter(x => x != userEffect.id)
             user.effects = user.effects.filter(x => x.id != userEffect.id)
             user.markModified('heroslots')
             user.markModified('effects')
+            userEffect = false
         }
 
         const effect = ctx.effects.find(x => x.id === item.effectid)
-        const eobject = { id: item.effectid }
-        if(!effect.passive) { 
-            eobject.uses = item.lasts
-            eobject.cooldownends = new Date()
+        if (userEffect) {
+            eobject = userEffect
+            if(!effect.passive) {
+                eobject.uses += item.lasts
+            } else {
+                desc = `you already own this effect and it has never been equipped! You can only extend effects that have been equipped.`
+                if (!userEffect.expires)
+                    return ctx.reply(user, desc, 'red')
+                eobject.expires = asdate.add(userEffect.expires, item.lasts, 'days')
+            }
+            user.effects = user.effects.filter(x => x.id != userEffect.id)
+            desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
+                ${effect.passive? `The countdown timer on this effect has been extended. Find it in \`${ctx.prefix}hero slots\``:
+                `You have extended the number of uses for this effect. Your new usage limit is **${eobject.uses}**`}`
+        } else {
+            eobject = { id: item.effectid }
+            if(!effect.passive) {
+                eobject.uses = item.lasts
+                eobject.cooldownends = new Date()
+            }
+            desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
+                ${effect.passive? `To use this passive effect equip it with \`->hero equip [slot] ${effect.id}\``:
+                `Use this effect by typing \`->hero use ${effect.id}\`. Amount of uses is limited to **${item.lasts}**`}`
         }
-
-        item.cards.map(x => removeUserCard(ctx, user, x))
-        pullInventoryItem(user, item.id)
-        user.effects.push(eobject)
-        await user.save()
-        user.markModified('cards')
-        await user.save() //double for cards
 
         ctx.mixpanel.track(
             "Effect Craft", { 
@@ -153,13 +171,19 @@ const uses = {
                 is_passive: effect.passive,
         })
 
+        item.cards.map(x => removeUserCard(ctx, user, x))
+        pullInventoryItem(user, item.id)
+        user.effects.push(eobject)
+        await user.save()
+        user.markModified('cards')
+        await user.save() //double for cards
+
         return ctx.reply(user, {
             image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
-            color: colors.blue,
-            description: `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
-                ${effect.passive? `To use this passive effect equip it with \`->hero equip [slot] ${effect.id}\``:
-                `Use this effect by typing \`->hero use ${effect.id}\`. Amount of uses is limited to **${item.lasts}**`}`
-        })
+            description: desc
+        }, 'blue')
+
+
     }
 }
 
@@ -168,8 +192,8 @@ const infos = {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
+                Maintenance: **${numFmt(x.maintenance)}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
         }))
@@ -202,9 +226,9 @@ const infos = {
         ]
 
         if(effect.passive) {
-            fields.push({ name: `Lasts`, value: `**${item.lasts}** days after being crafted` })
+            fields.push({ name: `Lasts`, value: `**${numFmt(item.lasts)}** days after being crafted` })
         } else {
-            fields.push({ name: `Can be used`, value: `**${item.lasts}** times` })
+            fields.push({ name: `Can be used`, value: `**${numFmt(item.lasts)}** times` })
             fields.push({ name: `Cooldown`, value: `**${effect.cooldown}** hours` })
         }
         
@@ -223,7 +247,7 @@ const checks = {
             return `this guild already has **${item.name}**`
 
         if(user.exp < item.levels[0].price)
-            return `you need at least **${item.levels[0].price}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
+            return `you need at least **${numFmt(item.levels[0].price)}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
 
         if(XPtoLEVEL(guild.xp) < item.levels[0].level)
             return `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`
@@ -243,8 +267,9 @@ const checks = {
         if(!hub || hub.level < 3)
             return `you can create effect cards only in guild with **Smithing Hub level 3** or higher`
 
-        if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))
-            return `you already have this Effect Card`
+        //Keeping this here in case we for some reason need to revert to not allowing stacking effects
+        // if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))
+        //     return `you already have this Effect Card`
     
         const effect = ctx.effects.find(x => x.id === item.effectid)
         if(!item.cards.reduce((val, x) => val && user.cards.some(y => y.id === x), true))

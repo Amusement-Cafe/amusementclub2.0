@@ -25,7 +25,7 @@ module.exports = {
                 user.exp += 1400
                 user.xp += 5
             },
-            reward: (ctx) => `**1400** ${ctx.symbols.tomato} and **5** xp`
+            reward: (ctx) => `**1,400** ${ctx.symbols.tomato} and **5** xp`
         }, {
             id: 'bid2',
             name: 'Bid on 2 auctions today',
@@ -38,7 +38,7 @@ module.exports = {
                 user.exp += 1000
                 user.xp += 2
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato} and **2** xp`
+            reward: (ctx) => `**1,000** ${ctx.symbols.tomato} and **2** xp`
         }, {
             id: 'bid5',
             name: 'Bid on 4 auctions today',
@@ -51,7 +51,7 @@ module.exports = {
                 user.exp += 2000
                 user.xp += 8
             },
-            reward: (ctx) => `**2000** ${ctx.symbols.tomato} and **8** xp`
+            reward: (ctx) => `**2,000** ${ctx.symbols.tomato} and **8** xp`
         }, {
             id: 'forge1',
             name: 'Forge 1-star card',
@@ -95,7 +95,7 @@ module.exports = {
                 user.vials += 40
                 user.xp += 5
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato}, **40** ${ctx.symbols.vial} and **5** xp`
+            reward: (ctx) => `**1,000** ${ctx.symbols.tomato}, **40** ${ctx.symbols.vial} and **5** xp`
         }, {
             id: 'tag2',
             name: 'Tag 2 cards',
@@ -150,7 +150,7 @@ module.exports = {
                 user.vials += 60
                 user.xp += 3
             },
-            reward: (ctx) => `**1500** ${ctx.symbols.tomato}, **60** ${ctx.symbols.vial} and **3** xp`
+            reward: (ctx) => `**1,500** ${ctx.symbols.tomato}, **60** ${ctx.symbols.vial} and **3** xp`
         },
     ],
 

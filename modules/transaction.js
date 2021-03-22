@@ -7,6 +7,7 @@ const {
 
 const {
     generateNextId,
+    numFmt,
 } = require('../utils/tools')
 
 const {
@@ -90,7 +91,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
             return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
 
         if(to_user.exp < transaction.price)
-            return ctx.reply(to_user, `you need **${Math.floor(transaction.price - to_user.exp)}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
+            return ctx.reply(to_user, `you need **${numFmt(Math.floor(transaction.price - to_user.exp))}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
         
         to_user.exp -= transaction.price
 
@@ -135,10 +136,10 @@ const confirm_trs = async (ctx, user, trs_id) => {
     })*/
 
     if(to_user) {
-        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
+        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
     }
 
-    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${transaction.price}** ${ctx.symbols.tomato}`)
+    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 }
 
 const decline_trs = async (ctx, user, trs_id) => {

@@ -6,6 +6,9 @@ const cardMod   = require('./card');
 const colors    = require('../utils/colors')
 
 const {
+    numFmt
+} = require('../utils/tools')
+const {
     fetchInfo,
 } = require('./meta')
 
@@ -222,12 +225,12 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
                 },
                 {
                     name: "Old Eval",
-                    value: `${lastEval}`,
+                    value: `${numFmt(lastEval)}`,
                     inline: true
                 },
                 {
                     name: "New Eval",
-                    value: `${newEval}`,
+                    value: `${numFmt(newEval)}`,
                     inline: true
                 },
                 {

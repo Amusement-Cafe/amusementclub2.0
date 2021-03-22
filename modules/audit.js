@@ -8,6 +8,7 @@ const {byAlias}          = require('./collection')
 const {
     generateNextId,
     tryGetUserID,
+    numFmt,
 } = require('../utils/tools')
 
 const {
@@ -158,7 +159,7 @@ const format_overPrice = (ctx, user, auc) => {
     let col
     if (!isNaN(auc.card[0]))
         col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
-    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${auc.price}**${ctx.symbols.tomato} | ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})} | ${auc.eval} | ${col? col.promo : 'false'} `
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${numFmt(auc.price)}**${ctx.symbols.tomato} | ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})} | ${numFmt(auc.eval)} | ${col? col.promo : 'false'} `
 
     return resp;
 }
@@ -169,7 +170,7 @@ const format_rebuys = (ctx, user, auc) => {
     if (!isNaN(auc.card[0]))
         col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
 
-    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${auc.price}**${ctx.symbols.tomato} | ${auc.transid} | **${auc.transprice}**${ctx.symbols.tomato} | ${col? col.promo : 'false'}`
+    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${numFmt(auc.price)}**${ctx.symbols.tomato} | ${auc.transid} | **${numFmt(auc.transprice)}**${ctx.symbols.tomato} | ${col? col.promo : 'false'}`
 
     return resp;
 }
@@ -184,7 +185,7 @@ const formatGuildTrsList = (ctx, user, gtrans) => {
 
 const formatAucBidList = (ctx, user, bids) => {
     let resp = ""
-    resp += `${bids.bid}${ctx.symbols.tomato}, \`${bids.user}\`, ${dateFormat(bids.time, "yyyy-mm-dd HH:MM:ss")}`
+    resp += `${numFmt(bids.bid)}${ctx.symbols.tomato}, \`${bids.user}\`, ${dateFormat(bids.time, "yyyy-mm-dd HH:MM:ss")}`
     return resp;
 }
 

@@ -5,6 +5,7 @@ const dateFormat    = require('dateformat')
 
 const colors        = require('../utils/colors')
 const {cmd, pcmd}   = require('../utils/cmd')
+const {numFmt}      = require('../utils/tools')
 
 const {
     fetchCardTags,
@@ -50,7 +51,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
 
     resp.push(formatName(card))
     resp.push(`Fandom: **${col.name}**`)
-    resp.push(`Price: **${price}** ${ctx.symbols.tomato}`)
+    resp.push(`Price: **${numFmt(price)}** ${ctx.symbols.tomato}`)
 
     if(extrainfo.ratingsum > 0)
         resp.push(`Average Rating: **${(extrainfo.ratingsum / extrainfo.usercount).toFixed(2)}**`)
@@ -62,10 +63,10 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
         resp.push(`Added: **${dateFormat(card.added, "yyyy-mm-dd")}** (${msToTime(new Date() - card.added, {compact: true})})`)
 
     if (extrainfo.ownercount > 0)
-        resp.push(`Owner Count: **${extrainfo.ownercount}**`)
+        resp.push(`Owner Count: **${numFmt(extrainfo.ownercount)}**`)
 
     if (extrainfo.auccount > 0)
-        resp.push(`Times Auctioned: **${extrainfo.aucevalinfo.auccount}**`)
+        resp.push(`Times Auctioned: **${numFmt(extrainfo.aucevalinfo.auccount)}**`)
 
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')

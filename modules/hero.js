@@ -4,9 +4,12 @@ const Guild         = require('../collections/guild')
 
 const {fetchOnly}   = require('./user')
 const m_guild       = require('./guild')
-const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
+const {
+    XPtoLEVEL,
+    numFmt,
+}   = require('../utils/tools')
 
 let hcache = []
 
@@ -67,7 +70,7 @@ const getInfo = async (ctx, user, id) => {
     hero.followers = await User.countDocuments({ hero: id })
     return { 
         author: { name: hero.name },
-        description: `Level **${XPtoLEVEL(hero.xp)}**\nFollowers: **${hero.followers}**\nID: ${hero.id}`,
+        description: `Level **${numFmt(XPtoLEVEL(hero.xp))}**\nFollowers: **${numFmt(hero.followers)}**\nID: ${hero.id}`,
         image: { url: _.sample(hero.pictures) },
         color: colors.blue
     }

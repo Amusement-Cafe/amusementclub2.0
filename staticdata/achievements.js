@@ -49,7 +49,7 @@ module.exports = [
             user.exp += 10000
             user.vials += 1000
             user.xp += 100
-            return `**10000** ${ctx.symbols.tomato} and **1000** ${ctx.symbols.vial}`
+            return `**10,000** ${ctx.symbols.tomato} and **1,000** ${ctx.symbols.vial}`
         }
     }, {
         id: 'firstforge',

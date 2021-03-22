@@ -7,6 +7,7 @@ const _                 = require('lodash')
 const {
     cap,
     claimCost,
+    numFmt,
     promoClaimCost,
     XPtoLEVEL,
 } = require('../utils/tools')
@@ -79,10 +80,10 @@ cmd('bal', 'balance', (ctx, user) => {
 
     const embed = {
         color: colors.green,
-        description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
-            Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
-            ${ctx.guild? `Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
-            You can claim **${max - 1} cards** ${ctx.guild? `in current guild `:''}with your balance`
+        description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} and **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial}
+            Your next claim will cost **${numFmt(claimCost(user, 0, 1))}** ${ctx.symbols.tomato}
+            ${ctx.guild? `Next claim in current guild: **${numFmt(claimCost(user, ctx.guild.tax, 1))}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
+            You can claim **${numFmt(max - 1)} cards** ${ctx.guild? `in current guild `:''}with your balance`
     }
 
     if(promo) {
@@ -92,9 +93,9 @@ cmd('bal', 'balance', (ctx, user) => {
 
         embed.fields = [{
             name: `Promo balance`,
-            value: `You have **${Math.round(user.promoexp)}** ${promo.currency}
-                Your next claim will cost **${promoClaimCost(user, 1)}** ${promo.currency}
-                You can claim **${max - 1} ${promo.name} cards** with your balance`
+            value: `You have **${numFmt(Math.round(user.promoexp))}** ${promo.currency}
+                Your next claim will cost **${numFmt(promoClaimCost(user, 1))}** ${promo.currency}
+                You can claim **${numFmt(max - 1)} ${promo.name} cards** with your balance`
         }]
     }
 
@@ -251,8 +252,8 @@ cmd('daily', async (ctx, user) => {
         })
 
         return ctx.reply(user, {
-            description: `you received daily **${amount}** ${ctx.symbols.tomato} ${promo? `and **${promoAmount}** ${promo.currency}`: ""}
-                You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato} ${promo? `and **${user.promoexp}** ${promo.currency}`: ""}`,
+            description: `you received daily **${numFmt(amount)}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(promoAmount)}** ${promo.currency}`: ""}
+                You now have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(user.promoexp)}** ${promo.currency}`: ""}`,
             color: colors.green,
             fields
         })
@@ -265,7 +266,7 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '') + (parsedargs.evalQuery? `${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: '')
     })
 
     const evalTime = getQueueTime()
@@ -278,7 +279,7 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
-        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+        embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 
@@ -287,12 +288,12 @@ cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => x.fav)
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
-        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+        embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 
@@ -326,12 +327,12 @@ cmd('profile', async (ctx, user, ...args) => {
     })
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
-    resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
+    resp.push(`Cards: **${numFmt(user.cards.length)}** | Stars: **${numFmt(cards.map(x => x.level).reduce((a, b) => a + b, 0))}**`)
 
     if (pargs.ids.length > 0 && !isNaN(price)) {
-        resp.push(`Cards Worth: **${price.toLocaleString('en-US')}** ${ctx.symbols.tomato} or **${vials.toLocaleString('en-US')} ${ctx.symbols.vial}**`)
+        resp.push(`Cards Worth: **${numFmt(price)}** ${ctx.symbols.tomato} or **${numFmt(vials)} ${ctx.symbols.vial}**`)
     } else if (!isNaN(price)) {
-        resp.push(`Net Worth: **${(price + user.exp).toLocaleString('en-US')}** ${ctx.symbols.tomato} or **${(vials + user.vials).toLocaleString('en-US')} ${ctx.symbols.vial}**`)
+        resp.push(`Net Worth: **${numFmt(price + user.exp)}** ${ctx.symbols.tomato} or **${numFmt(vials + user.vials)} ${ctx.symbols.vial}**`)
     } else {
         const evalTime = getQueueTime()
         resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
@@ -340,10 +341,10 @@ cmd('profile', async (ctx, user, ...args) => {
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
     if(completedSum > 0) {
-        resp.push(`Completed collections: **${user.completedcols.length}**`)
+        resp.push(`Completed collections: **${numFmt(user.completedcols.length)}**`)
     }
     if(cloutsum > 0) {
-        resp.push(`Overall clout: **${cloutsum}**`)
+        resp.push(`Overall clout: **${numFmt(cloutsum)}**`)
     }
 
     if(ctx.guild) {
@@ -370,7 +371,7 @@ cmd('profile', async (ctx, user, ...args) => {
 }).access('dm')
 
 cmd('diff', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
@@ -404,12 +405,12 @@ cmd('diff', async (ctx, user, ...args) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
-        embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
 })
 
 cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
@@ -444,12 +445,12 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
-        embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
 })
 
 cmd('has', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'has')
@@ -483,7 +484,7 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
-        embed: { author: { name: `${user.username}, cards that you don't have (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, cards that you don't have (${numFmt(diff.length)} results)` } }
     })
 }))
 
