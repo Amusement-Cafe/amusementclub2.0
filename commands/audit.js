@@ -22,10 +22,14 @@ const {
 
 const {
     auditFetchUserTags,
+    createFindUserEmbed,
     formatAucBidList,
-    paginate_auditReports,
-    paginate_guildtrslist,
-    paginate_closedAudits,
+    paginateBotSells,
+    paginateCompletedAuditList,
+    paginateGuildTrsList,
+    paginateOversells,
+    paginateOverPrice,
+    paginateRebuys,
     parseAuditArgs,
 }   = require("../modules/audit");
 
@@ -68,7 +72,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
         return ctx.reply(user, 'nothing found for fraud report 1!')
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_auditReports(ctx, user, overSell, 1),
+        pages: await paginateOversells(ctx, user, overSell),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 1 audits: (${numFmt(overSell.length)} results)` },
@@ -87,7 +91,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
         return ctx.reply(user, 'nothing found for fraud report 2!')
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_auditReports(ctx, user, overPrice, 2),
+        pages: await paginateOverPrice(ctx, user, overPrice),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 2 audits: (${numFmt(overPrice.length)} results)` },
@@ -106,7 +110,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
         return ctx.reply(user, 'nothing found for fraud report 3!')
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_auditReports(ctx, user, buybacks, 3),
+        pages: await paginateRebuys(ctx, user, buybacks),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 3 audits: (${numFmt(buybacks.length)} results)` },
@@ -125,7 +129,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) 
         return ctx.reply(user, 'nothing found for fraud report 4!')
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_auditReports(ctx, user, buybacks, 4),
+        pages: await paginateRebuys(ctx, user, buybacks),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 4 audits: (${numFmt(buybacks.length)} results)` },
@@ -144,7 +148,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) 
         return ctx.reply(user, 'nothing found for fraud report 5!')
 
     return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_auditReports(ctx, user, botsells, 5),
+        pages: await paginateBotSells(ctx, user, botsells),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, open report 5 audits: (${numFmt(botsells.length)} results)` },
@@ -174,22 +178,16 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
     if (!arg.id)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    if (arg.auction && arg.gets) {
-        search = {to_id: auditedUser.discord_id, status: 'auction'}
-    }
-    else if (arg.auction && arg.sends) {
-        search = {from_id: auditedUser.discord_id, status: 'auction'}
-    }
-    else if (arg.auction) {
-        search = {$or: [{to_id: auditedUser.discord_id}, {from_id: auditedUser.discord_id}], status: 'auction'}
-    }
-    else if (arg.gets) {
-        search = {to_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}
-    }
-    else if (arg.sends) {
-        search = {from_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}
-    }
-    else {
+    if (arg.auction) {
+        if (arg.sends || arg.gets)
+            search = arg.sends? {from_id: auditedUser.discord_id, status: 'auction'}: {to_id: auditedUser.discord_id, status: 'auction'}
+        else
+            search = {$or: [{to_id: auditedUser.discord_id}, {from_id: auditedUser.discord_id}], status: 'auction'}
+
+    } else if (arg.gets || arg.sends) {
+        search = arg.gets? {to_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}:
+            {from_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}
+    } else {
         search = {$or: [{to_id: auditedUser.discord_id}, {from_id: auditedUser.discord_id}]}
     }
 
@@ -387,31 +385,8 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
     if (!findUser)
         return ctx.reply(user, 'no user found with that ID', 'red')
 
-    let effects = findUser.effects.map(x => x.id)
+    let embed = createFindUserEmbed(ctx, user, findUser)
 
-    const dailyStats = `
-    Claims: (Current: **${findUser.dailystats.claims}**, Total: **${findUser.dailystats.totalregclaims}**, Promo: **${findUser.dailystats.promoclaims}**) 
-    Bids: **${findUser.dailystats.bids}**, Auctions: **${findUser.dailystats.aucs}**, Tags: **${findUser.dailystats.tags}**
-    Liq: **${findUser.dailystats.liquify}**, Liq1: **${findUser.dailystats.liquify1}**, Liq2: **${findUser.dailystats.liquify2}**, Liq3: **${findUser.dailystats.liquify3}**
-    Draw: **${findUser.dailystats.draw}**, Draw1: **${findUser.dailystats.draw1}**, Draw2: **${findUser.dailystats.draw2}**, Draw3: **${findUser.dailystats.draw3}**
-    Forge1: **${findUser.dailystats.forge1}**, Forge2: **${findUser.dailystats.forge2}**, Forge3: **${findUser.dailystats.forge3}**`
-
-
-    let embed = {
-        author: {name: `${user.username} here is the info for ${findUser.username}`},
-        description: `**${findUser.username}** \`${findUser.discord_id}\`
-                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
-                      Promo Currency: **${numFmt(findUser.promoexp)}**
-                      Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
-                      Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
-                      Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
-                      Unique Cards: **${numFmt(findUser.cards.length)}**
-                      Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
-                      Effects List: **${effects.length !== 0? effects: 'none'}**
-                      __Daily Stats__: 
-                      ${dailyStats}`,
-        color: colors['green']
-    }
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
 
@@ -427,31 +402,8 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object']
     if (!findUser)
         return ctx.reply(user, 'no user found with that ID', 'red')
 
-    let effects = findUser.effects.map(x => x.id)
+    let embed = createFindUserEmbed(ctx, user, findUser)
 
-    const dailyStats = `
-    Claims: (Current: **${findUser.dailystats.claims}**, Total: **${findUser.dailystats.totalregclaims}**, Promo: **${findUser.dailystats.promoclaims}**) 
-    Bids: **${findUser.dailystats.bids}**, Auctions: **${findUser.dailystats.aucs}**, Tags: **${findUser.dailystats.tags}**
-    Liq: **${findUser.dailystats.liquify}**, Liq1: **${findUser.dailystats.liquify1}**, Liq2: **${findUser.dailystats.liquify2}**, Liq3: **${findUser.dailystats.liquify3}**
-    Draw: **${findUser.dailystats.draw}**, Draw1: **${findUser.dailystats.draw1}**, Draw2: **${findUser.dailystats.draw2}**, Draw3: **${findUser.dailystats.draw3}**
-    Forge1: **${findUser.dailystats.forge1}**, Forge2: **${findUser.dailystats.forge2}**, Forge3: **${findUser.dailystats.forge3}**`
-
-
-    let embed = {
-        author: {name: `${user.username} here is the info for ${findUser.username}`},
-        description: `**${findUser.username}** \`${findUser.discord_id}\`
-                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
-                      Promo Currency: **${numFmt(findUser.promoexp)}**
-                      Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
-                      Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
-                      Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
-                      Unique Cards: **${numFmt(findUser.cards.length)}**
-                      Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
-                      Effects List: **${effects.length !== 0? effects: 'none'}**
-                      __Daily Stats__: 
-                      ${dailyStats}`,
-        color: colors['green']
-    }
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
 
@@ -467,7 +419,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ct
         return ctx.reply(user, `No matches found`, 'red')
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_guildtrslist(ctx, user, list),
+        pages: paginateGuildTrsList(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, matched ${cards.length} cards and ${numFmt(list.length)} transactions` },
@@ -504,7 +456,7 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
         return ctx.reply(user, 'No closed audits found', 'red')
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_closedAudits(ctx, user, closedAudits),
+        pages: paginateCompletedAuditList(ctx, user, closedAudits),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, here are the closed audits. (${closedAudits.length} results)` },

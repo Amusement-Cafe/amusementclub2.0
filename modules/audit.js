@@ -4,6 +4,7 @@ const msToTime           = require('pretty-ms')
 const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
 const {byAlias}          = require('./collection')
+const colors             = require('../utils/colors')
 
 const {
     generateNextId,
@@ -35,7 +36,7 @@ const trans_fraud_check = async (ctx, user, trans, card) => {
     const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
     if (auditCheck) {
         const auditDB = await new Audit()
-        auditDB.audit_id = audit_ID_gen(last_audit)
+        auditDB.audit_id = auditIDGen(last_audit)
         auditDB.report_type = auditCheck.lastbidder === trans.from_id? 4:3
         auditDB.transid = trans.id
         auditDB.id = auditCheck.id
@@ -47,7 +48,7 @@ const trans_fraud_check = async (ctx, user, trans, card) => {
     }
     if ((buyCheck || auditCheck) && trans.to_id === null) {
         const botSell = await new Audit()
-        botSell.audit_id = audit_ID_gen(last_audit)
+        botSell.audit_id = auditIDGen(last_audit)
         botSell.report_type = 5
         botSell.transid = trans.id
         botSell.id = buyCheck? buyCheck.id : auditCheck.id
@@ -62,7 +63,7 @@ const eval_fraud_check = async (ctx, auc, eval, card) => {
         return
     const last_audit = (await Audit.find().sort({ _id: -1 }))[0]
     const auditDB = await new Audit()
-    auditDB.audit_id = audit_ID_gen(last_audit)
+    auditDB.audit_id = auditIDGen(last_audit)
     auditDB.id = auc.id
     auditDB.card = card.name
     auditDB.bids = auc.bids.length
@@ -82,7 +83,7 @@ const audit_auc_stats = async (ctx, user, sold) => {
     await sellDB.save()
 }
 
-const audit_ID_gen = (last_audit) => {
+const auditIDGen = (last_audit) => {
     if (!last_audit)
         return generateNextId('aaaaaaa', 7)
 
@@ -90,39 +91,84 @@ const audit_ID_gen = (last_audit) => {
 
 }
 
-const paginate_auditReports = (ctx, user, list, report) => {
-    const pages = []
-    switch (report) {
-        case 1:
-            list.map((t, i) => {
-                if (i % 10 == 0) pages.push("**Username | User ID | Sold | Unsold | Sell %**\n")
-                pages[Math.floor(i/10)] += `${format_overSell(ctx, user, t)}\n`
-            })
-            break
-        case 2:
-            list.map((t, i) => {
-                if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Over Eval X | Eval | Promo?**\n")
-                pages[Math.floor(i/10)] += `${format_overPrice(ctx, user, t)}\n`
-            })
-            break
-        case 3:
-        case 4:
-            list.map((t, i) => {
-                if (i % 10 == 0) pages.push("**Audit ID | Auc ID | Auc Amount | Trans Id | Trans Amount | Promo?**\n")
-                pages[Math.floor(i/10)] += `${format_rebuys(ctx, user, t)}\n`
-            })
-            break
-        case 5:
-            list.map((t, i) => {
-                if (i % 10 == 0) pages.push("**Audit ID | Trans ID | Received ID | Username | Card **\n")
-                pages[Math.floor(i/10)] += `${format_botsells(ctx, user, t)}\n`
-            })
-            break
-    }
-    return pages;
+
+
+const paginateBotSells = async (ctx, user, list) => {
+    let pages = []
+
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("`Audit ID | Trans ID | Received ID | Username | Card`\n")
+        const auditID = t.audit_id.padEnd(8)
+        const transID = t.transid.padEnd(8)
+        const receiveID = t.id.padEnd(11)
+        const username = t.user.length > 8? t.user.substr(0, 7): t.user.padEnd(8)
+        pages[Math.floor(i/10)] += `\`${auditID} | ${transID} | ${receiveID} | ${username} | ${ctx.cards[t.card].name}\`\n`
+    })
+
+    return pages
 }
 
-const paginate_guildtrslist = (ctx, user, list) => {
+const paginateOversells = async (ctx, user, list) => {
+    let pages = []
+
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("`Username | Sold | Unsold | Sell % | User ID`\n")
+        const username = t.name.padEnd(8)
+        const sold = numFmt(t.sold).padEnd(4)
+        const unsold = numFmt(t.unsold).padEnd(6)
+        const sellPercentage = ((t.sold / (t.sold + t.unsold)) * 100).toLocaleString('en-us', {maximumFractionDigits: 2}).padEnd(6)
+
+        pages[Math.floor(i/10)] += `\`${username} | ${sold} | ${unsold} | ${sellPercentage} | ${t.user}\`\n`
+    })
+
+    return pages
+}
+
+const paginateOverPrice = async (ctx, user, list) => {
+    let pages = []
+
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("`Audit ID | Auc ID | Auc Price | Eval    | X Eval | Promo?`\n")
+        const auditID = t.audit_id.padEnd(8)
+        const aucID = t.id.padEnd(6)
+        const aucPrice = numFmt(t.price).padEnd(9)
+        const timesOver = t.price_over.toLocaleString('en-us', {maximumFractionDigits: 1}).padEnd(6)
+        const eval = numFmt(t.eval).padEnd(7)
+        let col
+        if (!isNaN(t.card[0]))
+            col = byAlias(ctx, ctx.cards[t.card[0]].col)[0]
+
+        pages[Math.floor(i/10)] += `\`${auditID} | ${aucID} | ${aucPrice} | ${eval} | ${timesOver} | ${col? col.promo : 'false'}\`\n`
+    })
+
+    return pages
+}
+
+const paginateRebuys = async (ctx, user, list) => {
+    let pages = []
+
+    list.map((t, i) => {
+        if (i % 10 == 0) pages.push("`Audit ID | Auc ID | Auc Price | Trans Id | Trans Cost | Promo?`\n")
+        let col
+
+        if (!isNaN(t.card[0]))
+            col = byAlias(ctx, ctx.cards[t.card[0]].col)[0]
+
+        const auditID = t.audit_id.padEnd(8)
+        const aucID = t.id.padEnd(6)
+        const aucPrice = numFmt(t.price).padEnd(9)
+        const transID = t.transid.padEnd(8)
+        const transCost = numFmt(t.transprice).padEnd(10)
+
+        pages[Math.floor(i/10)] += `\`${auditID} | ${aucID} | ${aucPrice} | ${transID} | ${transCost} | ${col? col.promo : 'false'}\`\n`
+    })
+
+    return pages
+}
+
+
+
+const paginateGuildTrsList = (ctx, user, list) => {
     const pages = []
     list.map((t, i) => {
         if (i % 10 == 0) pages.push("")
@@ -131,7 +177,7 @@ const paginate_guildtrslist = (ctx, user, list) => {
     return pages;
 }
 
-const paginate_closedAudits = (ctx, user, list) => {
+const paginateCompletedAuditList = (ctx, user, list) => {
     const pages =[]
     list.map((t, i) => {
         if (i % 10 == 0) pages.push("")
@@ -140,38 +186,10 @@ const paginate_closedAudits = (ctx, user, list) => {
     return pages;
 }
 
-const format_overSell = (ctx, user, auc) => {
-    let resp = ""
-    let sellPerc = (auc.sold / (auc.sold + auc.unsold)) * 100
-    resp += `${auc.name} | \`${auc.user}\` | ${auc.sold} | ${auc.unsold} | ${sellPerc.toLocaleString('en-us', {maximumFractionDigits: 2})}%`
 
-    return resp;
-}
 
-const format_botsells = (ctx, user, trans) => {
-    return `\`${trans.audit_id}\` | ${trans.transid} | \`${trans.id}\` | ${trans.user} | ${formatName(ctx.cards[trans.card])}`;
-}
 
-const format_overPrice = (ctx, user, auc) => {
-    let resp = ""
-    let col
-    if (!isNaN(auc.card[0]))
-        col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
-    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${numFmt(auc.price)}**${ctx.symbols.tomato} | ${auc.price_over.toLocaleString('en-us', {maximumFractionDigits: 2})} | ${numFmt(auc.eval)} | ${col? col.promo : 'false'} `
 
-    return resp;
-}
-
-const format_rebuys = (ctx, user, auc) => {
-    let resp = ""
-    let col
-    if (!isNaN(auc.card[0]))
-        col = byAlias(ctx, ctx.cards[auc.card[0]].col)[0]
-
-    resp += `\`${auc.audit_id}\` | \`${auc.id}\` | **${numFmt(auc.price)}**${ctx.symbols.tomato} | ${auc.transid} | **${numFmt(auc.transprice)}**${ctx.symbols.tomato} | ${col? col.promo : 'false'}`
-
-    return resp;
-}
 
 const formatGuildTrsList = (ctx, user, gtrans) => {
     let resp = ""
@@ -211,6 +229,35 @@ const auditFetchUserTags = async (user, args) => {
     }
 
     return tagList.sort().reverse()
+}
+
+const createFindUserEmbed = (ctx, user, findUser) => {
+    let effects = findUser.effects.map(x => x.id)
+
+    const dailyStats = `
+    Claims: (Current: **${findUser.dailystats.claims}**, Total: **${findUser.dailystats.totalregclaims}**, Promo: **${findUser.dailystats.promoclaims}**) 
+    Bids: **${findUser.dailystats.bids}**, Auctions: **${findUser.dailystats.aucs}**, Tags: **${findUser.dailystats.tags}**
+    Liq: **${findUser.dailystats.liquify}**, Liq1: **${findUser.dailystats.liquify1}**, Liq2: **${findUser.dailystats.liquify2}**, Liq3: **${findUser.dailystats.liquify3}**
+    Draw: **${findUser.dailystats.draw}**, Draw1: **${findUser.dailystats.draw1}**, Draw2: **${findUser.dailystats.draw2}**, Draw3: **${findUser.dailystats.draw3}**
+    Forge1: **${findUser.dailystats.forge1}**, Forge2: **${findUser.dailystats.forge2}**, Forge3: **${findUser.dailystats.forge3}**`
+
+    let findEmbed = {
+        author: {name: `${user.username} here is the info for ${findUser.username}`},
+        description: `**${findUser.username}** \`${findUser.discord_id}\`
+                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
+                      Promo Currency: **${numFmt(findUser.promoexp)}**
+                      Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
+                      Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
+                      Last Daily: **${dateFormat(findUser.lastdaily, "yyyy-mm-dd HH:MM:ss")}**
+                      Unique Cards: **${numFmt(findUser.cards.length)}**
+                      Completed Collections: **${findUser.completedcols? findUser.completedcols.length: 0}**
+                      Effects List: **${effects.length !== 0? effects: 'none'}**
+                      __Daily Stats__: 
+                      ${dailyStats}`,
+        color: colors['green']
+    }
+
+    return findEmbed
 }
 
 const parseAuditArgs = (ctx, args) => {
@@ -260,13 +307,17 @@ const parseAuditArgs = (ctx, args) => {
 module.exports = {
     auditFetchUserTags,
     audit_auc_stats,
-    eval_fraud_check,
-    paginate_auditReports,
-    paginate_guildtrslist,
-    paginate_closedAudits,
-    parseAuditArgs,
     clean_audits,
+    createFindUserEmbed,
+    eval_fraud_check,
     formatAucBidList,
     formatGuildTrsList,
-    trans_fraud_check
+    paginateBotSells,
+    paginateCompletedAuditList,
+    paginateGuildTrsList,
+    paginateOverPrice,
+    paginateOversells,
+    paginateRebuys,
+    parseAuditArgs,
+    trans_fraud_check,
 }
