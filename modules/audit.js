@@ -71,7 +71,6 @@ const eval_fraud_check = async (ctx, auc, eval, card) => {
     auditDB.price = auc.price
     auditDB.price_over = auc.price / eval
     auditDB.report_type = 2
-    auditDB.time = new Date()
     await auditDB.save()
 }
 
@@ -80,7 +79,6 @@ const audit_auc_stats = async (ctx, user, sold) => {
     sellDB.user = user.discord_id
     sellDB.name = user.username
     sold? sellDB.sold = 1: sellDB.unsold = 1
-    sellDB.time = new Date()
     await sellDB.save()
 }
 
