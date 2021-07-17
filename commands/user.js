@@ -266,14 +266,14 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '') + (parsedargs.evalQuery? `${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10] ` : '') + (parsedargs.evalQuery? `${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: '')
     })
 
     const evalTime = getQueueTime()
     if(evalTime > 0 && parsedargs.evalQuery) {
-        ctx.reply(user, {
-            description: `current result might not be accurate because some of the cards are still processing their eval.
-                Please check in **${msToTime(evalTime)}** for more accurate results.`
+        return ctx.reply(user, {
+            description: `some of your cards are still processing their evals.
+                Please check in **${msToTime(evalTime)}** for results.`
         }, 'yellow')
     }
 
