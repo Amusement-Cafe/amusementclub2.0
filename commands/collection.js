@@ -2,6 +2,8 @@ const {
     byAlias, 
     bestColMatch,
     reset,
+    resetNeeds,
+    hasResetNeeds,
 } = require('../modules/collection')
 
 const {
@@ -23,8 +25,12 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     const clouted = args.find(x => x === '-clouted' || x === '!clouted')
     args = args.filter(x => x != '-completed' && x != '!completed' && x != '-clouted' && x != '!clouted')
 
-    let cols = byAlias(ctx, args.join().replace('-', ''))
-        .sort((a, b) => nameSort(a, b, 'id'))
+    let cols = args.map(x => byAlias(ctx, x.replace('-', ''))[0])
+
+    if (args.length === 0)
+        cols = byAlias(ctx, args.join().replace('-', ''))
+
+    cols = cols.sort((a, b) => nameSort(a, b, 'id'))
 
     if(completed) {
         if(completed[0] === '-') 
@@ -105,19 +111,37 @@ cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
     if(!col)
         return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
 
+
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
+
+    const neededForReset = await resetNeeds(ctx, user, colCards)
+
     let userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
+    const hasNeeded = await hasResetNeeds(ctx, userCards, neededForReset)
 
-    if(userCards.length < colCards.length)
-        return ctx.reply(user, `you have to have **100%** of the cards from collection (excluding legendaries) in order to reset it`, 'red')
+    let neededBlock = ``
+    if (neededForReset[4] > 0)
+        neededBlock += `★★★★: **${neededForReset[4]}** ${hasNeeded? '': `- You have **${userCards.filter(x => x.level === 4 && (x.fav? x.amount > 1: x.amount > 0)).length}**`}\n`
+    if (neededForReset[3] > 0)
+        neededBlock += `★★★: **${neededForReset[3]}** ${hasNeeded? '': `- You have **${userCards.filter(x => x.level === 3 && (x.fav? x.amount > 1: x.amount > 0)).length}**`}\n`
+    if (neededForReset[2] > 0)
+        neededBlock += `★★: **${neededForReset[2]}** ${hasNeeded? '': `- You have **${userCards.filter(x => x.level === 2 && (x.fav? x.amount > 1: x.amount > 0)).length}**`}\n`
+    if (neededForReset[1] > 0)
+        neededBlock += `★: **${neededForReset[1]}** ${hasNeeded? '': `- You have **${userCards.filter(x => x.level === 1 && (x.fav? x.amount > 1: x.amount > 0)).length}**`}\n`
 
-    const question = `Do you really want to reset **${col.name}**?
-        You will lose 1 copy of each card from that collection and gain 1 clout star${legendary? ' + legendary' : 
-        `\n> Please note that you won't get legendary card ticket because this collection doesn't have any legendaries`}`
+    if(!hasNeeded)
+        return ctx.reply(user, `you have to have **100%** of the required card rarities to reset this collection!
+        Unique cards needed for this collection reset are as follows:\n${neededBlock}***This count excludes single cards that are favorited***.`, 'red')
+
+    let question = `Do you really want to reset **${col.name}**?
+        This will take at random the following card rarities and amounts:
+        ${neededBlock}
+        You will get a clout star ${legendary? ' + legendary ticket for resetting this collection' :
+        `for resetting this collection\n> Please note that you won't get a legendary card ticket because this collection doesn't have any legendaries`}`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
-        onConfirm: (x) => reset(ctx, user, col),
+        onConfirm: (x) => reset(ctx, user, col, neededForReset),
     })
 })

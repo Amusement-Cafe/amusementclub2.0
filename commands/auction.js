@@ -234,7 +234,11 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
             ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
                 Auction ID: \`${auc.id}\``)
             const wishes = await User.find({heroslots: "festivewish", wishlist: card.id})
-            wishes.map(async (x) => await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`))
+            wishes.map(async (x) => {
+                try {
+                    await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`)
+                } catch (e) {}
+            })
         },
     })
 }))

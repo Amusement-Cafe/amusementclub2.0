@@ -19,7 +19,10 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.reply(user, `welcome to **Amusement Club!** Please read \`${ctx.prefix}rules\` and use \`${ctx.prefix}help\` to learn more about the game`)
+        let resp = `welcome to **Amusement Club!** Please read \`${ctx.prefix}rules\` and use \`${ctx.prefix}help\` to learn more about the game. `
+        resp += `To view a list of cards you have claimed, use \`${ctx.prefix}cards\` or to summon a specific card try \`${ctx.prefix}summon cardName\`. `
+        resp += `Using \`${ctx.prefix}daily\` will reset the cost of your claims and give you a small tomato bonus`
+        await ctx.reply(user, resp)
     }
 
     if(user.username != username) {

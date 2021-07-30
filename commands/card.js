@@ -270,7 +270,8 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         question,
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id),
-        onDecline: (x) => decline_trs(ctx, x, trs.id)
+        onDecline: (x) => decline_trs(ctx, x, trs.id),
+        onTimeout: (x) => ctx.pgn.sendTimeout(ctx.msg.channel.id, `**${trs.from}** tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
     })
 }))
 

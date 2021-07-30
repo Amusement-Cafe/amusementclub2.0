@@ -259,7 +259,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
             await ctx.guild.save()
 
             return ctx.reply(user, `you donated **${numFmt(amount)}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
-                This now has **${ctx.guild.balance}** ${ctx.symbols.tomato}
+                This now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
                 You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
         }
     })
