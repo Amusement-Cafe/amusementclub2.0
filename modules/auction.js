@@ -128,22 +128,29 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
 
         const { aucoutbid } = lastBidder.prefs.notifications
         if(aucoutbid && lastBidder.discord_id != user.discord_id) {
-            await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
+            try {
+                await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${numFmt(auc.price)} ${ctx.symbols.tomato}
                 Use \`->auc bid ${auc.id} [new bid]\`
                 This auction will end in **${formatAucTime(auc.expires)}**`, 'yellow')
+            } catch (e) {}
+
         }
 
         const { aucnewbid } = author.prefs.notifications
         if(aucnewbid) {
-            await ctx.direct(author, `your auction \`${auc.id}\` for card 
+            try {
+                await ctx.direct(author, `your auction \`${auc.id}\` for card 
                 ${formatName(ctx.cards[auc.card])} got a new bid. New listed price: **${numFmt(auc.price)} ${ctx.symbols.tomato}**.`, 'blue')
+            } catch (e) {}
         }
     } else if (!add) {
         const { aucbidme } = author.prefs.notifications
         if(aucbidme) {
-            await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
+            try {
+                await ctx.direct(author, `a player has bid on your auction \`${auc.id}\` for card 
                 ${formatName(ctx.cards[auc.card])} with minimum ${numFmt(auc.price)} ${ctx.symbols.tomato}!`, 'green')
+            } catch (e) {}
         }
     }
 
@@ -170,16 +177,23 @@ const finish_aucs = async (ctx, now) => {
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
         addUserCard(lastBidder, auc.card)
-        await lastBidder.save()
         await author.save()
+        await lastBidder.save()
+
 
         if(author.prefs.notifications.aucend) {
-            await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${numFmt(auc.price)}** ${ctx.symbols.tomato}`)
+            try {
+                await ctx.direct(author, `you sold ${formatName(ctx.cards[auc.card])} on auction \`${auc.id}\` for **${numFmt(auc.price)}** ${ctx.symbols.tomato}`)
+            } catch (e) {}
         }
 
-        await ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
+        try {
+            await ctx.direct(lastBidder, `you won auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])}!
             You ended up paying **${numFmt(Math.round(auc.price))}** ${ctx.symbols.tomato} and got **${numFmt(Math.round(auc.highbid - auc.price))}** ${ctx.symbols.tomato} back.
             ${tback > 0? `You got additional **${numFmt(tback)}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
+        } catch (e) {}
+
+
 
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
@@ -201,8 +215,10 @@ const finish_aucs = async (ctx, now) => {
         addUserCard(author, auc.card)
         await author.save()
         await aucEvalChecks(ctx, auc, false)
-        return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
+        try {
+            return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
             You got your card back.`, 'yellow')
+        } catch (e) {}
     }
 }
 

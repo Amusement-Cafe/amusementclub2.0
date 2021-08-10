@@ -270,7 +270,8 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         question,
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id),
-        onDecline: (x) => decline_trs(ctx, x, trs.id)
+        onDecline: (x) => decline_trs(ctx, x, trs.id),
+        onTimeout: (x) => ctx.pgn.sendTimeout(ctx.msg.channel.id, `**${trs.from}** tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
     })
 }))
 
@@ -646,6 +647,9 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
+    if (parsedargs.diff)
+        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+
     const card = bestMatch(cards)
     if(user.wishlist.some(x => x === card.id)) {
         return ctx.reply(user, `you already have ${formatName(card)} in your wishlist.
@@ -664,6 +668,9 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
         return ctx.qhelp(ctx, user, 'wishlist')
 
     cards = cards.filter(x => !user.wishlist.some(y => y === x.id))
+
+    if (parsedargs.diff)
+        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already in your wishlist`, 'red')
@@ -690,6 +697,9 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(
         return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`, 'red')
     }
 
+    if (parsedargs.diff)
+        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+
     const card = bestMatch(cards)
     if(!user.wishlist.some(x => x === card.id)) {
         return ctx.reply(user, `you don't have ${formatName(card)} in your wishlist`, 'red')
@@ -707,6 +717,9 @@ cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'al
     if(user.wishlist.length === 0) {
         return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`, 'red')
     }
+
+    if (parsedargs.diff)
+        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `none of the requested cards are in your wishlist`, 'red')

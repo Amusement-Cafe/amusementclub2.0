@@ -291,9 +291,6 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         cards = cards.filter(x => !tgcards.includes(x.id))
     }
 
-    if(parsedargs.diff) 
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
-
     if(parsedargs.lastcard)
         cards = [ctx.cards[user.lastcard]]
 

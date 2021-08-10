@@ -101,8 +101,11 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
 
     if(parsedargs.diff)
         list = list.filter(x => !user.cards.some(y => x.card === y.id))
-    else if(parsedargs.bid) 
+
+    if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
+    else if(parsedargs.bid === 2)
+        list = list.filter(x => !x.lastbidder || x.lastbidder != user.discord_id)
 
     if(!parsedargs.isEmpty())
         list = list.filter(x => cards.some(y => x.card === y.id))
@@ -234,7 +237,11 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
             ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
                 Auction ID: \`${auc.id}\``)
             const wishes = await User.find({heroslots: "festivewish", wishlist: card.id})
-            wishes.map(async (x) => await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`))
+            wishes.map(async (x) => {
+                try {
+                    await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`)
+                } catch (e) {}
+            })
         },
     })
 }))

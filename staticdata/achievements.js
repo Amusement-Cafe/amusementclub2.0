@@ -87,7 +87,7 @@ module.exports = [
         desc: 'Reset collection for the first time',
         actions: ['col', 'collection'],
         check: (ctx, user) => {
-            const col = user.completedcols.sort((a, b) => b.amount - a.amount)[0]
+            const col = user.cloutedcols.sort((a, b) => b.amount - a.amount)[0]
             if(col)
                 return col.amount > 0
             return false

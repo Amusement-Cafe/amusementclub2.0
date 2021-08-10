@@ -13,6 +13,8 @@ const {
     fetchOnly,
 } = require('../modules/user')
 
+let listener
+
 const listen = (ctx) => {
     const app = express()
     const topggWebhook = new Topgg.Webhook(ctx.dbl.pass)
@@ -20,11 +22,9 @@ const listen = (ctx) => {
     app.use(bodyParser.urlencoded({ extended: true })); 
 
     // Webhook handle for https://top.gg/
-    app.post("/topgg", topggWebhook.middleware(), (req, res) => {
-        const vote = req.vote
+    app.post("/topgg", topggWebhook.listener(vote => {
         registerTopggVote(ctx, vote)
-        res.status(200).end()
-    })
+    }))
 
     // Webhook handle for https://discordbotlist.com/
     app.post("/dbl", (req, res) => {
@@ -40,7 +40,7 @@ const listen = (ctx) => {
         res.status(200).end()
     })
 
-    app.listen(ctx.dbl.port, () => console.log(`Listening to webhooks on port ${ctx.dbl.port}`))
+    listener = app.listen(ctx.dbl.port, () => console.log(`Listening to webhooks on port ${ctx.dbl.port}`))
 }
 
 const registerTopggVote = async (ctx, vote) => {
@@ -62,6 +62,12 @@ const registerTopggVote = async (ctx, vote) => {
     } else if(votingUser.votes % 10 === 0) {
         card = _.sample(ctx.cards.filter(y => y.level < 4 && y.col === _.sample(ctx.collections.filter(z => z.promo)).id))
     }
+    let resp = `thank you for voting! You got **${formatName(card)}**\n`
+
+    if (streak2 > 10)
+        resp += `Votes until free event card: **${streak1}**\n`
+
+    resp += `Votes until free special card: **${streak2}**`
 
     addUserCard(votingUser, card.id)
     votingUser.lastvote = new Date()
@@ -71,9 +77,7 @@ const registerTopggVote = async (ctx, vote) => {
     return ctx.direct(votingUser, {
         image: { url: card.url },
         color: color.blue,
-        description: `thank you for voting! You got **${formatName(card)}**
-        Votes until free event card: **${streak1}**
-        Votes until free special card: **${streak2}**`
+        description: resp
     })
 }
 
@@ -89,13 +93,18 @@ const registerDblVote = async (ctx, vote) => {
     votingUser.save()
 
     return ctx.direct(votingUser, {
-        image: { url: card.url },
         color: color.blue,
         description: `thank you for voting! You got **${500}${ctx.symbols.tomato}**
         --streak--`
     })
 }
 
+const stopListener = (ctx) => {
+    listener.close()
+    console.log(`Stopped listening to webhooks on port ${ctx.dbl.port}`)
+}
+
 module.exports = {
     listen,
+    stopListener,
 }

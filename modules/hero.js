@@ -59,8 +59,10 @@ const check_heroes = async (ctx, now) => {
         pending.active = true
         await user.save()
         await pending.save()
-        await ctx.direct(user, `congratulations! Your hero request has been accepted.
+        try {
+            await ctx.direct(user, `congratulations! Your hero request has been accepted.
             Say hello to your new hero **${pending.name}**`)
+        } catch (e) {}
         await reloadCache()
     }
 }

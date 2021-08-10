@@ -88,7 +88,7 @@ const fetchInfo = (ctx, id) => {
     return info
 }
 
-const fetchAllInfos = () => Cardinfo.find()
+const fetchAllInfos = async () => await Cardinfo.find()
 
 module.exports = {
     getBooruPost,
