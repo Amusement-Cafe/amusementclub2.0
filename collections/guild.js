@@ -6,7 +6,7 @@ module.exports = model('Guild', {
     xp:             { type: Number, default: 0 },
     tax:            { type: Number, default: 0 },
     balance:        { type: Number, default: 0 },
-    lemons:        { type: Number, default: 0 },
+    lemons:         { type: Number, default: 0 },
     buildperm:      { type: Number, default: 1 },
     botchannels:    { type: Array, default: [] },
 
