@@ -109,7 +109,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`->item info [item id]\`
+                { name: `Usage`, value: `To view the item details use \`->inv info [item id]\`
                     To use the item \`->inv use [item id]\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
