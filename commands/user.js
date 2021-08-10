@@ -79,7 +79,7 @@ cmd('bal', 'balance', (ctx, user) => {
 
     const embed = {
         color: colors.green,
-        description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
+        description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato}, **${Math.round(user.vials)}** ${ctx.symbols.vial} and **${Math.round(user.lemons)}** ${ctx.symbols.lemon}
             Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
             ${ctx.guild? `Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
             You can claim **${max - 1} cards** ${ctx.guild? `in current guild `:''}with your balance`
@@ -118,9 +118,9 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     })
 }))
 
-cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
+cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
-    const itemCheck = checkItem(ctx, user, item)
+    const itemCheck = await checkItem(ctx, user, item)
 
     if(itemCheck)
         return ctx.reply(user, itemCheck, 'red')

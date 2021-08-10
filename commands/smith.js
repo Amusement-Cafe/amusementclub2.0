@@ -32,6 +32,10 @@ const {
     updateUser,
 } = require('../modules/user')
 
+const {
+    plotPayout,
+} = require('../modules/plot')
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const card1 = bestMatch(cards[0])
     let card2 = bestMatch(cards[1])
@@ -93,6 +97,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, newcard)
                 await user.save()
 
+                await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 10)
+
                 const usercard = user.cards.find(x => x.id === newcard.id)
                 return ctx.reply(user, {
                     image: { url: newcard.url },
@@ -142,6 +148,9 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 user.dailystats[`liquify${card.level}`] += 1
                 removeUserCard(ctx, user, card.id)
                 await user.save()
+
+                await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 10)
+
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
                     You have **${user.vials}** ${ctx.symbols.vial}
@@ -308,6 +317,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             user.dailystats.draw += 1
             user.dailystats[`draw${card.level}`] += 1
             await user.save()
+
+            await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 10)
 
             return ctx.reply(user, {
                 image: { url: card.url },

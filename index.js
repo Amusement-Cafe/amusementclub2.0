@@ -120,6 +120,7 @@ module.exports.create = async ({
     const symbols = {
         tomato: '`🍅`',
         vial: '`🍷`',
+        lemon: '`🍋`',
         star: '★',
         auc_sbd: '🔹',
         auc_lbd: '🔷',

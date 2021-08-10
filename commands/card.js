@@ -53,6 +53,10 @@ const {
     fetchInfo,
 } = require('../modules/meta')
 
+const {
+    plotPayout,
+} = require('../modules/plot')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
@@ -144,6 +148,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     user.lastcard = cards[0].card.id
     user.xp += amount
     await user.save()
+
+    await plotPayout(ctx, 'gbank', 1, amount)
     
     if(newCards.length > 0 && oldCards.length > 0) {
         user.markModified('cards')

@@ -16,6 +16,10 @@ const {
     formatName,
 } = require('./card')
 
+const {
+    getUserPlots
+} = require('./plot')
+
 const mapUserInventory = (ctx, user) => {
     return user.inventory.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
 }
@@ -74,31 +78,33 @@ const checkItem = (ctx, user, item) => checks[item.type](ctx, user, item)
 
 const uses = {
     blueprint: async (ctx, user, item) => {
-        const check = checks.blueprint(ctx, user, item)
+        const check = await checks.blueprint(ctx, user, item)
         if(check)
             return ctx.reply(user, check, 'red')
 
-        const guild = ctx.guild
-        const xp = item.levels[0].price * .1
+        let emptyPlot = await getUserPlots(ctx, false)
+        emptyPlot = emptyPlot.filter(x => !x.building.id)[0]
 
-        guild.buildings.push({ id: item.id, level: 1, health: 100 })
-        addGuildXP(ctx, user, xp)
-        await ctx.guild.save()
+        emptyPlot.building.id = item.id
+        emptyPlot.building.install_date = new Date()
+        emptyPlot.building.last_collected = new Date()
+        emptyPlot.building.stored_lemons = 0
+        emptyPlot.building.level = 1
+        await emptyPlot.save()
 
-        user.exp -= item.levels[0].price
+        user.lemons -= item.levels[0].price
         pullInventoryItem(user, item.id)
         await user.save()
 
         ctx.mixpanel.track(
-            "Building Build", { 
+            "Building Build", {
                 distinct_id: user.discord_id,
                 building_id: item.id,
                 price: item.levels[0].price,
-                guild: guild.id,
+                guild: ctx.guild.id,
         })
 
-        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**
-            You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**`)
     },
 
     claim_ticket: async (ctx, user, item) => {
@@ -168,10 +174,8 @@ const infos = {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
-                Required guild level: **${x.level}**
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+            value: `Price: **${x.price}** ${ctx.symbols.lemon}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
         }))
     }),
 
@@ -218,19 +222,16 @@ const infos = {
 
 const checks = {
     blueprint: async (ctx, user, item) => {
-        const guild = ctx.guild
-        if(guild.userbuildings.find(x => x.id === item.id))
-            return `this guild already has **${item.name}**`
+        const userPlots = await getUserPlots(ctx, false)
 
-        if(user.exp < item.levels[0].price)
-            return `you need at least **${item.levels[0].price}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
+        if(userPlots.find(x => x.id === item.id))
+            return `you already have a **${item.name}** in this guild!`
 
-        if(XPtoLEVEL(guild.xp) < item.levels[0].level)
-            return `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`
+        if(user.lemons < item.levels[0].price)
+            return `you need at least **${item.levels[0].price}** ${ctx.symbols.lemons} to build **${item.name} level 1**`
 
-        const guilduser = getGuildUser(ctx, user)
-        if(!isUserOwner(ctx, user) && guilduser && guilduser.rank < guild.buildperm)
-            return `you have to be at least rank **${guild.buildperm}** to build in this guild`
+        if(!userPlots.find(x => !x.building.id))
+            return `you need to have an empty plot to build ${item.name}!`
     },
 
     claim_ticket: (ctx, user, item) => {
@@ -275,7 +276,8 @@ const buys = {
 
 const getQuestion = (ctx, user, item) => {
     switch(item.type) {
-        case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
+        case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?
+        This will cost **${item.levels[0].price}** ${ctx.symbols.lemon}`
         case 'claim_ticket': return `Do you want to use **${item.name}** to get a **${item.level}★** card?`
         case 'recipe': return `Do you want to convert **${item.name}** into an Effect Card? The required cards will be consumed`
     }

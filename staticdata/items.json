@@ -1,163 +1,162 @@
 [
     {
         "id": "castle",
-        "price": 1000,
+        "price": 1,
         "name": "Guild Castle",
         "type": "blueprint",
         "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
-        "desc": "must-have building",
-        "fulldesc": "When built provides maintenance for other buildings. Holds guild funds, can gather taxes",
+        "desc": "probably need this, maybe",
+        "fulldesc": "This will do something, yes",
         "levels": [
             {
-                "price": 100,
+                "price": 1,
                 "level": 1,
                 "maintenance": 10,
-                "desc": "Allows one to check guild status, set claim tax up to 5%, keeps other buildings in good shape"
+                "desc": "Hey look, level 1"
             }, {
                 "price": 2000,
                 "level": 5,
                 "maintenance": 15,
-                "desc": "Allows claim tax to be set up to 10%"
+                "desc": "Ooh, level 2"
             }, {
                 "price": 5000,
                 "level": 20,
                 "maintenance": 20,
-                "desc": "Reduces building maintenance by 10%"
+                "desc": "Ah, level 3"
             }, {
                 "price": 10000,
                 "level": 30,
                 "maintenance": 25,
-                "desc": "Allows claim tax to be set up to 25%"
+                "desc": "Do more with 4"
             }, {
                 "price": 25000,
                 "level": 50,
                 "maintenance": 50,
-                "desc": "Reduces building maintenance by 30%"
+                "desc": "Stay alive with number 5"
             }
         ]
     }, {
         "id": "heroq",
-        "price": 2500,
+        "price": 1,
         "name": "Hero's Quarters",
         "type": "blueprint",
-        "desc": "place for guild hero",
-        "fulldesc": "Allows hero to join the guild. Hero will be chosen depending on amount of followers in this guild. Leveling up makes other heroes to consider your guild more",
+        "desc": "This does not do anything, do not purchase this expecting it to do something",
+        "fulldesc": "Provides no benefit currently. Will not be implemented until another future update",
         "levels": [
             {
-                "price": 500,
+                "price": 1,
                 "level": 3,
                 "maintenance": 100,
-                "desc": "Allows hero to join the guild"
+                "desc": "Does nothing"
             }, {
                 "price": 1000,
                 "level": 10,
                 "maintenance": 500,
-                "desc": "Increases max loyalty level to 5"
+                "desc": "Also nothing"
             }, {
                 "price": 30000,
                 "level": 40,
                 "maintenance": 1000,
-                "desc": "Makes current hero will 20% less likely to consider other guilds"
+                "desc": "Literally nothing"
             }
         ]
     }, {
         "id": "auchouse",
         "name": "Auction House",
-        "price": 500,
+        "price": 1,
         "type": "blueprint",
-        "desc": "sell cards globally",
-        "fulldesc": "When built users will be able to sell cards on global card auction shared between all servers",
+        "desc": "Passive Auction Income",
+        "fulldesc": "Grants lemons for commands related to auctions",
         "levels": [
             {
-                "price": 100,
+                "price": 1,
                 "level": 3,
                 "maintenance": 10,
-                "desc": "Allows users to auction cards globally"
+                "desc": "Gives lemons when someone successfully bids on an auction"
             }, {
                 "price": 500,
                 "level": 10,
                 "maintenance": 20,
-                "desc": "Decreases auction fees from 10% to 5%"
+                "desc": "Auctions!!"
             }, {
                 "price": 5000,
                 "level": 15,
                 "maintenance": 50,
-                "desc": "Allows users to specify auction length (1 to 10 hours)"
+                "desc": "Auctions!!!"
             }
         ]
     }, {
         "id": "smithhub",
         "name": "Smithing Hub",
-        "price": 3000,
+        "price": 1,
         "type": "blueprint",
-        "desc": "forge and draw cards",
-        "fulldesc": "When built users will be able to forge cards together and use vials to draw new cards. Details: `->help forge` and `->help draw`",
+        "desc": "Will do something",
+        "fulldesc": "Just gotta figure out what that something is",
         "levels": [
             {
-                "price": 1000,
+                "price": 1,
                 "level": 3,
                 "maintenance": 10,
-                "desc": "Allows users to forge two cards"
+                "desc": "Gives lemons when people forge or liquefy 1 star cards"
             }, {
-                "price": 5000,
+                "price": 500,
                 "level": 17,
                 "maintenance": 50,
-                "desc": "Allows users to liquefy cards and draw a card using vials"
+                "desc": "Gives lemons when people forge or liquefy 2 star cards"
             }, {
-                "price": 10000,
+                "price": 1500,
                 "level": 33,
                 "maintenance": 100,
-                "desc": "Allows users to forge effects using recipes"
+                "desc": "Gives lemons when people forge or liquefy 3 star cards"
             }
         ]
     }, {
         "id": "gbank",
         "name": "Gacha Bank",
-        "price": 2500,
+        "price": 1,
         "type": "blueprint",
-        "desc": "get better cards and daily",
-        "fulldesc": "When built and upgraded, adds rare collection cards to a claim pool and increases default daily",
+        "desc": "Will do something",
+        "fulldesc": "Yeah, it's a bank, a gacha bank. You know, the two things you want as far from each other as possible. Unless you fly in rockets to the atmosphere for fun",
         "levels": [
             {
-                "price": 2000,
+                "price": 1,
                 "level": 10,
                 "maintenance": 100,
-                "desc": "Increases user daily to **800** {currency}"
+                "desc": "Gives lemons when a user does daily"
             }, {
                 "price": 7000,
                 "level": 15,
                 "maintenance": 150,
-                "desc": "Enables rare collection card drops when claiming in this guild"
+                "desc": "Gives lemons when a user claims cards"
             }, {
                 "price": 16000,
                 "level": 30,
                 "maintenance": 300,
-                "desc": "Adds user level amount of {currency} to guild balance when user runs `->daily`"
+                "desc": "Don't know if this level will exist later on"
             }
         ]
     }, {
         "id": "tavern",
         "name": "Tavern",
-        "price": 1500,
+        "price": 1,
         "type": "blueprint",
-        "desc": "get quests",
-        "fulldesc": "When built and upgraded, gives players up to **2** extra daily quests and allows to purchase quest lines",
+        "desc": "Will do something",
         "levels": [
             {
-                "price": 1000,
+                "price": 1,
                 "level": 2,
                 "maintenance": 50,
-                "desc": "Adds 1 extra quest when users run daily in this guild"
+                "desc": "Gives lemons when someone completes an achievement in the guild"
             }, {
                 "price": 2000,
                 "level": 5,
                 "maintenance": 70,
-                "desc": "Adds a tier II quest when users run daily in this guild"
+                "desc": "Gives lemons when someone completes a quest in the guild"
             }, {
                 "price": 20000,
                 "level": 27,
                 "maintenance": 100,
-                "desc": "Allows to purchase quest lines (Coming soon)"
+                "desc": "Allows to purchase quest lines (Coming never)"
             }
         ]
     }, {

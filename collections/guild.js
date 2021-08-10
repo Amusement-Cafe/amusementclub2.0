@@ -6,6 +6,7 @@ module.exports = model('Guild', {
     xp:             { type: Number, default: 0 },
     tax:            { type: Number, default: 0 },
     balance:        { type: Number, default: 0 },
+    lemons:        { type: Number, default: 0 },
     buildperm:      { type: Number, default: 1 },
     botchannels:    { type: Array, default: [] },
 
@@ -21,7 +22,6 @@ module.exports = model('Guild', {
         level:          { type: Number, default: 1 },
         health:         { type: Number, default: 100 },
     }],
-    userbuildings:  [{ type: String }],
 
     nextcheck:      { type: Date, default: new Date() },
     reportchannel:  { type: String },
