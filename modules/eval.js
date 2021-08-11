@@ -6,6 +6,9 @@ const cardMod   = require('./card');
 const colors    = require('../utils/colors')
 
 const {
+    numFmt
+} = require('../utils/tools')
+const {
     fetchInfo,
 } = require('./meta')
 
@@ -128,18 +131,13 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
         let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * 0.689) * modifier)
 
-        let evalCalc = (info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length) / 2
+        price = (info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length)
 
-        if (evalCalc < priceFloor)
-            evalCalc = priceFloor
-
-        price =  Math.round((evalCalc
-            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
-
-        return price === Infinity? 0 : price
-    } else {
-        return price === Infinity? 0 : price
+        if (price < priceFloor)
+            price = priceFloor
     }
+
+    return price === Infinity? 0 : price
 }
 
 const evalAucOutlierCheck = (ctx, number, index, info) => {
@@ -172,15 +170,25 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     }
 
     let lastEval, evalDiff
-
+    //increment the cards auction counter
     info.aucevalinfo.auccount += 1
+    //if it doesn't have an eval in lasttold, set it
     info.aucevalinfo.lasttoldeval < 0? lastEval = eval: lastEval = info.aucevalinfo.lasttoldeval
 
+    //If auction prices has filled up, shift it before moving on to the next steps
     if (info.aucevalinfo.newaucprices.length > ctx.eval.aucEval.maxSamples)
         info.aucevalinfo.newaucprices.shift()
 
+    //If eval prices have filled up, shift it before moving on to the next steps
+    if (info.aucevalinfo.evalprices.length > ctx.eval.aucEval.maxSamples)
+        info.aucevalinfo.evalprices.shift()
+
+    //If auction prices are at 2x min sample, or at max samples. Start this nonsense
     if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples * 2 || info.aucevalinfo.newaucprices.length === ctx.eval.aucEval.maxSamples) {
+        //Filter out price outliers, to give a more natural/gentle price increase/decrease
         info.aucevalinfo.newaucprices = info.aucevalinfo.newaucprices.filter((a, b) => evalAucOutlierCheck(ctx, a, b, info))
+        //Now that it's been filtered, check if the list is longer than minimum samples.
+        //If it is, start this movement of waiting auc prices into eval prices. Auc prices will be cleared afterwards
         if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples) {
             info.aucevalinfo.newaucprices.map(x => {
                 info.aucevalinfo.evalprices.push(x)
@@ -221,12 +229,12 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
                 },
                 {
                     name: "Old Eval",
-                    value: `${lastEval}`,
+                    value: `${numFmt(lastEval)}`,
                     inline: true
                 },
                 {
                     name: "New Eval",
-                    value: `${newEval}`,
+                    value: `${numFmt(newEval)}`,
                     inline: true
                 },
                 {

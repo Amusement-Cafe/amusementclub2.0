@@ -45,6 +45,11 @@ module.exports = [
         name: 'Impossible Spell Card',
         desc: 'Usable effects have 40% less cooldown',
         passive: true
+    }, {
+        id: 'festivewish',
+        name: 'Festival of Wishes',
+        desc: 'Get notified when a card on your wishlist is auctioned',
+        passive: true
     },
 
     {

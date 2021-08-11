@@ -4,9 +4,12 @@ const Guild         = require('../collections/guild')
 
 const {fetchOnly}   = require('./user')
 const m_guild       = require('./guild')
-const {XPtoLEVEL}   = require('../utils/tools')
 const _             = require('lodash')
 const colors        = require('../utils/colors')
+const {
+    XPtoLEVEL,
+    numFmt,
+}   = require('../utils/tools')
 
 let hcache = []
 
@@ -56,8 +59,10 @@ const check_heroes = async (ctx, now) => {
         pending.active = true
         await user.save()
         await pending.save()
-        await ctx.direct(user, `congratulations! Your hero request has been accepted.
+        try {
+            await ctx.direct(user, `congratulations! Your hero request has been accepted.
             Say hello to your new hero **${pending.name}**`)
+        } catch (e) {}
         await reloadCache()
     }
 }
@@ -67,7 +72,7 @@ const getInfo = async (ctx, user, id) => {
     hero.followers = await User.countDocuments({ hero: id })
     return { 
         author: { name: hero.name },
-        description: `Level **${XPtoLEVEL(hero.xp)}**\nFollowers: **${hero.followers}**\nID: ${hero.id}`,
+        description: `Level **${numFmt(XPtoLEVEL(hero.xp))}**\nFollowers: **${numFmt(hero.followers)}**\nID: ${hero.id}`,
         image: { url: _.sample(hero.pictures) },
         color: colors.blue
     }

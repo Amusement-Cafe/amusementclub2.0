@@ -11,6 +11,7 @@ const {
 
 const {
     XPtoLEVEL,
+    numFmt,
 } = require('../utils/tools')
 
 const {
@@ -174,8 +175,8 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
 
 cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
-    await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
+
     const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
         .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
@@ -306,7 +307,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     }
 
     const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
-    if(oldEffect) {
+    if(oldEffect && oldEffect.expires > now) {
         return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
             force: ctx.globals.force,
             question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
@@ -326,7 +327,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
-        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbols.tomato} to submit a hero`, 'red')
+        return ctx.reply(user, `you have to have at least **${numFmt(price)}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)
@@ -372,6 +373,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     const embed = { 
         title: `Submitting a hero`,
         description: `You are about to submit **${char.name.english}** from **${media.title.english}**.
+        > This submission will cost you **${numFmt(price)}** ${ctx.symbols.tomato}
         > It may take up some time to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,
         image: { url: char.image.large }

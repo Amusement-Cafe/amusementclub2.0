@@ -1,4 +1,5 @@
 const {cmd}     = require('../utils/cmd')
+const {numFmt}  = require('../utils/tools')
 const _         = require('lodash')
 const colors    = require('../utils/colors')
 

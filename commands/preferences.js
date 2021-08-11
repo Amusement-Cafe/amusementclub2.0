@@ -9,6 +9,7 @@ const desc = {
     announce: `there is a new bot announcement`,
     daily: `you can claim your daily`,
     vote: `you can vote for the bot`,
+    completed: `when you complete, or lose completion on a collection`,
 }
 
 cmd('prefs', (ctx, user) => {

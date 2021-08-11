@@ -36,13 +36,13 @@ cmd('help', async (ctx, user, ...args) => {
 
             if(ch.id != ctx.msg.channel.id)
                 await ctx.reply(user, `help was sent to you. 
-                    You can also use *-here* (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
+                    You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
 
         } catch (e) {
             await ctx.reply(user, `failed to send direct message to you ੨( ･᷄ ︵･᷅ )ｼ
                 Please make sure you have **Allow direct messages from server members** enabled in server privacy settings.
                 You can do it in any server that you share with bot.
-                You also can add *-here* (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`, 'red')
+                You also can add \`-here\` (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`, 'red')
         }
     }
 }).access('dm')

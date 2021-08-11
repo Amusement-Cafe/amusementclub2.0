@@ -33,6 +33,10 @@ const {
     evalCardFast,
 } = require("../modules/eval");
 
+const {
+    numFmt,
+} = require('../utils/tools')
+
 const colors = require('../utils/colors')
 
 
@@ -91,7 +95,7 @@ pcmd(['admin', 'mod'], ['sudo', 'award'], ['sudo', 'add', 'balance'], async (ctx
 
         target.exp += amount
         await target.save()
-        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.tomato} to **${target.username}** (${target.discord_id})`)
+        rpl.push(`\`✅\` added '${numFmt(amount)}' ${ctx.symbols.tomato} to **${target.username}** (${target.discord_id})`)
     })
 
     return ctx.reply(user, rpl.join('\n'))
@@ -108,7 +112,7 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], async (ctx, user, ...args) => {
 
         target.vials += amount
         await target.save()
-        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.vial} to **${target.username}** (${target.discord_id})`)
+        rpl.push(`\`✅\` added '${numFmt(amount)}' ${ctx.symbols.vial} to **${target.username}** (${target.discord_id})`)
     })
 
     return ctx.reply(user, rpl.join('\n'))
@@ -249,9 +253,9 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, use
 
 
     if (lastEval > newEval)
-        evalDiff = `-${lastEval - newEval}`
+        evalDiff = `-${numFmt(lastEval - newEval)}`
     else
-        evalDiff = `+${newEval - lastEval}`
+        evalDiff = `+${numFmt(newEval - lastEval)}`
 
     let evalPrices = info.aucevalinfo.evalprices.length > 0? info.aucevalinfo.evalprices.join(', '): 'empty'
     let aucPrices = info.aucevalinfo.newaucprices.length > 0? info.aucevalinfo.newaucprices.join(', '): 'empty'
@@ -273,12 +277,12 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, use
             },
             {
                 name: "Old Eval",
-                value: `${lastEval}`,
+                value: `${numFmt(lastEval)}`,
                 inline: true
             },
             {
                 name: "New Eval",
-                value: `${newEval}`,
+                value: `${numFmt(newEval)}`,
                 inline: true
             },
             {

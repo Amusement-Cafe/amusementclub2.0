@@ -11,6 +11,10 @@ const {
     check_effect,
 } = require('./effect')
 
+const {
+    numFmt
+} = require('../utils/tools')
+
 const m_hero = require('./hero')
 
 let cache = []
@@ -167,8 +171,8 @@ const getBuildingInfo = (ctx, user, args) => {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
+                Maintenance: **${numFmt(x.maintenance)}** ${ctx.symbols.tomato}/day
                 Required guild level: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
     }))}
