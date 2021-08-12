@@ -559,6 +559,37 @@
         ]
     },
     {
+        "type": ["plot", "plots"],
+        "title": "About Plots",
+        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nCap rates are in the following order: 300, 600, 1200, 1800, 3600.",
+        "fields": [
+            {
+                "title": "->plots",
+                "description": "Display your plots in current guild"
+            },
+            {
+                "title": "->plots global",
+                "description": "Display all your plots globally"
+            },
+            {
+                "title": "->plot buy",
+                "description": "Buy an empty plot with lemons in current guild."
+            },
+            {
+                "title": "->plot info [plot #]",
+                "description": "Displays the information about the specific plot in the current guild."
+            },
+            {
+                "title": "->plot upgrade [building id]",
+                "description": "Upgrade a specific building on one of your plots in the current guild."
+            },
+            {
+                "title": "->plots collect",
+                "description": "Collect all stored lemons in the buildings in the current guild."
+            }
+        ]
+    },
+    {
         "type": ["profile"],
         "title": "About Profiles",
         "description": "Profiles are a way to quickly and nicely see your current: Level, Card Count, Star Count, Clout Count, Time Since Start, and Bot Roles(if any)",

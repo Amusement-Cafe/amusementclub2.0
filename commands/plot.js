@@ -1,7 +1,12 @@
 const {cmd, pcmd}   = require('../utils/cmd')
-const {XPtoLEVEL}   = require('../utils/tools')
 const Plots         = require('../collections/plot')
 const colors        = require('../utils/colors')
+
+const {
+    XPtoLEVEL,
+    numFmt,
+}   = require('../utils/tools')
+
 
 const {
     getGuildPlots,
@@ -15,10 +20,10 @@ cmd(['plot'], ['plots'], async (ctx, user) => {
     let pages = []
 
     lots.map((x, i) => {
-        if (i % 10 == 0) pages.push("`Plot # | Building | Level | Stored Lemons`\n")
+        if (i % 10 == 0) pages.push("`Plot # | Building | Level | Revenue`\n")
         let buildingName = x.building.id? x.building.id.padEnd(8) : 'None    '
         let level = x.building.id? x.building.level.toString().padEnd(5) : 'N/A  '
-        let lemons = x.building.id? `${x.building.stored_lemons} 🍋`: 'N/A'
+        let lemons = x.building.id? `${numFmt(x.building.stored_lemons)} 🍋`: 'N/A'
         pages[Math.floor(i/10)] += `\`${(i+1).toString().padEnd(6)} | ${buildingName} | ${level} | ${lemons}\`\n`
     })
 
@@ -41,7 +46,7 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
         if (i % 10 == 0) pages.push("`Plot # | Building | Level | Lemons | Guild Name`\n")
         let buildingName = x.building.id? x.building.id.padEnd(8) : 'None    '
         let level = x.building.id? x.building.level.toString().padEnd(5) : 'N/A  '
-        let lemons = x.building.id? `${x.building.stored_lemons}`.padEnd(6): 'N/A   '
+        let lemons = x.building.id? `${numFmt(x.building.stored_lemons)}`.padEnd(6): 'N/A   '
         pages[Math.floor(i/10)] += `\`${(i+1).toString().padEnd(6)} | ${buildingName} | ${level} | ${lemons} | ${x.guild_name}\`\n`
     })
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -65,7 +70,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
     const check = async () => {
 
         if (user.lemons < cost)
-            return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need ${cost} ${ctx.symbols.lemon} to purchase another plot!`, 'red')
+            return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need ${numFmt(cost)} ${ctx.symbols.lemon} to purchase another plot!`, 'red')
 
         if (userGuildPlots.length >= maxGuildAmount)
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
@@ -76,7 +81,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
     }
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question: `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you ${cost} ${ctx.symbols.lemon}!`,
+        question: `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you ${numFmt(cost)} ${ctx.symbols.lemon}!`,
         force: ctx.globals.force,
         check,
         onConfirm: async () => {
@@ -97,24 +102,31 @@ cmd(['plot', 'buy'], async (ctx, user) => {
 
 cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
     if (!arg)
-        return ctx.reply(user, 'please specify a building to upgrade!', 'red')
+        return ctx.reply(user, 'please specify a building or plot number to upgrade!', 'red')
 
     let plot = await getUserPlots(ctx, false, arg)
 
     if (plot.length === 0)
-        return ctx.reply(user, `no plots found with building ID \`${arg}\` on them!`, 'red')
-    plot = plot[0]
+        plot = await getUserPlots(ctx, false)
 
-    const item = ctx.items.find(x => x.id === arg)
+    if (arg - 1 > plot.length)
+        return ctx.reply(user, `no plot found in position ${arg}!`, 'red')
+
+    plot = plot[arg - 1] || plot[0]
+
+    if (!plot || !plot.building.id)
+        return ctx.reply(user, `no plots found with a building with the argument **${arg}**!`, 'red')
+
+    const item = ctx.items.find(x => x.id === plot.building.id)
     const level = item.levels[plot.building.level]
 
     if(!level)
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
 
     if(user.lemons < level.price)
-        return ctx.reply(user, `you have to have at least **${level.price}** ${ctx.symbols.lemon} to upgrade this building`, 'red')
+        return ctx.reply(user, `you have to have at least **${numFmt(level.price)}** ${ctx.symbols.lemon} to upgrade this building`, 'red')
 
-    const question = `Do you want to upgrade **${item.name}** to level **${plot.building.level + 1}** for **${level.price}** ${ctx.symbols.lemon}?`
+    const question = `Do you want to upgrade **${item.name}** to level **${plot.building.level + 1}** for **${numFmt(level.price)}** ${ctx.symbols.lemon}?`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
@@ -160,7 +172,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
         return ctx.reply(user, `you don't have a plot in position ${arg}, you only have ${plotLength} plots in this guild!`, 'red')
 
     if(!plot.building.id)
-        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix || `->`}store\` and place them on this plot!`)
+        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix}store\` and place them on this plot!`)
 
     const item = ctx.items.find(x => x.id === plot.building.id)
 
@@ -168,8 +180,8 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
         author: { name: `${user.username}, here are the stats for your ${item.name}` },
         fields: [
             {
-                name: `Stored Lemons`,
-                value: `${plot.building.stored_lemons} ${ctx.symbols.lemon}`,
+                name: `Stored Revenue`,
+                value: `${numFmt(plot.building.stored_lemons)} ${ctx.symbols.lemon}`,
                 inline: true
             },
             {
@@ -188,7 +200,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
 
     let level = item.levels.map((x, i) => ({
         name: `Level ${i + 1}`,
-        value: `Price: **${x.price}** ${ctx.symbols.lemon}
+        value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))
     level[plot.building.level - 1].name += ` (Current Level)`
@@ -205,12 +217,12 @@ cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
     plots = plots.filter(x=> x.building.stored_lemons > 0)
 
     if (plots.length === 0)
-        return ctx.reply(user, 'you have no plots in this guild to collect from!', 'red')
+        return ctx.reply(user, 'you have no plots in this guild that are ready for collection!', 'red')
 
     let collection = 0
     plots.map(x => collection += x.building.stored_lemons)
 
-    const question = `Do you want to collect **${collection}** ${ctx.symbols.lemon} from your buildings in ${ctx.discord_guild.name}?`
+    const question = `Do you want to collect **${numFmt(collection)}** ${ctx.symbols.lemon} from your buildings in ${ctx.discord_guild.name}?`
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
         force: ctx.globals.force,
@@ -223,8 +235,8 @@ cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
             user.lemons += collection
             await user.save()
 
-            return ctx.reply(user, `you have successfully collected **${collection}** ${ctx.symbols.lemon} from this guild! 
-            You now have **${user.lemons}** ${ctx.symbols.lemon}`)
+            return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
+            You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
         }
     })
 })

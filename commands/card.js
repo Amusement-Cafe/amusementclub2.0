@@ -150,7 +150,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     user.xp += amount
     await user.save()
 
-    await plotPayout(ctx, 'gbank', 1, amount)
+    await plotPayout(ctx, 'gbank', 2, amount * 5)
     
     if(newCards.length > 0 && oldCards.length > 0) {
         user.markModified('cards')

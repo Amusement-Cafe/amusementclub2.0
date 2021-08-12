@@ -66,6 +66,10 @@ const {
     getLastAnnouncement,
 } = require('../modules/preferences')
 
+const {
+    plotPayout,
+} = require("../modules/plot");
+
 cmd('bal', 'balance', (ctx, user) => {
     let max = 1
     const now = new Date()
@@ -80,7 +84,7 @@ cmd('bal', 'balance', (ctx, user) => {
 
     const embed = {
         color: colors.green,
-        description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} and **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial}
+        description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato}, **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial} and **${numFmt(Math.round(user.lemons))}** ${ctx.symbols.lemon}
             Your next claim will cost **${numFmt(claimCost(user, 0, 1))}** ${ctx.symbols.tomato}
             ${ctx.guild? `Next claim in current guild: **${numFmt(claimCost(user, ctx.guild.tax, 1))}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
             You can claim **${numFmt(max - 1)} cards** ${ctx.guild? `in current guild `:''}with your balance`
@@ -238,6 +242,7 @@ cmd('daily', async (ctx, user) => {
 
         user.dailynotified = false
         await user.save()
+        await plotPayout(ctx, 'gbank', 1, 10)
 
         ctx.mixpanel.track(
             "Daily", { 

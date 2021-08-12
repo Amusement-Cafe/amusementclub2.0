@@ -1,69 +1,8 @@
 [
     {
-        "id": "castle",
-        "price": 1,
-        "name": "Guild Castle",
-        "type": "blueprint",
-        "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
-        "desc": "probably need this, maybe",
-        "fulldesc": "This will do something, yes",
-        "levels": [
-            {
-                "price": 1,
-                "level": 1,
-                "maintenance": 10,
-                "desc": "Hey look, level 1"
-            }, {
-                "price": 2000,
-                "level": 5,
-                "maintenance": 15,
-                "desc": "Ooh, level 2"
-            }, {
-                "price": 5000,
-                "level": 20,
-                "maintenance": 20,
-                "desc": "Ah, level 3"
-            }, {
-                "price": 10000,
-                "level": 30,
-                "maintenance": 25,
-                "desc": "Do more with 4"
-            }, {
-                "price": 25000,
-                "level": 50,
-                "maintenance": 50,
-                "desc": "Stay alive with number 5"
-            }
-        ]
-    }, {
-        "id": "heroq",
-        "price": 1,
-        "name": "Hero's Quarters",
-        "type": "blueprint",
-        "desc": "This does not do anything, do not purchase this expecting it to do something",
-        "fulldesc": "Provides no benefit currently. Will not be implemented until another future update",
-        "levels": [
-            {
-                "price": 1,
-                "level": 3,
-                "maintenance": 100,
-                "desc": "Does nothing"
-            }, {
-                "price": 1000,
-                "level": 10,
-                "maintenance": 500,
-                "desc": "Also nothing"
-            }, {
-                "price": 30000,
-                "level": 40,
-                "maintenance": 1000,
-                "desc": "Literally nothing"
-            }
-        ]
-    }, {
         "id": "auchouse",
         "name": "Auction House",
-        "price": 1,
+        "price": 1000,
         "type": "blueprint",
         "desc": "Passive Auction Income",
         "fulldesc": "Grants lemons for commands related to auctions",
@@ -74,49 +13,49 @@
                 "maintenance": 10,
                 "desc": "Gives lemons when someone successfully bids on an auction"
             }, {
-                "price": 500,
+                "price": 2000,
                 "level": 10,
                 "maintenance": 20,
-                "desc": "Auctions!!"
+                "desc": "Gives 2x lemons when someone successfully bids on an auction"
             }, {
                 "price": 5000,
                 "level": 15,
                 "maintenance": 50,
-                "desc": "Auctions!!!"
+                "desc": "Gives 3x lemons when someone successfully bids on an auction"
             }
         ]
     }, {
         "id": "smithhub",
         "name": "Smithing Hub",
-        "price": 1,
+        "price": 150,
         "type": "blueprint",
-        "desc": "Will do something",
-        "fulldesc": "Just gotta figure out what that something is",
+        "desc": "Gives lemons with forge, liq, draw",
+        "fulldesc": "The smithing hub provides lemons when users run draw, liq, or forge. Payouts are determined based on building level",
         "levels": [
             {
-                "price": 1,
+                "price": 0,
                 "level": 3,
                 "maintenance": 10,
-                "desc": "Gives lemons when people forge or liquefy 1 star cards"
+                "desc": "Gives lemons when people forge, draw or liquefy 1 star cards"
             }, {
-                "price": 500,
+                "price": 300,
                 "level": 17,
                 "maintenance": 50,
-                "desc": "Gives lemons when people forge or liquefy 2 star cards"
+                "desc": "Gives lemons when people forge, draw or liquefy 2 star cards"
             }, {
-                "price": 1500,
+                "price": 600,
                 "level": 33,
                 "maintenance": 100,
-                "desc": "Gives lemons when people forge or liquefy 3 star cards"
+                "desc": "Gives lemons when people forge, draw or liquefy 3 star cards"
             }
         ]
     }, {
         "id": "gbank",
         "name": "Gacha Bank",
-        "price": 1,
+        "price": 250,
         "type": "blueprint",
-        "desc": "Will do something",
-        "fulldesc": "Yeah, it's a bank, a gacha bank. You know, the two things you want as far from each other as possible. Unless you fly in rockets to the atmosphere for fun",
+        "desc": "Provides lemons with daily + claim",
+        "fulldesc": "The Gacha Bank stores lemons from when users run daily or claim cards.",
         "levels": [
             {
                 "price": 1,
@@ -124,21 +63,16 @@
                 "maintenance": 100,
                 "desc": "Gives lemons when a user does daily"
             }, {
-                "price": 7000,
+                "price": 500,
                 "level": 15,
                 "maintenance": 150,
                 "desc": "Gives lemons when a user claims cards"
-            }, {
-                "price": 16000,
-                "level": 30,
-                "maintenance": 300,
-                "desc": "Don't know if this level will exist later on"
             }
         ]
     }, {
         "id": "tavern",
         "name": "Tavern",
-        "price": 1,
+        "price": 300,
         "type": "blueprint",
         "desc": "Will do something",
         "levels": [
@@ -148,15 +82,10 @@
                 "maintenance": 50,
                 "desc": "Gives lemons when someone completes an achievement in the guild"
             }, {
-                "price": 2000,
+                "price": 600,
                 "level": 5,
                 "maintenance": 70,
                 "desc": "Gives lemons when someone completes a quest in the guild"
-            }, {
-                "price": 20000,
-                "level": 27,
-                "maintenance": 100,
-                "desc": "Allows to purchase quest lines (Coming never)"
             }
         ]
     }, {

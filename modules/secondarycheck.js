@@ -19,6 +19,8 @@ const check_achievements = async (ctx, user, action, channelID) => {
             achievement_name: complete.id,
             user_xp: user.xp,
         })
+        await plotPayout(ctx, 'tavern', 1, 10)
+
 
         return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
@@ -56,7 +58,7 @@ const check_daily = async (ctx, user, action, channelID) => {
         return
 
     await user.save()
-    await plotPayout(ctx, 'tavern', 1, complete.length * 10)
+    await plotPayout(ctx, 'tavern', 2, 20)
 
     return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,

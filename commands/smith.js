@@ -164,7 +164,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, card)
                 await user.save()
 
-                await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 10)
+                await plotPayout(ctx, 'smithhub', card.level, card.level * 10)
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
@@ -332,7 +332,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             user.dailystats[`draw${card.level}`] += 1
             await user.save()
 
-            await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 10)
+            await plotPayout(ctx, 'smithhub', card.level, card.level * 10)
 
             return ctx.reply(user, {
                 image: { url: card.url },
