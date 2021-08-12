@@ -122,8 +122,8 @@ const bill_guilds = async (ctx, now) => {
     if(ratio == Infinity)
         ratio = 0
 
-    report.push(`Maintenance cost: **${total}** ${ctx.symbols.tomato}`)
-    report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
+    report.push(`Maintenance cost: **${numFmt(total)}** ${ctx.symbols.tomato}`)
+    report.push(`Remaining guild balance: **${numFmt(guild.balance)}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
         guild.lockactive = false
@@ -171,10 +171,8 @@ const getBuildingInfo = (ctx, user, args) => {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
-                Maintenance: **${numFmt(x.maintenance)}** ${ctx.symbols.tomato}/day
-                Required guild level: **${x.level}**
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))}
 
     const heart = building.health < 50? '💔' : '❤️'

@@ -36,7 +36,7 @@ cmd('store', 'shop', async (ctx, user, cat) => {
                 To buy the item use \`->store buy [item id]\``
         }]}
 
-    const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${x.price} ${x.type === 'blueprint'? ctx.symbols.lemon: ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
+    const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${numFmt(x.price)} ${x.type === 'blueprint'? ctx.symbols.lemon: ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages, embed,
         buttons: ['back', 'forward'],

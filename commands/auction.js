@@ -141,6 +141,9 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
 })).access('dm')
 
 cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+    const timelimit = asdate.subtract(new Date(), 1, 'hour')
+    const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
+
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
@@ -195,13 +198,13 @@ cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
                 Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
     }
 
-    const question = `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? 
+    const question = `Do you want to sell ${formatName(card)} on auction for ${numFmt(price)} ${ctx.symbols.tomato}? 
         ${timenum? `This auction will last **${time} hours**` : ''}
         ${card.amount > 1? '' : 'This is the only copy that you have'}
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        embed: { footer: { text: `This will cost ${numFmt(fee)} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (10% fee)` } },
         force: ctx.globals.force,
         question,
         check,

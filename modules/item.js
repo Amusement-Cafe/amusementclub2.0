@@ -252,10 +252,10 @@ const checks = {
             return `you already have a **${item.name}** in this guild!`
 
         if(user.lemons < item.levels[0].price)
-            return `you need at least **${item.levels[0].price}** ${ctx.symbols.lemons} to build **${item.name} level 1**`
+            return `you need at least **${item.levels[0].price}** ${ctx.symbols.lemon} to build **${item.name} level 1**`
 
         if(!userPlots.find(x => !x.building.id))
-            return `you need to have an empty plot to build ${item.name}!`
+            return `you need to have an empty plot to build ${item.name}!\nBuy one with \`${ctx.guild.prefix}plot buy\``
     },
 
     claim_ticket: (ctx, user, item) => {
@@ -306,8 +306,7 @@ const buys = {
 
 const getQuestion = (ctx, user, item) => {
     switch(item.type) {
-        case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?
-        This will cost **${item.levels[0].price}** ${ctx.symbols.lemon}`
+        case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
         case 'claim_ticket': return `Do you want to use **${item.name}** to get a **${item.level}★** card?`
         case 'recipe': return `Do you want to convert **${item.name}** into an Effect Card? The required cards will be consumed`
     }
