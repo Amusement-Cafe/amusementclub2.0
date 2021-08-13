@@ -25,7 +25,7 @@ const {
     withGlobalCards,
 } = require('../modules/card')
 
-cmd('auc', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
 
@@ -140,7 +140,7 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
     })
 })).access('dm')
 
-cmd(['auc', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
     const timelimit = asdate.subtract(new Date(), 1, 'hour')
     const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
 
