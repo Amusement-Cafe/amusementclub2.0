@@ -95,9 +95,13 @@ cmd(['guild', 'status'], (ctx, user) => {
     const total = Math.round(cost)
     const ratio = total / ctx.guild.balance
 
-    resp.push(`Current finances: **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}`)
-    resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
-    resp.push(`> Make sure you have **positive** ratio when lock costs are charged`)
+    resp.push(`Current finances: **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato} | **${numFmt(ctx.guild.lemons)}** ${ctx.symbols.lemon} `)
+    if (ctx.guild.lock) {
+        resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
+        resp.push(`> Make sure you have **positive** ratio when lock costs are charged`)
+    } else {
+        resp.push(`> There are no maintenance charges for this guild!`)
+    }
 
     return ctx.send(ctx.msg.channel.id, {
         author: { name: ctx.discord_guild.name },
@@ -123,19 +127,28 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
         force: ctx.globals.force,
         onConfirm: async (x) => {
             const xp = Math.floor(amount * .01)
-            const lemonAdd = Math.floor(amount * 0.05)
+            let lemonAdd = Math.floor(amount * 0.01)
             user.exp -= amount
-            user.lemons += lemonAdd
             user.xp += xp
             ctx.guild.balance += amount
             addGuildXP(ctx, user, xp)
+
+            if (lemonAdd > ctx.guild.lemons) {
+                user.lemons += ctx.guild.lemons
+                ctx.guild.lemons = 0
+                lemonAdd = 0
+            } else {
+                ctx.guild.lemons -= lemonAdd
+                user.lemons += lemonAdd
+            }
 
             await user.save()
             await ctx.guild.save()
 
             return ctx.reply(user, `you donated **${numFmt(amount)}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
-                This now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
-                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+                This guild now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
+                You have been awarded **${Math.floor(xp)} xp** towards your next rank
+                You received **${lemonAdd}** ${ctx.symbols.lemon} from the guild balance for this donation`)
         }
     })
 })

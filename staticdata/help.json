@@ -16,7 +16,7 @@
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->rules",
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules",
                 "inline": true
             },
             {
@@ -25,7 +25,7 @@
             },
             {
                 "title": "Running",
-                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/) | [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)"
+                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/)"
             },
             {
                 "title": "Invite bot",

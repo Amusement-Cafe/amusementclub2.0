@@ -89,6 +89,7 @@ const uses = {
         let emptyPlot = await getUserPlots(ctx, false)
         emptyPlot = emptyPlot.filter(x => !x.building.id)[0]
 
+        emptyPlot.next_check = asdate.add(new Date(), 24, 'hours')
         emptyPlot.building.id = item.id
         emptyPlot.building.install_date = new Date()
         emptyPlot.building.last_collected = new Date()
@@ -247,8 +248,15 @@ const infos = {
 const checks = {
     blueprint: async (ctx, user, item) => {
         const userPlots = await getUserPlots(ctx, false)
+        const userLevel = XPtoLEVEL(user.xp)
 
-        if(userPlots.find(x => x.id === item.id))
+        if (userLevel < item.levels[0].level)
+            return `you need to be level ${item.levels[0].level} to build this building! See your level in \`${ctx.guild.prefix}profile\``
+
+        if (!userPlots.find(x => x.building.id === 'castle') && item.id !== 'castle')
+            return `you need to build a castle here first before you can place any other buildings!`
+
+        if(userPlots.find(x => x.building.id === item.id))
             return `you already have a **${item.name}** in this guild!`
 
         if(user.lemons < item.levels[0].price)

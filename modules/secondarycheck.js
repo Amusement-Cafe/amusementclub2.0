@@ -19,7 +19,7 @@ const check_achievements = async (ctx, user, action, channelID) => {
             achievement_name: complete.id,
             user_xp: user.xp,
         })
-        await plotPayout(ctx, 'tavern', 1, 10)
+        await plotPayout(ctx, 'tavern', 1, 50)
 
 
         return ctx.send(channelID || ctx.msg.channel.id, {

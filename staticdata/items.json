@@ -1,33 +1,83 @@
 [
     {
-        "id": "auchouse",
-        "name": "Auction House",
-        "price": 1000,
+        "id": "castle",
+        "price": 150,
+        "name": "Plot Castle",
         "type": "blueprint",
-        "desc": "Passive Auction Income",
-        "fulldesc": "Grants lemons for commands related to auctions",
+        "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
+        "desc": "The first and required building for plots",
+        "fulldesc": "The castle is the protector of your lemons. Contributions are made to the castle daily even if no player has used the server. As it gets upgraded the castle allows your other buildings to store more lemon revenue before reaching their limit.",
         "levels": [
             {
-                "price": 1,
-                "level": 3,
+                "price": 0,
+                "level": 1,
                 "maintenance": 10,
-                "desc": "Gives lemons when someone successfully bids on an auction"
+                "desc": "Generates 20 lemons per day, allows you to place other buildings on plots in the same server."
+            }, {
+                "price": 500,
+                "level": 10,
+                "maintenance": 15,
+                "desc": "Increases all buildings storage capacity by 10%, increases daily generation to 25"
+            }, {
+                "price": 1000,
+                "level": 20,
+                "maintenance": 20,
+                "desc": "Increases all buildings storage capacity by 15%, increases daily generation to 30"
             }, {
                 "price": 2000,
-                "level": 10,
-                "maintenance": 20,
-                "desc": "Gives 2x lemons when someone successfully bids on an auction"
+                "level": 50,
+                "maintenance": 25,
+                "desc": "Increases all buildings storage capacity by 20%, increases daily generation to 35"
             }, {
                 "price": 5000,
-                "level": 15,
+                "level": 100,
                 "maintenance": 50,
-                "desc": "Gives 3x lemons when someone successfully bids on an auction"
+                "desc": "Increases all buildings storage capacity by 25%, increases daily generation to 40"
+            }
+        ]
+    }, {
+        "id": "gbank",
+        "name": "Gacha Bank",
+        "price": 500,
+        "type": "blueprint",
+        "desc": "Provides lemons with daily + claim",
+        "fulldesc": "The Gacha Bank stores lemons from when users run daily or claim cards.",
+        "levels": [
+            {
+                "price": 0,
+                "level": 15,
+                "maintenance": 100,
+                "desc": "Gives lemons when a user does daily"
+            }, {
+                "price": 2000,
+                "level": 25,
+                "maintenance": 150,
+                "desc": "Gives lemons when a user claims cards or does daily"
+            }
+        ]
+    }, {
+        "id": "tavern",
+        "name": "Tavern",
+        "price": 750,
+        "type": "blueprint",
+        "desc": "Gives lemons with achievements and quests",
+        "levels": [
+            {
+                "price": 0,
+                "level": 20,
+                "maintenance": 50,
+                "desc": "Gives lemons when someone completes an achievement in the guild"
+            }, {
+                "price": 2000,
+                "level": 40,
+                "maintenance": 70,
+                "desc": "Gives lemons when someone completes a quest or achievement in the guild"
             }
         ]
     }, {
         "id": "smithhub",
         "name": "Smithing Hub",
-        "price": 150,
+        "price": 1000,
         "type": "blueprint",
         "desc": "Gives lemons with forge, liq, draw",
         "fulldesc": "The smithing hub provides lemons when users run draw, liq, or forge. Payouts are determined based on building level",
@@ -38,54 +88,40 @@
                 "maintenance": 10,
                 "desc": "Gives lemons when people forge, draw or liquefy 1 star cards"
             }, {
-                "price": 300,
+                "price": 2500,
                 "level": 17,
                 "maintenance": 50,
-                "desc": "Gives lemons when people forge, draw or liquefy 2 star cards"
+                "desc": "Gives lemons when people forge, draw or liquefy 1 and 2 star cards"
             }, {
-                "price": 600,
+                "price": 8000,
                 "level": 33,
                 "maintenance": 100,
-                "desc": "Gives lemons when people forge, draw or liquefy 3 star cards"
+                "desc": "Gives lemons when people forge, draw or liquefy 1, 2, and 3 star cards"
             }
         ]
     }, {
-        "id": "gbank",
-        "name": "Gacha Bank",
-        "price": 250,
+        "id": "auchouse",
+        "name": "Auction House",
+        "price": 5000,
         "type": "blueprint",
-        "desc": "Provides lemons with daily + claim",
-        "fulldesc": "The Gacha Bank stores lemons from when users run daily or claim cards.",
+        "desc": "Passive Auction Income",
+        "fulldesc": "Grants lemons for commands related to auctions",
         "levels": [
             {
-                "price": 1,
+                "price": 0,
+                "level": 3,
+                "maintenance": 10,
+                "desc": "Gives lemons when someone successfully bids on an auction"
+            }, {
+                "price": 10000,
                 "level": 10,
-                "maintenance": 100,
-                "desc": "Gives lemons when a user does daily"
+                "maintenance": 20,
+                "desc": "Gives 2x lemons when someone successfully bids on an auction"
             }, {
-                "price": 500,
+                "price": 20000,
                 "level": 15,
-                "maintenance": 150,
-                "desc": "Gives lemons when a user claims cards"
-            }
-        ]
-    }, {
-        "id": "tavern",
-        "name": "Tavern",
-        "price": 300,
-        "type": "blueprint",
-        "desc": "Will do something",
-        "levels": [
-            {
-                "price": 1,
-                "level": 2,
                 "maintenance": 50,
-                "desc": "Gives lemons when someone completes an achievement in the guild"
-            }, {
-                "price": 600,
-                "level": 5,
-                "maintenance": 70,
-                "desc": "Gives lemons when someone completes a quest in the guild"
+                "desc": "Gives 3x lemons when someone successfully bids on an auction"
             }
         ]
     }, {

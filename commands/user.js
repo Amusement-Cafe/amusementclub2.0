@@ -242,7 +242,7 @@ cmd('daily', async (ctx, user) => {
 
         user.dailynotified = false
         await user.save()
-        await plotPayout(ctx, 'gbank', 1, 10)
+        await plotPayout(ctx, 'gbank', 1, 5)
 
         ctx.mixpanel.track(
             "Daily", { 

@@ -111,7 +111,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, newcard)
                 await user.save()
 
-                await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 10)
+                await plotPayout(ctx, 'smithhub', newcard.level, newcard.level * 20)
 
                 const usercard = user.cards.find(x => x.id === newcard.id)
                 return ctx.reply(user, {

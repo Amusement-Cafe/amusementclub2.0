@@ -119,9 +119,13 @@ cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
 
     const item = ctx.items.find(x => x.id === plot.building.id)
     const level = item.levels[plot.building.level]
+    const userLvl = XPtoLEVEL(user.xp)
 
     if(!level)
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
+
+    if(userLvl < level.level)
+        return ctx.reply(user, `you need to be level ${level.level} to upgrade this building! See your level in \`${ctx.guild.prefix}profile\``, 'red')
 
     if(user.lemons < level.price)
         return ctx.reply(user, `you have to have at least **${numFmt(level.price)}** ${ctx.symbols.lemon} to upgrade this building`, 'red')

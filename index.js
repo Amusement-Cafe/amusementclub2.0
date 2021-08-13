@@ -23,6 +23,7 @@ const {
     webhooks,
     meta,
     preferences,
+    plot,
 } = require('./modules')
 const announcement = require('./collections/announcement')
 
@@ -196,6 +197,7 @@ module.exports.create = async ({
     const gtick = (ctx) => {
         const now = new Date()
         guild.bill_guilds(ctx, now)
+        plot.castlePayments(ctx, now)
     }
 
     /* service tick for user checks */

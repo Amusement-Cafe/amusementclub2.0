@@ -142,6 +142,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
         user.dailystats.totalregclaims += amount
+        await plotPayout(ctx, 'gbank', 2, Math.floor(amount * 1.5))
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
             max++
     }
@@ -150,8 +151,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     user.xp += amount
     await user.save()
 
-    await plotPayout(ctx, 'gbank', 2, amount * 5)
-    
+
     if(newCards.length > 0 && oldCards.length > 0) {
         user.markModified('cards')
         await user.save()

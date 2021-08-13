@@ -1,9 +1,12 @@
 const Plots = require('../collections/plot')
+const asdate = require('add-subtract-date')
 
 const baseStorageCaps = [1, 300, 600, 1200, 1800, 3600]
 
-const getUserPlots = async (ctx, global = false, building) => {
+const getUserPlots = async (ctx, global = false, building, user_id) => {
     let q = {user_id: ctx.msg.author.id}
+    if (user_id)
+        q.user_id = user_id
     if (!global)
         q.guild_id = ctx.guild.id
     if (building)
@@ -16,6 +19,10 @@ const getGuildPlots = async (ctx, building) => {
     if (building)
         q['building.id'] = building
     return await Plots.find(q)
+}
+
+const getBuildingPlots = async (ctx, building) => {
+    return await Plots.find({'building.id': building})
 }
 
 const plotPayout = async (ctx, building, requiredLevel, amount = 0) => {
@@ -44,14 +51,44 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0) => {
     })
 }
 
+const castlePayments = async (ctx, now) => {
+    const castles = await getBuildingPlots(ctx, 'castle')
+    if (castles.length === 0)
+        return
+
+    castles.map(async x => {
+        if (x.next_check > now)
+            return
+        let level = x.building.level
+
+        let maxStored = baseStorageCaps[level]
+        const maxLvlStored = maxStored + ((maxStored * ((level * 5) / 100)))
+
+        x.building.stored_lemons += (level * 5) + 15
+
+        if (level > 1 && maxLvlStored < x.building.stored_lemons)
+            x.building.stored_lemons = maxLvlStored
+        else if (maxStored < x.building.stored_lemons)
+            x.building.stored_lemons = maxStored
+
+        x.next_check = asdate.add(new Date(), 24, 'hours')
+        await x.save()
+    })
+}
+
 const getMaxStorage = async (ctx, plot) => {
-    return baseStorageCaps[plot.building.level]
+    let castle = await getUserPlots(ctx, false, 'castle', plot.user_id)
+    const baseCapacity = baseStorageCaps[plot.building.level]
+    const castleLevel = castle[0].building.level
+    return castleLevel > 1 ? baseCapacity + ((baseCapacity * ((castleLevel * 5) / 100))) : baseCapacity
 }
 
 
 
 
 module.exports = {
+    castlePayments,
+    getBuildingPlots,
     getGuildPlots,
     getUserPlots,
     plotPayout
