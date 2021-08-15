@@ -54,15 +54,8 @@ const onUsersFromArgs = async (args, callback) => {
 }
 
 const getQuest = (ctx, user, tier, exclude) => {
-    const levels = ctx.guild.buildings.reduce((res, curr) => {
-        for(let i=0; i<curr.level; i++)
-            res.push(`${curr.id}${i + 1}`)
-        return res
-    }, [])
-    
     const available = ctx.quests.daily.filter(x => 
-        (!x.building || levels.includes(x.building))
-        && (!exclude || x.id != exclude)
+        (!exclude || x.id != exclude)
         && x.tier === tier
         && x.can_drop)
 
@@ -72,8 +65,7 @@ const getQuest = (ctx, user, tier, exclude) => {
     
     return _.sample(ctx.quests.daily.filter(x => 
         x.id != exclude
-        && x.id != 'tag2'
-        && x.id != 'tag4'))
+    ))
 }
 
 module.exports = {
