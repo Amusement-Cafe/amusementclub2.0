@@ -297,6 +297,7 @@ module.exports.create = async ({
         }
 
         if (!msg.content.startsWith(curprefix)) return;
+        let capitalMsg = msg.content.trim().substr(curprefix).split(/ +/)
         msg.content = msg.content.toLowerCase()
 
         try {
@@ -337,6 +338,7 @@ module.exports.create = async ({
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
+                capitalMsg,
                 reply, /* quick reply function to the channel */
                 globals: {}, /* global parameters */
                 discord_guild: msg.channel.guild,  /* current discord guild */

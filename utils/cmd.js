@@ -62,6 +62,7 @@ const trigger = async (type, ctx, user, args) => {
     while (cursor.hasOwnProperty(args[0])) {
         cursor = cursor[args[0]]
         args.shift()
+        ctx.capitalMsg.shift()
     }
 
     if (!cursor.hasOwnProperty('_callback')) {

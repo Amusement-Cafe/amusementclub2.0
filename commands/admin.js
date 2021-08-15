@@ -346,9 +346,9 @@ pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) =
 })
 
 pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
-    const split = args.join(' ').split(',')
-    const title = split[0]
-    const body = split[1]
+    const split = ctx.capitalMsg.join(' ').split(',')
+    const title = split.shift()
+    const body = split.join()
 
     if(!title || !body) {
         return ctx.reply(`required format: \`->sudo announce title text, body text\``, '')

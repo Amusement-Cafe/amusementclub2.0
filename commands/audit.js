@@ -300,7 +300,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, args)
+    let arg = parseAuditArgs(ctx, ctx.capitalMsg)
     let warnedUser = await fetchOnly(arg.id)
 
     if (!warnedUser)
