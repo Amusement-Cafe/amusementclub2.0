@@ -58,6 +58,10 @@ const check_daily = async (ctx, user, action, channelID) => {
         return
 
     await user.save()
+
+    if (!ctx.guild && channelID)
+        ctx.guild = { id: ctx.bot.getChannel(channelID).guild.id }
+
     await plotPayout(ctx, 'tavern', 2, 20)
 
     return ctx.send(channelID || ctx.msg.channel.id, {
