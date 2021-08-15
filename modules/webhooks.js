@@ -58,7 +58,7 @@ const registerTopggVote = async (ctx, vote) => {
     let card = _.sample(ctx.cards.filter(y => y.level < 4 
         && !ctx.collections.find(z => z.id === y.col).promo))
     if(votingUser.votes % 100 === 0) {
-        card = _.sample(ctx.cards.filter(y => y.col === 'special'))
+        card = _.sample(ctx.cards.filter(y => y.col === 'special' && y.level < 5))
     } else if(votingUser.votes % 10 === 0) {
         card = _.sample(ctx.cards.filter(y => y.level < 4 && y.col === _.sample(ctx.collections.filter(z => z.promo)).id))
     }
