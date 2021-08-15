@@ -539,6 +539,10 @@
             {
                 "title": "->liquify all [card query]",
                 "description": "Liquify all(limit 100) cards in a specific query"
+            },
+            {
+                "title": "->liq preview [card query]",
+                "description": "Previews a liq of all cards(limit 100) in a query"
             }
         ]
     },
@@ -737,6 +741,10 @@
             {
                 "title": "->sell all [card query]",
                 "description": "Sell all cards(limit 100) in a query to the bot for a percentage of eval"
+            },
+            {
+                "title": "->sell preview [card query]",
+                "description": "Previews a sale of all cards(limit 100) in a query to the bot (or user if ID provided)"
             },
             {
                 "title": "->sell @user [card query]",
