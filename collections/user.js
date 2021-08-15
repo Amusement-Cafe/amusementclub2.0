@@ -44,9 +44,9 @@ module.exports = model('User', {
     effects:            { type: Array, default: [] },
     wishlist:           { type: Array, default: [] },
 
-    lastdaily:          { type: Date },
-    lastvote:           { type: Date },
-    lastannounce:       { type: Date },
+    lastdaily:          { type: Date, default: new Date() },
+    lastvote:           { type: Date, default: new Date() },
+    lastannounce:       { type: Date, default: new Date() },
     lastmsg:            { type: String },
 
     dailynotified:      { type: Boolean, default: true },
