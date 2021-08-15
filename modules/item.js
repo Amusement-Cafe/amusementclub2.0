@@ -21,6 +21,10 @@ const {
 } = require('./card')
 
 const {
+    completed
+} = require('./collection')
+
+const {
     getUserPlots
 } = require('./plot')
 
@@ -178,7 +182,10 @@ const uses = {
                 is_passive: effect.passive,
         })
 
-        item.cards.map(x => removeUserCard(ctx, user, x))
+        item.cards.map(x => {
+            removeUserCard(ctx, user, x)
+            completed(ctx, user, ctx.cards[x])
+        })
         pullInventoryItem(user, item.id)
         user.effects.push(eobject)
         await user.save()
@@ -272,9 +279,6 @@ const checks = {
 
     recipe: (ctx, user, item) => {
         const now = new Date()
-        const hub = getBuilding(ctx, 'smithhub')
-        if(!hub || hub.level < 3)
-            return `you can create effect cards only in guild with **Smithing Hub level 3** or higher`
 
         //Keeping this here in case we for some reason need to revert to not allowing stacking effects
         // if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))
