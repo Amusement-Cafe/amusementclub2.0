@@ -1,5 +1,6 @@
 const colors = require('../utils/colors')
 const msToTime = require('pretty-ms')
+const lockFile  = require('proper-lockfile')
 
 const {
     User, Transaction, Audit, Auction,
@@ -24,26 +25,31 @@ const {
     trans_fraud_check,
 } = require('./audit')
 
-const new_trs = async (ctx, user, cards, price, to_id) => {
-    const target = await User.findOne({ discord_id: to_id })
-    const last_trs = (await Transaction.find({status: {$ne: 'auction'}})
-        .sort({ time: -1 }))[0]
-    const transaction = new Transaction()
-    transaction.id = getNewID(last_trs)
-    transaction.from = user.username
-    transaction.from_id = user.discord_id
-    transaction.to = target? target.username : 'bot'
-    transaction.to_id = to_id
-    transaction.guild = ctx.msg.channel.guild.name
-    transaction.guild_id = ctx.msg.channel.guild.id
-    transaction.status = 'pending'
-    transaction.time = new Date()
-    transaction.cards = cards.map(x => x.id)
-    transaction.price = price
+const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, reject) => {
 
-    await transaction.save()
-    return transaction
-}
+    lockFile.lock('trans', {retries: 5}).then( async (release) => {
+        const target = await User.findOne({ discord_id: to_id })
+        const last_trs = (await Transaction.find({status: {$ne: 'auction'}})
+            .sort({ time: -1 }))[0]
+        const transaction = new Transaction()
+        transaction.id = getNewID(last_trs)
+        transaction.from = user.username
+        transaction.from_id = user.discord_id
+        transaction.to = target? target.username : 'bot'
+        transaction.to_id = to_id
+        transaction.guild = ctx.msg.channel.guild.name
+        transaction.guild_id = ctx.msg.channel.guild.id
+        transaction.status = 'pending'
+        transaction.time = new Date()
+        transaction.cards = cards.map(x => x.id)
+        transaction.price = price
+        await transaction.save()
+        await lockFile.unlock('trans')
+        return resolve(transaction)
+    }).catch((e) => {
+        return reject(e)
+    })
+})
 
 const from_auc = async (auc, from, to) => {
     const transaction = new Transaction()
@@ -177,7 +183,7 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
 
     const pending = await getPendingFrom(ctx, user)
     const pendingto = pending.filter(x => x.to_id === id)
-    cards.splice(25, cards.length)
+    cards.splice(100, cards.length)
 
     if(targetuser && targetuser.discord_id === user.discord_id) {
         return `you cannot sell cards to yourself.`
