@@ -32,8 +32,9 @@ cmd('store', 'shop', async (ctx, user, cat) => {
         description: items[0].typedesc,
         fields: [{
             name: `Usage`,
-            value: `To view the item details use \`->store info [item id]\`
-                To buy the item use \`->store buy [item id]\``
+            value: `To view the item details use \`${ctx.prefix}store info [item id]\`
+                To buy the item use \`${ctx.prefix}store buy [item id]\`
+                To use the item use \`${ctx.prefix}inv use [item id]\``
         }]}
 
     const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${numFmt(x.price)} ${x.type === 'blueprint'? ctx.symbols.lemon: ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
