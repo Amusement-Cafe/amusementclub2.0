@@ -197,16 +197,30 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
             \`->decline [id]\` to decline`
 
     if(pending.length > 0) {
-        const pengingCards = pending.reduce((acc, cur) => acc.concat(cur.cards), [])
-        cards = cards.filter(x => !pengingCards.some(x => x == cards[0].id))
+        const pendingCards = pending.reduce((acc, cur) => acc.concat(cur.cards), [])
+        cards = cards.filter(x => {
+            const pendingCount = pendingCards.filter(z => z == x.id).length
+            const remaining = x.amount - pendingCount
+            return !(remaining < 1 || remaining < 2 && x.fav);
+
+        })
 
         if(cards.length == 0) {
-            return `all cards from this query are already put up on sale.
+            return `all cards from this query are already put up on sale or you are attempting to sell the last of a favorite already in a transaction.
                 Check your \`${ctx.prefix}pending\` transactions and use \`->dcl [transaction id]\` to decline them.`
         }
     }
 
-    // TODO: warn about fav sells
+    let lastFav = false
+    let lastMsg = 'you are about to put up the last copy of your favorite card(s) for sale.\n'
+    cards.map((x, i) => {
+        if (x.amount === 1 && x.fav && i < 10) {
+            lastMsg += `Use \`${ctx.prefix}fav remove ${x.name}\` to remove it from favorites first.\n`
+            lastFav = true
+        }
+    })
+    if (lastFav)
+        return lastMsg
 }
 
 const paginate_trslist = (ctx, user, list) => {

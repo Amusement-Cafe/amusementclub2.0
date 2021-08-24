@@ -281,8 +281,10 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
-    const err = await validate_trs(ctx, user, cards, id, targetuser)
+
+    let err = await validate_trs(ctx, user, cards, id, targetuser)
     if(err) {
+        err += 'This list stops at 10 and does not display any more favorites. Please double check your favorites before continuing, or add `!fav` to your query.'
         return ctx.reply(user, err, 'red')
     }
 
@@ -320,7 +322,8 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         question,
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id),
-        onDecline: (x) => decline_trs(ctx, x, trs.id)
+        onDecline: (x) => decline_trs(ctx, x, trs.id),
+        onTimeout: (x) => ctx.pgn.sendTimeout(ctx.msg.channel.id, `**${trs.from}** tried to sell **${cards.length}** cards to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
     })
 }))
 
@@ -331,10 +334,12 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
     cards.splice(25, cards.length)
 
     const id = parsedargs.ids[0]
+    const targetuser = id? await User.findOne({ discord_id: id }) : null
+
 
     let price = 0
     const resp = cards.map(card => {
-        const eval = evalCardFast(ctx, card) * (id? 1 : .4)
+        const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
         if(eval >= 0) {
             price += Math.round(eval)
         } else {
