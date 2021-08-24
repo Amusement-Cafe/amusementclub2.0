@@ -155,7 +155,7 @@ cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
 
             return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${plot.building.level}**!
                 This building now *${level.desc.toLowerCase()}*
-                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+                You have been awarded **${Math.floor(xp)} xp** towards your player level`)
 
         },
     })
