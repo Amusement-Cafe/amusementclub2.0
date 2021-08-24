@@ -25,7 +25,12 @@ const getBuildingPlots = async (ctx, building) => {
     return await Plots.find({'building.id': building})
 }
 
-const plotPayout = async (ctx, building, requiredLevel, amount = 0) => {
+const plotPayout = async (ctx, building, requiredLevel, amount = 0, guildID, userID) => {
+    //I have to do this somewhere as the secondaryCheck sometimes doesn't have full ctx info due to it running via resolve
+    if (guildID && userID) {
+        ctx.msg = {author:{id: userID}}
+        ctx.guild = {id: guildID}
+    }
     let relatedPlots = await getGuildPlots(ctx, building)
     if (relatedPlots.length === 0)
         return
@@ -34,10 +39,8 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0) => {
         if (ctx.msg.author.id === x.user_id)
             return
         const maxCap = await getMaxStorage(ctx, x)
-
+        let payAmount = amount
         if (x.building.level >= requiredLevel && x.building.stored_lemons < maxCap){
-            let payAmount = amount
-
             if (building === 'auchouse')
                 payAmount = amount * x.building.level
 
@@ -90,6 +93,7 @@ module.exports = {
     castlePayments,
     getBuildingPlots,
     getGuildPlots,
+    getMaxStorage,
     getUserPlots,
     plotPayout
 }

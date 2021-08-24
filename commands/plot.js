@@ -10,7 +10,7 @@ const {
 
 const {
     getGuildPlots,
-    getUserPlots,
+    getUserPlots, getMaxStorage,
 }   = require('../modules/plot')
 
 cmd(['plot'], ['plots'], async (ctx, user) => {
@@ -60,17 +60,18 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
 })
 
 cmd(['plot', 'buy'], async (ctx, user) => {
-    const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 10) + 1
+    const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 8) + 1
     const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 2) + 1
-    const userGuildPlots = await getUserPlots(ctx)
     const userGlobalPlots = await getUserPlots(ctx, true)
+    const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
+    const newGuild = userGlobalPlots.some(x => x.guild_id === ctx.guild.id)
     const cost = 50 + (userGlobalPlots.length * 50)
 
 
     const check = async () => {
 
         if (user.lemons < cost)
-            return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need ${numFmt(cost)} ${ctx.symbols.lemon} to purchase another plot!`, 'red')
+            return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
 
         if (userGuildPlots.length >= maxGuildAmount)
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
@@ -185,7 +186,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
         fields: [
             {
                 name: `Stored Revenue`,
-                value: `${numFmt(plot.building.stored_lemons)} ${ctx.symbols.lemon}`,
+                value: `${numFmt(plot.building.stored_lemons)} ${ctx.symbols.lemon} (Max: ${await getMaxStorage(ctx, plot)} ${ctx.symbols.lemon})`,
                 inline: true
             },
             {
