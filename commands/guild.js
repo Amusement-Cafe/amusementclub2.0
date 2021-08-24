@@ -163,7 +163,7 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
         return ctx.reply(user, `please specify a number that indicates % of claim tax`, 'red')
 
     if(tax > 15)
-        return ctx.reply(user, `maximum allowed tax for current level is **25%**`, 'red')
+        return ctx.reply(user, `maximum allowed tax for current level is **15%**`, 'red')
 
     ctx.guild.tax = tax * .01
     await ctx.guild.save()
