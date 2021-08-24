@@ -177,7 +177,7 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
     resp.push(`Date: **${dateFormat(trs.time, "yyyy-mm-dd HH:MM:ss")}**`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(trs.cards.map(c => formatName(ctx.cards[c])), 10),
+        pages: ctx.pgn.getPages(trs.cards.map(c => formatName(ctx.cards[c])), 15, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed: {
             author: { name: `Transaction [${trs.id}] (${timediff})` },
