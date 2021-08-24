@@ -182,7 +182,7 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
 
-        quests.push(getQuest(ctx, user, 1, quests[0].id))
+        quests.push(getQuest(ctx, user, 2, quests[0].id))
         user.dailyquests.push(quests[1].id)
 
         //if(tavern.level > 1) {
@@ -212,7 +212,7 @@ cmd('daily', async (ctx, user) => {
         if(trs.length > 0) {
             const more = trs.splice(3, trs.length).length
             fields.push({name: `Incoming pending transactions`, 
-                value: trs.map(x => `\`${x.id}\` ${formatName(ctx.cards[x.card])} from **${x.from}**`).join('\n') 
+                value: trs.map(x => `\`${x.id}\` ${x.cards.length} cards from **${x.from}**`).join('\n')
                     + (more > 0? `\nand **${more}** more...` : '')
             })
         }
@@ -227,6 +227,11 @@ cmd('daily', async (ctx, user) => {
 
         const announce = await getLastAnnouncement(ctx, user)
         if(announce) {
+            if (announce.body.length > 512) {
+                announce.body = announce.body.substr(0, 512)
+                announce.body += `...\n**This announcement has been trimmed to keep this daily message short. To see the full announcement message use \`${ctx.prefix}announcement\`**`
+            }
+
             fields.push({
                 name: announce.title,
                 value: announce.body,
