@@ -156,7 +156,7 @@ module.exports.create = async ({
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: require('./staticdata/help'),
-        audithelp: require('./staticdata/auditHelp'),
+        audithelp: require('./staticdata/audithelp'),
         items: require('./staticdata/items'),
         achievements: require('./staticdata/achievements'),
         quests: require('./staticdata/quests'),
