@@ -97,9 +97,9 @@
         ]
     },
     {
-        "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato"],
+        "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato", "lemons", "lemon"],
         "title": "About currencies",
-        "description": "This command will show your current amount of `🍅` Tomatoes, and `🍷`Vials.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n`🍷` Vials are a secondary currency, used for drawing cards. You can get them via daily quests or liquifying cards.`->help liq` or `->help draw` for more information.",
+        "description": "This command will show your current amount of `🍅` Tomatoes, `🍷`Vials, and `🍋`Lemons.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n **Vials** are a secondary currency, used for drawing cards. You can get them via daily quests or liquifying cards.`->help liq` or `->help draw` for more information.\n **Lemons** are a tertriary currency used in the real of plots, find more information about them at `->help plot`",
         "fields": [
             {
                 "title": "Useful to know",
@@ -112,6 +112,21 @@
             {
                 "title": "->bal",
                 "description": "Get your balance"
+            }
+        ]
+    },
+    {
+        "type": ["boost"],
+        "title": "About Boosts",
+        "description": "Boosts are admin added items that can increase your chances of claiming certain cards. These are normally run when a new collection releases, however they may also be randomly run as well.",
+        "fields": [
+            {
+                "title": "->boosts",
+                "description": "List all active boosts"
+            },
+            {
+                "title": "->boost info [boost ID]",
+                "description": "Shows information about the boost, such as drop chance and what cards are included."
             }
         ]
     },
@@ -620,6 +635,10 @@
             {
                 "title": "->cards -[collection]",
                 "description": "Collection"
+            },
+            {
+                "title": "->cards -multi",
+                "description": "Show only cards you have multiple of"
             },
             {
                 "title": "->cards -# (where # is amount of stars)",
