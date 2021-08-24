@@ -4,7 +4,7 @@
         "price": 150,
         "name": "Plot Castle",
         "type": "blueprint",
-        "typedesc": "Blueprints are used to build certain buildings in the guild. When used it spawns building with the base level (1) that can be upgraded in the future",
+        "typedesc": "Blueprints are used to place buildings on your personal plots in guilds to help you gain the new currency based on the actions of other players! They all start as level 1 and are upgradable from there.",
         "desc": "The first and required building for plots",
         "fulldesc": "The castle is the protector of your lemons. Contributions are made to the castle daily even if no player has used the server. As it gets upgraded the castle allows your other buildings to store more lemon revenue before reaching their limit.",
         "levels": [
@@ -86,17 +86,17 @@
                 "price": 0,
                 "level": 3,
                 "maintenance": 10,
-                "desc": "Gives lemons when people forge, draw or liquefy 1 star cards"
+                "desc": "Gives lemons when people forge cards"
             }, {
                 "price": 2500,
                 "level": 17,
                 "maintenance": 50,
-                "desc": "Gives lemons when people forge, draw or liquefy 1 and 2 star cards"
+                "desc": "Gives lemons when people forge or liquefy cards"
             }, {
-                "price": 8000,
+                "price": 5000,
                 "level": 33,
                 "maintenance": 100,
-                "desc": "Gives lemons when people forge, draw or liquefy 1, 2, and 3 star cards"
+                "desc": "Gives lemons when people forge, liquefy, or draw  cards"
             }
         ]
     }, {
@@ -158,7 +158,7 @@
         "id": "holygrail",
         "effectid": "holygrail",
         "name": "The Holy Grail",
-        "price": 10000,
+        "price": 7000,
         "type": "recipe",
         "desc": "get more vials",
         "fulldesc": "When used gives you **The Holy Grail** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -168,7 +168,7 @@
         "id": "skyfriend",
         "effectid": "skyfriend",
         "name": "Skies Of Friendship",
-        "price": 6000,
+        "price": 5000,
         "type": "recipe",
         "desc": "auction cashback",
         "fulldesc": "When used gives you **Skies Of Friendship** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -178,7 +178,7 @@
         "id": "cherrybloss",
         "effectid": "cherrybloss",
         "name": "Cherry Blossoms",
-        "price": 4000,
+        "price": 2000,
         "type": "recipe",
         "desc": "cheaper forge",
         "fulldesc": "When used gives you **Cherry Blossoms** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -188,7 +188,7 @@
         "id": "onvictory",
         "effectid": "onvictory",
         "name": "Onwards To Victory",
-        "price": 1200,
+        "price": 600,
         "type": "recipe",
         "desc": "more rank points",
         "fulldesc": "When used gives you **Onwards To Victory** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -198,7 +198,7 @@
         "id": "rulerjeanne",
         "effectid": "rulerjeanne",
         "name": "The Ruler Jeanne",
-        "price": 7200,
+        "price": 5000,
         "type": "recipe",
         "desc": "faster daily",
         "fulldesc": "When used gives you **The Ruler Jeanne** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -208,7 +208,7 @@
         "id": "spellcard",
         "effectid": "spellcard",
         "name": "Impossible Spell Card",
-        "price": 10200,
+        "price": 7500,
         "type": "recipe",
         "desc": "reduced cooldown",
         "fulldesc": "When used gives you **Impossible Spell Card**. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -218,7 +218,7 @@
         "id": "festivewish",
         "effectid": "festivewish",
         "name": "Festival of Wishes",
-        "price": 3000,
+        "price": 2500,
         "type": "recipe",
         "desc": "wishlist auc notifications",
         "fulldesc": "When used gives you **Festival of Wishes** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -242,7 +242,7 @@
         "name": "Powerful Bocchi",
         "price": 7000,
         "type": "recipe",
-        "desc": "get free quest",
+        "desc": "get free t1 quest",
         "fulldesc": "When used gives you **Powerful Bocchi** effect card. This is a usable card",
         "recipe": [2, 2, 3, 3],
         "lasts": 20
@@ -254,7 +254,7 @@
         "type": "recipe",
         "desc": "get free card",
         "fulldesc": "When used gives you **The Space Unity** effect card. This is a usable card",
-        "recipe": [2, 2, 2, 2, 3],
+        "recipe": [2, 2, 3, 3],
         "lasts": 25
     }, {
         "id": "judgeday",
