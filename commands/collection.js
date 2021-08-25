@@ -30,7 +30,7 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     if (args.length === 0)
         cols = byAlias(ctx, args.join().replace('-', ''))
 
-    cols = cols.sort((a, b) => nameSort(a, b, 'id'))
+    cols = cols.sort((a, b) => nameSort(a, b, 'id')).filter(x => x)
 
     if(completed) {
         if(completed[0] === '-') 
@@ -51,12 +51,12 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
 
     const cardmap = mapUserCards(ctx, user)
     const pages = ctx.pgn.getPages(cols.map(x => {
-        const clout = user.cloutedcols.find(y => x.id === y.id)
+        const clout = user.cloutedcols? user.cloutedcols.find(y => x.id === y.id): null
         const overall = ctx.cards.filter(c => c.col === x.id).length
         const usercount = cardmap.filter(c => c.col === x.id).length
         const rate = usercount / overall
         const cloutstars = clout && clout.amount > 0? `[${clout.amount}${ctx.symbols.star}] ` : ''
-        return `${cloutstars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.round(rate * 100)}%)` : ''}`
+        return `${cloutstars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.floor(rate * 100)}%)` : ''}`
     }))
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {

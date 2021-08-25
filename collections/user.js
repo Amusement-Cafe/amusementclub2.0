@@ -44,9 +44,9 @@ module.exports = model('User', {
     effects:            { type: Array, default: [] },
     wishlist:           { type: Array, default: [] },
 
-    lastdaily:          { type: Date },
-    lastvote:           { type: Date },
-    lastannounce:       { type: Date },
+    lastdaily:          { type: Date, default: new Date() },
+    lastvote:           { type: Date, default: new Date() },
+    lastannounce:       { type: Date, default: new Date() },
     lastmsg:            { type: String },
 
     dailynotified:      { type: Boolean, default: true },
@@ -72,6 +72,7 @@ module.exports = model('User', {
     lastcard:           { type: Number, default: -1 },
     xp:                 { type: Number, default: 0 },
     vials:              { type: Number, default: 0 },
+    lemons:             { type: Number, default: 0 },
     votes:              { type: Number, default: 0 },
 
     dailyquests:        { type: Array, default: [] },

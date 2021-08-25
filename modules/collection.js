@@ -69,6 +69,7 @@ const reset = async (ctx, user, col, amounts) => {
         user.cloutedcols.push({id: col.id, amount: 1})
 
     user.markModified('cloutedcols')
+    let emptyCard
     user.cards.map(x => {
         const exists = ctx.cards[x.id]
         if (!exists)
@@ -83,10 +84,15 @@ const reset = async (ctx, user, col, amounts) => {
             x.amount--
             amounts[level]--
         }
+        if (x.amount === 0) {
+            emptyCard = x
+        }
     })
 
     user.xp += amounts.total
     user.cards = user.cards.filter(x => x.amount > 0)
+    if(emptyCard)
+        await completed(ctx, user, ctx.cards[emptyCard.id])
     user.markModified('cards')
 
     if(legendary)

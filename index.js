@@ -23,6 +23,7 @@ const {
     webhooks,
     meta,
     preferences,
+    plot,
 } = require('./modules')
 const announcement = require('./collections/announcement')
 
@@ -120,6 +121,7 @@ module.exports.create = async ({
     const symbols = {
         tomato: '`🍅`',
         vial: '`🍷`',
+        lemon: '`🍋`',
         star: '★',
         auc_sbd: '🔹',
         auc_lbd: '🔷',
@@ -154,7 +156,7 @@ module.exports.create = async ({
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: require('./staticdata/help'),
-        audithelp: require('./staticdata/auditHelp'),
+        audithelp: require('./staticdata/audithelp'),
         items: require('./staticdata/items'),
         achievements: require('./staticdata/achievements'),
         quests: require('./staticdata/quests'),
@@ -195,6 +197,7 @@ module.exports.create = async ({
     const gtick = (ctx) => {
         const now = new Date()
         guild.bill_guilds(ctx, now)
+        plot.castlePayments(ctx, now)
     }
 
     /* service tick for user checks */
@@ -294,6 +297,7 @@ module.exports.create = async ({
         }
 
         if (!msg.content.startsWith(curprefix)) return;
+        let capitalMsg = msg.content.trim().substr(curprefix).split(/ +/)
         msg.content = msg.content.toLowerCase()
 
         try {
@@ -334,6 +338,7 @@ module.exports.create = async ({
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
+                capitalMsg,
                 reply, /* quick reply function to the channel */
                 globals: {}, /* global parameters */
                 discord_guild: msg.channel.guild,  /* current discord guild */

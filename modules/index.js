@@ -12,5 +12,6 @@ module.exports = {
     audit: require('./audit'),
     meta: require('./meta'),
     webhooks: require('./webhooks'),
-    preferences: require('./preferences')
+    preferences: require('./preferences'),
+    plot: require('./plot')
 }

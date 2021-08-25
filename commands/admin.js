@@ -118,6 +118,23 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
+pcmd(['admin', 'mod'], ['sudo', 'add', 'lemons'], async (ctx, user, ...args) => {
+    const rpl = ['']
+
+    await onUsersFromArgs(args, async (target, newargs) => {
+        const amount = parseInt(newargs[0])
+
+        if(!amount)
+            throw new Error(`this command requires award amount`)
+
+        target.lemons += amount
+        await target.save()
+        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.lemon} to **${target.username}** (${target.discord_id})`)
+    })
+
+    return ctx.reply(user, rpl.join('\n'))
+})
+
 pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
@@ -329,9 +346,9 @@ pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) =
 })
 
 pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
-    const split = args.join(' ').split(',')
-    const title = split[0]
-    const body = split[1]
+    const split = ctx.capitalMsg.join(' ').split(',')
+    const title = split.shift()
+    const body = split.join()
 
     if(!title || !body) {
         return ctx.reply(`required format: \`->sudo announce title text, body text\``, '')

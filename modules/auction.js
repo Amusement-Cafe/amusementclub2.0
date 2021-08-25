@@ -34,6 +34,10 @@ const {
     from_auc,
 } = require('./transaction')
 
+const {
+    plotPayout,
+} = require('./plot')
+
 
 const lockFile  = require('lockfile')
 const asdate    = require('add-subtract-date')
@@ -158,7 +162,9 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
         return ctx.reply(user, `you successfully increased your bid on auction \`${auc.id}\` to **${numFmt(bid)}** ${ctx.symbols.tomato}!
                                 You can add to your bid **${bidsLeft}** more times!`)
     else
-        return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${numFmt(bid)}** ${ctx.symbols.tomato}!`)
+        await plotPayout(ctx, 'auchouse', 1, 75)
+
+    return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${numFmt(bid)}** ${ctx.symbols.tomato}!`)
 }
 
 const finish_aucs = async (ctx, now) => {
@@ -215,10 +221,12 @@ const finish_aucs = async (ctx, now) => {
         addUserCard(author, auc.card)
         await author.save()
         await aucEvalChecks(ctx, auc, false)
-        try {
-            return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
-            You got your card back.`, 'yellow')
-        } catch (e) {}
+	if (author.prefs.notifications.aucend) {
+		try {
+			return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
+			You got your card back.`, 'yellow')
+		} catch (e) {}
+	}	
     }
 }
 
@@ -284,7 +292,7 @@ const formatAucTime = (time, compact = false) => {
         return `<5m`
 
     if (compact) {
-        return `~${hours <= 0? `~${minutes}m` : `${minutes > 45? hours + 1: minutes < 15? hours - 1: `${hours}.5`}h`}`
+        return `~${hours <= 0? `${minutes}m` : `${minutes > 45? hours + 1: minutes < 15? hours - 1: `${hours}.5`}h`}`
     }
 
     return `${hours <= 0? '': `${hours}h`} ${minutes}m`

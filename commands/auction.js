@@ -25,10 +25,6 @@ const {
     withGlobalCards,
 } = require('../modules/card')
 
-const {
-    getBuilding,
-} = require('../modules/guild')
-
 cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
@@ -145,11 +141,8 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
 })).access('dm')
 
 cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
-    const auchouse = getBuilding(ctx, 'auchouse')
     const timelimit = asdate.subtract(new Date(), 1, 'hour')
     const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
-    if(!auchouse || auchouse.health < 50)
-        return ctx.reply(user, `you can sell cards only in a guild that has **Auction House** level 1 or higher with health over **50%**!`, 'red')
 
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
@@ -173,16 +166,14 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
         price *= ceval
 
     price = Math.round(price)
-    const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
+    //const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
+    const fee = Math.round(price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
     const timenum = -parsedargs.extra.filter(x => x[0] === '-').map(x => parseInt(x))[0]
     let time = 6
 
     if(timenum) {
-        if(auchouse.level < 3)
-            return ctx.reply(user, `you can specify auction time only in a guild that has **Auction House** level 3 or higher!`, 'red')
-
         time = Math.min(Math.max(timenum, 1), 10);
     }
 
@@ -207,13 +198,13 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
                 Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
     }
 
-    const question = `Do you want to sell ${formatName(card)} on auction for ${price} ${ctx.symbols.tomato}? 
+    const question = `Do you want to sell ${formatName(card)} on auction for ${numFmt(price)} ${ctx.symbols.tomato}? 
         ${timenum? `This auction will last **${time} hours**` : ''}
         ${card.amount > 1? '' : 'This is the only copy that you have'}
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        embed: { footer: { text: `This will cost ${numFmt(fee)} (${auchouse.level > 1? 5 : 10}% fee)` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (10% fee)` } },
         force: ctx.globals.force,
         question,
         check,

@@ -32,11 +32,12 @@ cmd('store', 'shop', async (ctx, user, cat) => {
         description: items[0].typedesc,
         fields: [{
             name: `Usage`,
-            value: `To view the item details use \`->store info [item id]\`
-                To buy the item use \`->store buy [item id]\``
+            value: `To view the item details use \`${ctx.prefix}store info [item id]\`
+                To buy the item use \`${ctx.prefix}store buy [item id]\`
+                To use the item use \`${ctx.prefix}inv use [item id]\``
         }]}
 
-    const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${numFmt(x.price)} ${ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
+    const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${numFmt(x.price)} ${x.type === 'blueprint'? ctx.symbols.lemon: ctx.symbols.tomato}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages, embed,
         buttons: ['back', 'forward'],
@@ -53,18 +54,21 @@ cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withItem(async (ctx, 
 }))
 
 cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) => {
-    if(user.exp < item.price)
-        return ctx.reply(user, `you have to have at least \`${item.price}\` ${ctx.symbols.tomato} to buy this item`, 'red')
+    let isBP = item.type === 'blueprint'
+    let symbol = isBP? ctx.symbols.lemon: ctx.symbols.tomato
+    let balance = isBP? user.lemons: user.exp
+    if(balance < item.price)
+        return ctx.reply(user, `you have to have at least \`${item.price}\` ${symbol} to buy this item`, 'red')
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question: `Do you want to buy **${item.name} ${item.type}** for **${numFmt(item.price)}** ${ctx.symbols.tomato}?`,
+        question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${symbol}?`,
         force: ctx.globals.force,
         onConfirm: async (x) => {
             buyItem(ctx, user, item)
-            user.exp -= item.price
+            isBP? user.lemons -= item.price: user.exp -= item.price
             await user.save()
 
-            return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${numFmt(item.price)}** ${ctx.symbols.tomato}
+            return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
                 The item has been added to your inventory. See \`->inv info ${item.id}\` for details`, 'green')
         }
     })

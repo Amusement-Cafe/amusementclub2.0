@@ -44,8 +44,6 @@ cmd(['guild'], async (ctx, user) => {
 })
 
 cmd(['guild', 'info'], async (ctx, user, ...args) => {
-    if(args.length > 0)
-        return getBuildingInfo(ctx, user, args)
 
     const resp = [], userstat = [], fields = []
     const guildlvl = XPtoLEVEL(ctx.guild.xp)
@@ -56,7 +54,6 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
     resp.push(`Players: **${numFmt(ctx.guild.userstats.length)}/${numFmt(ctx.discord_guild.memberCount)}**`)
     resp.push(`Prefix: \`${ctx.guild.prefix || ctx.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
-    resp.push(`Building permissions: **Rank ${ctx.guild.buildperm}+**`)
     resp.push(`Bot channels: ${channels.map(x => `<#${x}>`).join(' ')}`)
 
     const lock = ctx.guild.overridelock || ctx.guild.lock
@@ -65,11 +62,11 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
         resp.push(`Locked to: **${lockcol.name}**`)
     }
 
-    if(ctx.guild.hero) {
-        const hero = await get_hero(ctx, ctx.guild.hero)
-        fields.push({ name: `Guild hero`, value: `**${hero.name}** level **${XPtoLEVEL(hero.xp)}**
-            Loyalty level **${ctx.guild.heroloyalty}**` })
-    }
+    // if(ctx.guild.hero) {
+    //     const hero = await get_hero(ctx, ctx.guild.hero)
+    //     fields.push({ name: `Guild hero`, value: `**${hero.name}** level **${XPtoLEVEL(hero.xp)}**
+    //         Loyalty level **${ctx.guild.heroloyalty}**` })
+    // }
 
     const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     if(curUser){
@@ -83,13 +80,6 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
 
     fields.push({ name: `Your guild stats`, value: userstat.join('\n') })
 
-    if(ctx.guild.buildings.length > 0)
-        fields.push({ name: `Buildings`, value: ctx.guild.buildings.map(x => {
-            const item = ctx.items.find(y => y.id === x.id)
-            return `\`${item.id}\` **${item.name} level ${x.level}** (${item.desc})`
-        }).join('\n')
-    })
-
     return ctx.send(ctx.msg.channel.id, {
         author: { name: ctx.discord_guild.name },
         description: resp.join('\n'),
@@ -100,142 +90,29 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
 })
 
 cmd(['guild', 'status'], (ctx, user) => {
-    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
-    if(!castle)
-        return ctx.reply(user, 'status check only possible in guild that has **Guild Castle**. Buy one in the `->store`', 'red')
-
     const resp = []
     const cost = getMaintenanceCost(ctx)
-    const total = Math.round(cost - cost * ctx.guild.discount)
+    const total = Math.round(cost)
     const ratio = total / ctx.guild.balance
 
-    resp.push(`Building maintenance: **${numFmt(cost)}** ${ctx.symbols.tomato}/day`)
-
-    if(ctx.guild.discount > 0) {
-        resp.push(`Maintenance discount: **${ctx.guild.discount * 100}%**`)
-        resp.push(`Subtotal after discounts: **${numFmt(total)}** ${ctx.symbols.tomato}/day`)
+    resp.push(`Current finances: **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato} | **${numFmt(ctx.guild.lemons)}** ${ctx.symbols.lemon} `)
+    if (ctx.guild.lock) {
+        resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
+        resp.push(`> Make sure you have **positive** ratio when lock costs are charged`)
+    } else {
+        resp.push(`> There are no maintenance charges for this guild!`)
     }
-    resp.push(`Current finances: **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}`)
-    resp.push(`Ratio: **${ratio.toFixed(2)}** (${ratio <= 1? 'positive' : 'negative'})`)
-    resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
-    resp.push(`> Make sure you have **positive** ratio when maintenance costs are charged`)
 
     return ctx.send(ctx.msg.channel.id, {
         author: { name: ctx.discord_guild.name },
         description: resp.join('\n'),
-        fields: [{name: `Maintenance breakdown`, value: ctx.guild.buildings.map(x => {
-            const item = ctx.items.find(y => y.id === x.id)
-            const heart = x.health < 50? '💔' : '❤️'
-            return `[\`${heart}\` ${x.health}] **${item.name}** level **${x.level}** costs **${numFmt(item.levels[x.level - 1].maintenance)}** ${ctx.symbols.tomato}/day`
-        }).join('\n')}],
         color: (ratio <= 1? color.green : color.red)
     }, user.discord_id)
 })
 
-cmd(['guild', 'upgrade'], async (ctx, user, arg1) => {
-    if(!arg1)
-        return ctx.reply(user, 'please specify building ID', 'red')
-
-    if(!getGuildUser(ctx, user))
-        return ctx.reply(user, 'you are not a part of this guild. Claim a card or daily to join', 'red')
-
-    if(!isUserOwner(ctx, user) && getGuildUser(ctx, user).rank < ctx.guild.buildperm)
-        return ctx.reply(user, `you have to be at least rank **${ctx.guild.buildperm}** to upgrade buildings in this guild`, 'red')
-
-    const building = ctx.guild.buildings.find(x => x.id === arg1)
-    const item = ctx.items.find(x => x.id === arg1)
-
-    if(!building)
-        return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
-
-    const level = item.levels[building.level]
-    if(!level)
-        return ctx.reply(user, `**${item.name}** is already max level`, 'red')
-
-    if(XPtoLEVEL(ctx.guild.xp) < level.level)
-        return ctx.reply(user, `this guild has to be at least level **${level.level}** to have **${item.name} level ${building.level + 1}**`, 'red')
-
-    if(user.exp < level.price)
-        return ctx.reply(user, `you have to have at least **${numFmt(level.price)}** ${ctx.symbols.tomato} to upgrade this building`, 'red')
-
-    const question = `Do you want to upgrade **${item.name}** to level **${building.level + 1}** for **${numFmt(level.price)}** ${ctx.symbols.tomato}?`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question,
-        force: ctx.globals.force,
-        onConfirm: async (x) => {
-            const xp = Math.floor(level.price * .04)
-            building.level++
-            user.exp -= level.price
-            user.xp += xp
-            ctx.guild.markModified('buildings')
-            addGuildXP(ctx, user, xp)
-
-            await user.save()
-            await ctx.guild.save()
-
-            ctx.mixpanel.track(
-                "Building Upgrade", { 
-                    distinct_id: user.discord_id,
-                    building_id: item.id,
-                    building_level: building.level,
-                    price: level.price,
-                    guild: ctx.guild.id,
-            })
-
-            return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${building.level}**!
-                This building now *${level.desc.toLowerCase()}*
-                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
-
-        },
-    })
-})
-
-cmd(['guild', 'downgrade'], ['guild', 'down'], async (ctx, user, arg1) => {
-    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
-        return ctx.reply(user, `only server owner can downgrade buildings`, 'red')
-
-    if(!arg1)
-        return ctx.reply(user, 'please specify building ID', 'red')
-
-    const building = ctx.guild.buildings.find(x => x.id === arg1)
-    const item = ctx.items.find(x => x.id === arg1)
-
-    if(!building)
-        return ctx.reply(user, `building with ID \`${arg1}\` not found`, 'red')
-
-    if (item.id == "castle" && building.level - 1 == 0)
-        return ctx.reply(user, `you cannot destroy your own castle!`, 'red')
-
-    const question = `Do you want to downgrade **${item.name}** to level **${building.level - 1}**?
-        It will be destroyed once reaches level 0`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question,
-        force: ctx.globals.force,
-        onConfirm: async (x) => {
-            building.level--
-
-            const destroyed = building.level < 1
-            if(destroyed) {
-                ctx.guild.buildings = ctx.guild.buildings.filter(x => x.id != building.id)
-            }
-
-            ctx.guild.markModified('buildings')
-            await ctx.guild.save()
-
-            if(destroyed) {
-                return ctx.reply(user, `the building **${item.name}** has been destroyed`)
-            }
-            return ctx.reply(user, `the building **${item.name}** has been downgraded to level **${building.level}**`)
-        },
-    })
-})
 
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     let amount = parseInt(arg1)
-    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
-
-    if(!castle)
-        return ctx.reply(user, '**Guild Castle** is required before you can donate. Buy one in the `->store`', 'red')
 
     if(!amount)
         return ctx.reply(user, `please enter amount of ${ctx.symbols.tomato} you want to donate to this guild`, 'red')
@@ -250,27 +127,34 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
         force: ctx.globals.force,
         onConfirm: async (x) => {
             const xp = Math.floor(amount * .01)
+            let lemonAdd = Math.floor(amount * 0.01)
             user.exp -= amount
             user.xp += xp
             ctx.guild.balance += amount
             addGuildXP(ctx, user, xp)
 
+            if (lemonAdd > ctx.guild.lemons) {
+                user.lemons += ctx.guild.lemons
+                ctx.guild.lemons = 0
+                lemonAdd = 0
+            } else {
+                ctx.guild.lemons -= lemonAdd
+                user.lemons += lemonAdd
+            }
+
             await user.save()
             await ctx.guild.save()
 
             return ctx.reply(user, `you donated **${numFmt(amount)}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
-                This now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
-                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+                This guild now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
+                You have been awarded **${Math.floor(xp)} xp** towards your next rank
+                You received **${lemonAdd}** ${ctx.symbols.lemon} from the guild balance for this donation`)
         }
     })
 })
 
 cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     const tax = Math.abs(parseInt(arg1))
-    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
-
-    if(!castle)
-        return ctx.reply(user, '**Guild Castle** is required to set claim tax. Buy one in the `->store`', 'red')
 
     if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only server owner can modify guild tax`, 'red')
@@ -278,14 +162,8 @@ cmd(['guild', 'set', 'tax'], async (ctx, user, arg1) => {
     if(isNaN(tax))
         return ctx.reply(user, `please specify a number that indicates % of claim tax`, 'red')
 
-    if(castle.level < 2 && tax > 5)
-        return ctx.reply(user, `maximum allowed tax for current level is **5%**`, 'red')
-
-    if(castle.level < 4 && tax > 10)
-        return ctx.reply(user, `maximum allowed tax for current level is **10%**`, 'red')
-
-    if(tax > 25)
-        return ctx.reply(user, `maximum allowed tax for current level is **25%**`, 'red')
+    if(tax > 15)
+        return ctx.reply(user, `maximum allowed tax for current level is **15%**`, 'red')
 
     ctx.guild.tax = tax * .01
     await ctx.guild.save()
@@ -327,22 +205,6 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
     await ctx.guild.save()
 
     return ctx.reply(user, `removed this channel from bot channel list`)
-})
-
-cmd(['guild', 'set', 'buildrank'], async (ctx, user, arg1) => {
-    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
-    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user))
-        return ctx.reply(user, `only owner or manager can change guild's required build rank`, 'red')
-
-    const rank = Math.abs(parseInt(arg1))
-
-    if(!rank || rank < 1 || rank > 5)
-        return ctx.reply(user, `please specify a number 1-5`, 'red')
-
-    ctx.guild.buildperm = rank
-    await ctx.guild.save()
-
-    return ctx.reply(user, `minimum rank for building in this guild has been set to **${rank}**`)
 })
 
 cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...args) => {

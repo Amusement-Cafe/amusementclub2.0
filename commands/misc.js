@@ -1,5 +1,6 @@
 const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
+const Announcement      = require('../collections/announcement')
 const msToTime          = require('pretty-ms')
 const _                 = require('lodash')
 const pjson             = require('../package.json');
@@ -50,6 +51,16 @@ cmd('help', async (ctx, user, ...args) => {
 cmd('rules', async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, getHelpEmbed(ctx, help, `->`))
+}).access('dm')
+
+cmd('announcement', async (ctx, user) => {
+    const announcement = (await Announcement.find().sort({ date: -1 }))[0]
+    if (!announcement)
+        return ctx.reply(user, `an announcement cannot currently be found. please try again later!`, 'red')
+    return ctx.reply(user, {
+        author: { name: `Latest Announcement: ` + announcement.title },
+        description: announcement.body
+    }, 'blue')
 }).access('dm')
 
 cmd('baka', async (ctx, user, ...args) => {

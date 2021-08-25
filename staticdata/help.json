@@ -16,7 +16,7 @@
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->rules",
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules",
                 "inline": true
             },
             {
@@ -25,7 +25,7 @@
             },
             {
                 "title": "Running",
-                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/) | [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)"
+                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/)"
             },
             {
                 "title": "Invite bot",
@@ -97,9 +97,9 @@
         ]
     },
     {
-        "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato"],
+        "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato", "lemons", "lemon"],
         "title": "About currencies",
-        "description": "This command will show your current amount of `🍅` Tomatoes, and `🍷`Vials.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n`🍷` Vials are a secondary currency, used for drawing cards. You can get them via daily quests or liquifying cards.`->help liq` or `->help draw` for more information.",
+        "description": "This command will show your current amount of `🍅` Tomatoes, `🍷`Vials, and `🍋`Lemons.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n **Vials** are a secondary currency, used for drawing cards. You can get them via daily quests or liquifying cards.`->help liq` or `->help draw` for more information.\n **Lemons** are a tertriary currency used in the real of plots, find more information about them at `->help plot`",
         "fields": [
             {
                 "title": "Useful to know",
@@ -112,6 +112,21 @@
             {
                 "title": "->bal",
                 "description": "Get your balance"
+            }
+        ]
+    },
+    {
+        "type": ["boost"],
+        "title": "About Boosts",
+        "description": "Boosts are admin added items that can increase your chances of claiming certain cards. These are normally run when a new collection releases, however they may also be randomly run as well.",
+        "fields": [
+            {
+                "title": "->boosts",
+                "description": "List all active boosts"
+            },
+            {
+                "title": "->boost info [boost ID]",
+                "description": "Shows information about the boost, such as drop chance and what cards are included."
             }
         ]
     },
@@ -539,6 +554,10 @@
             {
                 "title": "->liquify all [card query]",
                 "description": "Liquify all(limit 100) cards in a specific query"
+            },
+            {
+                "title": "->liq preview [card query]",
+                "description": "Previews a liq of all cards(limit 100) in a query"
             }
         ]
     },
@@ -555,6 +574,37 @@
             {
                 "title": "->miss [card query]",
                 "description": "Display all missing cards within a certain argument(ex: -col, -rating, -gif, #tag)"
+            }
+        ]
+    },
+    {
+        "type": ["plot", "plots"],
+        "title": "About Plots",
+        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nCap rates are in the following order: 300, 600, 1200, 1800, 3600.",
+        "fields": [
+            {
+                "title": "->plots",
+                "description": "Display your plots in current guild"
+            },
+            {
+                "title": "->plots global",
+                "description": "Display all your plots globally"
+            },
+            {
+                "title": "->plot buy",
+                "description": "Buy an empty plot with lemons in current guild."
+            },
+            {
+                "title": "->plot info [plot #]",
+                "description": "Displays the information about the specific plot in the current guild."
+            },
+            {
+                "title": "->plot upgrade [building id]",
+                "description": "Upgrade a specific building on one of your plots in the current guild."
+            },
+            {
+                "title": "->plots collect",
+                "description": "Collect all stored lemons in the buildings in the current guild."
             }
         ]
     },
@@ -585,6 +635,10 @@
             {
                 "title": "->cards -[collection]",
                 "description": "Collection"
+            },
+            {
+                "title": "->cards -multi",
+                "description": "Show only cards you have multiple of"
             },
             {
                 "title": "->cards -# (where # is amount of stars)",
@@ -706,6 +760,10 @@
             {
                 "title": "->sell all [card query]",
                 "description": "Sell all cards(limit 100) in a query to the bot for a percentage of eval"
+            },
+            {
+                "title": "->sell preview [card query]",
+                "description": "Previews a sale of all cards(limit 100) in a query to the bot (or user if ID provided)"
             },
             {
                 "title": "->sell @user [card query]",

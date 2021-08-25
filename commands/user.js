@@ -66,6 +66,10 @@ const {
     getLastAnnouncement,
 } = require('../modules/preferences')
 
+const {
+    plotPayout,
+} = require("../modules/plot");
+
 cmd('bal', 'balance', (ctx, user) => {
     let max = 1
     const now = new Date()
@@ -80,7 +84,7 @@ cmd('bal', 'balance', (ctx, user) => {
 
     const embed = {
         color: colors.green,
-        description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} and **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial}
+        description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato}, **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial} and **${numFmt(Math.round(user.lemons))}** ${ctx.symbols.lemon}
             Your next claim will cost **${numFmt(claimCost(user, 0, 1))}** ${ctx.symbols.tomato}
             ${ctx.guild? `Next claim in current guild: **${numFmt(claimCost(user, ctx.guild.tax, 1))}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
             You can claim **${numFmt(max - 1)} cards** ${ctx.guild? `in current guild `:''}with your balance`
@@ -110,7 +114,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`->item info [item id]\`
+                { name: `Usage`, value: `To view the item details use \`->inv info [item id]\`
                     To use the item \`->inv use [item id]\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
@@ -119,9 +123,9 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     })
 }))
 
-cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
+cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
-    const itemCheck = checkItem(ctx, user, item)
+    const itemCheck = await checkItem(ctx, user, item)
 
     if(itemCheck)
         return ctx.reply(user, itemCheck, 'red')
@@ -154,11 +158,8 @@ cmd('daily', async (ctx, user) => {
 
     if(future < now) {
         const quests = []
-        const gbank = getBuilding(ctx, 'gbank')
-        let amount = gbank? 800 : 400
+        let amount = 500
         const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
-        //let amount = 5000
-        const tavern = getBuilding(ctx, 'tavern')
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
@@ -181,18 +182,17 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
 
-        if(tavern) {
-            quests.push(getQuest(ctx, user, 1, quests[0].id))
-            user.dailyquests.push(quests[1].id)
+        quests.push(getQuest(ctx, user, 2, quests[0].id))
+        user.dailyquests.push(quests[1].id)
 
-            if(tavern.level > 1) {
-                quests.push(getQuest(ctx, user, 2, quests[0].id))
-                user.dailyquests.push(quests[2].id)
-            }
-        }
+        //if(tavern.level > 1) {
+            //quests.push(getQuest(ctx, user, 2, quests[0].id))
+            //user.dailyquests.push(quests[2].id)
+        //}
+        user.markModified('dailyquests')
 
         addGuildXP(ctx, user, 10)
-        ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
+        ctx.guild.balance += XPtoLEVEL(user.xp)
         await ctx.guild.save()
 
         if(hero) {
@@ -227,6 +227,11 @@ cmd('daily', async (ctx, user) => {
 
         const announce = await getLastAnnouncement(ctx, user)
         if(announce) {
+            if (announce.body.length > 512) {
+                announce.body = announce.body.substr(0, 512)
+                announce.body += `...\n**This announcement has been trimmed to keep this daily message short. To see the full announcement message use \`${ctx.prefix}announcement\`**`
+            }
+
             fields.push({
                 name: announce.title,
                 value: announce.body,
@@ -242,6 +247,7 @@ cmd('daily', async (ctx, user) => {
 
         user.dailynotified = false
         await user.save()
+        await plotPayout(ctx, 'gbank', 1, 5)
 
         ctx.mixpanel.track(
             "Daily", { 

@@ -26,10 +26,6 @@ const {
 } = require('../modules/eval')
 
 const {
-    getBuilding,
-} = require('../modules/guild')
-
-const {
     check_effect,
 } = require('../modules/effect')
 
@@ -37,12 +33,11 @@ const {
     updateUser,
 } = require('../modules/user')
 
+const {
+    plotPayout,
+} = require('../modules/plot')
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub)
-        return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**. Buy one in the \`->store\``, 'red')
-
     const batch1 = cards[0]
     const batch2 = cards[1]
 
@@ -116,6 +111,8 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, newcard)
                 await user.save()
 
+                await plotPayout(ctx, 'smithhub', 1, newcard.level * 10)
+
                 const usercard = user.cards.find(x => x.id === newcard.id)
                 return ctx.reply(user, {
                     image: { url: newcard.url },
@@ -133,11 +130,6 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub || hub.level < 2)
-        return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -172,6 +164,8 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, card)
                 await user.save()
 
+                await plotPayout(ctx, 'smithhub', 2, card.level * 15)
+
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
                     You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
@@ -184,15 +178,10 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    //if(!hub || hub.level < 2)
-        //return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
-    cards.splice(25, cards.length)
+    cards.splice(100, cards.length)
     
     if(cards.some(x => x.level > 3))
         return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
@@ -229,7 +218,6 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
-        force: ctx.globals.force,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
             try {
@@ -257,7 +245,7 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, card
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
-    cards.splice(25, cards.length)
+    cards.splice(100, cards.length)
     
     if(cards.some(x => x.level > 3))
         return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
@@ -303,13 +291,14 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, card
 }))
 
 cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub || hub.level < 2)
-        return ctx.reply(user, `drawing cards is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
+
+    if (parsedargs.diff && cards.length > 5000) {
+        let waitMSG = await ctx.reply(user, `you have used \`-diff\` or \`-miss\` in this query and have a large amount of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
+        cards = cards.filter(x => !user.cards.some(y => x.id === y.id))
+        await ctx.bot.deleteMessage(waitMSG.channel.id, waitMSG.id, 'removal of time warning')
+    }
 
     const amount = user.dailystats.draw || 0
     const card = bestMatch(cards)
@@ -347,6 +336,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             user.dailystats.draw += 1
             user.dailystats[`draw${card.level}`] += 1
             await user.save()
+
+            await plotPayout(ctx, 'smithhub', 3, card.level * 20)
 
             return ctx.reply(user, {
                 image: { url: card.url },

@@ -282,7 +282,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
     resp.push(`Date: **${trans.time}**`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(trans.cards.map(c => formatName(ctx.cards[c])), 10),
+        pages: ctx.pgn.getPages(trans.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed : {
             title: `Transaction [${trans.id}] (${timediff})  ${corespAudit ? `Audit ID: ${corespAudit.audit_id}` : ''}`,
@@ -300,7 +300,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, args)
+    let arg = parseAuditArgs(ctx, ctx.capitalMsg)
     let warnedUser = await fetchOnly(arg.id)
 
     if (!warnedUser)

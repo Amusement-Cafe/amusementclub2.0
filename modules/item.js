@@ -20,6 +20,14 @@ const {
     formatName,
 } = require('./card')
 
+const {
+    completed
+} = require('./collection')
+
+const {
+    getUserPlots
+} = require('./plot')
+
 const mapUserInventory = (ctx, user) => {
     return user.inventory.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
 }
@@ -78,31 +86,34 @@ const checkItem = (ctx, user, item) => checks[item.type](ctx, user, item)
 
 const uses = {
     blueprint: async (ctx, user, item) => {
-        const check = checks.blueprint(ctx, user, item)
+        const check = await checks.blueprint(ctx, user, item)
         if(check)
             return ctx.reply(user, check, 'red')
 
-        const guild = ctx.guild
-        const xp = item.levels[0].price * .1
+        let emptyPlot = await getUserPlots(ctx, false)
+        emptyPlot = emptyPlot.filter(x => !x.building.id)[0]
 
-        guild.buildings.push({ id: item.id, level: 1, health: 100 })
-        addGuildXP(ctx, user, xp)
-        await ctx.guild.save()
+        emptyPlot.next_check = asdate.add(new Date(), 24, 'hours')
+        emptyPlot.building.id = item.id
+        emptyPlot.building.install_date = new Date()
+        emptyPlot.building.last_collected = new Date()
+        emptyPlot.building.stored_lemons = 0
+        emptyPlot.building.level = 1
+        await emptyPlot.save()
 
-        user.exp -= item.levels[0].price
+        user.lemons -= item.levels[0].price
         pullInventoryItem(user, item.id)
         await user.save()
 
         ctx.mixpanel.track(
-            "Building Build", { 
+            "Building Build", {
                 distinct_id: user.discord_id,
                 building_id: item.id,
                 price: item.levels[0].price,
-                guild: guild.id,
+                guild: ctx.guild.id,
         })
 
-        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**
-            You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**`)
     },
 
     claim_ticket: async (ctx, user, item) => {
@@ -171,7 +182,10 @@ const uses = {
                 is_passive: effect.passive,
         })
 
-        item.cards.map(x => removeUserCard(ctx, user, x))
+        item.cards.map(x => {
+            removeUserCard(ctx, user, x)
+            completed(ctx, user, ctx.cards[x])
+        })
         pullInventoryItem(user, item.id)
         user.effects.push(eobject)
         await user.save()
@@ -192,10 +206,8 @@ const infos = {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
-                Maintenance: **${numFmt(x.maintenance)}** ${ctx.symbols.tomato}/day
-                Required guild level: **${x.level}**
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+            value: `Price: **${x.price}** ${ctx.symbols.lemon}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
         }))
     }),
 
@@ -241,20 +253,24 @@ const infos = {
 }
 
 const checks = {
-    blueprint: (ctx, user, item) => {
-        const guild = ctx.guild
-        if(guild.buildings.find(x => x.id === item.id))
-            return `this guild already has **${item.name}**`
+    blueprint: async (ctx, user, item) => {
+        const userPlots = await getUserPlots(ctx, false)
+        const userLevel = XPtoLEVEL(user.xp)
 
-        if(user.exp < item.levels[0].price)
-            return `you need at least **${numFmt(item.levels[0].price)}** ${ctx.symbols.tomato} to build **${item.name} level 1**`
+        if (userLevel < item.levels[0].level)
+            return `you need to be level ${item.levels[0].level} to build this building! See your level in \`${ctx.guild.prefix}profile\``
 
-        if(XPtoLEVEL(guild.xp) < item.levels[0].level)
-            return `this guild has to be at least level **${item.levels[0].level}** to have **${item.name} level 1**`
+        if (!userPlots.find(x => x.building.id === 'castle') && item.id !== 'castle')
+            return `you need to build a castle here first before you can place any other buildings!`
 
-        const guilduser = getGuildUser(ctx, user)
-        if(!isUserOwner(ctx, user) && guilduser && guilduser.rank < guild.buildperm)
-            return `you have to be at least rank **${guild.buildperm}** to build in this guild`
+        if(userPlots.find(x => x.building.id === item.id))
+            return `you already have a **${item.name}** in this guild!`
+
+        if(user.lemons < item.levels[0].price)
+            return `you need at least **${item.levels[0].price}** ${ctx.symbols.lemon} to build **${item.name} level 1**`
+
+        if(!userPlots.find(x => !x.building.id))
+            return `you need to have an empty plot to build ${item.name}!\nBuy one with \`${ctx.guild.prefix}plot buy\``
     },
 
     claim_ticket: (ctx, user, item) => {
@@ -263,9 +279,6 @@ const checks = {
 
     recipe: (ctx, user, item) => {
         const now = new Date()
-        const hub = getBuilding(ctx, 'smithhub')
-        if(!hub || hub.level < 3)
-            return `you can create effect cards only in guild with **Smithing Hub level 3** or higher`
 
         //Keeping this here in case we for some reason need to revert to not allowing stacking effects
         // if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))

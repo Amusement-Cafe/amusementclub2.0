@@ -13,11 +13,11 @@ const {
 } = require('./meta')
 
 const userCountTTL = 360000
-const queueTick = 500
+const queueTick = 200
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 const evalQueue = []
 
-let userCount, userCountUpdated
+let userCount, userCountUpdated, evalPromise
 
 const evalCard = async (ctx, card, modifier = 1) => {
     if((!userCount && Date.now() - userCountUpdated > userCountTTL) || !userCountUpdated) {
@@ -110,10 +110,12 @@ const checkQueue = async (ctx) => {
         userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
 
     const card = evalQueue[0]
-    if(card) {
-        await updateCardUserCount(ctx, card)
+    if(card && (!evalPromise || !evalPromise.pending)) {
         evalQueue.shift()
-        console.log(card.id)
+        evalPromise = updateCardUserCount(ctx, card)
+        await evalPromise
+
+        console.log(`${card.id} (${evalQueue.length} left)`)
     }
 }
 
@@ -160,9 +162,9 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
 
         if (auc.price > eval * 1.5)
-            float = Math.round(eval * ctx.eval.aucEval.aucFailMultiplier)
+            float = eval * ctx.eval.aucEval.aucFailMultiplier
 
-        info.aucevalinfo.evalprices.push(float)
+        info.aucevalinfo.evalprices.push(Math.floor(float))
     } else {
         info.aucevalinfo.newaucprices.push(auc.price)
     }

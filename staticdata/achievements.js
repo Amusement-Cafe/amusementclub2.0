@@ -126,9 +126,7 @@ module.exports = [
         actions: ['inv'],
         check: (ctx, user) => {
             const effect = user.effects[0]
-            if (effect)
-                return true
-            return false
+            return effect
         },
         resolve: (ctx, user) => {
             user.exp += 500

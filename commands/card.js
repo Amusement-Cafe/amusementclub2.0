@@ -44,7 +44,6 @@ const {
 
 const {
     addGuildXP,
-    getBuilding,
 } = require('../modules/guild')
 
 const {
@@ -54,6 +53,10 @@ const {
 const {
     fetchInfo,
 } = require('../modules/meta')
+
+const {
+    plotPayout,
+} = require('../modules/plot')
 
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
@@ -73,7 +76,6 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const amount = args.filter(x => x.length < 3 && !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
     const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
     const normalprice = promo? price : claimCost(user, 0, amount)
-    const gbank = getBuilding(ctx, 'gbank')
     const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
     const activepromo = ctx.promos.find(x => x.starts < now && x.expires > now)
 
@@ -96,7 +98,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
-        const spec = ((gbank && gbank.level > 1)? _.sample(ctx.collections.filter(x => x.rarity > rng)) : null)
+        const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
         let card, boostdrop = false
@@ -140,6 +142,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         await user.updateOne({$inc: {'dailystats.claims': amount}})
         user.dailystats.claims = user.dailystats.claims + amount || amount
         user.dailystats.totalregclaims += amount
+        await plotPayout(ctx, 'gbank', 2, Math.floor(amount * 1.5))
         while(claimCost(user, ctx.guild.tax, max) < user.exp)
             max++
     }
@@ -147,7 +150,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     user.lastcard = cards[0].card.id
     user.xp += amount
     await user.save()
-    
+
+
     if(newCards.length > 0 && oldCards.length > 0) {
         user.markModified('cards')
         await user.save()
