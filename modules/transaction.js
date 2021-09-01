@@ -202,13 +202,25 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
             Type \`->pending\` to see them
             \`->decline [id]\` to decline`
 
+    let lastFav = false
+    let listedFavs = 0
+    let lastMsg = 'you are about to put up the last copy of your favorite card(s) for sale.\n'
+    cards.map((x, i) => {
+        if (x.amount === 1 && x.fav && listedFavs < 10) {
+            lastMsg += `Use \`${ctx.prefix}fav remove ${x.name}\` to remove it from favorites first.\n`
+            lastFav = true
+            listedFavs++
+        }
+    })
+    if (lastFav)
+        return lastMsg
+
     if(pending.length > 0) {
         const pendingCards = pending.reduce((acc, cur) => acc.concat(cur.cards), [])
         cards = cards.filter(x => {
             const pendingCount = pendingCards.filter(z => z == x.id).length
             const remaining = x.amount - pendingCount
             return !(remaining < 1 || remaining < 2 && x.fav);
-
         })
 
         if(cards.length == 0) {
@@ -216,17 +228,6 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
                 Check your \`${ctx.prefix}pending\` transactions and use \`->dcl [transaction id]\` to decline them.`
         }
     }
-
-    let lastFav = false
-    let lastMsg = 'you are about to put up the last copy of your favorite card(s) for sale.\n'
-    cards.map((x, i) => {
-        if (x.amount === 1 && x.fav && i < 10) {
-            lastMsg += `Use \`${ctx.prefix}fav remove ${x.name}\` to remove it from favorites first.\n`
-            lastFav = true
-        }
-    })
-    if (lastFav)
-        return lastMsg
 }
 
 const paginate_trslist = (ctx, user, list) => {
