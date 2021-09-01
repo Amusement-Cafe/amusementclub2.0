@@ -6,7 +6,7 @@
         "fields": [
             {
                 "title": "User",
-                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish",
+                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish\n->help prefs",
                 "inline": true
             },
             {

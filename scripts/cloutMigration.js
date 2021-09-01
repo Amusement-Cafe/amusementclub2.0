@@ -1,6 +1,6 @@
 const User          = require('../collections/user')
 const cards         = require('../../ayano/data/cards.json')
-const mongoose = require("mongoose");
+const mongoose      = require("mongoose");
 
 
 const main = async () => {
