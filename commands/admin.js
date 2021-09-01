@@ -341,6 +341,7 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) => {
+    ctx.settings.wipMsg = args.length > 0? ctx.capitalMsg.join(' '): 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
     ctx.settings.wip = !ctx.settings.wip
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
 })
