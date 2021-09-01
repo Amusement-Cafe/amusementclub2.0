@@ -609,6 +609,25 @@
         ]
     },
     {
+        "type": ["preferences", "prefs", "notify", "notifications"],
+        "title": "About Preferences",
+        "description": "Preferences are a personal setting to enable or disable certain bot notifications",
+        "fields": [
+            {
+                "title": "->prefs",
+                "description": "Displays available preference options"
+            },
+            {
+                "title": "->prefs [id]",
+                "description": "Displays available options in a sub-menu"
+            },
+            {
+                "title": "->prefs set [id] [option] [true/false]",
+                "description": "Enable or disable an options within a preferences menu"
+            }
+        ]
+    },
+    {
         "type": ["profile"],
         "title": "About Profiles",
         "description": "Profiles are a way to quickly and nicely see your current: Level, Card Count, Star Count, Clout Count, Time Since Start, and Bot Roles(if any)",
