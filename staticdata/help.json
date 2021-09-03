@@ -6,7 +6,7 @@
         "fields": [
             {
                 "title": "User",
-                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish",
+                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish\n->help prefs",
                 "inline": true
             },
             {
@@ -605,6 +605,25 @@
             {
                 "title": "->plots collect",
                 "description": "Collect all stored lemons in the buildings in the current guild."
+            }
+        ]
+    },
+    {
+        "type": ["preferences", "prefs", "notify", "notifications"],
+        "title": "About Preferences",
+        "description": "Preferences are a personal setting to enable or disable certain bot notifications",
+        "fields": [
+            {
+                "title": "->prefs",
+                "description": "Displays available preference options"
+            },
+            {
+                "title": "->prefs [id]",
+                "description": "Displays available options in a sub-menu"
+            },
+            {
+                "title": "->prefs set [id] [option] [true/false]",
+                "description": "Enable or disable an options within a preferences menu"
             }
         ]
     },

@@ -39,7 +39,7 @@ const {
 } = require('./plot')
 
 
-const lockFile  = require('lockfile')
+const lockFile  = require('proper-lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
 
@@ -51,10 +51,7 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
     if(!target.cards.find(x => x.id === card.id))
         return reject('no cards found')
 
-    lockFile.lock('auc.lock', { wait: 5000, stale: 10000 }, async err => {
-        if(err)
-            return reject(err)
-
+    lockFile.lock('auc', {retries: 10}).then(async (release) => {
         removeUserCard(ctx, target, card.id)
         await completed(ctx, target, card)
         
@@ -72,10 +69,10 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
         auc.time = new Date()
         auc.guild = ctx.guild.id
         await auc.save()
-
-        unlock()
-
+        await lockFile.unlock('auc')
         return resolve(auc)
+    }).catch(e => {
+        return reject(e)
     })
 })
 

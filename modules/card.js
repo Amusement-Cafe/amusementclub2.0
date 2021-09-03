@@ -37,6 +37,8 @@ const promoRarity = {
     christmas19: '☃️',
     birthday20: '🎈',
     christmas20: '🎁',
+    valentine21: '🌹',
+    birthday21: '🧁',
 }
 
 const formatName = (x) => {

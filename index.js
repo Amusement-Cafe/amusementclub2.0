@@ -180,6 +180,7 @@ module.exports.create = async ({
         mixpanel,
         settings: {
             wip: maintenance,
+            wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
         }
     }
 
@@ -353,7 +354,7 @@ module.exports.create = async ({
 
             const action = args[0]
             if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
-                return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
+                return reply(usr, ctx.settings.wipMsg, 'yellow')
             }
 
             if(usr.ban.full) {
