@@ -97,6 +97,7 @@ cmd(['guild', 'status'], (ctx, user) => {
 
     resp.push(`Current finances: **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato} | **${numFmt(ctx.guild.lemons)}** ${ctx.symbols.lemon} `)
     if (ctx.guild.lock) {
+        resp.push(`Lock maintenance: **${numFmt(cost)}** ${ctx.symbols.tomato}/day`)
         resp.push(`Maintenance charges in **${msToTime(ctx.guild.nextcheck - new Date(), {compact: true})}**`)
         resp.push(`> Make sure you have **positive** ratio when lock costs are charged`)
     } else {

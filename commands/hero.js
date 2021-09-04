@@ -179,7 +179,8 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
 
     const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
-        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5).filter(y => y)
+
 
     if(pages.length === 0)
         pages.push(`You don't have any passive Effect Cards`)

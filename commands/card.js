@@ -335,7 +335,7 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
-    cards.splice(25, cards.length)
+    cards.splice(100, cards.length)
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
@@ -551,6 +551,8 @@ cmd('boost', 'boosts', (ctx, user) => {
 
 cmd(['boost', 'info'], (ctx, user, args) => {
     const now = new Date()
+    if (!args)
+        return ctx.reply(user, `a boost ID is needed for this command`, 'red')
     const id = args.split(' ')[0]
     const boost = ctx.boosts.find(x => x.id === id)
 
@@ -652,7 +654,7 @@ cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], 
     })
 })).access('dm')
 
-cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -660,6 +662,10 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
         cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
+
+    if (!card)
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+
     if(user.wishlist.some(x => x === card.id)) {
         return ctx.reply(user, `you already have ${formatName(card)} in your wishlist.
             To remove is use \`${ctx.prefix}wish remove [card]\``, 'red')

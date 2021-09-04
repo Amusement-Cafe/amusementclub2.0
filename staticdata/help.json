@@ -214,7 +214,7 @@
     {
         "type": ["col", "collection", "collections", "clout"],
         "title": "About collections",
-        "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command.\nCollections can be reset(clouted) for 5 star cards if they exist for that collection, or just for clout stars. You need all of the cards in the collection to clout, excluding 5 star cards.",
+        "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command.\nCollections can be reset(clouted) for 5 star cards if they exist for that collection, or just for clout stars. You need 200 unique cards of various rarities in the collection to reset, or all of the collection if less than 200 cards, excluding 5 star cards.",
         "fields": [
             {
                 "title": "->col",
@@ -415,7 +415,7 @@
             },
             {
                 "title": "->guild donate [amount]",
-                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance (Requires a castle be built first)"
+                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance, if the guild has `🍋` lemons, then for every 100 tomatoes you donate you can get 1 lemon"
             },
             {
                 "title": "->guild set tax [percentage]",
