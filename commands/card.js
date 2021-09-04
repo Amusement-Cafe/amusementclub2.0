@@ -652,7 +652,7 @@ cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], 
     })
 })).access('dm')
 
-cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -660,6 +660,10 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
         cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
+
+    if (!card)
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+
     if(user.wishlist.some(x => x === card.id)) {
         return ctx.reply(user, `you already have ${formatName(card)} in your wishlist.
             To remove is use \`${ctx.prefix}wish remove [card]\``, 'red')
