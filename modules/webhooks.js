@@ -22,9 +22,11 @@ const listen = (ctx) => {
     app.use(bodyParser.urlencoded({ extended: true })); 
 
     // Webhook handle for https://top.gg/
-    app.post("/topgg", topggWebhook.listener(vote => {
+    app.post("/topgg", topggWebhook.middleware(), (req, res) => {
+        const vote = req.vote
         registerTopggVote(ctx, vote)
-    }))
+        res.status(200).end()
+    })
 
     // Webhook handle for https://discordbotlist.com/
     app.post("/dbl", (req, res) => {
