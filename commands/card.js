@@ -551,6 +551,8 @@ cmd('boost', 'boosts', (ctx, user) => {
 
 cmd(['boost', 'info'], (ctx, user, args) => {
     const now = new Date()
+    if (!args)
+        return ctx.reply(user, `a boost ID is needed for this command`, 'red')
     const id = args.split(' ')[0]
     const boost = ctx.boosts.find(x => x.id === id)
 
