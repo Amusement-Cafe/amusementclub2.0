@@ -335,7 +335,7 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
-    cards.splice(25, cards.length)
+    cards.splice(100, cards.length)
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
