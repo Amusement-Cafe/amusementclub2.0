@@ -415,7 +415,7 @@
             },
             {
                 "title": "->guild donate [amount]",
-                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance, if the guild has `🍋` lemons, then for every 1k you donate you can get 1 lemon"
+                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance, if the guild has `🍋` lemons, then for every 100 tomatoes you donate you can get 1 lemon"
             },
             {
                 "title": "->guild set tax [percentage]",
