@@ -95,7 +95,7 @@ cmd('invite', async (ctx, user) => {
 
 const getHelpEmbed = (ctx, o, prefix) => {
 
-    const footerText = `Amusement Club Alexandrite | xQAxThF | v${pjson.version} | by NoxCaos#4905`
+    const footerText = `Amusement Club Amethyst | xQAxThF | v${pjson.version} | by NoxCaos#4905`
     const embed = {
         title: o.title, 
         description: o.description.replace(/->/g, prefix), fields: [],
