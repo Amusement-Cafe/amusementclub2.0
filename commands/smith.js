@@ -290,7 +290,7 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, card
     })
 }))
 
-cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
 
@@ -307,6 +307,10 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     const amount = user.dailystats.draw || 0
     const card = bestMatch(cards)
+
+    if (!card)
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+
     const cost = await getVialCost(ctx, card)
     const extra = Math.floor(cost * .2 * amount)
     const vials = cost + extra
