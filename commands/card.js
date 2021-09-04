@@ -412,7 +412,7 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     }
 
     return ctx.reply(user, 
-        `request contains **${cards.length}** of your cards worth **${numFmt(price)}** ${ctx.symbols.tomato} 
+        `request contains **${numFmt(cards.length)}** of your cards worth **${numFmt(price)}** ${ctx.symbols.tomato} 
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))
 
@@ -442,7 +442,7 @@ cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedar
     }
 
     return ctx.reply(user, 
-        `your request contains **${cards.length}** cards worth **${numFmt(price)}** ${ctx.symbols.tomato} 
+        `your request contains **${numFmt(cards.length)}** cards worth **${numFmt(price)}** ${ctx.symbols.tomato} 
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))
 
