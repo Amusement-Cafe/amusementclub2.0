@@ -31,6 +31,9 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0, guildID, use
         ctx.msg = {author:{id: userID}}
         ctx.guild = {id: guildID}
     }
+    if (!ctx.guild)
+        return
+    
     let relatedPlots = await getGuildPlots(ctx, building)
     if (relatedPlots.length === 0)
         return
