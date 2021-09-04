@@ -442,7 +442,7 @@ cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedar
     }
 
     return ctx.reply(user, 
-        `your request contains **${cards.length}** cards worth **${numFmt(price)}** ${ctx.symbols.tomato} 
+        `your request contains **${numFmt(cards.length)}** cards worth **${numFmt(price)}** ${ctx.symbols.tomato} 
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))
 
