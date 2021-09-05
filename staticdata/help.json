@@ -892,8 +892,16 @@
                 "description": "List of the transactions where you sent a card"
             },
             {
-                "title": "->trans auction",
-                "description": "List of the transactions based around auctions. (Add gets or sends after the command to limit to those types)"
+                "title": "->trans auction [optional query]",
+                "description": "List your auction transactions "
+            },
+            {
+                "title": "->trans auction gets [optional query]",
+                "description": "List auction transactions from auctions you won"
+            },
+            {
+                "title": "->trans auction sends [optional query]",
+                "description": "List auction transactions where you sold a card"
             },
             {
                 "title": "->pending",

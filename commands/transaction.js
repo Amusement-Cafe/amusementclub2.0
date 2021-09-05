@@ -48,7 +48,7 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const list = await getPending(ctx, user)
+    let list = await getPending(ctx, user)
 
     if(!parsedargs.isEmpty())
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
@@ -67,7 +67,7 @@ cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, pa
 }))
 
 cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const list = await Transaction.find({ 
+    let list = await Transaction.find({
         to_id: user.discord_id
     }).sort({ time: -1 })
 
@@ -88,7 +88,7 @@ cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedar
 }))
 
 cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const list = await Transaction.find({ 
+    let list = await Transaction.find({
         from_id: user.discord_id
     }).sort({ time: -1 })
 
@@ -108,36 +108,19 @@ cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsed
     })
 }))
 
-cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    let authorText, list
-    switch (arg1) {
-        case 'gets' :
-            list = await Transaction.find({
-                to_id: user.discord_id ,
-                status: 'auction'
-            }).sort({ time: -1 })
-            authorText = `${user.username}, your incoming auction transactions (${list.length} results)`
-            break
-        case 'sends' :
-            list = await Transaction.find({
-                from_id: user.discord_id,
-                status: 'auction'
-            }).sort({ time: -1 })
-            authorText = `${user.username}, your outgoing auction transactions (${list.length} results)`
-            break
-        default:
-            list = await Transaction.find({
-                $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
-                status: 'auction'
-            }).sort({ time: -1 })
-            authorText = `${user.username}, your auction transactions (${list.length} results)`
-    }
+cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, cards, parsedargs, arg1) => {
+    let list = await Transaction.find({
+        $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
+        status: 'auction'
+    }).sort({ time: -1 })
 
     if(!parsedargs.isEmpty())
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent auction transactions`)
+
+    const authorText = `${user.username}, your auction transactions (${list.length} results)`
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: paginate_trslist(ctx, user, list),
@@ -148,6 +131,57 @@ cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, ca
         }
     })
 }))
+
+cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let list = await Transaction.find({
+        to_id: user.discord_id ,
+        status: 'auction'
+    }).sort({ time: -1 })
+
+
+    if(!parsedargs.isEmpty())
+        list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
+
+    if(list.length == 0)
+        return ctx.reply(user, `you don't have any recent auction transactions`)
+
+    const authorText = `${user.username}, your incoming auction transactions (${list.length} results)`
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: authorText },
+            color: colors.green,
+        }
+    })
+}))
+
+cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let list = await Transaction.find({
+        from_id: user.discord_id,
+        status: 'auction'
+    }).sort({ time: -1 })
+
+    if(!parsedargs.isEmpty())
+        list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
+
+    if(list.length == 0)
+        return ctx.reply(user, `you don't have any recent auction transactions`)
+
+    const authorText = `${user.username}, your outgoing auction transactions (${list.length} results)`
+
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: paginate_trslist(ctx, user, list),
+        buttons: ['back', 'forward'],
+        embed: {
+            author: { name: authorText },
+            color: colors.green,
+        }
+    })
+}))
+
 
 cmd(['trans', 'info'], async (ctx, user, arg1) => {
     const trs = await Transaction.findOne({ id: arg1 })
