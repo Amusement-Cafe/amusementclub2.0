@@ -31,7 +31,7 @@ const completed = async (ctx, user, card) => {
         return
 
     if (preCompleted && preCompleted.amount) {
-        if (preCompleted.amount !== 0)
+        if (preCompleted.amount !== 0 && !user.cloutedcols.some(x => x.id === card.col))
             user.cloutedcols.push({id: card.col, amount: preCompleted.amount})
         preCompleted.amount = 0
         user.markModified('completedcols')
