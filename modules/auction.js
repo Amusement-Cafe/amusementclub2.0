@@ -289,7 +289,13 @@ const formatAucTime = (time, compact = false) => {
         return `<5m`
 
     if (compact) {
-        return `~${hours <= 0? `${minutes}m` : `${minutes > 45? hours + 1: minutes < 15 && hours !== 1? hours - 1: minutes < 15 && hours === 1? hours: `${hours}.5`}h`}`
+        if (hours <= 0)
+            return `~${minutes}m`
+        if (minutes > 45)
+            return `~${hours + 1}h`
+        if (minutes < 15)
+            return `~${hours}h`
+        return `~${hours}.5h`
     }
 
     return `${hours <= 0? '': `${hours}h`} ${minutes}m`
