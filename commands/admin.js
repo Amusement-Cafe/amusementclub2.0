@@ -2,6 +2,10 @@ const {pcmd}        = require('../utils/cmd')
 const Announcement  = require('../collections/announcement')
 
 const {
+    getHelpEmbed,
+} = require("../commands/misc");
+
+const {
     onUsersFromArgs,
     fetchOnly,
 } = require('../modules/user')
@@ -39,6 +43,12 @@ const {
 
 const colors = require('../utils/colors')
 
+pcmd(['admin'], ['sudo', 'help'], async (ctx, user, ...args) => {
+    const help = ctx.audithelp.find(x => x.type === 'admin')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+})
 
 pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
