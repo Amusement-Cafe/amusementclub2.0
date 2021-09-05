@@ -1,15 +1,16 @@
 const User          = require('../collections/user')
 const cards         = require('../../ayano/data/cards.json')
 const mongoose      = require("mongoose");
-
+const _             = require('lodash')
 
 const main = async () => {
     const mongoUri = 'mongodb://localhost:27017/amusement2'
     const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
 
-    await cloutTransfer()
-    await buildingRemoval()
+    // await cloutTransfer()
+    // await buildingRemoval()
+    // await cloutDedupe()
 }
 
 const cloutTransfer = async () => {
@@ -62,6 +63,17 @@ const buildingRemoval = async () => {
         await x.save()
         console.log(`Finished Processing User ${i + 1}/${hasInv.length} for building removal`)
 
+    })
+}
+
+const cloutDedupe = async () => {
+    let hasClout = await User.find({cloutedcols: {$exists: true, $ne: []}})
+
+    await hasClout.map(async (x, i) => {
+        console.log(`Processing User ${i+1}/${hasClout.length} for clout deduplication`)
+        x.cloutedcols = _.uniqBy(x.cloutedcols, 'id')
+        await x.save()
+        console.log(`Finished Processing User ${i + 1}/${hasClout.length} for clout deduplication`)
     })
 }
 
