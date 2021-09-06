@@ -1,7 +1,95 @@
 [
     {
+        "type": "admin",
+        "title": "Admin Help Guide",
+        "description": "Because even those that make this bot forget how it works",
+        "fields": [
+            {
+                "title": "->sudo add role [user] [role]",
+                "description": "Add role to user"
+            },
+            {
+                "title": "->sudo rm role [user] [role]",
+                "description": "Remove role from user"
+            },
+            {
+                "title": "->sudo award [user] [amount]",
+                "description": "Add tomatoes to a user"
+            },
+            {
+                "title": "->sudo add vials [user] [amount]",
+                "description": "Add vials to a user"
+            },
+            {
+                "title": "->sudo add lemons [user] [amount]",
+                "description": "Add lemons to a user"
+            },
+            {
+                "title": "->sudo add card [user] [card]",
+                "description": "Add a card to a user"
+            },
+            {
+                "title": "->sudo remove card [user] [card]",
+                "description": "Remove a card from a user"
+            },
+            {
+                "title": "->sudo stress [amount]",
+                "description": "Spams test messages according to amount"
+            },
+            {
+                "title": "->sudo guild lock [collection]",
+                "description": "Add a cost-free lock to a guild"
+            },
+            {
+                "title": "->sudo guild unlock [collection]",
+                "description": "Remove a cost-free lock from a guild"
+            },
+            {
+                "title": "->sudo daily reset [user]",
+                "description": "Resets a user's daily allowing them to run daily again"
+            },
+            {
+                "title": "->sudo guild herocheck",
+                "description": "Forces a herocheck in current guild"
+            },
+            {
+                "title": "->sudo sum [card]",
+                "description": "Summons a card even if you don't own it"
+            },
+            {
+                "title": "->sudo reset eval [card ID]",
+                "description": "Forcefully empties eval data for auction eval on a specific card ID"
+            },
+            {
+                "title": "->sudo eval info [card name]",
+                "description": "Displays current eval information for specified card"
+            },
+            {
+                "title": "->sudo eval force [card name]",
+                "description": "Forces all currently waiting auction evals into the actual card eval, bypassing normal limit filters"
+            },
+            {
+                "title": "->sudo crash",
+                "description": "Sends a test error for ayano"
+            },
+            {
+                "title": "->sudo embargo [user] [optional `lift`]",
+                "description": "Embargoes a user from some bot features, if lift is anywhere in command, removes embargo instead"
+            },
+            {
+                "title": "->sudo wip [optional message]",
+                "description": "Sets bot to WIP mode, disallowing anyone besides admins/mods from running commands. Optional message will be displayed instead of default if given."
+            },
+            {
+                "title": "->sudo announce [Title], [Body]",
+                "description": "Set a new announcement message for DMing people with notify pref on, and for display in ->daily on a user's next daily. Title CANNOT have a comma, as title and body are split by comma"
+            }
+
+        ]
+    },
+    {
         "type": "audit",
-        "title": "Audit Help Guid",
+        "title": "Audit Help Guide",
         "description": "Welcome to the Audit Zone",
         "fields": [
             {
@@ -68,7 +156,7 @@
     },
     {
         "type": "tagmod",
-        "title": "Tagmod Help Guid",
+        "title": "Tagmod Help Guide",
         "description": "Welcome to the Tagmod Zone",
         "fields": [
             {

@@ -31,7 +31,7 @@ const completed = async (ctx, user, card) => {
         return
 
     if (preCompleted && preCompleted.amount) {
-        if (preCompleted.amount !== 0)
+        if (preCompleted.amount !== 0 && !user.cloutedcols.some(x => x.id === card.col))
             user.cloutedcols.push({id: card.col, amount: preCompleted.amount})
         preCompleted.amount = 0
         user.markModified('completedcols')
@@ -46,7 +46,7 @@ const completed = async (ctx, user, card) => {
     if (!preCompleted && userCards.length >= colCards.length) {
         msg = `You have just completed the **${card.col}** collection! 
         You can now decide if you want to reset the collection for a clout star${legendary? 'and a legendary ticket to claim a legendary card from this collection!': '.'}
-        One copy of each card below 5 stars will be consumed.
+        One copy of each card below 5 stars will be consumed if the collection has 200 or fewer cards. Otherwise 200 specified cards will be taken based on overall card composition.
         To reset type:
         \`->col reset ${card.col}\``
         user.completedcols.push({id: card.col})

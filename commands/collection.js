@@ -25,12 +25,12 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     const clouted = args.find(x => x === '-clouted' || x === '!clouted')
     args = args.filter(x => x != '-completed' && x != '!completed' && x != '-clouted' && x != '!clouted')
 
-    let cols = args.map(x => byAlias(ctx, x.replace('-', ''))[0])
+    let cols = _.flatten(args.map(x => byAlias(ctx, x.replace('-', ''))))
 
     if (args.length === 0)
         cols = byAlias(ctx, args.join().replace('-', ''))
 
-    cols = cols.sort((a, b) => nameSort(a, b, 'id')).filter(x => x)
+    cols = _.uniqBy(cols, 'id').sort((a, b) => nameSort(a, b, 'id')).filter(x => x)
 
     if(completed) {
         if(completed[0] === '-') 
