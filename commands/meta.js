@@ -179,8 +179,13 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
             try {
                 const res = setSourcesFromRawData(ctx, rawData)
                 if(res.problems.length > 0) {
-                    ctx.reply(user, `following cards were not found:
-                        ${res.problems.join('\n')}`, 'yellow')
+                    ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+                        pages: ctx.pgn.getPages(res.problems, 15),
+                        embed: {
+                            author: { name: `Following cards were not found:` },
+                        },
+                        color: colors.yellow,
+                    })
                 }
 
                 return ctx.reply(user, `successfully set sources for **${res.count}** cards`)

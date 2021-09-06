@@ -52,9 +52,10 @@ const setCardSource = async (ctx, cardID, source) => {
 const setSourcesFromRawData = (ctx, data) => {
     const entrees = data.split('\n')
     const problems = []
+    const expr = /\s-\s/
     let count = 0
-    entrees.filter(x => x.split('-').length === 2).map(x => {
-        const contents = x.split('-')
+    entrees.filter(x => x.split(expr).length === 2).map(x => {
+        const contents = x.split(expr)
         const cardName = contents[0].trim()
         const link = contents[1].trim()
         const card = ctx.cards.find(c => c.level == cardName[0] && c.name === cardName.substring(2))
