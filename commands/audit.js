@@ -210,7 +210,7 @@ pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGloba
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
-    if (!arg.ids)
+    if (arg.ids.length === 0)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
     const auditedUser = await fetchOnly(arg.ids)
