@@ -1,16 +1,18 @@
 const {cmd, pcmd}   = require('../utils/cmd')
 const Plots         = require('../collections/plot')
 const colors        = require('../utils/colors')
+const _             = require('lodash')
 
 const {
-    XPtoLEVEL,
     numFmt,
+    plotBuyCost,
+    XPtoLEVEL,
 }   = require('../utils/tools')
 
 
 const {
-    getGuildPlots,
-    getUserPlots, getMaxStorage,
+    getUserPlots,
+    getMaxStorage,
 }   = require('../modules/plot')
 
 cmd(['plot'], ['plots'], async (ctx, user) => {
@@ -64,14 +66,10 @@ cmd(['plot', 'buy'], async (ctx, user) => {
     const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 2) + 1
     const userGlobalPlots = await getUserPlots(ctx, true)
     const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
-    const newGuild = userGlobalPlots.some(x => x.guild_id === ctx.guild.id)
-    const cost = 50 + (userGlobalPlots.length * 50)
+    const cost = plotBuyCost(user, 1, userGlobalPlots.length)
 
 
     const check = async () => {
-
-        if (user.lemons < cost)
-            return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
 
         if (userGuildPlots.length >= maxGuildAmount)
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
@@ -79,6 +77,8 @@ cmd(['plot', 'buy'], async (ctx, user) => {
         if (userGlobalPlots.length >= maxUserAmount)
             return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!`, 'red')
 
+        if (user.lemons < cost)
+            return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
     }
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
@@ -95,8 +95,18 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             await user.save()
             ctx.guild.lemons += cost
             await ctx.guild.save()
+
+            let affordablePlots = 1
+            while(plotBuyCost(user, affordablePlots, userGlobalPlots.length) < user.lemons)
+                affordablePlots++
+
+            let guildAllowedPlots = maxGuildAmount - (userGuildPlots.length + 1)
+            let userAllowedPlots = maxUserAmount - (userGlobalPlots.length + 1)
+
+            let buyablePlots = _.min([affordablePlots - 1, userAllowedPlots, guildAllowedPlots])
+
             ctx.reply(user, `you have bought a plot in **${ctx.msg.channel.guild.name}**!
-            You are able to buy ${maxGuildAmount - (userGuildPlots.length + 1)} more plots in this guild!`)
+            You are currently able to buy **${buyablePlots}** more plots in this guild!`)
         },
     })
 })
