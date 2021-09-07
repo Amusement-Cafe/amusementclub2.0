@@ -8,8 +8,12 @@ const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
 
 const {
-    check_effect
+    check_effect,
 } = require('./effect')
+
+const {
+    numFmt
+} = require('../utils/tools')
 
 const m_hero = require('./hero')
 
@@ -99,78 +103,33 @@ const clean_trans = async (ctx, now) => {
 }
 
 const bill_guilds = async (ctx, now) => {
-    const guild = await Guild.findOne({nextcheck: {$lt: now}, buildings: {$exists: true, $ne: []}})
+    const guild = await Guild.findOne({nextcheck: {$lt: now}, lock: {$exists: true, $ne: ''}})
 
     if(!guild) return;
     console.log(guild.id)
 
-    if(!guild.buildings || guild.buildings.length === 0) {
+    if(!guild.lockactive) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
         await guild.save()
         return
     }
 
     const report = []
-    const isolatedCtx = Object.assign({}, ctx, { guild, discord_guild: ctx.bot.guilds.find(x => x.id === guild.id) })
-    const cost = getMaintenanceCost(isolatedCtx)
-    const discount = Math.round(cost * guild.discount)
-    const total = Math.round(cost - discount)
-    const ratio = guild.balance / total
+    const total = guildLock.maintenance
+    let ratio = guild.balance / total
     guild.balance = Math.max(0, guild.balance - total)
 
     if(ratio == Infinity)
         ratio = 0
 
-    report.push(`Maintenance cost: **${total}** ${ctx.symbols.tomato}`)
-    if(guild.discount > 0) {
-        report.push(`Applied discount: **${guild.discount * 100}%** (${discount} ${ctx.symbols.tomato})`)
-    }
-
-    report.push(`Remaining guild balance: **${guild.balance}** ${ctx.symbols.tomato}`)
-
-    const past = asdate.subtract(new Date(), 7, 'days')
-    const activeUsers = await User.countDocuments({ 
-        discord_id: { $in: guild.userstats.map(x => x.id) },
-        lastdaily: { $gt: past }
-    })
-
-    if(activeUsers <= 5) {
-        guild.discount = .75
-        report.push(`Next maintenance discount: **75%**`)
-
-    } else if(activeUsers <= 20) {
-        guild.discount = (1 - (activeUsers / 20)).toFixed(2)
-        report.push(`Next maintenance discount: **${guild.discount * 100}%**`)
-
-    } else {
-        guild.discount = 0
-    }
+    report.push(`Maintenance cost: **${numFmt(total)}** ${ctx.symbols.tomato}`)
+    report.push(`Remaining guild balance: **${numFmt(guild.balance)}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
         guild.lockactive = false
-        report.push(`> Negative ratio resulted all buildings taking damage. The building will stop functioning if health goes lower than 50%.
-            Use \`->guild status\` to check building health\n`)
-
-        if(guild.lock)
-            report.push(`> Lock has been disabled until next check`)
-
-        guild.buildings.map(x => {
-            const damage = Math.round(10 * (1 - ratio) * Math.min(Math.random() * x.level, 2))
-            const info = ctx.items.find(y => y.id === x.id)
-            x.health -= damage
-            if(x.health <= 0 && x.level > 1) {
-                x.level--
-                x.health = 49
-                report.push(`${ctx.symbols.red_circle} **${info.name}** has dropped down to level **${x.level}**!`)
-            } else if((x.id != 'castle' || guild.buildings.length === 1) && x.health <= 0 && x.level <= 1) {
-                report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
-            }
-        })
-        
-        guild.buildings = guild.buildings.filter(x => x.health > 0)
+        report.push(`> Lock has been disabled until next check`)
     } else {
-        guild.buildings.map(x => x.health = Math.min(x.health + (x.health < 50? 10 : 5), 100))
-        report.push(`> All costs were covered! Positive ratio healed buildings by **5%**`)
+        report.push(`> All costs were covered!`)
         if(guild.lock && !guild.lockactive) {
            report.push(`> Guild lock is back!`)
         }
@@ -181,27 +140,20 @@ const bill_guilds = async (ctx, now) => {
     report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
     await guild.save()
 
-    m_hero.checkGuildLoyalty(isolatedCtx)
+    // m_hero.checkGuildLoyalty(isolatedCtx)
 
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
-
+    
     return ctx.send(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
-        author: { name: `Receipt for ${now}` },
-        description: report.join('\n'),
-        color: (ratio < 1? color.red : color.green),
+            author: { name: `Receipt for ${now}` },
+            description: report.join('\n'),
+            color: (ratio < 1? color.red : color.green),
     })
 }
 
-const getMaintenanceCost = (ctx) => { 
-    let reduce = 1
-    const castle = ctx.guild.buildings.find(x => x.id === 'castle')
-    if(castle)
-        reduce = (castle.level < 3? 1 : (castle.level < 5? .9 : .7))
-
-    const buildings = ctx.guild.buildings.map(x => ctx.items.find(y => y.id === x.id).levels[x.level - 1].maintenance).reduce((a, b) => a + b, 0)
-    const lockprice = ctx.guild.lock? guildLock.maintenance : 0
-    return Math.round((buildings + lockprice) * reduce)
+const getMaintenanceCost = (ctx) => {
+    return ctx.guild.lock? guildLock.maintenance : 0
 }
 
 const getBuildingInfo = (ctx, user, args) => {
@@ -218,10 +170,8 @@ const getBuildingInfo = (ctx, user, args) => {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${x.price}** ${ctx.symbols.tomato}
-                Maintenance: **${x.maintenance}** ${ctx.symbols.tomato}/day
-                Required guild level: **${x.level}**
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))}
 
     const heart = building.health < 50? '💔' : '❤️'

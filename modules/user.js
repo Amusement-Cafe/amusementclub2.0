@@ -3,7 +3,7 @@ const _         = require('lodash')
 const asdate    = require('add-subtract-date')
 
 const {
-    getAllUserIDs
+    getAllUserIDs,
 } = require('../utils/tools')
 
 const fetchOrCreate = async (ctx, userid, username) => {
@@ -19,7 +19,10 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
-        await ctx.reply(user, `welcome to **Amusement Club!** Please read \`${ctx.prefix}rules\` and use \`${ctx.prefix}help\` to learn more about the game`)
+        let resp = `welcome to **Amusement Club!** Please read \`${ctx.prefix}rules\` and use \`${ctx.prefix}help\` to learn more about the game. `
+        resp += `To view a list of cards you have claimed, use \`${ctx.prefix}cards\` or to summon a specific card try \`${ctx.prefix}summon cardName\`. `
+        resp += `Using \`${ctx.prefix}daily\` will reset the cost of your claims and give you a small tomato bonus`
+        await ctx.reply(user, resp)
     }
 
     if(user.username != username) {
@@ -51,18 +54,10 @@ const onUsersFromArgs = async (args, callback) => {
 }
 
 const getQuest = (ctx, user, tier, exclude) => {
-    const levels = ctx.guild.buildings.reduce((res, curr) => {
-        for(let i=0; i<curr.level; i++)
-            res.push(`${curr.id}${i + 1}`)
-        return res
-    }, [])
-    
     const available = ctx.quests.daily.filter(x => 
-        (!x.building || levels.includes(x.building))
-        && (!exclude || x.id != exclude)
+        (!exclude || x.id != exclude)
         && x.tier === tier
-        && x.id != 'tag2'
-        && x.id != 'tag4')
+        && x.can_drop)
 
     if(available.length > 0) {
         return _.sample(available)
@@ -70,8 +65,7 @@ const getQuest = (ctx, user, tier, exclude) => {
     
     return _.sample(ctx.quests.daily.filter(x => 
         x.id != exclude
-        && x.id != 'tag2'
-        && x.id != 'tag4'))
+    ))
 }
 
 module.exports = {

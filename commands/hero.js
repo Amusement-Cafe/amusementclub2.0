@@ -6,16 +6,17 @@ const colors        = require('../utils/colors')
 const Guild         = require('../collections/guild')
 
 const {
-    fetchOnly
+    fetchOnly,
 } = require('../modules/user')
 
 const {
-    XPtoLEVEL
+    XPtoLEVEL,
+    numFmt,
 } = require('../utils/tools')
 
 const {
     formatUserEffect,
-    withUserEffects
+    withUserEffects,
 } = require('../modules/effect')
 
 const { 
@@ -24,15 +25,15 @@ const {
     get_userSubmissions,
     withHeroes,
     getInfo,
-    reloadCache
+    reloadCache,
 } = require('../modules/hero')
 
 const { 
-    itemInfo
+    itemInfo,
 } = require('../modules/item')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const Anilist = new anilist();
@@ -174,11 +175,12 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
 
 cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
-    await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
+
     const hero = await get_hero(ctx, user.hero)
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
-        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5)
+        .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5).filter(y => y)
+
 
     if(pages.length === 0)
         pages.push(`You don't have any passive Effect Cards`)
@@ -227,11 +229,6 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     if(effect.cooldownends > now)
         return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
 
-    const dailystatname = `effect_${effect.id}`
-    if(user.dailystats[dailystatname])
-        return ctx.reply(user, `effects can be used only once per day. 
-            Try using it once again after you run \`->daily\``, 'red')
-
     const res = await effect.use(ctx, user, args.slice(1))
     if(!res.used)
         return ctx.reply(user, res.msg, 'red')
@@ -242,9 +239,6 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
     user.effects = user.effects.filter(x => x.uses === undefined || x.uses > 0)
     user.markModified('effects')
-
-    user.dailystats[dailystatname] = true
-    user.markModified('dailystats')
 
     await user.save()
 
@@ -314,7 +308,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     }
 
     const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
-    if(oldEffect) {
+    if(oldEffect && oldEffect.expires > now) {
         return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
             force: ctx.globals.force,
             question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
@@ -334,7 +328,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
-        return ctx.reply(user, `you have to have at least **${price}** ${ctx.symbols.tomato} to submit a hero`, 'red')
+        return ctx.reply(user, `you have to have at least **${numFmt(price)}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
     const charID = arg1.replace('https://', '').split('/')[2]
     if(!charID)
@@ -380,6 +374,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     const embed = { 
         title: `Submitting a hero`,
         description: `You are about to submit **${char.name.english}** from **${media.title.english}**.
+        > This submission will cost you **${numFmt(price)}** ${ctx.symbols.tomato}
         > It may take up some time to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,
         image: { url: char.image.large }

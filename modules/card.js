@@ -1,24 +1,29 @@
+const asdate    = require('add-subtract-date')
+const {firstBy} = require('thenby')
+
 const {
     cap,
     tryGetUserID,
     nameSort,
-    escapeRegex
+    escapeRegex,
 } = require('../utils/tools')
 
 const { 
-    Cardinfo 
-} = require('../collections')
-
-const { 
     bestColMatch, 
-    bestColMatchMulti 
+    bestColMatchMulti,
 } = require('./collection')
 
 const { 
-    fetchTaggedCards 
+    fetchTaggedCards,
 } = require('./tag')
 
-const asdate = require('add-subtract-date')
+const { 
+    evalCardFast,
+} = require('./eval')
+
+const { 
+    fetchInfo,
+} = require('./meta')
 
 const promoRarity = {
     halloween: '🎃',
@@ -32,6 +37,8 @@ const promoRarity = {
     christmas19: '☃️',
     birthday20: '🎈',
     christmas20: '🎁',
+    valentine21: '🌹',
+    birthday21: '🧁',
 }
 
 const formatName = (x) => {
@@ -41,14 +48,15 @@ const formatName = (x) => {
     //return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
-const parseArgs = (ctx, args, lastdaily) => {
-    lastdaily = lastdaily || asdate.subtract(new Date(), 1, 'day')
-    
+const parseArgs = (ctx, args, user) => {
+    const lastdaily = user? user.lastdaily: asdate.subtract(new Date(), 1, 'day')
+
     const cols = [], levels = [], keywords = []
     const anticols = [], antilevels = []
+    let sort
     const q = { 
         ids: [], 
-        sort: (a, b) => b.level - a.level,
+        sort: null,
         filters: [],
         tags: [],
         antitags: [],
@@ -58,6 +66,7 @@ const parseArgs = (ctx, args, lastdaily) => {
         me: false,
         bid: 0,
         fav: false,
+        evalQuery: false,
         userQuery: false,
     }
 
@@ -68,24 +77,32 @@ const parseArgs = (ctx, args, lastdaily) => {
             q.lastcard = true
 
         } else if((x[0] === '<' || x[0] === '>' || x[0] === '=' || x[0] === '\\') && x[1] != '@') {
-            switch(x) {
-                case '<date': q.sort = (a, b) => a.obtained - b.obtained; q.userQuery = true; break
-                case '>date': q.sort = (a, b) => b.obtained - a.obtained; q.userQuery = true; break
-                case '<amount': q.sort = (a, b) => a.amount - b.amount; break
-                case '>amount': q.sort = (a, b) => b.amount - a.amount; break
-                case '<name': q.sort = (a, b) => nameSort(a, b); break
-                case '>name': q.sort = (a, b) => nameSort(a, b) * -1; break
-                case '<star': q.sort = (a, b) => a.level - b.level; break
-                case '>star': q.sort = (a, b) => b.level - a.level; break
-                case '<rating': 
-                    q.sort = (a, b) => (a.rating || 0) - (b.rating || 0)
+            const lt = x[0] === '<'
+            switch(substr) {
+                case 'date':
+                    sort = sortBuilder(ctx, sort,(a, b) => a.obtained - b.obtained, lt)
                     q.userQuery = true
                     break
-                case '>rating': 
-                    q.sort = (a, b) => (b.rating || 0) - (a.rating || 0)
+                case 'amount':
+                    sort = sortBuilder(ctx, sort,(a, b) => a.amount - b.amount, lt)
+                    break
+                case 'name':
+                    sort = sortBuilder(ctx, sort,(a, b) => nameSort(a, b) , lt)
+                    break
+                case 'star':
+                    sort = sortBuilder(ctx, sort,(a, b) => a.level - b.level , lt)
+                    break
+                case 'col':
+                    sort = sortBuilder(ctx, sort,(a, b) => nameSort(a, b, "col") , lt)
+                    break
+                case 'eval':
+                    sort = sortBuilder(ctx, sort,(a, b) => evalSort(ctx, a, b) , lt)
+                    q.evalQuery = true
+                    break
+                case 'rating':
+                    sort = sortBuilder(ctx, sort,(a, b) => (a.rating || 0) - (b.rating || 0), lt)
                     q.userQuery = true
                     break
-                
                 default: {
                     const eq = x[1] === '='
                     eq? substr = x.substr(2): substr
@@ -107,17 +124,17 @@ const parseArgs = (ctx, args, lastdaily) => {
                 q.antitags.push(substr.substr(1))
             } else {
                 const m = x[0] === '-'
-                const mcol = bestColMatchMulti(ctx, substr)
                 switch(substr) {
                     case 'gif': q.filters.push(c => c.animated == m); break
                     case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); q.userQuery = true; break
                     case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
                     case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
-                    case 'rated': q.filters.push(c => m? c.rating: !c.rating); break
-                    case 'promo': m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
+                    case 'rated': q.filters.push(c => m? c.rating: !c.rating); q.userQuery = true; break
+                    case 'wish': q.filters.push(c => m? user.wishlist.includes(c.id): !user.wishlist.includes(c.id)); break
+                    case 'promo': const mcol = bestColMatchMulti(ctx, substr); m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
                     case 'diff': q.diff = m; break
                     case 'miss': q.diff = m; break
-                    case 'me': q.me = m; break
+                    case 'me':  q.me = m? 1: 2; break
                     case 'bid': q.bid = m? 1 : 2; break
                     default: {
                         const pcol = bestColMatch(ctx, substr)
@@ -152,8 +169,25 @@ const parseArgs = (ctx, args, lastdaily) => {
     q.isEmpty = (usetag = true) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !((q.tags[0] || q.antitags[0]) && usetag)
     }
+    if (!sort)
+        q.sort = firstBy((a, b) => b.level - a.level).thenBy("name")
+    else
+        q.sort = sort
 
     return q
+}
+
+const evalSort = (ctx, a, b) => {
+    if(evalCardFast(ctx, a) > evalCardFast(ctx, b))return 1
+    if(evalCardFast(ctx, a) < evalCardFast(ctx, b))return -1
+    return 0
+}
+
+const sortBuilder = (ctx, sort, sortby, lt) => {
+    if (!sort)
+        return firstBy(sortby, {direction: lt? "asc": "desc"})
+    else
+        return sort.thenBy(sortby, {direction: lt? "asc": "desc"})
 }
 
 const filter = (cards, query) => {
@@ -178,7 +212,7 @@ const addUserCard = (user, cardID) => {
     return 1
 }
 
-const removeUserCard = (user, cardID) => {
+const removeUserCard = (ctx, user, cardID) => {
     const matched = user.cards.findIndex(x => x.id == cardID)
     const card = user.cards[matched]
     user.cards[matched].amount--
@@ -186,8 +220,7 @@ const removeUserCard = (user, cardID) => {
     user.markModified('cards')
 
     if(card.amount === 0 && card.rating) {
-        console.log("calling remove rating")
-        removeRating(cardID, card.rating)
+        removeRating(ctx, cardID, card.rating)
     }
 
     return user.cards[matched]? user.cards[matched].amount : 0
@@ -206,7 +239,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     if(user.cards.length == 0)
         return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim\``, 'red')
 
-    const parsedargs = parseArgs(ctx, args, user.lastdaily)
+    const parsedargs = parseArgs(ctx, args, user)
     const map = mapUserCards(ctx, user)
     let cards = filter(map, parsedargs)
 
@@ -226,12 +259,13 @@ const withCards = (callback) => async (ctx, user, ...args) => {
     if(cards.length == 0)
         return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
+    cards.sort(parsedargs.sort)
+
     if(!parsedargs.lastcard && cards.length > 0) {
-        user.lastcard = bestMatch(cards).id
+        user.lastcard = cards[0].id
         await user.save()
     }
 
-    cards.sort(parsedargs.sort)
     return callback(ctx, user, cards, parsedargs, args)
 }
 
@@ -241,7 +275,7 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  * @return {Promise}
  */
 const withGlobalCards = (callback) => async(ctx, user, ...args) => {
-    const parsedargs = parseArgs(ctx, args)
+    const parsedargs = parseArgs(ctx, args, user)
     let allcards
     if(parsedargs.userQuery)
         allcards = mapUserCards(ctx, user)
@@ -259,9 +293,6 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         cards = cards.filter(x => !tgcards.includes(x.id))
     }
 
-    if(parsedargs.diff) 
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
-
     if(parsedargs.lastcard)
         cards = [ctx.cards[user.lastcard]]
 
@@ -269,6 +300,12 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
         return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
 
     cards.sort(parsedargs.sort)
+
+    if(!parsedargs.lastcard && cards.length > 0) {
+        user.lastcard = cards[0].id
+        await user.save()
+    }
+
     return callback(ctx, user, cards, parsedargs, args)
 }
 
@@ -280,7 +317,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
 const withMultiQuery = (callback) => async (ctx, user, ...args) => {
     const argsplit = args.join(' ').split(',').map(x => x.trim())
     const parsedargs = [], cards = []
-    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '), user.lastdaily)))
+    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '), user)))
 
     if(!parsedargs[0] || parsedargs[0].isEmpty())
         return ctx.reply(user, `please specify at least one card query`, 'red')
@@ -291,17 +328,20 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
             if(x.lastcard)
                 cards.push(map.filter(x => x.id === user.lastcard))
             else {
-                cards.push(filter(map, x).sort(x.sort))
+                let batch = filter(map, x)
 
                 if(x.tags.length > 0) {
                     const tgcards = await fetchTaggedCards(x.tags)
-                    cards[i] = cards[i].filter(x => tgcards.includes(x.id))
+                    batch = batch.filter(x => tgcards.includes(x.id))
                 }
 
                 if(x.antitags.length > 0) {
                     const tgcards = await fetchTaggedCards(x.antitags)
-                    cards = cards.filter(x => !tgcards.includes(x.id))
+                    batch = batch.filter(x => !tgcards.includes(x.id))
                 }
+
+                batch.sort(x.sort)
+                cards.push(batch)
             }
 
             if(cards[i].length == 0)
@@ -316,20 +356,12 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
 
 const bestMatch = cards => cards? cards.sort((a, b) => a.name.length - b.name.length)[0] : undefined
 
-const fetchInfo = async (id) => {
-    let info = await Cardinfo.findOne({id})
-    info = info || (await new Cardinfo())
-    info.id = id
-    return info
-}
-
-const removeRating = async (id, rating) => {
+const removeRating = async (ctx, id, rating) => {
     console.log(`removing rating ${id} ${rating}`)
-    const info = await Cardinfo.findOne({id})
+    const info = fetchInfo(ctx, id)
     info.ratingsum -= rating
     info.usercount--
     await info.save()
-    
 }
 
 module.exports = Object.assign(module.exports, {

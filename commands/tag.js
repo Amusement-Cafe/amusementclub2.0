@@ -1,5 +1,9 @@
-const {cmd, pcmd}   = require('../utils/cmd')
-const colors        = require('../utils/colors')
+const {cmd, pcmd}       = require('../utils/cmd')
+const colors            = require('../utils/colors')
+const Tag               = require('../collections/tag')
+const {parseAuditArgs}  = require("../modules/audit")
+const dateFormat        = require('dateformat')
+const {getHelpEmbed}    = require('./misc')
 
 const {
     fetchOnly,
@@ -9,10 +13,13 @@ const {
 const { 
     new_tag,
     withTag,
+    withPurgeTag,
     fetchCardTags,
     delete_tag,
     fetchTagNames,
     fetchUserTags,
+    logTagAudit,
+    logTagAdd,
 } = require('../modules/tag')
 
 const {
@@ -20,17 +27,23 @@ const {
     withGlobalCards,
     bestMatch,
 } = require('../modules/card')
-const card = require('../modules/card')
 
 cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
 
     const resp = []
     resp.push(`Card: **${formatName(card)}**`)
+
+    if(author) {
+        resp.push(`Author: **${author.username}**`)
+    } 
     resp.push(`Upvotes: **${tag.upvotes.length}**`)
     resp.push(`Downvotes: **${tag.downvotes.length}**`)
-    resp.push(`Author: **${author.username}**`)
     resp.push(`Status: **${tag.status}**`)
+
+    if(!author) {
+        resp.push(`**This tag was automatically added by the system**`)
+    } 
 
     return ctx.send(ctx.msg.channel.id, {
         title: `#${tag.name}`,
@@ -56,18 +69,21 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
         if(tag && tag.status != 'clear')
             return ctx.reply(user, `this tag has been banned by moderator`, 'red')
 
-        if(tgTag.length > 25)
-            return ctx.reply(user, `tag can't be longer than **25** characters`, 'red') 
+        if(tgTag.length > 35)
+            return ctx.reply(user, `tag can't be longer than **35** characters`, 'red')
 
         if(tgTag.length < 2)
             return ctx.reply(user, `tag can't be shorter than **2** characters`, 'red') 
     }
+    let question = `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`
+
+    if (parsedargs.firstTag)
+        question += `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
 
     ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         check,
         force: ctx.globals.force,
-        question: `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`,
-
+        question,
         onConfirm: async (x) => {
             tag = tag || await new_tag(user, tgTag, card)
 
@@ -132,6 +148,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
     })
 }))
 
+
 cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
@@ -179,21 +196,29 @@ cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) =>
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
-    tag.status = 'removed'
-    await tag.save()
+        const targetUser = await fetchOnly(tag.author)
+        let log = await logTagAudit(ctx, user, tgTag, false, targetUser)
+        tag.status = 'removed'
+        await tag.save()
+        if (log)
+            await log.save()
 
-    return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
+        return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
 
         const target = await fetchOnly(tag.author)
+
         if (tag.status === 'banned') {
             target.ban = target.ban || {}
             target.ban.tags = target.ban.tags - 1 || 0
             target.markModified('ban')
             await target.save()
+            let log = await logTagAudit(ctx, user, tgTag, true, target, true)
+            if (log)
+                await log.save()
 
             try {
                 await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been cleared by a moderator.
@@ -202,7 +227,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'],
             } catch {
                 ctx.reply(user, `failed to send a warning to the user.`, 'red')
             }
+        } else{
+            await logTagAudit(ctx, user, tgTag, false, target, true)
         }
+
 
         tag.status = 'clear'
         await tag.save()
@@ -214,16 +242,24 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
     withTag(async (ctx, user, card, tag, tgTag) => {
 
     const target = await fetchOnly(tag.author)
+
+    if(!target) {
+        return ctx.reply(user, `cannot ban system added tag. Please use remove function.`, 'red')
+    }
+
     target.ban = target.ban || {}
     target.ban.tags = target.ban.tags + 1 || 1
     tag.status = 'banned'
     target.markModified('ban')
     await tag.save()
     await target.save()
+    let log = await logTagAudit(ctx, user, tgTag, true, target)
+    if (log)
+        await log.save()
 
     try {
         await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
-            Please make sure you add valid tags in the future. Learn more with \`->help tag\`
+            Please make sure you add valid tags in the future as tags are not personal. Learn more with \`->rules\`
             You have **${3 - target.ban.tags}** warning(s) remaining`, 'red')
     } catch {
         ctx.reply(user, `failed to send a warning to the user.`, 'red')
@@ -243,6 +279,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         resp.push(`Downvotes: **${tag.downvotes.length}**`)
         resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
         resp.push(`Status: **${tag.status}**`)
+        resp.push(`Date Created: **${dateFormat(tag._id.getTimestamp(), "yyyy-mm-dd HH:MM:ss")}**`)
 
         const embed = {
             author: {name: `Info on tag #${tag.name}`},
@@ -257,7 +294,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
             pages, embed,
             buttons: ['back', 'forward'],
-            switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum]}
+            switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum] || "no upvotes Found"}
             })
 
 }))
@@ -284,4 +321,94 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
         }
     })
 })
+
+pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, visible, args) => {
+    let question = `Do you want to remove all tags with the name ${args.tags[0]}?`
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: async (x) => {
+            let cardCount = visible.length
+            visible.map(async (tag) => {
+                tag.status = 'removed'
+                await tag.save()
+            })
+            ctx.reply(user, `removed tag ${args.tags[0]} from ${cardCount} cards.`)
+        },
+        onDecline: async (x) => {
+            ctx.reply(user, `tag purging was declined`, 'red')
+        }
+    })
+}))
+
+pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, visible, args) => {
+    let target = await fetchOnly(args.ids[0])
+    let question = `Do you want to remove all tags made by **${target.username}** with no upvotes?`
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        onConfirm: async () => {
+            await visible.map(async (tag, i) => {
+                    tag.status = 'removed'
+                    await tag.save()
+            })
+            let log = await logTagAudit(ctx, user, `**User Purged** ${visible.length} tags removed`, false, target)
+            await log.save()
+            ctx.reply(user, `removed all tags made by **${target.username}** with no upvotes`)
+        },
+        onDecline: async () => {
+            ctx.reply(user, `tag purging was declined`, 'red')
+        }
+    })
+}, false))
+
+pcmd(['admin', 'mod'], ['tag', 'log', 'removed'],async (ctx, user, ...args) => {
+    let parsedArgs = parseAuditArgs(ctx, args)
+
+    if (!parsedArgs.id)
+        return ctx.reply(user, 'valid user is required!', 'red')
+
+    let target = await fetchOnly(parsedArgs.id)
+
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to add **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log?`,
+        onConfirm: async () => {
+            let auditlog = await logTagAdd(ctx, user, target, parsedArgs, false)
+            await auditlog.save()
+            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log`)
+        },
+        onDecline: async () => {
+            ctx.reply(user, `tag log adding was declined`, 'red')
+        }
+    })
+})
+
+pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
+    let parsedArgs = parseAuditArgs(ctx, args)
+
+    if (!parsedArgs.id)
+        return ctx.reply(user, 'valid user is required!', 'red')
+
+    let target = await fetchOnly(parsedArgs.id)
+
+    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to add **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log?`,
+        onConfirm: async () => {
+            let auditlog = await logTagAdd(ctx, user, target, parsedArgs, true)
+            await auditlog.save()
+            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log`)
+        },
+        onDecline: async () => {
+            ctx.reply(user, `tag log adding was declined`, 'red')
+        }
+    })
+})
+
+pcmd(['admin','mod', 'tagmod'], ['tagmod', 'help'], async (ctx, user) => {
+
+    const help = ctx.audithelp.find(x => x.type === 'tagmod')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+})
+
+
 

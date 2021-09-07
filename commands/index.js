@@ -12,5 +12,8 @@ require('./smith.js')
 require('./hero.js')
 require('./transaction.js')
 require('./collection.js')
+require('./preferences.js')
+require('./meta.js')
+require('./plot.js')
 
 module.exports = {}

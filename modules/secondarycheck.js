@@ -1,5 +1,8 @@
 const colors    = require('../utils/colors')
 const User      = require('../collections/user')
+const {
+    plotPayout,
+}   = require('./plot')
 
 const check_achievements = async (ctx, user, action, channelID) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
@@ -16,6 +19,8 @@ const check_achievements = async (ctx, user, action, channelID) => {
             achievement_name: complete.id,
             user_xp: user.xp,
         })
+        await plotPayout(ctx, 'tavern', 1, 50)
+
 
         return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
@@ -53,6 +58,11 @@ const check_daily = async (ctx, user, action, channelID) => {
         return
 
     await user.save()
+    let guildID
+    if (channelID)
+        guildID = ctx.bot.getChannel(channelID).guild.id
+
+    await plotPayout(ctx,'tavern', 2, 20, guildID, user.discord_id)
 
     return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,

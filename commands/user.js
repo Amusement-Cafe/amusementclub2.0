@@ -7,8 +7,9 @@ const _                 = require('lodash')
 const {
     cap,
     claimCost,
+    numFmt,
     promoClaimCost,
-    XPtoLEVEL
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
@@ -17,18 +18,18 @@ const {
     withGlobalCards,
     parseArgs,
     filter,
-    mapUserCards
+    mapUserCards,
 } = require('../modules/card')
 
 const {
     fetchOnly,
-    getQuest
+    getQuest,
 } = require('../modules/user')
 
 const {
     addGuildXP,
     getBuilding,
-    rankXP
+    rankXP,
 } = require('../modules/guild')
 
 const {
@@ -40,20 +41,34 @@ const {
 } = require('../modules/item')
 
 const {
-    getPending
+    getPending,
 } = require('../modules/transaction')
 
 const {
-    fetchTaggedCards
+    fetchTaggedCards,
 } = require('../modules/tag')
 
 const { 
-    get_hero
+    get_hero,
 }   = require('../modules/hero')
 
 const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
+
+const {
+    getQueueTime,
+    getVialCostFast,
+    evalCardFast,
+} = require('../modules/eval')
+
+const {
+    getLastAnnouncement,
+} = require('../modules/preferences')
+
+const {
+    plotPayout,
+} = require("../modules/plot");
 
 cmd('bal', 'balance', (ctx, user) => {
     let max = 1
@@ -69,10 +84,10 @@ cmd('bal', 'balance', (ctx, user) => {
 
     const embed = {
         color: colors.green,
-        description: `you have **${Math.round(user.exp)}** ${ctx.symbols.tomato} and **${Math.round(user.vials)}** ${ctx.symbols.vial}
-            Your next claim will cost **${claimCost(user, 0, 1)}** ${ctx.symbols.tomato}
-            ${ctx.guild? `Next claim in current guild: **${claimCost(user, ctx.guild.tax, 1)}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
-            You can claim **${max - 1} cards** ${ctx.guild? `in current guild `:''}with your balance`
+        description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato}, **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial} and **${numFmt(Math.round(user.lemons))}** ${ctx.symbols.lemon}
+            Your next claim will cost **${numFmt(claimCost(user, 0, 1))}** ${ctx.symbols.tomato}
+            ${ctx.guild? `Next claim in current guild: **${numFmt(claimCost(user, ctx.guild.tax, 1))}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
+            You can claim **${numFmt(max - 1)} cards** ${ctx.guild? `in current guild `:''}with your balance`
     }
 
     if(promo) {
@@ -82,9 +97,9 @@ cmd('bal', 'balance', (ctx, user) => {
 
         embed.fields = [{
             name: `Promo balance`,
-            value: `You have **${Math.round(user.promoexp)}** ${promo.currency}
-                Your next claim will cost **${promoClaimCost(user, 1)}** ${promo.currency}
-                You can claim **${max - 1} ${promo.name} cards** with your balance`
+            value: `You have **${numFmt(Math.round(user.promoexp))}** ${promo.currency}
+                Your next claim will cost **${numFmt(promoClaimCost(user, 1))}** ${promo.currency}
+                You can claim **${numFmt(max - 1)} ${promo.name} cards** with your balance`
         }]
     }
 
@@ -99,7 +114,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`->item info [item id]\`
+                { name: `Usage`, value: `To view the item details use \`->inv info [item id]\`
                     To use the item \`->inv use [item id]\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
@@ -108,9 +123,9 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     })
 }))
 
-cmd(['inv', 'use'], withUserItems((ctx, user, items, args) => {
+cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
-    const itemCheck = checkItem(ctx, user, item)
+    const itemCheck = await checkItem(ctx, user, item)
 
     if(itemCheck)
         return ctx.reply(user, itemCheck, 'red')
@@ -143,11 +158,8 @@ cmd('daily', async (ctx, user) => {
 
     if(future < now) {
         const quests = []
-        const gbank = getBuilding(ctx, 'gbank')
-        let amount = gbank? 800 : 400
-        const promoAmount = 500 + ((user.dailystats.promoclaims * 60) || 0)
-        //let amount = 5000
-        const tavern = getBuilding(ctx, 'tavern')
+        let amount = 500
+        const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
@@ -170,20 +182,17 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
 
-        if(tavern) {
-            quests.push(getQuest(ctx, user, 1, quests[0].id))
-            user.dailyquests.push(quests[1].id)
+        quests.push(getQuest(ctx, user, 2, quests[0].id))
+        user.dailyquests.push(quests[1].id)
 
-            if(tavern.level > 1) {
-                quests.push(getQuest(ctx, user, 2, quests[0].id))
-                user.dailyquests.push(quests[2].id)
-            }
-        }
+        //if(tavern.level > 1) {
+            //quests.push(getQuest(ctx, user, 2, quests[0].id))
+            //user.dailyquests.push(quests[2].id)
+        //}
         user.markModified('dailyquests')
-        await user.save()
 
         addGuildXP(ctx, user, 10)
-        ctx.guild.balance += (gbank && gbank.level > 2)? XPtoLEVEL(user.xp) : 0
+        ctx.guild.balance += XPtoLEVEL(user.xp)
         await ctx.guild.save()
 
         if(hero) {
@@ -203,7 +212,7 @@ cmd('daily', async (ctx, user) => {
         if(trs.length > 0) {
             const more = trs.splice(3, trs.length).length
             fields.push({name: `Incoming pending transactions`, 
-                value: trs.map(x => `\`${x.id}\` ${formatName(ctx.cards[x.card])} from **${x.from}**`).join('\n') 
+                value: trs.map(x => `\`${x.id}\` ${x.cards.length} cards from **${x.from}**`).join('\n')
                     + (more > 0? `\nand **${more}** more...` : '')
             })
         }
@@ -216,9 +225,29 @@ cmd('daily', async (ctx, user) => {
             })
         }
 
-        fields.push({name: `Get rewarded`,
-            value: 'Don\'t forget to vote for the bot every day and get in-game rewards. Check `->vote` for more information.'
+        const announce = await getLastAnnouncement(ctx, user)
+        if(announce) {
+            if (announce.body.length > 512) {
+                announce.body = announce.body.substr(0, 512)
+                announce.body += `...\n**This announcement has been trimmed to keep this daily message short. To see the full announcement message use \`${ctx.prefix}announcement\`**`
+            }
+
+            fields.push({
+                name: announce.title,
+                value: announce.body,
+            })
+
+            user.lastannounce = announce.date
+        }
+
+        fields.push({
+            name: `Get rewarded`,
+            value: `Don\'t forget to vote for the bot every day and get in-game rewards. Check \`->vote\` for more information.`,
         })
+
+        user.dailynotified = false
+        await user.save()
+        await plotPayout(ctx, 'gbank', 1, 5)
 
         ctx.mixpanel.track(
             "Daily", { 
@@ -229,8 +258,8 @@ cmd('daily', async (ctx, user) => {
         })
 
         return ctx.reply(user, {
-            description: `you received daily **${amount}** ${ctx.symbols.tomato} ${promo? `and **${promoAmount}** ${promo.currency}`: ""}
-                You now have **${Math.round(user.exp)}** ${ctx.symbols.tomato} ${promo? `and **${user.promoexp}** ${promo.currency}`: ""}`,
+            description: `you received daily **${numFmt(amount)}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(promoAmount)}** ${promo.currency}`: ""}
+                You now have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(user.promoexp)}** ${promo.currency}`: ""}`,
             color: colors.green,
             fields
         })
@@ -243,12 +272,20 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10] ` : '') + (parsedargs.evalQuery? `${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: '')
     })
+
+    const evalTime = getQueueTime()
+    if(evalTime > 0 && parsedargs.evalQuery) {
+        return ctx.reply(user, {
+            description: `some of your cards are still processing their evals.
+                Please check in **${msToTime(evalTime)}** for results.`
+        }, 'yellow')
+    }
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
-        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+        embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 
@@ -257,12 +294,12 @@ cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => x.fav)
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
-        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
+        return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cardstr, 15),
-        embed: { author: { name: `${user.username}, your cards (${cards.length} results)` } }
+        embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 
@@ -277,21 +314,43 @@ cmd('profile', async (ctx, user, ...args) => {
         })
 
     const completedSum = user.completedcols.length
-    const cloutsum = user.completedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
+    const cloutsum = user.cloutedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user.joined || user._id.getTimestamp()
     const cards = mapUserCards(ctx, user)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
-
+    let price = 0
+    let vials = 0
+    cards.map(card => {
+        const eval = evalCardFast(ctx, card)
+        if(eval >= 0) {
+            price += Math.round(eval) * card.amount
+        } else {
+            price = NaN
+        }
+        if(card.level < 4 && eval > 0) {
+            vials += getVialCostFast(ctx, card, eval) * card.amount
+        }
+    })
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
-    resp.push(`Cards: **${user.cards.length}** | Stars: **${cards.map(x => x.level).reduce((a, b) => a + b, 0)}**`)
+    resp.push(`Cards: **${numFmt(user.cards.length)}** | Stars: **${numFmt(cards.map(x => x.level).reduce((a, b) => a + b, 0))}**`)
+
+    if (pargs.ids.length > 0 && !isNaN(price)) {
+        resp.push(`Cards Worth: **${numFmt(price)}** ${ctx.symbols.tomato} or **${numFmt(vials)} ${ctx.symbols.vial}**`)
+    } else if (!isNaN(price)) {
+        resp.push(`Net Worth: **${numFmt(price + user.exp)}** ${ctx.symbols.tomato} or **${numFmt(vials + user.vials)} ${ctx.symbols.vial}**`)
+    } else {
+        const evalTime = getQueueTime()
+        resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
+    }
+
     resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
 
     if(completedSum > 0) {
-        resp.push(`Completed collections: **${user.completedcols.length}**`)
+        resp.push(`Completed collections: **${numFmt(user.completedcols.length)}**`)
     }
     if(cloutsum > 0) {
-        resp.push(`Overall clout: **${cloutsum}**`)
+        resp.push(`Overall clout: **${numFmt(cloutsum)}**`)
     }
 
     if(ctx.guild) {
@@ -318,7 +377,7 @@ cmd('profile', async (ctx, user, ...args) => {
 }).access('dm')
 
 cmd('diff', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
@@ -337,6 +396,11 @@ cmd('diff', async (ctx, user, ...args) => {
         otherCards = otherCards.filter(x => tgcards.includes(x.id))
     }
 
+    if(newArgs.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(newArgs.antitags)
+        otherCards = otherCards.filter(x => !tgcards.includes(x.id))
+    }
+
     const ids = user.cards.map(x => x.id)
     const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
         .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
@@ -347,12 +411,12 @@ cmd('diff', async (ctx, user, ...args) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
-        embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
 })
 
 cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
@@ -372,6 +436,11 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
         mappedCards = mappedCards.filter(x => tgcards.includes(x.id))
     }
 
+    if(newArgs.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(newArgs.antitags)
+        mappedCards = mappedCards.filter(x => !tgcards.includes(x.id))
+    }
+
     const ids = otherCards.map(x => x.id)
     const diff = mappedCards.filter(x => ids.indexOf(x.id) === -1)
         .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
@@ -382,12 +451,12 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
-        embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
 })
 
 cmd('has', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args)
+    const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
         return ctx.qhelp(ctx, user, 'has')
@@ -421,7 +490,7 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
-        embed: { author: { name: `${user.username}, cards that you don't have (${diff.length} results)` } }
+        embed: { author: { name: `${user.username}, cards that you don't have (${numFmt(diff.length)} results)` } }
     })
 }))
 
@@ -438,7 +507,8 @@ cmd('quest', 'quests', async (ctx, user) => {
 })
 
 cmd('stats', async (ctx, user) => {
-    const keys = Object.keys(user.dailystats).filter(x => !x.startsWith('effect_'))
+    const keys = Object.keys(user.dailystats).filter(x => user.dailystats[x] > 0 && user.dailystats[x] !== true)
+
     if(keys.length === 0)
         return ctx.reply(user, `no statistics to display today`)
 

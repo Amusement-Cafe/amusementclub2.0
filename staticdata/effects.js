@@ -1,7 +1,6 @@
 const _ = require('lodash')
 const { byAlias, completed } = require('../modules/collection')
 const { addUserCard, formatName } = require('../modules/card')
-const { claimCost } = require('../utils/tools')
 
 module.exports = [
     {
@@ -46,6 +45,11 @@ module.exports = [
         name: 'Impossible Spell Card',
         desc: 'Usable effects have 40% less cooldown',
         passive: true
+    }, {
+        id: 'festivewish',
+        name: 'Festival of Wishes',
+        desc: 'Get notified when a card on your wishlist is auctioned',
+        passive: true
     },
 
     {
@@ -73,7 +77,7 @@ module.exports = [
         passive: false,
         cooldown: 32,
         use: async (ctx, user) => {
-            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1 && !user.dailyquests.includes(x.id)))
+            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1 && !user.dailyquests.includes(x.id) && x.can_drop))
             if(!quest)
                 return { msg: `cannot find a unique quest. Please, complete some quests before using this effect.`, used: false }
 
@@ -119,7 +123,7 @@ module.exports = [
     }, {
         id: 'judgeday',
         name: 'The Judgment Day',
-        desc: 'Grants effect of any useable card',
+        desc: 'Grants effect of almost any usable card',
         passive: false,
         cooldown: 48,
         use: async (ctx, user, args) => {
@@ -132,8 +136,10 @@ module.exports = [
             if(!effect)
                 return { msg: `effect with ID \`${args[0]}\` was not found or it is not usable`, used: false }
 
-            if(effect.id === 'judgeday')
-                return { msg: `you cannot use that effect card`, used: false }
+            let excludedEffects = ["memoryval", "memoryxmas", "memorybday", "memoryhall", "judgeday"]
+
+            if(excludedEffects.includes(effect.id))
+                return { msg: `you cannot use that effect card with Judgment Day`, used: false }
 
             const res = await effect.use(ctx, user, args.slice(1))
             return res
@@ -141,13 +147,143 @@ module.exports = [
     }, {
         id: 'claimrecall',
         name: 'Claim Recall',
-        desc: 'Refunds previous claim cost (excluding tax) when used. For multiple card claims it refunds cost of the last card claimed',
+        desc: 'Claim cost gets recalled by 4 claims, as if they never happened',
         passive: false,
         cooldown: 15,
         use: async (ctx, user) => {
-            const cost = claimCost(user, 0, 1, user.dailystats.claims - 1 || 0)
-            user.exp += cost
-            return { msg: `you got **${cost}** ${ctx.symbols.tomato} back`, used: true }
+            let validUse = user.dailystats.claims > 4
+
+            if (!validUse)
+                return { msg: `you can only use Claim Recall when you have claimed more than 4 cards!`, used: false }
+
+            user.dailystats.claims -= 4
+
+            return { msg: `claim cost has been reset to **${user.dailystats.claims * 50}**`, used: true }
+        }
+    }, {
+        id: 'memoryxmas',
+        name: 'Memories of Christmas Cheer',
+        desc: 'Gives a random card from Christmas promos',
+        passive: false,
+        cooldown: 120,
+        use: async (ctx, user) => {
+            let thisEffect = 'memoryxmas'
+            user.effectusecount[thisEffect] += 1
+            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("christmas") && x.level < 4))
+
+            if(!card)
+                return { msg: `cannot fetch a card from a Christmas collection currently, try again later`, used: false }
+
+
+            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
+            if (spaceTime) {
+                let oldCard = card
+                card = _.sample(ctx.cards.filter(x => x.col.startsWith("christmas") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
+                if (!card)
+                    card = oldCard
+            }
+            addUserCard(user, card.id)
+            user.lastcard = card.id
+            user.markModified('cards')
+            user.markModified('effectusecount')
+            await completed(ctx, user, card)
+            await user.save()
+
+            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+        }
+    }, {
+        id: 'memoryhall',
+        name: 'Memories of Halloween Frights',
+        desc: 'Gives a random card from Halloween promos',
+        passive: false,
+        cooldown: 120,
+        use: async (ctx, user) => {
+            let thisEffect = 'memoryhall'
+            user.effectusecount[thisEffect] += 1
+            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("halloween")))
+
+            if(!card)
+                return { msg: `cannot fetch a card from a Halloween collection currently, try again later`, used: false }
+            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
+            if (spaceTime) {
+                let oldCard = card
+                card = _.sample(ctx.cards.filter(x => x.col.startsWith("halloween") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
+                if (!card)
+                    card = oldCard
+            }
+            addUserCard(user, card.id)
+            user.lastcard = card.id
+            user.markModified('cards')
+            user.markModified('effectusecount')
+            await completed(ctx, user, card)
+            await user.save()
+
+            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+        }
+    }, {
+        id: 'memorybday',
+        name: 'Memories of Birthdays Past',
+        desc: 'Gives a random card from Birthday promos',
+        passive: false,
+        cooldown: 120,
+        use: async (ctx, user) => {
+            let thisEffect = 'memorybday'
+            user.effectusecount[thisEffect] += 1
+
+            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("birthday")))
+
+            if(!card)
+                return { msg: `cannot fetch a card from a Birthday collection currently, try again later`, used: false }
+
+            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
+            if (spaceTime) {
+                let oldCard = card
+                card = _.sample(ctx.cards.filter(x => x.col.startsWith("birthday") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
+                if (!card)
+                    card = oldCard
+            }
+
+            addUserCard(user, card.id)
+            user.lastcard = card.id
+            user.markModified('cards')
+            user.markModified('effectusecount')
+            await completed(ctx, user, card)
+            await user.save()
+
+            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+        }
+    }, {
+        id: 'memoryval',
+        name: 'Memories of Valentines Day',
+        desc: 'Gives a random card from Valentines promos',
+        passive: false,
+        cooldown: 120,
+        use: async (ctx, user) => {
+            let thisEffect = 'memoryval'
+            user.effectusecount[thisEffect] += 1
+            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("valentine")))
+
+            if(!card)
+                return { msg: `cannot fetch a card from a Valentine collection currently, try again later`, used: false }
+
+
+            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
+            if (spaceTime) {
+                let oldCard = card
+                card = _.sample(ctx.cards.filter(x => x.col.startsWith("valentine") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
+                if (!card)
+                    card = oldCard
+            }
+
+            addUserCard(user, card.id)
+            user.lastcard = card.id
+            user.markModified('cards')
+            user.markModified('effectusecount')
+            await completed(ctx, user, card)
+            await user.save()
+
+
+            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
         }
     }
 ]

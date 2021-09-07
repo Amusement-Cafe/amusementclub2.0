@@ -1,5 +1,7 @@
 const {cmd}     = require('../utils/cmd')
+const {numFmt}  = require('../utils/tools')
 const colors    = require('../utils/colors')
+const msToTime  = require('pretty-ms')
 const _         = require('lodash')
 
 const {
@@ -9,42 +11,49 @@ const {
     withGlobalCards,
     bestMatch,
     removeUserCard,
-    withMultiQuery
+    withMultiQuery,
 } = require('../modules/card')
 
 const {
-    completed
+    completed,
 } = require('../modules/collection')
 
 const {
     evalCard, 
-    getVialCost 
+    getVialCost,
+    getVialCostFast,
+    getQueueTime,
 } = require('../modules/eval')
 
 const {
-    addGuildXP,
-    getBuilding
-} = require('../modules/guild')
-
-const {
-    check_effect
+    check_effect,
 } = require('../modules/effect')
 
 const {
-    updateUser
+    updateUser,
 } = require('../modules/user')
 
+const {
+    plotPayout,
+} = require('../modules/plot')
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
+    const batch1 = cards[0]
+    const batch2 = cards[1]
 
-    if(!hub)
-        return ctx.reply(user, `forging is possible only in the guild with **Smithing Hub level 1+**. Buy one in the \`->store\``, 'red')
+    let card1, card2
 
-    const card1 = bestMatch(cards[0])
-    let card2 = bestMatch(cards[1])
+    if(!batch1 || batch1.length == 0) {
+        return ctx.reply(user, `couldn't find any matching cards`, 'red')
+    }
 
-    if(!card2 || card1.id === card2.id)
-        card2 = bestMatch(cards[0].filter(x => x.id != card1.id))
+    card1 = batch1[0]
+
+    if(batch2 && batch2.length > 0) {
+        card2 = batch2[0]
+    } else {
+        card2 = batch1.filter(x => x.id != card1.id)[0]
+    }
 
     if(!card1 || !card2)
         return ctx.reply(user, `not enough cards found matching this query.
@@ -63,13 +72,13 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const vialres = Math.round((vialavg === Infinity? 0 : vialavg) * .5)
 
     if(user.exp < cost)
-        return ctx.reply(user, `you need at least **${cost}** ${ctx.symbols.tomato} to forge these cards`, 'red')
+        return ctx.reply(user, `you need at least **${numFmt(cost)}** ${ctx.symbols.tomato} to forge these cards`, 'red')
 
     if((card1.fav && card1.amount == 1) || (card2.fav && card2.amount == 1))
         return ctx.reply(user, `your query contains last copy of your favourite card(s). Please remove it from favourites and try again`, 'red')
 
-    const question = `Do you want to forge ${formatName(card1)}**(x${card1.amount})** and ${formatName(card2)}**(x${card2.amount})** using **${cost}** ${ctx.symbols.tomato}?
-        You will get **${vialres}** ${ctx.symbols.vial} and a **${card1.level} ${ctx.symbols.star} card**`
+    const question = `Do you want to forge ${formatName(card1)}**(x${card1.amount})** and ${formatName(card2)}**(x${card2.amount})** using **${numFmt(cost)}** ${ctx.symbols.tomato}?
+        You will get **${numFmt(vialres)}** ${ctx.symbols.vial} and a **${card1.level} ${ctx.symbols.star} card**`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
@@ -89,8 +98,10 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 if(!newcard)
                     return ctx.reply(user, `an error occured, please try again`, 'red')
 
-                removeUserCard(user, card1.id)
-                removeUserCard(user, card2.id)
+                removeUserCard(ctx, user, card1.id)
+                removeUserCard(ctx, user, card2.id)
+                await completed(ctx, user, card1)
+                await completed(ctx, user, card2)
                 await user.save()
 
                 addUserCard(user, newcard.id)
@@ -100,12 +111,14 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, newcard)
                 await user.save()
 
+                await plotPayout(ctx, 'smithhub', 1, newcard.level * 10)
+
                 const usercard = user.cards.find(x => x.id === newcard.id)
                 return ctx.reply(user, {
                     image: { url: newcard.url },
                     color: colors.blue,
                     description: `you got ${formatName(newcard)}!
-                        **${vialres}** ${ctx.symbols.vial} were added to your account
+                        **${numFmt(vialres)}** ${ctx.symbols.vial} were added to your account
                         ${usercard.amount > 1 ? `*You already have this card*` : ''}`
                 })
             } catch(e) {
@@ -117,11 +130,6 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 }))
 
 cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
-
-    if(!hub || hub.level < 2)
-        return ctx.reply(user, `liquifying is possible only in the guild with **Smithing Hub level 2+**`, 'red')
-
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -129,9 +137,6 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     let vials = Math.round((await getVialCost(ctx, card)) * .25)
     if(vials === Infinity)
         vials = 5
-
-    if(parsedargs.isEmpty())
-        return ctx.reply(user, `please specify a card`, 'red')
 
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
@@ -143,7 +148,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
-    const question = `Do you want to liquify ${formatName(card)} into **${vials}** ${ctx.symbols.vial}?
+    const question = `Do you want to liquify ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
         ${card.amount === 1? 'This is the last copy that you have' : `You will have **${card.amount - 1}** card(s) left`}`
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
@@ -154,14 +159,15 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
             try {
                 user.vials += vials
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-                removeUserCard(user, card.id)
-                await updateUser(user, {
-                    $inc: {'dailystats.liquify': 1}, 
-                    $set: {vials: user.vials, cards: user.cards}
-                })
+                user.dailystats[`liquify${card.level}`] += 1
+                removeUserCard(ctx, user, card.id)
+                await completed(ctx, user, card)
+                await user.save()
 
-                ctx.reply(user, `card ${formatName(card)} was liquified. You got **${vials}** ${ctx.symbols.vial}
-                    You have **${user.vials}** ${ctx.symbols.vial}
+                await plotPayout(ctx, 'smithhub', 2, card.level * 15)
+
+                ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
+                    You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
                     You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
             } catch(e) {
                 return ctx.reply(user, `an error occured while executing this command. 
@@ -171,17 +177,140 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
-cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const hub = getBuilding(ctx, 'smithhub')
+cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'liq')
 
-    if(!hub || hub.level < 2)
-        return ctx.reply(user, `drawing cards is possible only in the guild with **Smithing Hub level 2+**`, 'red')
+    cards.splice(100, cards.length)
+    
+    if(cards.some(x => x.level > 3))
+        return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
+    
+    if(cards.some(x => x.fav && x.amount === 1))
+        return ctx.reply(user, `you are about to liquify the last copy of your favourite card. 
+            Please, use \`->liq all !fav\` to include only non-favourite cards.`, 'yellow')
 
+    let vials = 0
+    cards.forEach(card => {
+        let cost = getVialCostFast(ctx, card)
+        if(cost >= 0) {
+            if(cost === Infinity)
+                cost = 5
+
+            if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+                cost += cost * .25
+
+            cost = Math.round(cost * .25)
+            vials += cost
+        } else {
+            vials = NaN
+        }
+    })
+
+    if(isNaN(vials)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, `some cards from this request need price evaluation.
+            Please try again in **${msToTime(evalTime)}**.`, 'yellow')
+    }
+
+    const question = `Do you want to liquify **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
+        To view cards that are going to be liquified, use \`->liq preview [query]\``
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question,
+        embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
+        onConfirm: async (x) => { 
+            try {
+                user.vials += vials
+
+                cards.map(c => {
+                    removeUserCard(ctx, user, c.id)
+                    user.dailystats.liquify += 1
+                    user.dailystats[`liquify${c.level}`] += 1
+                })
+                await user.save()
+
+                ctx.reply(user, `${cards.length} cards were liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
+                    You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+            } catch(e) {
+                return ctx.reply(user, `an error occured while executing this command. 
+                    Please try again`, 'red')
+            }
+        },
+    })
+}))
+
+cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'liq')
+
+    cards.splice(100, cards.length)
+    
+    if(cards.some(x => x.level > 3))
+        return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
+
+    let vials = 0
+    const resp = cards.map(card => {
+        let cost = getVialCostFast(ctx, card)
+        if(cost >= 0) {
+            if(cost === Infinity)
+                cost = 5
+
+            if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+                cost += cost * .25
+
+            cost = Math.round(cost * .25)
+            vials += cost
+        } else {
+            vials = NaN
+        }
+
+        return {
+            cost,
+            cardname: `**${numFmt(cost)}** ${ctx.symbols.vial} - ${formatName(card)}`,
+        }
+    })
+
+    if(isNaN(vials)) {
+        const evalTime = getQueueTime()
+        return ctx.reply(user, `some cards from this request need price evaluation.
+            Please try again in **${msToTime(evalTime)}**.`, 'yellow')
+    }
+
+    resp.sort((a, b) => b.cost - a.cost)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(resp.map(x => x.cardname), 10),
+        embed: {
+            author: { name: `Liquify preview (total ${numFmt(vials)} ${ctx.symbols.vial})` },
+            description: '',
+            color: colors.blue,
+        }
+    })
+}))
+
+cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
 
+    if (parsedargs.diff) {
+        let waitMSG
+        if (cards.length > 1500)
+            waitMSG = await ctx.reply(user, `you have used \`-diff\` or \`-miss\` in this query and the result contains a lot of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
+
+        cards = cards.filter(x => !user.cards.some(y => x.id === y.id))
+
+        if (waitMSG)
+            await ctx.bot.deleteMessage(waitMSG.channel.id, waitMSG.id, 'removal of time warning')
+    }
+
     const amount = user.dailystats.draw || 0
     const card = bestMatch(cards)
+
+    if (!card)
+        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+
     const cost = await getVialCost(ctx, card)
     const extra = Math.floor(cost * .2 * amount)
     const vials = cost + extra
@@ -198,11 +327,11 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     if(user.vials < vials)
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
-            You need **${vials}** ${ctx.symbols.vial} (+**${extra}**) but you have **${user.vials}** ${ctx.symbols.vial}`, 'red')
+            You need **${numFmt(vials)}** ${ctx.symbols.vial} (+**${numFmt(extra)}**) but you have **${numFmt(user.vials)}** ${ctx.symbols.vial}`, 'red')
 
-    let question = `Do you want to draw ${formatName(card)} using **${vials}** ${ctx.symbols.vial}?`
+    let question = `Do you want to draw ${formatName(card)} using **${numFmt(vials)}** ${ctx.symbols.vial}?`
     if(amount > 0) {
-        question += `\n(+**${extra}** for your #${amount + 1} draw today)`
+        question += `\n(+**${numFmt(extra)}** for your #${amount + 1} draw today)`
     }
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
@@ -213,16 +342,17 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
             addUserCard(user, card.id)
             user.lastcard = card.id
             await completed(ctx, user, card)
+            user.dailystats.draw += 1
+            user.dailystats[`draw${card.level}`] += 1
             await user.save()
-            await updateUser(user, {$inc: {'dailystats.draw': 1}})
-            
-            user.dailystats.draw = user.dailystats.draw + 1 || 1
+
+            await plotPayout(ctx, 'smithhub', 3, card.level * 20)
 
             return ctx.reply(user, {
                 image: { url: card.url },
                 color: colors.blue,
                 description: `you got ${formatName(card)}!
-                    You have **${user.vials}** ${ctx.symbols.vial} remaining`
+                    You have **${numFmt(user.vials)}** ${ctx.symbols.vial} remaining`
             })
         }
     })

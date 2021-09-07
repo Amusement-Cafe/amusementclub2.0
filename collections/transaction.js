@@ -15,6 +15,6 @@ module.exports = model('Transaction', {
     status:         { type: String },
     time:           { type: Date },
 
-    card:           { type: Number, default: -1 },
+    cards:          { type: Array, default: [] },
     price:          { type: Number, default: 0 }
 })

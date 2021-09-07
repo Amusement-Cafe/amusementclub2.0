@@ -7,6 +7,6 @@ module.exports = model('AuditAucSell', {
     sold:           { type: Number, default: 0 },
     unsold:         { type: Number, default: 0 },
 
-    time:           { type: Date },
+    time:           { type: Date, default: new Date() },
 
 })

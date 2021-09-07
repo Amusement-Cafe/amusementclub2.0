@@ -18,8 +18,14 @@ const {
     audit,
     user,
     guild,
-    hero
+    hero,
+    eval,
+    webhooks,
+    meta,
+    preferences,
+    plot,
 } = require('./modules')
+const announcement = require('./collections/announcement')
 
 var userq = []
 var guildq = []
@@ -30,10 +36,12 @@ module.exports.modules = require('./modules')
 module.exports.create = async ({ 
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
-        maintenance, invite, data, dbl, analytics
+        maintenance, invite, data, dbl, 
+        analytics, evalc, uniqueFrequency
     }) => {
 
     const emitter = new Emitter()
+    const cardInfos = []
 
     const fillCardData = (carddata) => {
         data.cards = carddata.map((x, i) => {
@@ -51,6 +59,13 @@ module.exports.create = async ({
         })
     }
 
+    const fillCardOwnerCount = async (carddata) => {
+        const infos = await meta.fetchAllInfos()
+        infos.map(x => {
+            cardInfos[x.id] = x
+        })
+    }
+
     /* prefill in the urls */
     fillCardData(data.cards)
 
@@ -60,6 +75,8 @@ module.exports.create = async ({
     /* basics */
     const mcn = await mongoose.connect(mongoUri, mongoOpt)
     const bot = new Eris(token, { maxShards: shards })
+    /* prefill in the card owner count */
+    await fillCardOwnerCount(data.cards)
 
     /* create our glorious sending fn */
     const send = (ch, content, userid) => { 
@@ -104,6 +121,7 @@ module.exports.create = async ({
     const symbols = {
         tomato: '`🍅`',
         vial: '`🍷`',
+        lemon: '`🍋`',
         star: '★',
         auc_sbd: '🔹',
         auc_lbd: '🔷',
@@ -138,12 +156,14 @@ module.exports.create = async ({
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: require('./staticdata/help'),
+        audithelp: require('./staticdata/audithelp'),
         items: require('./staticdata/items'),
         achievements: require('./staticdata/achievements'),
         quests: require('./staticdata/quests'),
         effects: require('./staticdata/effects'),
         promos: data.promos,
         boosts: data.boosts,
+        cardInfos,
         filter,
         direct, /* DM reply function to the user */
         symbols,
@@ -153,11 +173,14 @@ module.exports.create = async ({
         invite,
         prefix,
         dbl,
+        uniqueFrequency,
         audit: auditc,
+        eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel,
         settings: {
             wip: maintenance,
+            wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
         }
     }
 
@@ -175,6 +198,7 @@ module.exports.create = async ({
     const gtick = (ctx) => {
         const now = new Date()
         guild.bill_guilds(ctx, now)
+        plot.castlePayments(ctx, now)
     }
 
     /* service tick for user checks */
@@ -196,15 +220,61 @@ module.exports.create = async ({
         guild.clean_trans(ctx, now)
     }
 
-    setInterval(tick.bind({}, ctx), 5000)
-    setInterval(gtick.bind({}, ctx), 10000)
-    setInterval(qtick.bind({}, ctx), 1000)
-    setInterval(htick.bind({}, ctx), 60000 * 2)
-    setInterval(atick.bind({}, ctx), 600000)
-    //setInterval(htick.bind({}, ctx), 6000)
+    const etick = () => {
+        eval.checkQueue(ctx)
+    }
 
-    if(dbl.token)
-        connectDBL(ctx);
+    const notifytick = () => {
+        preferences.notifyCheck(ctx)
+    }
+
+    let tickArray, reconnecting
+
+    const startTicks = () => {
+        const auctionTick   =   setInterval(tick.bind({}, ctx), 5000)
+        const guildTick     =   setInterval(gtick.bind({}, ctx), 10000)
+        const userQueueTick =   setInterval(qtick.bind({}, ctx), 1000)
+        const heroTick      =   setInterval(htick.bind({}, ctx), 60000 * 2)
+        const auditTick     =   setInterval(atick.bind({}, ctx), 600000)
+        const evalTick      =   setInterval(etick.bind({}, ctx), eval.queueTick)
+        const notifyTick    =   setInterval(notifytick.bind({}, ctx), 6000)
+        tickArray = [auctionTick, guildTick, userQueueTick, heroTick, auditTick, evalTick, notifyTick]
+    }
+
+    const stopTicks = () => {
+        tickArray.map(x => clearInterval(x))
+    }
+
+    const startWebhooks = () => {
+        webhooks.listen(ctx)
+    }
+
+    const stopWebhooks = () => {
+        webhooks.stopListener(ctx)
+    }
+
+    startTicks()
+    startWebhooks()
+
+    const ayanoConnect = () => {
+        if (!reconnecting) {
+            reconnecting = true
+            bot.connect()
+            return
+        }
+        startTicks()
+        startWebhooks()
+        bot.connect()
+    }
+
+    const ayanoDisconnect = () => {
+        stopTicks()
+        stopWebhooks()
+        bot.disconnect()
+    }
+
+    // if(dbl.token)
+    //     connectDBL(ctx);
     
     /* events */
     mongoose.connection.on('error', err => {
@@ -228,6 +298,7 @@ module.exports.create = async ({
         }
 
         if (!msg.content.startsWith(curprefix)) return;
+        let capitalMsg = msg.content.trim().substr(curprefix).split(/ +/)
         msg.content = msg.content.toLowerCase()
 
         try {
@@ -241,6 +312,7 @@ module.exports.create = async ({
                 && !cntnt.includes(setbotmsg)
                 && !cntnt.includes(setreportmsg)
                 && !cntnt.startsWith('sum')
+                && !cntnt.startsWith('pat')
                 && !curguild.botchannels.some(x => x === msg.channel.id)) {
 
                 /* skip cooldown guilds */
@@ -264,15 +336,15 @@ module.exports.create = async ({
 
                 return
             }
-
             /* fill in additional context data */
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
+                capitalMsg,
                 reply, /* quick reply function to the channel */
                 globals: {}, /* global parameters */
                 discord_guild: msg.channel.guild,  /* current discord guild */
+                prefix: curprefix, /* current prefix */
             })
-
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
 
@@ -282,7 +354,7 @@ module.exports.create = async ({
 
             const action = args[0]
             if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
-                return reply(usr, 'bot is currently under maintenance. Please check again later |ω･)ﾉ', 'yellow')
+                return reply(usr, ctx.settings.wipMsg, 'yellow')
             }
 
             if(usr.ban.full) {
@@ -328,7 +400,6 @@ module.exports.create = async ({
     bot.on('messageReactionAdd', async (msg, emoji, userID) => {
         if (!msg.author || msg.author.id != bot.user.id || userID == bot.user.id)
             return
-
         try {
             await pgn.trigger(userID, msg, emoji.name)
         } catch (e) {
@@ -353,8 +424,8 @@ module.exports.create = async ({
 
     return {
         emitter,
-        connect: () => bot.connect(),
-        disconnect: () => bot.disconnect(),
+        connect: () => ayanoConnect(),
+        disconnect: () => ayanoDisconnect(),
         reconnect: () => bot.disconnect({ reconnect: 'auto' }),
         updateCards: (carddata) => fillCardData(carddata),
         updateCols: (coldata) => data.collections = coldata,

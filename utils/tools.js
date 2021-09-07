@@ -24,6 +24,16 @@ const promoClaimCost = (user, amount, totalClaims) => {
     return Math.round(total)
 }
 
+const plotBuyCost = (user, amount, totalPlots) => {
+    let total = 0
+    let plots = totalPlots || 0
+    for (let i = 0; i < amount; i++) {
+        plots++
+        total += plots * 50
+    }
+    return Math.round(total)
+}
+
 const tryGetUserID = (inp) => {
     inp = inp.trim()
 
@@ -92,6 +102,10 @@ const generateNextId = (lastId, idLength = 4) => {
     return nextId;
 }
 
+const numFmt = (number) => {
+    return number.toLocaleString('en-US')
+}
+
 //const XPtoLEVEL = (xp) => xp === 0? 0 : Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0)
 const XPtoLEVEL = (xp) => Math.floor(Math.sqrt(xp * 2))
 
@@ -112,5 +126,7 @@ module.exports = {
     XPtoLEVEL,
     LEVELtoXP,
     arrayChunks,
-    escapeRegex
+    escapeRegex,
+    numFmt,
+    plotBuyCost
 }

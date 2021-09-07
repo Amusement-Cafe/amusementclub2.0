@@ -1,12 +1,13 @@
 const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
+const Announcement      = require('../collections/announcement')
 const msToTime          = require('pretty-ms')
 const _                 = require('lodash')
 const pjson             = require('../package.json');
 const { fetchOnly }     = require('../modules/user')
 const { 
     arrayChunks, 
-    getAllUserIDs 
+    getAllUserIDs,
 } = require('../utils/tools')
 
 cmd('help', async (ctx, user, ...args) => {
@@ -36,13 +37,13 @@ cmd('help', async (ctx, user, ...args) => {
 
             if(ch.id != ctx.msg.channel.id)
                 await ctx.reply(user, `help was sent to you. 
-                    You can also use *-here* (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
+                    You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
 
         } catch (e) {
             await ctx.reply(user, `failed to send direct message to you ੨( ･᷄ ︵･᷅ )ｼ
                 Please make sure you have **Allow direct messages from server members** enabled in server privacy settings.
                 You can do it in any server that you share with bot.
-                You also can add *-here* (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`, 'red')
+                You also can add \`-here\` (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`, 'red')
         }
     }
 }).access('dm')
@@ -50,6 +51,16 @@ cmd('help', async (ctx, user, ...args) => {
 cmd('rules', async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, getHelpEmbed(ctx, help, `->`))
+}).access('dm')
+
+cmd('announcement', async (ctx, user) => {
+    const announcement = (await Announcement.find().sort({ date: -1 }))[0]
+    if (!announcement)
+        return ctx.reply(user, `an announcement cannot currently be found. please try again later!`, 'red')
+    return ctx.reply(user, {
+        author: { name: `Latest Announcement: ` + announcement.title },
+        description: announcement.body
+    }, 'blue')
 }).access('dm')
 
 cmd('baka', async (ctx, user, ...args) => {
@@ -84,7 +95,7 @@ cmd('invite', async (ctx, user) => {
 
 const getHelpEmbed = (ctx, o, prefix) => {
 
-    const footerText = `Amusement Club Alexandrite | xQAxThF | v${pjson.version} | by NoxCaos#4905`
+    const footerText = `Amusement Club Amethyst | xQAxThF | v${pjson.version} | by NoxCaos#4905`
     const embed = {
         title: o.title, 
         description: o.description.replace(/->/g, prefix), fields: [],
@@ -122,3 +133,7 @@ const pats = [
     '(*´・ω・)ノ(-ω-｀*)',
     '(o・_・)ノ”(ノ_＜。)'
 ]
+
+module.exports = {
+    getHelpEmbed
+}

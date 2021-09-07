@@ -1,17 +1,23 @@
-const {pcmd} = require('../utils/cmd')
+const {pcmd}        = require('../utils/cmd')
+const Announcement  = require('../collections/announcement')
 
 const {
-    onUsersFromArgs
+    getHelpEmbed,
+} = require("../commands/misc");
+
+const {
+    onUsersFromArgs,
+    fetchOnly,
 } = require('../modules/user')
 
 const {
-    byAlias
+    byAlias,
 } = require('../modules/collection')
 
 const {
     checkGuildLoyalty,
     get_hero,
-    getGuildScore
+    getGuildScore,
 } = require('../modules/hero')
 
 const {
@@ -22,8 +28,27 @@ const {
     bestMatch,
 } = require('../modules/card')
 
-const {fetchOnly} = require('../modules/user')
+const {
+    fetchInfo,
+} = require("../modules/meta");
+
+const {
+    evalCard,
+    evalCardFast,
+} = require("../modules/eval");
+
+const {
+    numFmt,
+} = require('../utils/tools')
+
 const colors = require('../utils/colors')
+
+pcmd(['admin'], ['sudo', 'help'], async (ctx, user, ...args) => {
+    const help = ctx.audithelp.find(x => x.type === 'admin')
+    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+})
 
 pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
     const rpl = ['']
@@ -80,7 +105,7 @@ pcmd(['admin', 'mod'], ['sudo', 'award'], ['sudo', 'add', 'balance'], async (ctx
 
         target.exp += amount
         await target.save()
-        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.tomato} to **${target.username}** (${target.discord_id})`)
+        rpl.push(`\`✅\` added '${numFmt(amount)}' ${ctx.symbols.tomato} to **${target.username}** (${target.discord_id})`)
     })
 
     return ctx.reply(user, rpl.join('\n'))
@@ -97,7 +122,24 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], async (ctx, user, ...args) => {
 
         target.vials += amount
         await target.save()
-        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.vial} to **${target.username}** (${target.discord_id})`)
+        rpl.push(`\`✅\` added '${numFmt(amount)}' ${ctx.symbols.vial} to **${target.username}** (${target.discord_id})`)
+    })
+
+    return ctx.reply(user, rpl.join('\n'))
+})
+
+pcmd(['admin', 'mod'], ['sudo', 'add', 'lemons'], async (ctx, user, ...args) => {
+    const rpl = ['']
+
+    await onUsersFromArgs(args, async (target, newargs) => {
+        const amount = parseInt(newargs[0])
+
+        if(!amount)
+            throw new Error(`this command requires award amount`)
+
+        target.lemons += amount
+        await target.save()
+        rpl.push(`\`✅\` added '${amount}' ${ctx.symbols.lemon} to **${target.username}** (${target.discord_id})`)
     })
 
     return ctx.reply(user, rpl.join('\n'))
@@ -129,7 +171,7 @@ pcmd(['admin', 'mod'], ['sudo', 'remove', 'card'], withGlobalCards(async (ctx, u
         throw new Error(`cannot find user with that ID`)
 
     const card = bestMatch(cards)
-    removeUserCard(target, card.id)
+    removeUserCard(ctx, target, card.id)
     await target.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from **${target.username}**`)
@@ -199,6 +241,87 @@ pcmd(['admin', 'mod'], ['sudo', 'sum'], withGlobalCards(async (ctx, user, cards,
     })
 }))
 
+pcmd(['admin', 'mod'], ['sudo', 'reset', 'eval'], async (ctx, user, arg) => {
+    const info = fetchInfo(ctx, arg)
+    if (!info)
+        return ctx.reply(user, 'card not found!', 'red')
+    info.aucevalinfo.newaucprices = []
+    info.aucevalinfo.evalprices= []
+    info.aucevalinfo.auccount = 0
+    info.aucevalinfo.lasttoldeval = -1
+    await info.save()
+    await evalCard(ctx, ctx.cards[arg])
+    return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
+})
+
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    const info = fetchInfo(ctx, cards[0].id)
+    let evalDiff
+    let newEval = await evalCardFast(ctx, cards[0])
+    let lastEval = info.aucevalinfo.lasttoldeval > 0? info.aucevalinfo.lasttoldeval: newEval
+
+
+
+    if (lastEval > newEval)
+        evalDiff = `-${numFmt(lastEval - newEval)}`
+    else
+        evalDiff = `+${numFmt(newEval - lastEval)}`
+
+    let evalPrices = info.aucevalinfo.evalprices.length > 0? info.aucevalinfo.evalprices.join(', '): 'empty'
+    let aucPrices = info.aucevalinfo.newaucprices.length > 0? info.aucevalinfo.newaucprices.join(', '): 'empty'
+    let pricesEmbed = {
+        author: { name: `Eval info for card ${cards[0].name}, ID: ${cards[0].id}` },
+        fields: [
+            {
+                name: "Card Link",
+                value: `${formatName(cards[0])}`,
+                inline: true
+            },
+            {
+                name: "Currently Used Eval Prices List",
+                value: `${evalPrices}`
+            },
+            {
+                name: "Current Auc Prices List",
+                value: `${aucPrices}`
+            },
+            {
+                name: "Old Eval",
+                value: `${numFmt(lastEval)}`,
+                inline: true
+            },
+            {
+                name: "New Eval",
+                value: `${numFmt(newEval)}`,
+                inline: true
+            },
+            {
+                name: "Eval Diff",
+                value: evalDiff,
+                inline: true
+            }
+
+        ],
+        color: colors.green
+    }
+
+    await ctx.send(ctx.msg.channel.id, pricesEmbed)
+}))
+
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed: { footer: { text: `Run \`->sudo eval info\`first to make sure you have the correct card! ` } },
+        question: `**${user.username}**, do you want to force waiting auction prices into eval for ${formatName(cards[0])}?`,
+        onConfirm: async (x) => {
+            const info = fetchInfo(ctx, cards[0].id)
+            info.aucevalinfo.newaucprices.map(x => info.aucevalinfo.evalprices.push(x))
+            info.aucevalinfo.newaucprices = []
+            await info.save()
+            return ctx.reply(user, `all awaiting auction prices are now set for eval!`)
+        }
+    })
+}))
+
 pcmd(['admin'], ['sudo', 'crash'], (ctx) => {
     throw `This is a test exception`
 })
@@ -228,6 +351,30 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
 })
 
 pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) => {
+    ctx.settings.wipMsg = args.length > 0? ctx.capitalMsg.join(' '): 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
     ctx.settings.wip = !ctx.settings.wip
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
+})
+
+pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
+    const split = ctx.capitalMsg.join(' ').split(',')
+    const title = split.shift()
+    const body = split.join()
+
+    if(!title || !body) {
+        return ctx.reply(`required format: \`->sudo announce title text, body text\``, '')
+    }
+
+    const announcement = new Announcement()
+    announcement.date = new Date()
+    announcement.title = title
+    announcement.body = body
+    await announcement.save()
+
+    return ctx.reply(user, {
+        title,
+        author: { name: `New announcement set` },
+        description: body,
+        footer: { text: `Date: ${announcement.date}` },
+    })
 })
