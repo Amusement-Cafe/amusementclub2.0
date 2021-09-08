@@ -183,8 +183,8 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
                         pages: ctx.pgn.getPages(res.problems, 15),
                         embed: {
                             author: { name: `Following cards were not found:` },
+                            color: colors.yellow,
                         },
-                        color: colors.yellow,
                     })
                 }
 

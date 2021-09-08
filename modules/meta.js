@@ -56,7 +56,12 @@ const setSourcesFromRawData = (ctx, data) => {
     let count = 0
     entrees.filter(x => x.split(expr).length === 2).map(x => {
         const contents = x.split(expr)
-        const cardName = contents[0].trim()
+        const cardName = contents[0]
+            .trim()
+            .replace(/'`/, "")
+            .replace(/\s+/, "_")
+            .toLowerCase()
+
         const link = contents[1].trim()
         const card = ctx.cards.find(c => c.level == cardName[0] && c.name === cardName.substring(2))
 
