@@ -85,7 +85,9 @@ const registerTopggVote = async (ctx, vote) => {
 
 const registerDblVote = async (ctx, vote) => {
     // TODO: add streak
-    var votingUser = await fetchOnly(vote.user)
+    console.log(vote)
+
+    var votingUser = await fetchOnly(vote.id)
 
     if(!votingUser) 
         return
@@ -96,8 +98,7 @@ const registerDblVote = async (ctx, vote) => {
 
     return ctx.direct(votingUser, {
         color: color.blue,
-        description: `thank you for voting! You got **${500}${ctx.symbols.tomato}**
-        --streak--`
+        description: `thank you for voting! You got **${500}${ctx.symbols.tomato}**`
     })
 }
 
