@@ -85,9 +85,9 @@ const registerTopggVote = async (ctx, vote) => {
 
 const registerDblVote = async (ctx, vote) => {
     // TODO: add streak
-    console.log(vote)
+    console.log(vote.body)
 
-    var votingUser = await fetchOnly(vote.id)
+    var votingUser = await fetchOnly(vote.body.id)
 
     if(!votingUser) 
         return

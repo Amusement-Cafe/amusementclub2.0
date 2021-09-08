@@ -53,6 +53,8 @@ const setSourcesFromRawData = (ctx, data) => {
     const entrees = data.split('\n')
     const problems = []
     const expr = /\s-\s/
+    const urlExpr = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
+
     let count = 0
     entrees.filter(x => x.split(expr).length === 2).map(x => {
         const contents = x.split(expr)
@@ -62,11 +64,11 @@ const setSourcesFromRawData = (ctx, data) => {
             .replace(/\s+/, "_")
             .toLowerCase()
 
-        const link = contents[1].trim()
+        const link = x.match(urlExpr)[0]
         const card = ctx.cards.find(c => c.level == cardName[0] && c.name === cardName.substring(2))
 
-        if(!card) {
-            problems.push(cardName)
+        if(!card || !link) {
+            problems.push(`${cardName} -(${x})-`)
         } else {
             const info = fetchInfo(ctx, card.id)
             if(!info.source) {
