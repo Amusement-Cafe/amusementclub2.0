@@ -170,7 +170,7 @@ const parseArgs = (ctx, args, user) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !((q.tags[0] || q.antitags[0]) && usetag)
     }
     if (!sort)
-        q.sort = firstBy((a, b) => b.level - a.level).thenBy("name")
+        q.sort = firstBy((a, b) => b.level - a.level).thenBy("col").thenBy("name")
     else
         q.sort = sort
 

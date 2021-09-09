@@ -415,7 +415,7 @@
             },
             {
                 "title": "->guild donate [amount]",
-                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance, if the guild has `🍋` lemons, then for every 100 tomatoes you donate you can get 1 lemon"
+                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance that can go towards a guild lock."
             },
             {
                 "title": "->guild set tax [percentage]",
@@ -580,7 +580,7 @@
     {
         "type": ["plot", "plots"],
         "title": "About Plots",
-        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nCap rates are in the following order: 300, 600, 1200, 1800, 3600.",
+        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nPlease note that only one building per type is allowed in a single guild. If you would like to have or utilize multiple buildings they need to be installed in other guilds.",
         "fields": [
             {
                 "title": "->plots",
@@ -592,7 +592,7 @@
             },
             {
                 "title": "->plot buy",
-                "description": "Buy an empty plot with lemons in current guild."
+                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by 50, so your 10th plot would cost 500 lemons"
             },
             {
                 "title": "->plot info [plot #]",

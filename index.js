@@ -427,10 +427,10 @@ module.exports.create = async ({
         connect: () => ayanoConnect(),
         disconnect: () => ayanoDisconnect(),
         reconnect: () => bot.disconnect({ reconnect: 'auto' }),
-        updateCards: (carddata) => fillCardData(carddata),
-        updateCols: (coldata) => data.collections = coldata,
-        updatePromos: (promodata) => data.promos = promodata,
-        updateBoosts: (boostdata) => data.boosts = boostdata,
+        updateCards: (carddata) => {fillCardData(carddata); ctx.cards = data.cards},
+        updateCols: (coldata) => ctx.collections = coldata,
+        updatePromos: (promodata) => ctx.promos = promodata,
+        updateBoosts: (boostdata) => ctx.boosts = boostdata,
         updateWords: (wordsdata) => filter.addWords(...wordsdata)
     }
 }
