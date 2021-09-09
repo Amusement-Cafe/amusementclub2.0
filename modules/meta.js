@@ -49,18 +49,29 @@ const setCardSource = async (ctx, cardID, source) => {
     await info.save()
 }
 
-const setSourcesFromRawData = (ctx, data) => {
+const setSourcesFromRawData = (ctx, data, collection) => {
     const entrees = data.split('\n')
     const problems = []
-    let count = 0
-    entrees.filter(x => x.split('-').length === 2).map(x => {
-        const contents = x.split('-')
-        const cardName = contents[0].trim()
-        const link = contents[1].trim()
-        const card = ctx.cards.find(c => c.level == cardName[0] && c.name === cardName.substring(2))
+    const expr = /\s-\s/
+    const urlExpr = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
 
-        if(!card) {
-            problems.push(cardName)
+    let count = 0
+    entrees.filter(x => x.split(expr).length === 2).map(x => {
+        const contents = x.split(expr)
+        const cardName = contents[0]
+            .trim()
+            .replace(/'`/, "")
+            .replace(/\s+/, "_")
+            .toLowerCase()
+
+        const link = x.match(urlExpr)[0]
+        const card = ctx.cards.find(
+            c => c.level == cardName[0] && 
+            c.name === cardName.substring(2) &&
+            (!collection || c.col === collection.id))
+
+        if(!card || !link) {
+            problems.push(`${cardName} -(${x})-`)
         } else {
             const info = fetchInfo(ctx, card.id)
             if(!info.source) {

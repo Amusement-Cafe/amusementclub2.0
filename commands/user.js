@@ -185,10 +185,6 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 2, quests[0].id))
         user.dailyquests.push(quests[1].id)
 
-        //if(tavern.level > 1) {
-            //quests.push(getQuest(ctx, user, 2, quests[0].id))
-            //user.dailyquests.push(quests[2].id)
-        //}
         user.markModified('dailyquests')
 
         addGuildXP(ctx, user, 10)
@@ -532,9 +528,23 @@ cmd('achievements', 'ach', async (ctx, user) => {
 })
 
 cmd('vote', async (ctx, user) => {
+    const now = new Date()
+    const future = asdate.add(user.lastvote, 12, 'hours')
+    const topggTime = msToTime(future - now, { compact: true })
+
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
-        description: `You can vote for Amusement Club every 12 hours and get rewards.
-        [Vote on top.gg](${ctx.dbl.url}) to get free cards.`
+        description: `You can vote for Amusement Club **every 12 hours** and get rewards.
+        Make sure you have allowed messages from server memebers in order to receive rewards in DMs.
+        - [Vote on top.gg](${ctx.dbl.topggUrl}) to get **free cards** (${future > now? topggTime : `ready`})
+        - [Vote on Discord Bot List](${ctx.dbl.dblUrl}) to get **free ${ctx.symbols.tomato}**`,
+        
+        fields: [
+            {
+                name: `Get notified`,
+                value: `You can enable bot notifications to let you know that it is time to vote. 
+                Simply run \`${ctx.prefix}prefs set notify vote true\``
+            }
+        ]
     }, user.discord_id)
 })
