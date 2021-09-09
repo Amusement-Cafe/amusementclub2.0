@@ -171,13 +171,24 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, ...args) => {
     https.get(ctx.msg.attachments[0].url, res => {
+        const colArg = args[0]
+        let col;
+
+        if (colArg) {
+            col = bestColMatch(ctx, colArg.replace('-', ''))
+
+            if (!col) {
+                return ctx.reply(user, `collection with name \`${colArg}\` was no found`, 'red')
+            }
+        }
+
         res.setEncoding('utf8')
 
         let rawData = ''
         res.on('data', (chunk) => { rawData += chunk })
         res.on('end', () => {
             try {
-                const res = setSourcesFromRawData(ctx, rawData)
+                const res = setSourcesFromRawData(ctx, rawData, col)
                 if(res.problems.length > 0) {
                     ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
                         pages: ctx.pgn.getPages(res.problems, 15),

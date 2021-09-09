@@ -49,7 +49,7 @@ const setCardSource = async (ctx, cardID, source) => {
     await info.save()
 }
 
-const setSourcesFromRawData = (ctx, data) => {
+const setSourcesFromRawData = (ctx, data, collection) => {
     const entrees = data.split('\n')
     const problems = []
     const expr = /\s-\s/
@@ -65,7 +65,10 @@ const setSourcesFromRawData = (ctx, data) => {
             .toLowerCase()
 
         const link = x.match(urlExpr)[0]
-        const card = ctx.cards.find(c => c.level == cardName[0] && c.name === cardName.substring(2))
+        const card = ctx.cards.find(
+            c => c.level == cardName[0] && 
+            c.name === cardName.substring(2) &&
+            (!collection || c.col === collection.id))
 
         if(!card || !link) {
             problems.push(`${cardName} -(${x})-`)
