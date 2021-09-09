@@ -18,7 +18,7 @@ const {
 cmd(['plot'], ['plots'], async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
-        return ctx.reply(user, 'You have no plots!', 'red')
+        return ctx.reply(user, 'You have no plots in this guild!', 'red')
     let pages = []
 
     lots.map((x, i) => {
@@ -105,7 +105,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
 
             let buyablePlots = _.min([affordablePlots - 1, userAllowedPlots, guildAllowedPlots])
 
-            ctx.reply(user, `you have bought a plot in **${ctx.msg.channel.guild.name}**!
+            ctx.reply(user, `you have bought a plot for **${cost}** ${ctx.symbols.lemon} in **${ctx.msg.channel.guild.name}**!
             You are currently able to buy **${buyablePlots}** more plots in this guild!`)
         },
     })
@@ -254,12 +254,4 @@ cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
             You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
         }
     })
-})
-
-pcmd(['admin'], ['sudo', 'plots', 'clear'], async (ctx, user) => {
-    const demolished  = await Plots.deleteMany({guild_id: ctx.guild.id})
-    if (demolished.n > 0)
-        return ctx.reply(user, 'guild lots demolished!')
-    else
-        return ctx.reply(user, 'no lots to be demolished!', 'red')
 })
