@@ -567,7 +567,7 @@ cmd(['boost', 'info'], (ctx, user, args) => {
     list.push(`Expires in **${msToTime(boost.expires - now)}**`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10),
+        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed: {
             author: { name: `${boost.name} boost` },
