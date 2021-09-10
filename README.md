@@ -27,4 +27,6 @@ Test out your features and when you are ready make a Pull Request into `staging`
 
 Before starting, please do all starting steps from **contributing** stage.
 
+Make sure you are not violating anything in the **LICENSE** when you are hosting.
+
 To host your bot on the small amount of servers, you can just run bot in development mode. However if you need sharding and card management support, consider using [Ayano](https://github.com/NoxCaos/ayano) which would require this repository as a local dependency.
