@@ -61,9 +61,9 @@ const setSourcesFromRawData = async (ctx, data, collection) => {
         const contents = x.split(expr)
         const cardName = contents[0]
             .trim()
-            .replace(/'|`/, "")
-            .replace(/\s+/, "_")
             .toLowerCase()
+            .replace(/'|`/g, "")
+            .replace(/\s+/g, "_")
         
         const match = x.match(urlExpr)
 
