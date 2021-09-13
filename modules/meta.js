@@ -49,38 +49,47 @@ const setCardSource = async (ctx, cardID, source) => {
     await info.save()
 }
 
-const setSourcesFromRawData = (ctx, data, collection) => {
-    const entrees = data.split('\n')
-    const problems = []
+const setSourcesFromRawData = async (ctx, data, collection) => {
     const expr = /\s-\s/
+    const entrees = data.split('\n').filter(x => x.split(expr).length === 2)
+    const problems = []
     const urlExpr = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
 
     let count = 0
-    entrees.filter(x => x.split(expr).length === 2).map(x => {
+    for (let i = 0; i < entrees.length; i++) {
+        const x = entrees[i]
         const contents = x.split(expr)
         const cardName = contents[0]
             .trim()
-            .replace(/'`/, "")
+            .replace(/'|`/, "")
             .replace(/\s+/, "_")
             .toLowerCase()
+        
+        const match = x.match(urlExpr)
 
-        const link = x.match(urlExpr)[0]
-        const card = ctx.cards.find(
-            c => c.level == cardName[0] && 
-            c.name === cardName.substring(2) &&
-            (!collection || c.col === collection.id))
+        if (match) {
+            const link = match[0]
+            const cards = ctx.cards.filter(
+                c => c.level == cardName[0] && 
+                c.name === cardName.substring(2) &&
+                (!collection || c.col === collection.id))
 
-        if(!card || !link) {
-            problems.push(`${cardName} -(${x})-`)
-        } else {
-            const info = fetchInfo(ctx, card.id)
-            if(!info.source) {
-                info.meta.source = link
-                count++
-                info.save()
+            if(cards.length == 0 || !link) {
+                problems.push(`**No cards found** --- ${cardName} - [link](${link})`)
+            } else if (cards.length > 1) {
+                problems.push(`**Ambiguous matches** (${cards.map(x => x.col).join(' ')}) --- ${cardName}`)
+            } else {
+                const info = fetchInfo(ctx, cards[0].id)
+                if(!info.source) {
+                    info.meta.source = link
+                    count++
+                    await info.save()
+                }
             }
+        } else {
+            problems.push(`**Invalid source link** --- ${x}`)
         }
-    })
+    }
 
     return {
         count,

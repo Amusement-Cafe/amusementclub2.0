@@ -186,12 +186,12 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
 
         let rawData = ''
         res.on('data', (chunk) => { rawData += chunk })
-        res.on('end', () => {
+        res.on('end', async () => {
             try {
-                const res = setSourcesFromRawData(ctx, rawData, col)
+                const res = await setSourcesFromRawData(ctx, rawData, col)
                 if(res.problems.length > 0) {
                     ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-                        pages: ctx.pgn.getPages(res.problems, 15),
+                        pages: ctx.pgn.getPages(res.problems, 10),
                         embed: {
                             author: { name: `Following cards were not found:` },
                             color: colors.yellow,
@@ -202,7 +202,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
                 return ctx.reply(user, `successfully set sources for **${res.count}** cards`)
 
             } catch (e) {
-                return ctx.reply(user, `an error occured while scanning the sources:
+                return ctx.reply(user, `an error occurred while scanning the sources:
                     ${e.message}`, 'red')
             }
         });
