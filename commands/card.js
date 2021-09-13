@@ -659,7 +659,7 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
         return ctx.qhelp(ctx, user, 'wishlist')
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
 
@@ -685,7 +685,7 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
     cards = cards.filter(x => !user.wishlist.some(y => y === x.id))
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already in your wishlist`, 'red')
@@ -713,7 +713,7 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(
     }
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
     if(!user.wishlist.some(x => x === card.id)) {
@@ -734,7 +734,7 @@ cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'al
     }
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `none of the requested cards are in your wishlist`, 'red')

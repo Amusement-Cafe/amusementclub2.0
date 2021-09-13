@@ -297,9 +297,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if (parsedargs.diff) {
         let waitMSG
         if (cards.length > 1500)
-            waitMSG = await ctx.reply(user, `you have used \`-diff\` or \`-miss\` in this query and the result contains a lot of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
+            waitMSG = await ctx.reply(user, `you have used \`diff\` or \`miss\` in this query and the result contains a lot of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
 
-        cards = cards.filter(x => !user.cards.some(y => x.id === y.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
         if (waitMSG)
             await ctx.bot.deleteMessage(waitMSG.channel.id, waitMSG.id, 'removal of time warning')

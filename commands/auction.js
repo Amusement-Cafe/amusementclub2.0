@@ -38,8 +38,8 @@ cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parse
     if (parsedargs.me === 2)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if(parsedargs.diff)
-        list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    if (parsedargs.diff)
+        list = list.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.card))
 
     if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
@@ -95,8 +95,8 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
     if (parsedargs.me === 2)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if(parsedargs.diff)
-        list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    if (parsedargs.diff)
+        list = list.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.card))
 
     if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)

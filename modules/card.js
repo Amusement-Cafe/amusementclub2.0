@@ -62,8 +62,8 @@ const parseArgs = (ctx, args, user) => {
         antitags: [],
         extra: [],
         lastcard: false,
-        diff: false,
-        me: false,
+        diff: 0,
+        me: 0,
         bid: 0,
         fav: false,
         evalQuery: false,
@@ -132,8 +132,8 @@ const parseArgs = (ctx, args, user) => {
                     case 'rated': q.filters.push(c => m? c.rating: !c.rating); q.userQuery = true; break
                     case 'wish': q.filters.push(c => m? user.wishlist.includes(c.id): !user.wishlist.includes(c.id)); break
                     case 'promo': const mcol = bestColMatchMulti(ctx, substr); m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
-                    case 'diff': q.diff = m; break
-                    case 'miss': q.diff = m; break
+                    case 'diff': q.diff = m? 1: 2; break
+                    case 'miss': q.diff = m? 1: 2; break
                     case 'me':  q.me = m? 1: 2; break
                     case 'bid': q.bid = m? 1 : 2; break
                     default: {
