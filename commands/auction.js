@@ -152,10 +152,10 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
 
-    if (user.dailystats.aucs >= 100)
+    if (user.dailystats.aucs >= 150)
         return ctx.reply(user, `you have reached the maximum amount of auctions you can create in one daily. Please wait until your next daily to create more!`, 'red')
 
-    if (curaucs.length >= 15)
+    if (curaucs.length >= 30)
         return ctx.reply(user, `you have reached the maximum amount of auctions you can have listed at a time per hour. Please wait an hour before listing again!`, 'red')
 
     const card = bestMatch(cards)
