@@ -547,4 +547,4 @@ cmd('vote', async (ctx, user) => {
             }
         ]
     }, user.discord_id)
-})
+}).access('dm')
