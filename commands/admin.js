@@ -350,9 +350,14 @@ pcmd(['admin'], ['sudo', 'embargo'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], async (ctx, user, ...args) => {
     ctx.settings.wipMsg = args.length > 0? ctx.capitalMsg.join(' '): 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
     ctx.settings.wip = !ctx.settings.wip
+
+    if (!ctx.settings.wip)
+        await ctx.bot.editStatus("online", { name: 'commands', type: 2, url: 'https://club.amusement.cafe'})
+    else
+        await ctx.bot.editStatus("idle", { name: 'maintenance', type: 2, url: 'https://club.amusement.cafe'})
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
 })
 
