@@ -59,9 +59,6 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     if(usercard && usercard.rating)
         resp.push(`Your Rating: **${usercard.rating}**`)
 
-    if(card.added)
-        resp.push(`Added: **${dateFormat(card.added, "yyyy-mm-dd")}** (${msToTime(new Date() - card.added, {compact: true})})`)
-
     if (extrainfo.ownercount > 0)
         resp.push(`Owner Count: **${numFmt(extrainfo.ownercount)}**`)
 
@@ -71,19 +68,6 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
     resp.push(`ID: ${card.id}`)
     embed.description = resp.join('\n')
 
-    if(extrainfo.meta.booruid) {
-        const meta = []
-        meta.push(`Rating: **${extrainfo.meta.boorurating}**`)
-        meta.push(`Artist: **${extrainfo.meta.artist}**`)
-        meta.push(`[Danbooru page](https://danbooru.donmai.us/posts/${extrainfo.meta.booruid})`)  
- 
-        embed.fields.push({
-            name: `Metadata`, 
-            value: meta.join('\n'),
-            inline: true,
-        })
-    }
-
     if(tags && tags.length > 0) {
         embed.fields.push({
             name: `Tags`, 
@@ -91,16 +75,39 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
             inline: true,
         })
     }
+
+    if(extrainfo.meta) {
+        const meta = []
+        if(extrainfo.meta.booruid) {
+            meta.push(`Rating: **${extrainfo.meta.boorurating}**`)
+            meta.push(`Artist: **${extrainfo.meta.artist}**`)
+            meta.push(`[Danbooru page](https://danbooru.donmai.us/posts/${extrainfo.meta.booruid})`)
+        }
+
+        if(extrainfo.meta.added)
+            meta.push(`Added: **${dateFormat(extrainfo.meta.added, "yyyy-mm-dd")}** (${msToTime(new Date() - extrainfo.meta.added, {compact: true})})`)
+ 
+        embed.fields.push({
+            name: `Metadata`, 
+            value: meta.join('\n'),
+            inline: true,
+        })
+    }
     
-    if(extrainfo.meta.source) {
+    if(extrainfo.meta.source || card.imgur) {
         const sourceList = []
-        sourceList.push(`[Image origin](${extrainfo.meta.source})`)
+
+        if(card.imgur)
+            sourceList.push(`[Full card on Imgur](${card.imgur})`)
+
+        if(extrainfo.meta.source)
+            sourceList.push(`[Image origin](${extrainfo.meta.source})`)
 
         if(extrainfo.meta.image)
             sourceList.push(`[Source image](${extrainfo.meta.image})`)
 
         embed.fields.push({
-            name: `Sources`, 
+            name: `Links`, 
             value: sourceList.join('\n'),
         })
     }
