@@ -27,6 +27,7 @@ Test out your features and when you are ready make a Pull Request into `staging`
 
 Before starting, please do all starting steps from **contributing** stage.
 
-Make sure you are not violating anything in the **LICENSE** when you are hosting.
+Make sure you are not violating anything in the **LICENSE** when you are hosting. You **must** mention that parts of your bot are licensed under **MPL-2.0** on the help/info page of your bot like this:
+> Parts of the project are licensed under the MPL-2.0 and can be obtained here: https://github.com/NoxCaos/amusementclub2.0/
 
 To host your bot on the small amount of servers, you can just run bot in development mode. However if you need sharding and card management support, consider using [Ayano](https://github.com/NoxCaos/ayano) which would require this repository as a local dependency.
