@@ -164,7 +164,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         if (auc.price > eval * 1.5)
             float = eval * ctx.eval.aucEval.aucFailMultiplier
 
-        info.aucevalinfo.evalprices.push(Math.floor(float))
+        info.aucevalinfo.newaucprices.push(Math.floor(float))
     } else {
         info.aucevalinfo.newaucprices.push(auc.price)
     }
@@ -199,9 +199,10 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         }
     }
 
-
-    if (info.aucevalinfo.auccount % 5 === 0 && info.aucevalinfo.auccount.length !== 0){
+    if (info.aucevalinfo.auccount % (ctx.eval.aucEval.minSamples * 2) === 0){
         let newEval = await evalCard(ctx, card)
+        if (lastEval === newEval)
+            return await info.save()
 
         if (lastEval > newEval)
             evalDiff = `-${lastEval - newEval}`
