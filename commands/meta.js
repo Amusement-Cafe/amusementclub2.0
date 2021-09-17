@@ -13,6 +13,7 @@ const {
 
 const {
     cap,
+    urlRegex,
 } = require('../utils/tools')
 
 const {
@@ -41,6 +42,10 @@ const {
     withGlobalCards,
     bestMatch,
 } = require('../modules/card')
+
+const {
+    fetchOnly
+} = require('../modules/user')
 
 cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
@@ -94,12 +99,14 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
 
         if(extrainfo.meta.added)
             meta.push(`Added: **${dateFormat(extrainfo.meta.added, "yyyy-mm-dd")}** (${msToTime(new Date() - extrainfo.meta.added, {compact: true})})`)
- 
-        embed.fields.push({
-            name: `Metadata`, 
-            value: meta.join('\n'),
-            inline: true,
-        })
+
+        if(meta.length > 0) {
+            embed.fields.push({
+                name: `Metadata`, 
+                value: meta.join('\n'),
+                inline: true,
+            })
+        }
     }
     
     if(extrainfo.meta.source || card.imgur) {
@@ -108,16 +115,30 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
         if(card.imgur)
             sourceList.push(`[Full card on Imgur](${card.imgur})`)
 
-        if(extrainfo.meta.source)
-            sourceList.push(`[Image origin](${extrainfo.meta.source})`)
+        if(extrainfo.meta.source) {
+            if(extrainfo.meta.source.match(urlRegex)) {
+                sourceList.push(`[Image origin](${extrainfo.meta.source})`)
+            } else {
+                sourceList.push(`This card is a screen capture from anime or game`)
+            }
+        }
 
         if(extrainfo.meta.image)
             sourceList.push(`[Source image](${extrainfo.meta.image})`)
+        
+        if(extrainfo.meta.contributor) {
+            const contributor = await fetchOnly(extrainfo.meta.contributor)
+            if(contributor) {
+                sourceList.push(`Researched by: **${contributor.username}**`)
+            }
+        }
 
-        embed.fields.push({
-            name: `Links`, 
-            value: sourceList.join('\n'),
-        })
+        if(sourceList.length > 0) {
+            embed.fields.push({
+                name: `Links`, 
+                value: sourceList.join('\n'),
+            })
+        }
     }
 
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
@@ -161,7 +182,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withGlobalCards(asyn
         },
         onConfirm: async (x) => {
             try {
-                await setCardBooruData(ctx, card.id, post)
+                await setCardBooruData(ctx, user, card.id, post)
                 return ctx.reply(user, `sources and tags have been saved!`)
 
             } catch(e) {
@@ -179,7 +200,13 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
     }
 
     const card = bestMatch(cards)
-    await setCardSource(ctx, card.id, url)
+    const source = ctx.cardInfos[card.id]
+    if(source && !ctx.globals.force) {
+        return ctx.reply(user, `this card already has a source set.
+        You can force source override by adding \`-f\` to the command`, 'red')
+    }
+
+    await setCardSource(ctx, user, card.id, url)
 
     return ctx.reply(user, `successfully set source image for ${formatName(card)}`)
 }))
@@ -225,7 +252,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
 })
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    let sourced = await Cardinfo.find({ 'meta.source' : { $exists: true } }, { id: 1, meta: 1 })
+    let sourced = ctx.cardInfos.filter(x => x.meta.source)
     sourced = sourced.filter(x => cards.some(y => y.id === x.id))
 
     const names = sourced
@@ -245,7 +272,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(a
 }))
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'unsourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    let sourced = await Cardinfo.find({ 'meta.source' : { $exists: false } }, { id: 1 })
+    let sourced = ctx.cardInfos.filter(x => !x.meta.source)
     cards = cards.filter(x => sourced.some(y => y.id === x.id))
 
     const names = cards.map(c => {

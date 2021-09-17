@@ -18,6 +18,7 @@ module.exports = model('Cardinfo', {
                         image:          { type: String },
 
                         added:          { type: Date },
+                        contributor:    { type: String },
                     },
 
     aucevalinfo:    {
