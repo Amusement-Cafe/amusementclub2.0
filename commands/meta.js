@@ -252,15 +252,15 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
 })
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    let sourced = ctx.cardInfos.filter(x => x.meta.source)
-    sourced = sourced.filter(x => cards.some(y => y.id === x.id))
+    const sourcedCards = cards.map(x => {
+        x.info = ctx.cardInfos[x.id]
+        return x
+    }).filter(x => x.info && x.info.meta && x.info.meta.source)
 
-    const names = sourced
-    .sort((a, b) => ctx.cards[b.id].level - ctx.cards[a.id].level)
-    .map(x => {
-        const c = ctx.cards[x.id]
+    const names = sourcedCards
+    .map(c => {
         const rarity = new Array(c.level + 1).join('★')
-        return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.shorturl}) \`[${c.col}]\` [source](${x.meta.source})`
+        return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.shorturl}) \`[${c.col}]\` [source](${c.info.meta.source})`
     })
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
@@ -272,8 +272,9 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(a
 }))
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'unsourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    let sourced = ctx.cardInfos.filter(x => !x.meta.source)
-    cards = cards.filter(x => sourced.some(y => y.id === x.id))
+    cards = cards.filter(x => !ctx.cardInfos[x.id] || 
+        !ctx.cardInfos[x.id].meta || 
+        !ctx.cardInfos[x.id].meta.source)
 
     const names = cards.map(c => {
         const rarity = new Array(c.level + 1).join('★')
