@@ -223,7 +223,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd(['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
+cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
     withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.excluded)
 
