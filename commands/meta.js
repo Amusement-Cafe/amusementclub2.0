@@ -200,8 +200,8 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
     }
 
     const card = bestMatch(cards)
-    const source = ctx.cardInfos[card.id]
-    if(source && !ctx.globals.force) {
+    const info = ctx.cardInfos[card.id]
+    if(info && info.source && !ctx.globals.force) {
         return ctx.reply(user, `this card already has a source set.
         You can force source override by adding \`-f\` to the command`, 'red')
     }
