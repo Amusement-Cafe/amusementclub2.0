@@ -8,6 +8,14 @@ const {cmd, pcmd}   = require('../utils/cmd')
 const {numFmt}      = require('../utils/tools')
 
 const {
+    Cardinfo
+} = require('../collections')
+
+const {
+    cap,
+} = require('../utils/tools')
+
+const {
     fetchCardTags,
 } = require('../modules/tag')
 
@@ -215,3 +223,40 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
         });
     })
 })
+
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let sourced = await Cardinfo.find({ 'meta.source' : { $exists: true } }, { id: 1, meta: 1 })
+    sourced = sourced.filter(x => cards.some(y => y.id === x.id))
+
+    const names = sourced
+    .sort((a, b) => ctx.cards[b.id].level - ctx.cards[a.id].level)
+    .map(x => {
+        const c = ctx.cards[x.id]
+        const rarity = new Array(c.level + 1).join('★')
+        return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.shorturl}) \`[${c.col}]\` [source](${x.meta.source})`
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(names, 10),
+        embed: {
+            author: { name: `Found sourced ${names.length} / ${cards.length} overall` },
+        }
+    })
+}))
+
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'unsourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let sourced = await Cardinfo.find({ 'meta.source' : { $exists: false } }, { id: 1 })
+    cards = cards.filter(x => sourced.some(y => y.id === x.id))
+
+    const names = cards.map(c => {
+        const rarity = new Array(c.level + 1).join('★')
+        return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.url}) \`[${c.col}]\``
+    })
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages: ctx.pgn.getPages(names, 10),
+        embed: {
+            author: { name: `Found ${cards.length} without sources` },
+        }
+    })
+}))
