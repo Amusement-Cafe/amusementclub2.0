@@ -16,6 +16,8 @@ module.exports = model('Cardinfo', {
                         pixivid:        { type: String },
                         source:         { type: String },
                         image:          { type: String },
+
+                        added:          { type: Date },
                     },
 
     aucevalinfo:    {
