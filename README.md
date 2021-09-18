@@ -21,7 +21,7 @@ After cloning this repository you can run bot in the development mode. Under `te
 - Run `npm i -g nodemon`.
 - Run `npm start` to start the bot. Every time you run bot directly (without using Ayano) it will run in development mode.
 
-Test out your features and when you are ready make a Pull Request into `staging`.
+Test out your features and when you are ready make a Pull Request into the feature branch (e.g. `amethyst`).
 
 ## Hosting
 
