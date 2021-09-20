@@ -376,9 +376,9 @@ pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], async (ctx, user, ...a
     ctx.settings.wip = !ctx.settings.wip
 
     if (!ctx.settings.wip)
-        await ctx.bot.editStatus("online", { name: 'commands', type: 2, url: 'https://club.amusement.cafe'})
+        await ctx.bot.editStatus("online", { name: 'commands', type: 2})
     else
-        await ctx.bot.editStatus("idle", { name: 'maintenance', type: 2, url: 'https://club.amusement.cafe'})
+        await ctx.bot.editStatus("idle", { name: 'maintenance', type: 2})
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
 })
 
