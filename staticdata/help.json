@@ -16,7 +16,7 @@
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules",
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules\n->license",
                 "inline": true
             },
             {
