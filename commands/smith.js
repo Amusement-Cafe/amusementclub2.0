@@ -50,13 +50,13 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     card1 = batch1[0]
 
     if(batch2 && batch2.length > 0) {
-        card2 = batch2[0]
+        card2 = batch2.filter(x => x.id != card1.id)[0]
     } else {
         card2 = batch1.filter(x => x.id != card1.id)[0]
     }
 
     if(!card1 || !card2)
-        return ctx.reply(user, `not enough cards found matching this query.
+        return ctx.reply(user, `not enough unique cards found matching this query.
             You can specify one query that can get 2+ unique cards, or 2 queries using \`,\` as separator`, 'red')
 
     if(card1.level != card2.level)

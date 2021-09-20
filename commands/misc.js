@@ -93,6 +93,18 @@ cmd('invite', async (ctx, user) => {
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
 
+cmd('license', async (ctx, user) => {
+    const embed = {
+        title: `Code License`,
+        description: `This bot's source code (or parts of it) is provided freely by NoxCaos#4905 and contributors under the [MPL-2.0 Licence](https://github.com/NoxCaos/amusementclub2.0/blob/master/LICENSE)
+        To view the source code of the main project, [click here](https://github.com/NoxCaos/amusementclub2.0/)
+        If you are using some or part of the code for this bot in your works, some semi-public attribution may be required. 
+        Leaving this command in and in help untouched, can count as such.`,
+        color: colors.green
+    }
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
+
 const getHelpEmbed = (ctx, o, prefix) => {
 
     const footerText = `Amusement Club Amethyst | xQAxThF | v${pjson.version} | by NoxCaos#4905`

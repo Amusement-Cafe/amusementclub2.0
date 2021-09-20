@@ -70,7 +70,7 @@ const castlePayments = async (ctx, now) => {
         let maxStored = baseStorageCaps[level]
         const maxLvlStored = maxStored + ((maxStored * ((level * 5) / 100)))
 
-        x.building.stored_lemons += (level * 5) + 15
+        x.building.stored_lemons += (level * 5) + 25
 
         if (level > 1 && maxLvlStored < x.building.stored_lemons)
             x.building.stored_lemons = maxLvlStored

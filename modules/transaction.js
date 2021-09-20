@@ -142,8 +142,14 @@ const confirm_trs = async (ctx, user, trs_id) => {
     })*/
 
     if(to_user) {
+        if (transaction.cards.length === 1)
+            return ctx.reply(from_user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+
         return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
     }
+
+    if (transaction.cards.length === 1)
+        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 
     return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 }

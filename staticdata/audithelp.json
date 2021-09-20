@@ -9,6 +9,10 @@
                 "description": "Add role to user"
             },
             {
+                "title": "->sudo inrole [roles]",
+                "description": "Lists users in the provided roles"
+            },
+            {
                 "title": "->sudo rm role [user] [role]",
                 "description": "Remove role from user"
             },
