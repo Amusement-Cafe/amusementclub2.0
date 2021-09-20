@@ -227,7 +227,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
 
 })
 
-cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
+cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {
     let plots = await getUserPlots(ctx)
     plots = plots.filter(x=> x.building.stored_lemons > 0)
 
@@ -235,23 +235,14 @@ cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
         return ctx.reply(user, 'you have no plots in this guild that are ready for collection!', 'red')
 
     let collection = 0
-    plots.map(x => collection += x.building.stored_lemons)
-
-    const question = `Do you want to collect **${numFmt(collection)}** ${ctx.symbols.lemon} from your buildings in ${ctx.discord_guild.name}?`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question,
-        force: ctx.globals.force,
-        onConfirm: async (x) => {
-            plots.map(async y => {
-                y.building.stored_lemons = 0
-                y.building.last_collected = new Date()
-                await y.save()
-            })
-            user.lemons += collection
-            await user.save()
-
-            return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
-            You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
-        }
+    plots.map(async y => {
+        collection += y.building.stored_lemons
+        y.building.stored_lemons = 0
+        y.building.last_collected = new Date()
+        await y.save()
     })
+    user.lemons += collection
+    await user.save()
+    return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
+            You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
 })
