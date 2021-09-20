@@ -12,27 +12,27 @@
                 "price": 0,
                 "level": 1,
                 "maintenance": 10,
-                "desc": "Generates 20 lemons every 24 hours, allows you to place other buildings on plots in the same server."
+                "desc": "Generates 30 lemons every 24 hours, allows you to place other buildings on plots in the same server."
             }, {
                 "price": 500,
                 "level": 10,
                 "maintenance": 15,
-                "desc": "Increases all buildings storage capacity by 10%, increases daily generation to 25"
+                "desc": "Increases all buildings storage capacity by 10%, increases daily generation to 35"
             }, {
                 "price": 1000,
                 "level": 20,
                 "maintenance": 20,
-                "desc": "Increases all buildings storage capacity by 15%, increases daily generation to 30"
+                "desc": "Increases all buildings storage capacity by 15%, increases daily generation to 40"
             }, {
                 "price": 2000,
                 "level": 50,
                 "maintenance": 25,
-                "desc": "Increases all buildings storage capacity by 20%, increases daily generation to 35"
+                "desc": "Increases all buildings storage capacity by 20%, increases daily generation to 45"
             }, {
                 "price": 5000,
                 "level": 100,
                 "maintenance": 50,
-                "desc": "Increases all buildings storage capacity by 25%, increases daily generation to 40"
+                "desc": "Increases all buildings storage capacity by 25%, increases daily generation to 50"
             }
         ]
     }, {
