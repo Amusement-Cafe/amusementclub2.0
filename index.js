@@ -6,6 +6,7 @@ const Emitter       = require('events')
 const asdate        = require('add-subtract-date')
 const paginator     = require('discord-paginator')
 const _             = require('lodash')
+const sagiri        = require("sagiri")
 const {trigger}     = require('./utils/cmd')
 const {check_all}   = require('./modules/secondarycheck')
 const {connectDBL}  = require('./modules/dbl')
@@ -37,7 +38,8 @@ module.exports.create = async ({
         shards, database, token, prefix, 
         baseurl, shorturl, auditc, debug, 
         maintenance, invite, data, dbl, 
-        analytics, evalc, uniqueFrequency
+        analytics, evalc, uniqueFrequency,
+        metac
     }) => {
 
     const emitter = new Emitter()
@@ -136,6 +138,14 @@ module.exports.create = async ({
     const filter = new Filter()
     filter.addWords(...data.bannedwords)
 
+    let sauce;
+    if(metac.sauceNaoToken) {
+        sauce = sagiri(metac.sauceNaoToken, { 
+            mask: [9],
+            results: 2,
+        })
+    }
+
     let mixpanel = {
         track: () => { }
     }
@@ -178,6 +188,7 @@ module.exports.create = async ({
         eval: evalc,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel,
+        sauce,
         settings: {
             wip: maintenance,
             wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
