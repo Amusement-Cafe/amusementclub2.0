@@ -202,14 +202,21 @@ const uses = {
 }
 
 const infos = {
-    blueprint: (ctx, user, item) => ({
-        description: item.fulldesc,
-        fields: item.levels.map((x, i) => ({
-            name: `Level ${i + 1}`, 
+    blueprint: (ctx, user, item) => {
+        let embed = {
+            description: item.fulldesc,
+            fields: [{
+                name: `Blueprint Price`,
+                value: `Price: **${item.price}**${ctx.symbols.lemon}`
+            }]
+        }
+        item.levels.map((x, i) => (embed.fields.push({
+            name: `Level ${i + 1}`,
             value: `Price: **${x.price}** ${ctx.symbols.lemon}
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
-        }))
-    }),
+        })))
+        return embed
+    },
 
     claim_ticket: (ctx, user, item) => ({
         description: item.fulldesc
