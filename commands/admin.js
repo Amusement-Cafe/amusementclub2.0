@@ -100,7 +100,7 @@ pcmd(['admin'], ['sudo', 'in', 'role'], ['sudo', 'inrole'], ['sudo', 'has', 'rol
     const inRole = await Users.find({roles: {$ne: [], $in: args}}).sort('username')
     if (inRole.length === 0)
         return ctx.reply(user, `no users found in role(s) **${args.join(' or ')}**`, 'red')
-    const pages = ['']
+    const pages = []
     inRole.map((x, i) => {
         if (i % 10 == 0) pages.push(``)
         pages[Math.floor(i/10)] += `${x.username} \`${x.discord_id}\` - ${x.roles.join(', ')}\n`
