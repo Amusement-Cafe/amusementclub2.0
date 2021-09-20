@@ -208,7 +208,7 @@ cmd('daily', async (ctx, user) => {
         if(trs.length > 0) {
             const more = trs.splice(3, trs.length).length
             fields.push({name: `Incoming pending transactions`, 
-                value: trs.map(x => `\`${x.id}\` ${x.cards.length} cards from **${x.from}**`).join('\n')
+                value: trs.map(x => `\`${x.id}\` ${x.cards.length} card(s) from **${x.from}**`).join('\n')
                     + (more > 0? `\nand **${more}** more...` : '')
             })
         }
