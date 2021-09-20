@@ -23,7 +23,7 @@ const {
 
 
 const clean_audits = async (ctx, now) => {
-    const auditcleanup = asdate.subtract(new Date(), 10, 'days')
+    const auditcleanup = asdate.subtract(new Date(), 14, 'days')
     const auditClean = await Audit.deleteMany({time: {$lt: auditcleanup}})
     const auditAucSellClean = await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
     if (auditClean.n > 0 || auditAucSellClean.n > 0)
