@@ -1,5 +1,6 @@
 const {pcmd}        = require('../utils/cmd')
 const Announcement  = require('../collections/announcement')
+const Users         = require('../collections/user')
 
 const {
     getHelpEmbed,
@@ -92,6 +93,26 @@ pcmd(['admin'], ['sudo', 'rm', 'role'], async (ctx, user, ...args) => {
     })
 
     return ctx.reply(user, rpl.join('\n'))
+})
+
+
+pcmd(['admin'], ['sudo', 'in', 'role'], ['sudo', 'inrole'], ['sudo', 'has', 'role'], async (ctx, user, ...args) => {
+    const inRole = await Users.find({roles: {$ne: [], $in: args}}).sort('username')
+    if (inRole.length === 0)
+        return ctx.reply(user, `no users found in role(s) **${args.join(' or ')}**`, 'red')
+    const pages = ['']
+    inRole.map((x, i) => {
+        if (i % 10 == 0) pages.push(``)
+        pages[Math.floor(i/10)] += `${x.username} \`${x.discord_id}\` - ${x.roles.join(', ')}\n`
+    })
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        buttons: ['first', 'back', 'forward', 'last'],
+        embed: {
+            author: { name: `List of all users with the role(s) ${args.join(' or ')}` },
+            color: colors.blue,
+        }
+    })
 })
 
 pcmd(['admin', 'mod'], ['sudo', 'award'], ['sudo', 'add', 'balance'], async (ctx, user, ...args) => {
