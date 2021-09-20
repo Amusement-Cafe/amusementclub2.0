@@ -12,7 +12,7 @@
                 "price": 0,
                 "level": 1,
                 "maintenance": 10,
-                "desc": "Generates 20 lemons per day, allows you to place other buildings on plots in the same server."
+                "desc": "Generates 20 lemons every 24 hours, allows you to place other buildings on plots in the same server."
             }, {
                 "price": 500,
                 "level": 10,
