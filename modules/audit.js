@@ -244,7 +244,7 @@ const createFindUserEmbed = (ctx, user, findUser) => {
     let findEmbed = {
         author: {name: `${user.username} here is the info for ${findUser.username}`},
         description: `**${findUser.username}** \`${findUser.discord_id}\`
-                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
+                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**, **${numFmt(findUser.lemons)}${ctx.symbols.lemon}**
                       Promo Currency: **${numFmt(findUser.promoexp)}**
                       Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
                       Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
