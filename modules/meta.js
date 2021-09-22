@@ -55,7 +55,7 @@ const setCardSource = async (ctx, user, cardID, source) => {
     await info.save()
 }
 
-const setSourcesFromRawData = async (ctx, data, collection) => {
+const setSourcesFromRawData = async (ctx, data, collection, authorID) => {
     const expr = /\s-\s/
     const entrees = data.split('\n').filter(x => x.split(expr).length === 2)
     const problems = []
@@ -85,11 +85,10 @@ const setSourcesFromRawData = async (ctx, data, collection) => {
                 problems.push(`**Ambiguous matches** (${cards.map(x => x.col).join(' ')}) --- ${cardName}`)
             } else {
                 const info = fetchInfo(ctx, cards[0].id)
-                if(!info.source) {
-                    info.meta.source = link
-                    count++
-                    await info.save()
-                }
+                info.meta.source = link
+                info.meta.author = authorID
+                count++
+                await info.save()
             }
         } else {
             problems.push(`**Invalid source link** --- ${x}`)

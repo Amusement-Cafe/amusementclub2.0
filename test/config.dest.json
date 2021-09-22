@@ -35,5 +35,8 @@
     },
     "analytics": {
         "mixpanel": ""
+    },
+    "metac": {
+        "sauceNaoToken": ""
     }
 }

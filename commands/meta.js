@@ -41,6 +41,7 @@ const {
     formatName,
     withGlobalCards,
     bestMatch,
+    parseArgs,
 } = require('../modules/card')
 
 const {
@@ -95,6 +96,11 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
             meta.push(`Rating: **${extrainfo.meta.boorurating}**`)
             meta.push(`Artist: **${extrainfo.meta.artist}**`)
             meta.push(`[Danbooru page](https://danbooru.donmai.us/posts/${extrainfo.meta.booruid})`)
+        }
+
+        if(extrainfo.meta.author) {
+            const cardAuthor = await fetchOnly(extrainfo.meta.author)
+            meta.push(`Card by: **${cardAuthor.username}**`)
         }
 
         if(extrainfo.meta.added)
@@ -193,6 +199,81 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withGlobalCards(asyn
     })
 }))
 
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    
+    if(parsedargs.isEmpty()) {
+        return ctx.reply(user, `please specify card`, 'red')
+    }
+    
+    let booruID = ""
+    const targetLink = parsedargs.extra[0]
+    if(!targetLink || !targetLink.match(urlRegex)) {
+        return ctx.reply(user, `please specify image url as \`:https://www.pixiv.net/en/artworks/1234567.jpg\``, 'red')
+    }
+
+    try {
+        if(!ctx.sauce) {
+            return ctx.reply(user, `SauceNao token is not set`, 'red')
+        }
+
+        const found = await ctx.sauce(targetLink)
+
+        if(found.length == 0 || found[0].similarity < 85) {
+            return ctx.reply(user, `guess failed. No matches found`, 'red')
+        }
+
+        booruID = found[0].url.split('/')[5]
+        
+    } catch (e) {
+        return ctx.reply(user, `guess failed. ${e.message}`, 'red')
+    }
+
+    if(!booruID || isNaN(booruID)) {
+        return ctx.reply(user, `guess failed. No valid danbooru ID was returned`, 'red')
+    }
+
+    const post = await getBooruPost(ctx, booruID)
+    if(!post) {
+        return ctx.reply(user, `guess failed. Cannot find post with ID ${booruID}`, 'red')
+    }
+
+    const properties = []
+    post.source = post.pixiv_id? `https://www.pixiv.net/en/artworks/${post.pixiv_id}` : post.source
+
+    properties.push(`Source: ${post.source}`)
+    properties.push(`Artist: **${post.tag_string_artist}**`)
+    properties.push(`Characters: **${post.tag_count_character}**`)
+    properties.push(`Copyrights: **${post.tag_count_copyright}**`)
+    properties.push(`Tags: **${post.tag_count_general}**`)
+    properties.push(`Pixiv ID: **${post.pixiv_id}**`)
+
+    const card = bestMatch(cards)
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        question: `Do you want to add this booru source to ${formatName(card)}?
+            This will add the following properties to the card metadata`,
+        embed: { 
+            fields: [
+                {
+                    name: "Properties", 
+                    value: properties.join('\n'),
+                }
+            ],
+            footer: { text: `Booru ID: ${booruID}` },
+            image: { url: getPostURL(post) }
+        },
+        onConfirm: async (x) => {
+            try {
+                await setCardBooruData(ctx, user, card.id, post)
+                return ctx.reply(user, `sources and tags have been saved!`)
+
+            } catch(e) {
+                return ctx.reply(user, `unexpected error occured while trying to add card booru data. Please try again.
+                    ${e.message}`, 'red')
+            }
+        },
+    })
+}))
+
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const url = parsedargs.extra[0]
     if(!url) {
@@ -213,15 +294,18 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, ...args) => {
     https.get(ctx.msg.attachments[0].url, res => {
-        const colArg = args[0]
-        let col;
+        const parsedArgs = parseArgs(ctx, args, user)
+        const authorID = parsedArgs.extra[0]
+        const colArg = args.find(x => x[0] == '-').replace('-', '')
 
-        if (colArg) {
-            col = bestColMatch(ctx, colArg.replace('-', ''))
+        if (!colArg) {
+            return ctx.reply(user, `please specify collection`, 'red')
+        }
 
-            if (!col) {
-                return ctx.reply(user, `collection with name \`${colArg}\` was no found`, 'red')
-            }
+        const col = bestColMatch(ctx, colArg)
+
+        if (!col) {
+            return ctx.reply(user, `collection with name \`${colArg}\` was no found`, 'red')
         }
 
         res.setEncoding('utf8')
@@ -230,7 +314,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
         res.on('data', (chunk) => { rawData += chunk })
         res.on('end', async () => {
             try {
-                const res = await setSourcesFromRawData(ctx, rawData, col)
+                const res = await setSourcesFromRawData(ctx, rawData, col, authorID)
                 if(res.problems.length > 0) {
                     ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
                         pages: ctx.pgn.getPages(res.problems, 10),
@@ -241,7 +325,15 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
                     })
                 }
 
-                return ctx.reply(user, `successfully set sources for **${res.count}** cards`)
+                const resp = []
+                resp.push(`successfully set sources for **${res.count}** cards.`)
+
+                if (authorID) {
+                    const authorUser = await fetchOnly(authorID)
+                    resp.push(`Set **${authorUser? authorUser.username : 'undefined'}** as card author.`)
+                }
+                
+                return ctx.reply(user, resp.join('\n'))
 
             } catch (e) {
                 return ctx.reply(user, `an error occurred while scanning the sources:
