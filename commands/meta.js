@@ -41,6 +41,7 @@ const {
     formatName,
     withGlobalCards,
     bestMatch,
+    parseArgs,
 } = require('../modules/card')
 
 const {
@@ -95,6 +96,11 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
             meta.push(`Rating: **${extrainfo.meta.boorurating}**`)
             meta.push(`Artist: **${extrainfo.meta.artist}**`)
             meta.push(`[Danbooru page](https://danbooru.donmai.us/posts/${extrainfo.meta.booruid})`)
+        }
+
+        if(extrainfo.meta.author) {
+            const cardAuthor = await fetchOnly(extrainfo.meta.author)
+            meta.push(`Card by: **${cardAuthor.username}**`)
         }
 
         if(extrainfo.meta.added)
@@ -288,15 +294,18 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, ...args) => {
     https.get(ctx.msg.attachments[0].url, res => {
-        const colArg = args[0]
-        let col;
+        const parsedArgs = parseArgs(ctx, args, user)
+        const authorID = parsedArgs.extra[0]
+        const colArg = args.find(x => x[0] == '-').replace('-', '')
 
-        if (colArg) {
-            col = bestColMatch(ctx, colArg.replace('-', ''))
+        if (!colArg) {
+            return ctx.reply(user, `please specify collection`, 'red')
+        }
 
-            if (!col) {
-                return ctx.reply(user, `collection with name \`${colArg}\` was no found`, 'red')
-            }
+        const col = bestColMatch(ctx, colArg)
+
+        if (!col) {
+            return ctx.reply(user, `collection with name \`${colArg}\` was no found`, 'red')
         }
 
         res.setEncoding('utf8')
@@ -305,7 +314,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
         res.on('data', (chunk) => { rawData += chunk })
         res.on('end', async () => {
             try {
-                const res = await setSourcesFromRawData(ctx, rawData, col)
+                const res = await setSourcesFromRawData(ctx, rawData, col, authorID)
                 if(res.problems.length > 0) {
                     ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
                         pages: ctx.pgn.getPages(res.problems, 10),
@@ -316,7 +325,15 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
                     })
                 }
 
-                return ctx.reply(user, `successfully set sources for **${res.count}** cards`)
+                const resp = []
+                resp.push(`successfully set sources for **${res.count}** cards.`)
+
+                if (authorID) {
+                    const authorUser = await fetchOnly(authorID)
+                    resp.push(`Set **${authorUser? authorUser.username : 'undefined'}** as card author.`)
+                }
+                
+                return ctx.reply(user, resp.join('\n'))
 
             } catch (e) {
                 return ctx.reply(user, `an error occurred while scanning the sources:

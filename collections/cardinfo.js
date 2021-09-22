@@ -18,6 +18,7 @@ module.exports = model('Cardinfo', {
                         image:          { type: String },
 
                         added:          { type: Date },
+                        author:         { type: String },
                         contributor:    { type: String },
                     },
 
