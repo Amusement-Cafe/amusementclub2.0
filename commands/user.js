@@ -68,6 +68,7 @@ const {
 
 const {
     plotPayout,
+    getUserPlots,
 } = require("../modules/plot");
 
 cmd('bal', 'balance', (ctx, user) => {
@@ -114,8 +115,8 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`->inv info [item id]\`
-                    To use the item \`->inv use [item id]\`` },
+                { name: `Usage`, value: `To view the item details use \`${ctx.prefix}inv info [item id]\`
+                    To use the item \`${ctx.prefix}inv use [item id]\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
             color: colors.blue,
@@ -215,9 +216,9 @@ cmd('daily', async (ctx, user) => {
 
         if(promo || boosts.length > 0) {
             fields.push({name: `Current events and boosts`,
-                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`->claim promo\`)` : ''}
+                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`${ctx.prefix}claim promo\`)` : ''}
                 ${boosts.map(x => 
-                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\``).join('\n')}`
+                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`${ctx.prefix}claim ${x.id}\``).join('\n')}`
             })
         }
 
@@ -237,8 +238,9 @@ cmd('daily', async (ctx, user) => {
         }
 
         fields.push({
-            name: `Get rewarded`,
-            value: `Don\'t forget to vote for the bot every day and get in-game rewards. Check \`->vote\` for more information.`,
+            name: `Learn what you still need to do`,
+            value: `Use \`${ctx.prefix}todo\` to view a TODO list for the bot.
+                This will help you to figure out what else left to claim or complete today.`,
         })
 
         user.dailynotified = false
@@ -458,7 +460,7 @@ cmd('has', async (ctx, user, ...args) => {
         return ctx.qhelp(ctx, user, 'has')
 
     if(user.discord_id == newArgs.ids[0])
-        return ctx.reply(user, 'you can use ->cards to see your own cards', 'red')
+        return ctx.reply(user, `you can use ${ctx.prefix}cards to see your own cards`, 'red')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
     if(!otherUser)
@@ -535,7 +537,7 @@ cmd('vote', async (ctx, user) => {
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
         description: `You can vote for Amusement Club **every 12 hours** and get rewards.
-        Make sure you have allowed messages from server memebers in order to receive rewards in DMs.
+        Make sure you have allowed messages from server members in order to receive rewards in DMs.
         - [Vote on top.gg](${ctx.dbl.topggUrl}) to get **free cards** (${future > now? topggTime : `ready`})
         - [Vote on Discord Bot List](${ctx.dbl.dblUrl}) to get **free ${ctx.symbols.tomato}**`,
         
@@ -548,3 +550,30 @@ cmd('vote', async (ctx, user) => {
         ]
     }, user.discord_id)
 }).access('dm')
+
+cmd('todo', async (ctx, user) => {
+    const resp = []
+    const plots = await getUserPlots(ctx)
+    const now = new Date()
+    const futureDaily = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const futureVote = asdate.add(user.lastvote, 12, 'hours')
+    const daily = futureDaily < now
+    const vote = futureVote < now
+    const claim = user.dailystats.claims === 0
+    const quest = user.dailyquests.length > 0
+    const plot = plots.some(x=> x.building.stored_lemons > 0)
+    
+    resp.push(`${ctx.symbols.auc_sod} = done | ${ctx.symbols.auc_sbd} = not done`)
+    resp.push(`${daily? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim daily** [\`${ctx.prefix}daily\`] (this will reset your claim price)`)
+    resp.push(`${vote? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Vote for the bot** [\`${ctx.prefix}vote\`] (get rewards like cards and \`${ctx.symbols.tomato}\`)`)
+    resp.push(`${claim? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim a card** [\`${ctx.prefix}claim\`] (recommended to claim 4-6 cards per day)`)
+    resp.push(`${quest? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Complete quests** [\`${ctx.prefix}quests\`] (quests refresh daily)`)
+    resp.push(`${plot? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Collect plot income** [\`${ctx.prefix}plots\`] (you must have built at least one plot)`)
+    resp.push(`Use \`${ctx.prefix}stats\` to see what you did today`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: `${user.username}, your TODO list:` },
+        description: resp.join('\n'),
+    })
+})
