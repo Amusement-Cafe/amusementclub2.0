@@ -1,8 +1,8 @@
 [
     {
         "type": ["general"],
-        "title": "\u2B50 Amusement Club \u2B50 RPG Gacha",
-        "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
+        "title": "\u2B50 Amusement Club \u2B50 Card Game",
+        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play)",
         "fields": [
             {
                 "title": "User",
@@ -20,12 +20,12 @@
                 "inline": true
             },
             {
-                "title": "Contacts",
-                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
+                "title": "Links",
+                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
             },
             {
                 "title": "Running",
-                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/)"
+                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/) | [MongoDB](https://www.mongodb.com/)"
             },
             {
                 "title": "Invite bot",
@@ -208,6 +208,14 @@
             {
                 "title": "->claim [amount]",
                 "description": "Get several cards, limit 10 per command"
+            },
+            {
+                "title": "->claim promo",
+                "description": "Get promo card(s) if there is an event running"
+            },
+            {
+                "title": "->claim [boost ID]",
+                "description": "Get a card using a drop boost (can be found in `->boosts`)"
             }
         ]
     },

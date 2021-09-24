@@ -8,10 +8,6 @@ const {cmd, pcmd}   = require('../utils/cmd')
 const {numFmt}      = require('../utils/tools')
 
 const {
-    Cardinfo
-} = require('../collections')
-
-const {
     cap,
     urlRegex,
 } = require('../utils/tools')
@@ -274,8 +270,8 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withGlobalCards(as
     })
 }))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const url = parsedargs.extra[0]
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(async (ctx, user, cards, parsedargs, ...args) => {
+    const url = ctx.capitalMsg.find(x => x[0] == ':').substring(1)
     if(!url) {
         return ctx.reply(user, `please specify the url to the card source as \`:https://www.pixiv.net/en/artworks/80848641\``, 'red')
     }

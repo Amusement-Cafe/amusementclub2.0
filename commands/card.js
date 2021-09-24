@@ -94,6 +94,13 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         boost = curboosts.find(x => args.some(y => y === x.id))
     }
 
+    if(!promo && !any && !boost && args.some(x => isNaN(x))) {
+        return ctx.reply(user, `unknown claim argument \`${args.filter(x => isNaN(x)).join(' ')}\`!
+            Please specify a number, boost ID, 'promo' (if there are promotions running) or 'any' (if current server is locked).
+            For more information type \`${ctx.prefix}help claim\`
+            To view boost IDs use \`${ctx.prefix}boosts\``, 'red')
+    }
+
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
     const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
