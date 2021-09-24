@@ -128,28 +128,17 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
         force: ctx.globals.force,
         onConfirm: async (x) => {
             const xp = Math.floor(amount * .01)
-            let lemonAdd = Math.floor(amount * 0.01)
             user.exp -= amount
             user.xp += xp
             ctx.guild.balance += amount
             addGuildXP(ctx, user, xp)
-
-            if (lemonAdd > ctx.guild.lemons) {
-                user.lemons += ctx.guild.lemons
-                ctx.guild.lemons = 0
-                lemonAdd = 0
-            } else {
-                ctx.guild.lemons -= lemonAdd
-                user.lemons += lemonAdd
-            }
 
             await user.save()
             await ctx.guild.save()
 
             return ctx.reply(user, `you donated **${numFmt(amount)}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
                 This guild now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
-                You have been awarded **${Math.floor(xp)} xp** towards your next rank
-                You received **${lemonAdd}** ${ctx.symbols.lemon} from the guild balance for this donation`)
+                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
         }
     })
 })

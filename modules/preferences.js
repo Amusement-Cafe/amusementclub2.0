@@ -63,7 +63,7 @@ const checkVote = async (ctx) => {
     if(!userToVote) return
 
     await sendNotification(ctx, userToVote, `Time to vote!`, `get rewards by voting for the Amusement Club.
-        [Vote on top.gg](${ctx.dbl.url}) to get free cards.`)
+        Use \`->vote\` to get a list of sites where you can vote!`)
 
     userToVote.votenotified = true
     await userToVote.save()

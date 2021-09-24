@@ -1,8 +1,8 @@
 [
     {
         "type": ["general"],
-        "title": "\u2B50 Amusement Club \u2B50 RPG Gacha",
-        "description": "Amusement Club is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`",
+        "title": "\u2B50 Amusement Club \u2B50 Card Game",
+        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play)",
         "fields": [
             {
                 "title": "User",
@@ -16,16 +16,16 @@
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules",
+                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules\n->license",
                 "inline": true
             },
             {
-                "title": "Contacts",
-                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
+                "title": "Links",
+                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
             },
             {
                 "title": "Running",
-                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/)"
+                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/) | [MongoDB](https://www.mongodb.com/)"
             },
             {
                 "title": "Invite bot",
@@ -208,6 +208,14 @@
             {
                 "title": "->claim [amount]",
                 "description": "Get several cards, limit 10 per command"
+            },
+            {
+                "title": "->claim promo",
+                "description": "Get promo card(s) if there is an event running"
+            },
+            {
+                "title": "->claim [boost ID]",
+                "description": "Get a card using a drop boost (can be found in `->boosts`)"
             }
         ]
     },
@@ -415,7 +423,7 @@
             },
             {
                 "title": "->guild donate [amount]",
-                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance, if the guild has `🍋` lemons, then for every 100 tomatoes you donate you can get 1 lemon"
+                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance that can go towards a guild lock."
             },
             {
                 "title": "->guild set tax [percentage]",
@@ -580,7 +588,7 @@
     {
         "type": ["plot", "plots"],
         "title": "About Plots",
-        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nCap rates are in the following order: 300, 600, 1200, 1800, 3600.",
+        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nPlease note that only one building per type is allowed in a single guild. If you would like to have or utilize multiple buildings they need to be installed in other guilds.",
         "fields": [
             {
                 "title": "->plots",
@@ -592,7 +600,7 @@
             },
             {
                 "title": "->plot buy",
-                "description": "Buy an empty plot with lemons in current guild."
+                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by 50, so your 10th plot would cost 500 lemons"
             },
             {
                 "title": "->plot info [plot #]",

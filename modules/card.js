@@ -62,8 +62,8 @@ const parseArgs = (ctx, args, user) => {
         antitags: [],
         extra: [],
         lastcard: false,
-        diff: false,
-        me: false,
+        diff: 0,
+        me: 0,
         bid: 0,
         fav: false,
         evalQuery: false,
@@ -132,8 +132,8 @@ const parseArgs = (ctx, args, user) => {
                     case 'rated': q.filters.push(c => m? c.rating: !c.rating); q.userQuery = true; break
                     case 'wish': q.filters.push(c => m? user.wishlist.includes(c.id): !user.wishlist.includes(c.id)); break
                     case 'promo': const mcol = bestColMatchMulti(ctx, substr); m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
-                    case 'diff': q.diff = m; break
-                    case 'miss': q.diff = m; break
+                    case 'diff': q.diff = m? 1: 2; break
+                    case 'miss': q.diff = m? 1: 2; break
                     case 'me':  q.me = m? 1: 2; break
                     case 'bid': q.bid = m? 1 : 2; break
                     default: {
@@ -170,7 +170,7 @@ const parseArgs = (ctx, args, user) => {
         return !q.ids[0] && !q.lastcard && !q.filters[0] && !((q.tags[0] || q.antitags[0]) && usetag)
     }
     if (!sort)
-        q.sort = firstBy((a, b) => b.level - a.level).thenBy("name")
+        q.sort = firstBy((a, b) => b.level - a.level).thenBy("col").thenBy("name")
     else
         q.sort = sort
 
@@ -317,10 +317,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
 const withMultiQuery = (callback) => async (ctx, user, ...args) => {
     const argsplit = args.join(' ').split(',').map(x => x.trim())
     const parsedargs = [], cards = []
-    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '), user)))
-
-    if(!parsedargs[0] || parsedargs[0].isEmpty())
-        return ctx.reply(user, `please specify at least one card query`, 'red')
+    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' ').filter(y => y.length > 0), user)))
 
     const map = mapUserCards(ctx, user)
     try {

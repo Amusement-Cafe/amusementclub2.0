@@ -38,8 +38,8 @@ cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parse
     if (parsedargs.me === 2)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if(parsedargs.diff)
-        list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    if (parsedargs.diff)
+        list = list.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.card))
 
     if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
@@ -95,8 +95,8 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
     if (parsedargs.me === 2)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if(parsedargs.diff)
-        list = list.filter(x => !user.cards.some(y => x.card === y.id))
+    if (parsedargs.diff)
+        list = list.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.card))
 
     if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
@@ -152,10 +152,10 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
 
-    if (user.dailystats.aucs >= 100)
+    if (user.dailystats.aucs >= 150)
         return ctx.reply(user, `you have reached the maximum amount of auctions you can create in one daily. Please wait until your next daily to create more!`, 'red')
 
-    if (curaucs.length >= 15)
+    if (curaucs.length >= 30)
         return ctx.reply(user, `you have reached the maximum amount of auctions you can have listed at a time per hour. Please wait an hour before listing again!`, 'red')
 
     const card = bestMatch(cards)

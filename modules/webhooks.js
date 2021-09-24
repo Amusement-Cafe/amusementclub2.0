@@ -30,6 +30,12 @@ const listen = (ctx) => {
 
     // Webhook handle for https://discordbotlist.com/
     app.post("/dbl", (req, res) => {
+        if(req.headers.authorization != ctx.dbl.pass) {
+            console.log(`DBL webhook has incorrect auth token ${req.headers.authorization}`)
+            res.status(401).end()
+            return
+        }
+
         registerDblVote(ctx, req)
         res.status(200).end()
     })
@@ -85,7 +91,8 @@ const registerTopggVote = async (ctx, vote) => {
 
 const registerDblVote = async (ctx, vote) => {
     // TODO: add streak
-    var votingUser = await fetchOnly(vote.user)
+
+    var votingUser = await fetchOnly(vote.body.id)
 
     if(!votingUser) 
         return
@@ -96,8 +103,7 @@ const registerDblVote = async (ctx, vote) => {
 
     return ctx.direct(votingUser, {
         color: color.blue,
-        description: `thank you for voting! You got **${500}${ctx.symbols.tomato}**
-        --streak--`
+        description: `thank you for voting! You got **${500}${ctx.symbols.tomato}**`
     })
 }
 

@@ -13,8 +13,8 @@ module.exports = [
         actions: ['claim', 'cl'],
         check: (ctx, user) => user.dailystats.claims > 0,
         resolve: (ctx, user) => {
-            user.exp += 200
-            return `**200** ${ctx.symbols.tomato}`
+            user.exp += 2000
+            return `**2,000** ${ctx.symbols.tomato}`
         }
     }, {
         id: 'auccard',
@@ -23,8 +23,8 @@ module.exports = [
         actions: ['auc', 'auction'],
         check: (ctx, user) => user.dailystats.aucs > 0,
         resolve: (ctx, user) => {
-            user.exp += 400
-            return `**400** ${ctx.symbols.tomato}`
+            user.exp += 1000
+            return `**1,000** ${ctx.symbols.tomato}`
         }
     }, {
         id: 'firstdaily',
@@ -58,8 +58,8 @@ module.exports = [
         actions: ['forge'],
         check: (ctx, user) => user.dailystats.forge1 || user.dailystats.forge2 || user.dailystats.forge3,
         resolve: (ctx, user) => {
-            user.vials += 50
-            return `**50** ${ctx.symbols.vial}`
+            user.vials += 150
+            return `**150** ${ctx.symbols.vial}`
         }
     }, {
         id: 'firstliq',
@@ -68,8 +68,8 @@ module.exports = [
         actions: ['liq', 'liquify'],
         check: (ctx, user) => user.dailystats.liquify,
         resolve: (ctx, user) => {
-            user.vials += 100
-            return `**100** ${ctx.symbols.vial}`
+            user.vials += 1000
+            return `**1,000** ${ctx.symbols.vial}`
         }
     }, {
         id: 'firstdraw',
@@ -78,8 +78,8 @@ module.exports = [
         actions: ['draw'],
         check: (ctx, user) => user.dailystats.draw,
         resolve: (ctx, user) => {
-            user.vials += 100
-            return `**100** ${ctx.symbols.vial}`
+            user.vials += 1000
+            return `**1,000** ${ctx.symbols.vial}`
         }
     }, {
         id: 'firstreset',
@@ -93,9 +93,9 @@ module.exports = [
             return false
         },
         resolve: (ctx, user) => {
-            user.xp += 2
-            user.exp += 800
-            return `**800** ${ctx.symbols.tomato}`
+            user.xp += 15
+            user.exp += 3000
+            return `**3,000** ${ctx.symbols.tomato}`
         }
     }, {
         id: 'firstspecial',
@@ -116,8 +116,8 @@ module.exports = [
             .map(x => ctx.cards[x.id].level)
             .reduce((a, b) => a + b, 0) >= 1000,
         resolve: (ctx, user) => {
-            user.exp += 500
-            return `**500** ${ctx.symbols.tomato}`
+            user.exp += 5000
+            return `**5,000** ${ctx.symbols.tomato}`
         }
     }, {
         id: 'firsteffect',
@@ -129,8 +129,8 @@ module.exports = [
             return effect
         },
         resolve: (ctx, user) => {
-            user.exp += 500
-            return `**500** ${ctx.symbols.tomato}`
+            user.exp += 1500
+            return `**1,500** ${ctx.symbols.tomato}`
         }
     }
 

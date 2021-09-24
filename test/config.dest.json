@@ -30,9 +30,13 @@
         "token": "",
         "port": 2727,
         "pass": "",
-        "url": ""
+        "topggUrl": "",
+        "dblUrl": ""
     },
     "analytics": {
         "mixpanel": ""
+    },
+    "metac": {
+        "sauceNaoToken": ""
     }
 }

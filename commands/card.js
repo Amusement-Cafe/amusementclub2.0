@@ -94,6 +94,13 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         boost = curboosts.find(x => args.some(y => y === x.id))
     }
 
+    if(!promo && !any && !boost && args.some(x => isNaN(x))) {
+        return ctx.reply(user, `unknown claim argument \`${args.filter(x => isNaN(x)).join(' ')}\`!
+            Please specify a number, boost ID, 'promo' (if there are promotions running) or 'any' (if current server is locked).
+            For more information type \`${ctx.prefix}help claim\`
+            To view boost IDs use \`${ctx.prefix}boosts\``, 'red')
+    }
+
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
     const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
@@ -223,7 +230,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd(['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
+cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
     withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.excluded)
 
@@ -567,7 +574,7 @@ cmd(['boost', 'info'], (ctx, user, args) => {
     list.push(`Expires in **${msToTime(boost.expires - now)}**`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10),
+        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed: {
             author: { name: `${boost.name} boost` },
@@ -659,7 +666,7 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
         return ctx.qhelp(ctx, user, 'wishlist')
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
 
@@ -685,7 +692,7 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
     cards = cards.filter(x => !user.wishlist.some(y => y === x.id))
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already in your wishlist`, 'red')
@@ -713,7 +720,7 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(
     }
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
     if(!user.wishlist.some(x => x === card.id)) {
@@ -734,7 +741,7 @@ cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'al
     }
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `none of the requested cards are in your wishlist`, 'red')

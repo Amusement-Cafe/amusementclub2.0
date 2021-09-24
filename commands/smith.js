@@ -38,6 +38,9 @@ const {
 } = require('../modules/plot')
 
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
+    if(!parsedargs[0] || parsedargs[0].isEmpty())
+        return ctx.qhelp(ctx, user, 'forge')
+
     const batch1 = cards[0]
     const batch2 = cards[1]
 
@@ -50,13 +53,13 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     card1 = batch1[0]
 
     if(batch2 && batch2.length > 0) {
-        card2 = batch2[0]
+        card2 = batch2.filter(x => x.id != card1.id)[0]
     } else {
         card2 = batch1.filter(x => x.id != card1.id)[0]
     }
 
     if(!card1 || !card2)
-        return ctx.reply(user, `not enough cards found matching this query.
+        return ctx.reply(user, `not enough unique cards found matching this query.
             You can specify one query that can get 2+ unique cards, or 2 queries using \`,\` as separator`, 'red')
 
     if(card1.level != card2.level)
@@ -297,9 +300,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if (parsedargs.diff) {
         let waitMSG
         if (cards.length > 1500)
-            waitMSG = await ctx.reply(user, `you have used \`-diff\` or \`-miss\` in this query and the result contains a lot of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
+            waitMSG = await ctx.reply(user, `you have used \`diff\` or \`miss\` in this query and the result contains a lot of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
 
-        cards = cards.filter(x => !user.cards.some(y => x.id === y.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
         if (waitMSG)
             await ctx.bot.deleteMessage(waitMSG.channel.id, waitMSG.id, 'removal of time warning')

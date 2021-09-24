@@ -115,6 +115,8 @@ const arrayChunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk_
 
 const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
+const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
+
 module.exports = {
     cap,
     claimCost,
@@ -128,5 +130,6 @@ module.exports = {
     arrayChunks,
     escapeRegex,
     numFmt,
-    plotBuyCost
+    plotBuyCost,
+    urlRegex,
 }

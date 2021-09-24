@@ -18,7 +18,7 @@ const {
 cmd(['plot'], ['plots'], async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
-        return ctx.reply(user, 'You have no plots!', 'red')
+        return ctx.reply(user, 'You have no plots in this guild!', 'red')
     let pages = []
 
     lots.map((x, i) => {
@@ -105,7 +105,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
 
             let buyablePlots = _.min([affordablePlots - 1, userAllowedPlots, guildAllowedPlots])
 
-            ctx.reply(user, `you have bought a plot in **${ctx.msg.channel.guild.name}**!
+            ctx.reply(user, `you have bought a plot for **${cost}** ${ctx.symbols.lemon} in **${ctx.msg.channel.guild.name}**!
             You are currently able to buy **${buyablePlots}** more plots in this guild!`)
         },
     })
@@ -227,7 +227,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
 
 })
 
-cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
+cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {
     let plots = await getUserPlots(ctx)
     plots = plots.filter(x=> x.building.stored_lemons > 0)
 
@@ -235,31 +235,14 @@ cmd(['plot', 'collect'], ['plots', 'collect'], async (ctx, user) => {
         return ctx.reply(user, 'you have no plots in this guild that are ready for collection!', 'red')
 
     let collection = 0
-    plots.map(x => collection += x.building.stored_lemons)
-
-    const question = `Do you want to collect **${numFmt(collection)}** ${ctx.symbols.lemon} from your buildings in ${ctx.discord_guild.name}?`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question,
-        force: ctx.globals.force,
-        onConfirm: async (x) => {
-            plots.map(async y => {
-                y.building.stored_lemons = 0
-                y.building.last_collected = new Date()
-                await y.save()
-            })
-            user.lemons += collection
-            await user.save()
-
-            return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
-            You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
-        }
+    plots.map(async y => {
+        collection += y.building.stored_lemons
+        y.building.stored_lemons = 0
+        y.building.last_collected = new Date()
+        await y.save()
     })
-})
-
-pcmd(['admin'], ['sudo', 'plots', 'clear'], async (ctx, user) => {
-    const demolished  = await Plots.deleteMany({guild_id: ctx.guild.id})
-    if (demolished.n > 0)
-        return ctx.reply(user, 'guild lots demolished!')
-    else
-        return ctx.reply(user, 'no lots to be demolished!', 'red')
+    user.lemons += collection
+    await user.save()
+    return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
+            You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
 })
