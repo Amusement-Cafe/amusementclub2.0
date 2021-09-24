@@ -208,6 +208,14 @@
             {
                 "title": "->claim [amount]",
                 "description": "Get several cards, limit 10 per command"
+            },
+            {
+                "title": "->claim promo",
+                "description": "Get promo card(s) if there is an event running"
+            },
+            {
+                "title": "->claim [boost ID]",
+                "description": "Get a card using a drop boost (can be found in `->boosts`)"
             }
         ]
     },
