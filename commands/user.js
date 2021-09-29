@@ -164,6 +164,7 @@ cmd('daily', async (ctx, user) => {
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
+        const userLevel = XPtoLEVEL(user.xp)
 
         if(check_effect(ctx, user, 'cakeday')) {
             amount += 100 * (user.dailystats.claims || 0)
@@ -183,13 +184,13 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
 
-        quests.push(getQuest(ctx, user, 2, quests[0].id))
+        quests.push(getQuest(ctx, user, userLevel > 10? 2 : 1, quests[0].id.slice(0,-1)))
         user.dailyquests.push(quests[1].id)
 
         user.markModified('dailyquests')
 
         addGuildXP(ctx, user, 10)
-        ctx.guild.balance += XPtoLEVEL(user.xp)
+        ctx.guild.balance += userLevel
         await ctx.guild.save()
 
         if(hero) {
@@ -499,8 +500,42 @@ cmd('quest', 'quests', async (ctx, user) => {
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
         author: { name: `${user.username}, your quests:` },
-        description: ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y))
-            .map((x, i) => `${i + 1}. \`${new Array(x.tier + 1).join('★')}\` ${x.name} (${x.reward(ctx)})`).join('\n')
+        description: user.dailyquests.map((x, i) => {
+            const qInfo = ctx.quests.daily.find(y => y.id === x)
+            return `${i + 1}. \`${new Array(qInfo.tier + 1).join('★')}\` ${qInfo.name} (${qInfo.reward(ctx)})`
+        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info [quest index]\``
+    }, user.discord_id)
+})
+
+cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
+    if(!args[0] || isNaN(args[0])) {
+        return ctx.reply(user, `please specify quest index (e.g. \`${ctx.prefix}quest info 1\`)`, 'red')
+    }
+
+    const index = parseInt(args[0]) - 1
+
+    if(user.dailyquests.length === 0 && user.questlines.length === 0)
+        return ctx.reply(user, `you don't have any quests`, 'red')
+
+    if(!user.dailyquests[index])
+        return ctx.reply(user, `cannot find quest with index **${index + 1}**.
+            Please indicate an indexing number like it appears in your quest list.`, 'red')
+
+    const resp = []
+    const quest = ctx.quests.daily.find(x => user.dailyquests[index] === x.id)
+    resp.push(`Tier: \`${new Array(quest.tier + 1).join('★')}\``)
+    resp.push(`Required user level: **${quest.min_level}**`)
+    resp.push(`Reward: ${quest.reward(ctx)}`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: quest.name },
+        description: resp.join('\n'),
+        fields: [
+            { name: 'Guide', value: quest.desc.replace(/->/gi, ctx.prefix) },
+            { name: 'Related help', value: `This quest is completed using **${quest.actions[0]}** command. 
+                For more information type: \`${ctx.prefix}help ${quest.actions[0]} -here\`` },
+        ]
     }, user.discord_id)
 })
 

@@ -605,6 +605,8 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
         const oldrating = card.rating
         info.ratingsum -= oldrating
         info.usercount--
+    } else {
+        user.dailystats.rates++
     }
 
     user.cards.find(x => x.id === card.id).rating = rating
