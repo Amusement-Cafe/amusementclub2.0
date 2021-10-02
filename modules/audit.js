@@ -65,7 +65,7 @@ const eval_fraud_check = async (ctx, auc, eval, card) => {
     const auditDB = await new Audit()
     auditDB.audit_id = auditIDGen(last_audit)
     auditDB.id = auc.id
-    auditDB.card = card.name
+    auditDB.card = card.id
     auditDB.bids = auc.bids.length
     auditDB.finished = auc.finished
     auditDB.eval = eval
