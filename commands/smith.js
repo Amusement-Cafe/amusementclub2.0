@@ -38,6 +38,9 @@ const {
 } = require('../modules/plot')
 
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
+    if(!parsedargs[0] || parsedargs[0].isEmpty())
+        return ctx.qhelp(ctx, user, 'forge')
+
     const batch1 = cards[0]
     const batch2 = cards[1]
 

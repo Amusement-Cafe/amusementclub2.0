@@ -317,10 +317,7 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
 const withMultiQuery = (callback) => async (ctx, user, ...args) => {
     const argsplit = args.join(' ').split(',').map(x => x.trim())
     const parsedargs = [], cards = []
-    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' '), user)))
-
-    if(!parsedargs[0] || parsedargs[0].isEmpty())
-        return ctx.reply(user, `please specify at least one card query`, 'red')
+    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' ').filter(y => y.length > 0), user)))
 
     const map = mapUserCards(ctx, user)
     try {

@@ -9,13 +9,17 @@ const {
     fetchCardTags,
 } = require('./tag')
 
+const {
+    urlRegex,
+} = require('../utils/tools')
+
 const booru = new Danbooru()
 
 const getBooruPost = (ctx, booruID) => booru.posts(booruID)
 
 const getPostURL = (post) => booru.url(post.file_url)
 
-const setCardBooruData = async (ctx, cardID, post) => {
+const setCardBooruData = async (ctx, user, cardID, post) => {
     const info = fetchInfo(ctx, cardID)
     info.meta.booruid = post.id
     info.meta.booruscore = post.score
@@ -24,6 +28,7 @@ const setCardBooruData = async (ctx, cardID, post) => {
     info.meta.pixivid  = post.pixiv_id
     info.meta.source = post.source
     info.meta.image = getPostURL(post)
+    info.meta.contributor = user.discord_id
     await info.save()
 
     const newTagString = `${post.tag_string_general} ${post.tag_string_character} ${post.tag_string_copyright}`
@@ -43,17 +48,17 @@ const setCardBooruData = async (ctx, cardID, post) => {
     await Tag.insertMany(newTags)
 }
 
-const setCardSource = async (ctx, cardID, source) => {
+const setCardSource = async (ctx, user, cardID, source) => {
     const info = fetchInfo(ctx, cardID)
     info.meta.source = source
+    info.meta.contributor = user.discord_id
     await info.save()
 }
 
-const setSourcesFromRawData = async (ctx, data, collection) => {
+const setSourcesFromRawData = async (ctx, data, collection, authorID) => {
     const expr = /\s-\s/
     const entrees = data.split('\n').filter(x => x.split(expr).length === 2)
     const problems = []
-    const urlExpr = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
 
     let count = 0
     for (let i = 0; i < entrees.length; i++) {
@@ -65,7 +70,7 @@ const setSourcesFromRawData = async (ctx, data, collection) => {
             .replace(/'|`/g, "")
             .replace(/\s+/g, "_")
         
-        const match = x.match(urlExpr)
+        const match = x.match(urlRegex)
 
         if (match) {
             const link = match[0]
@@ -80,11 +85,10 @@ const setSourcesFromRawData = async (ctx, data, collection) => {
                 problems.push(`**Ambiguous matches** (${cards.map(x => x.col).join(' ')}) --- ${cardName}`)
             } else {
                 const info = fetchInfo(ctx, cards[0].id)
-                if(!info.source) {
-                    info.meta.source = link
-                    count++
-                    await info.save()
-                }
+                info.meta.source = link
+                info.meta.author = authorID
+                count++
+                await info.save()
             }
         } else {
             problems.push(`**Invalid source link** --- ${x}`)

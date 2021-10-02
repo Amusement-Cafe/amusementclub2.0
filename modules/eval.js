@@ -131,7 +131,7 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
         let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * 0.689) * modifier)
 
-        price = Math.round(info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length)
+        price = Math.round((info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length) * modifier)
 
         if (price < priceFloor)
             price = priceFloor
