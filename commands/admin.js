@@ -404,3 +404,70 @@ pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
         footer: { text: `Date: ${announcement.date}` },
     })
 })
+
+
+pcmd(['admin'], ['sudo', 'top', 'lemons'], async (ctx, user) => {
+    let allUsersWithLemons = (await Users.find({lemons: {$gt: 0}})).sort((x, y) => y.lemons - x.lemons)
+    let pages = []
+    allUsersWithLemons.map((x, i) => {
+        if (i % 20 == 0) pages.push(``)
+        pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\` - **${x.lemons}**${ctx.symbols.lemon}\n`
+    })
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        embed: {
+            author: {name:`Showing Top Lemon Balances for ${allUsersWithLemons.length} users`}
+        }
+    })
+})
+
+pcmd(['admin'], ['sudo', 'top', 'tomatoes'], async (ctx, user) => {
+    let allUsersWithTomatoes = (await Users.find({exp: {$gt: 0}})).sort((x, y) => y.exp - x.exp)
+    let pages = []
+    allUsersWithTomatoes.map((x, i) => {
+        if (i % 20 == 0) pages.push(``)
+        pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\` - **${x.exp}**${ctx.symbols.tomato}\n`
+    })
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        embed: {
+            author: {name:`Showing Top Tomato Balances for ${allUsersWithTomatoes.length} users`}
+        }
+    })
+})
+
+pcmd(['admin'], ['sudo', 'top', 'vials'], async (ctx, user) => {
+    let allUsersWithVials = (await Users.find({vials: {$gt: 0}})).sort((x, y) => y.vials - x.vials)
+    let pages = []
+    allUsersWithVials.map((x, i) => {
+        if (i % 20 == 0) pages.push(``)
+        pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\` - **${x.vials}**${ctx.symbols.vial}\n`
+    })
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        embed: {
+            author: {name:`Showing Top Vial Balances for ${allUsersWithVials.length} users`}
+        }
+    })
+})
+
+pcmd(['admin'], ['sudo', 'top', 'clout'], async (ctx, user) => {
+    let allUsersWithClout = await Users.find({cloutedcols: {$exists: true, $ne: []}})
+    let pages = []
+    let cloutUsers = []
+    allUsersWithClout.map((x, i) => {
+        let cloutAmount = 0
+        x.cloutedcols.map(x=>cloutAmount += x.amount)
+        cloutUsers.push({discord_id: x.discord_id, username: x.username, amount: cloutAmount})
+    })
+    cloutUsers.sort((a, b) => b.amount - a.amount).map((x, i) => {
+        if (i % 20 == 0) pages.push(``)
+        pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\`: **${x.amount}**★\n`
+    })
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        embed: {
+            author: {name:`Showing Top Clout for ${allUsersWithClout.length} users`}
+        }
+    })
+})
