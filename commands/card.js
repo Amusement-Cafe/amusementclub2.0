@@ -58,6 +58,10 @@ const {
     plotPayout,
 } = require('../modules/plot')
 
+const {
+    fetchOnly,
+} = require('../modules/user')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
@@ -648,18 +652,35 @@ cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedarg
 })).access('dm')
 
 cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    if(user.wishlist.length === 0) {
-        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+    let targetUser
+    if(parsedargs.ids[0]) {
+        targetUser = await fetchOnly(parsedargs.ids[0])
+
+        if(targetUser.wishlist.length === 0)
+            return ctx.reply(user, `${targetUser.username}'s wishlist is empty!`)
+
+        cards = cards.filter(x => targetUser.wishlist.some(y => y === x.id))
+
+        if(cards.length === 0)
+            return ctx.reply(user, `there aren't any cards in ${targetUser.username}'s wishlist that match this request`, 'red')
+
+    } else {
+        
+        if(user.wishlist.length === 0)
+            return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+
+        cards = cards.filter(x => user.wishlist.some(y => y === x.id))
+
+        if(cards.length === 0)
+            return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
+
     }
 
-    cards = cards.filter(x => user.wishlist.some(y => y === x.id))
-    if(cards.length === 0) {
-        return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
-    }
+
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cards.map(x => `${formatName(x)}`), 15),
-        embed: { author: { name: `${user.username}, your wishlist (${numFmt(cards.length)} results)` } }
+        embed: { author: { name: `${user.username}, ${targetUser? `here is ${targetUser.username}'s` :`your`} wishlist (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 
