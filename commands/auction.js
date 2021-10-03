@@ -264,6 +264,9 @@ cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
     if((!lastBidder && user.exp < bid) || (lastBidder && user.exp < bid - auc.highbid))
         return ctx.reply(user, `you don't have \`${numFmt(bid)}\` ${ctx.symbols.tomato} to bid`, 'red')
 
+    if(auc.cancelled)
+        return ctx.reply(user, `auction \`${auc.id}\` was cancelled and is now finished`, 'red')
+
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
 
