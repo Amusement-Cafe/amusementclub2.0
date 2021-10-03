@@ -244,7 +244,7 @@ cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list'
     }
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
+        pages: ctx.pgn.getPages(cards.map(c => `${formatName(c)}${parsedargs.evalQuery? ` ${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: ''}`), 15),
         embed: {
             author: { name: `Matched cards from database (${numFmt(cards.length)} results)` },
         }
