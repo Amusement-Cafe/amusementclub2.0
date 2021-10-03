@@ -113,7 +113,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
 
 cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
     if (!arg)
-        return ctx.reply(user, 'please specify a building or plot number to upgrade!', 'red')
+        return ctx.reply(user, 'please specify a plot number to upgrade!', 'red')
 
     let plot = await getUserPlots(ctx, false, arg)
 
@@ -223,8 +223,6 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
 
 
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
-
-
 })
 
 cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {

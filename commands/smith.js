@@ -226,12 +226,16 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
             try {
                 user.vials += vials
 
+                let lemons = 0
                 cards.map(c => {
                     removeUserCard(ctx, user, c.id)
                     user.dailystats.liquify += 1
                     user.dailystats[`liquify${c.level}`] += 1
+                    lemons += c.level * 15
                 })
                 await user.save()
+                await plotPayout(ctx, 'smithhub', 2, lemons)
+
 
                 ctx.reply(user, `${cards.length} cards were liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
