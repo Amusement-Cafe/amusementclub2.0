@@ -225,6 +225,60 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
     return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
 })
 
+cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, arg) => {
+    if (!arg)
+        return ctx.reply(user, 'please specify a plot number to see info on!', 'red')
+
+    let plot = await getUserPlots(ctx, true)
+    let plotLength = plot.length
+
+    if (plot.length === 0)
+        return ctx.reply(user, 'You have no plots!', 'red')
+
+    let plotArg = arg - 1
+    plot = plot[plotArg]
+    if(!plot)
+        return ctx.reply(user, `you don't have a plot in position ${arg}, you only have ${plotLength} plots globally!`, 'red')
+
+    if(!plot.building.id)
+        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix}store\` and place them on this plot!`)
+
+    const item = ctx.items.find(x => x.id === plot.building.id)
+
+    const embed = {
+        author: { name: `${user.username}, here are the stats for your ${item.name}` },
+        fields: [
+            {
+                name: `Stored Revenue`,
+                value: `${numFmt(plot.building.stored_lemons)} ${ctx.symbols.lemon} (Max: ${await getMaxStorage(ctx, plot)} ${ctx.symbols.lemon})`,
+                inline: true
+            },
+            {
+                name: `Installation Date`,
+                value: `${plot.building.install_date.toLocaleString()}`,
+                inline: true
+            },
+            {
+                name: `Last Collected Date`,
+                value: `${plot.building.last_collected.toLocaleString()}`,
+                inline: true
+            },
+        ],
+        color: colors.blue
+    }
+
+    let level = item.levels.map((x, i) => ({
+        name: `Level ${i + 1}`,
+        value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
+    }))
+    level[plot.building.level - 1].name += ` (Current Level)`
+    level.map(x => embed.fields.push(x))
+
+
+    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+})
+
 cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {
     let plots = await getUserPlots(ctx)
     plots = plots.filter(x=> x.building.stored_lemons > 0)
