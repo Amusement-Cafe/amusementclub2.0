@@ -264,7 +264,9 @@ cmd('daily', async (ctx, user) => {
         })
     }
 
-    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`, 'red')
+    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**
+                If you want to be notified when your daily is ready use: 
+                \`${ctx.prefix}prefs set notify daily true\``, 'red')
 })
 
 cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) => {
