@@ -148,7 +148,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         vials += vials * .25
 
     if(card.fav && card.amount === 1)
-        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+        return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquify ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
@@ -330,7 +330,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
 
     if(user.vials < vials)
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
-            You need **${numFmt(vials)}** ${ctx.symbols.vial} (+**${numFmt(extra)}**) but you have **${numFmt(user.vials)}** ${ctx.symbols.vial}`, 'red')
+            You need **${numFmt(vials)}** ${ctx.symbols.vial} (+**${numFmt(extra)}**) but you have **${numFmt(user.vials)}** ${ctx.symbols.vial}
+            Liquefy some cards with \`${ctx.prefix}liq\` to get vials!`, 'red')
 
     let question = `Do you want to draw ${formatName(card)} using **${numFmt(vials)}** ${ctx.symbols.vial}?`
     if(amount > 0) {
