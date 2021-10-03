@@ -58,7 +58,7 @@ cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) =>
     let symbol = isBP? ctx.symbols.lemon: ctx.symbols.tomato
     let balance = isBP? user.lemons: user.exp
     if(balance < item.price)
-        return ctx.reply(user, `you have to have at least \`${item.price}\` ${symbol} to buy this item`, 'red')
+        return ctx.reply(user, `you have to have at least **${item.price}** ${symbol} to buy this item`, 'red')
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${symbol}?`,
