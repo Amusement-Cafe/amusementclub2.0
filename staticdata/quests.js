@@ -220,7 +220,7 @@ module.exports = {
                 user.xp += 2
                 user.lemons += 15
             },
-            reward: (ctx) => `**250** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **10** ${ctx.symbols.vial} | **3** xp`
+            reward: (ctx) => `**250** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **25** ${ctx.symbols.vial} | **3** xp`
         }, {
             id: 'draw2star',
             name: 'Draw a 2 star card',
@@ -237,7 +237,7 @@ module.exports = {
                 user.xp += 3
                 user.lemons += 15
             },
-            reward: (ctx) => `**750** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **25** ${ctx.symbols.vial} | **3** xp`
+            reward: (ctx) => `**750** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **75** ${ctx.symbols.vial} | **3** xp`
         }, {
             id: 'draw3star',
             name: 'Draw a 3 star card',
@@ -254,7 +254,7 @@ module.exports = {
                 user.xp += 4
                 user.lemons += 30
             },
-            reward: (ctx) => `**900** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **60** ${ctx.symbols.vial} | **4** xp`
+            reward: (ctx) => `**900** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **200** ${ctx.symbols.vial} | **4** xp`
         }, {
             id: 'rate2',
             name: 'Rate 2 cards today',
@@ -284,7 +284,7 @@ module.exports = {
                 user.xp += 5
                 user.lemons += 30
             },
-            reward: (ctx) => `**1000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **5** xp`
+            reward: (ctx) => `**1,000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **5** xp`
         },
     ],
 
