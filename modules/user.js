@@ -16,6 +16,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
         user.username = username
         user.discord_id = userid
         user.exp = 3000
+        user.vials = 100
         user.joined = new Date()
         user.lastdaily = asdate.subtract(new Date(), 1, 'day')
 
