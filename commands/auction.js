@@ -141,6 +141,8 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
 })).access('dm')
 
 cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+    if (ctx.settings.aucLock)
+        return ctx.reply(user, `selling on auction is currently disabled by the admins.\nFor more info you may inquire in the [Support Server](${ctx.invite}).`, 'red')
     const timelimit = asdate.subtract(new Date(), 1, 'hour')
     const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
 

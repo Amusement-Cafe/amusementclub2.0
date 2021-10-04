@@ -382,6 +382,12 @@ pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], async (ctx, user, ...a
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
 })
 
+pcmd(['admin'], ['sudo', 'lock', 'auc'], ['sudo', 'lock', 'aucs'], async (ctx, user, ...args) => {
+    ctx.settings.aucLock = !ctx.settings.aucLock
+
+    return ctx.reply(user, `auction lock has been **${ctx.settings.aucLock? `ENABLED` : `DISABLED`}**`)
+})
+
 pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
     const split = ctx.capitalMsg.join(' ').split(',')
     const title = split.shift()

@@ -85,6 +85,10 @@
                 "description": "Sets bot to WIP mode, disallowing anyone besides admins/mods from running commands. Optional message will be displayed instead of default if given."
             },
             {
+                "title": "->sudo lock auc",
+                "description": "Toggles the lock on auction selling, when enabled all `->auc sell` commands are rejected"
+            },
+            {
                 "title": "->sudo announce [Title], [Body]",
                 "description": "Set a new announcement message for DMing people with notify pref on, and for display in ->daily on a user's next daily. Title CANNOT have a comma, as title and body are split by comma"
             },
