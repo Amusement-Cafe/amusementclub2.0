@@ -67,7 +67,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
     const userGlobalPlots = await getUserPlots(ctx, true)
     const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
     const cost = plotBuyCost(user, 1, userGlobalPlots.length)
-
+    const buildingCount = ctx.items.filter(x => x.type === 'blueprint').length
 
     const check = async () => {
 
@@ -81,8 +81,13 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
     }
 
+    let question = `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you ${numFmt(cost)} ${ctx.symbols.lemon}!`
+
+    if (userGuildPlots.length >= buildingCount)
+        question += `\n**Note that there are currently only ${buildingCount} buildings available at this time and you cannot have two of the same building in a guild!**`
+
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
-        question: `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you ${numFmt(cost)} ${ctx.symbols.lemon}!`,
+        question,
         force: ctx.globals.force,
         check,
         onConfirm: async () => {
