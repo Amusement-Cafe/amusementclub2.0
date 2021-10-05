@@ -6,7 +6,7 @@ const {
 
 const check_achievements = async (ctx, user, action, channelID) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
-    const complete = possible.find(x => x.check(ctx, user))
+    const complete = (await Promise.all(possible.map(async (x) => await x.check(ctx, user)? x : false))).find(x => x)
 
     if(complete) {
         const reward = complete.resolve(ctx, user)
