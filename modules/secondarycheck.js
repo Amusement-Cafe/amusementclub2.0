@@ -26,12 +26,13 @@ const check_achievements = async (ctx, user, action, channelID) => {
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,
-            description: `(${complete.desc})`,
+            description: `\`${complete.desc}\``,
             thumbnail: { url: `${ctx.baseurl}/achievements/${complete.id}.png` },
             fields: [{
                 name: `Reward`,
                 value: reward
-            }]
+            }],
+            footer: {text: `To view your achievements use ${ctx.prefix}ach`}
         })
     }
 }
