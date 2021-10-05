@@ -563,15 +563,16 @@ cmd('achievements', 'ach', async (ctx, user, ...args) => {
     const miss = args.find(x => x === '-miss'|| x === '-diff')
 
     if (miss)
-        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y)).map(z => `**${z.name}** • ${z.desc}`)
+        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y)).map(z => `**${z.name}** • \`${z.desc}\``)
 
+    const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length})` }}
+
+    if (!miss)
+        embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(list, 15),
-        embed: {
-            author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length})` },
-            footer: {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
-        }
+        embed
     })
 })
 
