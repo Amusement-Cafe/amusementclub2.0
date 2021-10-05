@@ -2,6 +2,8 @@ const {cmd, pcmd}   = require('../utils/cmd')
 const Plots         = require('../collections/plot')
 const colors        = require('../utils/colors')
 const _             = require('lodash')
+const dateFormat    = require(`dateformat`)
+
 
 const {
     numFmt,
@@ -206,12 +208,12 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
             },
             {
                 name: `Installation Date`,
-                value: `${plot.building.install_date.toLocaleString()}`,
+                value: `${dateFormat(plot.building.install_date, "yyyy-mm-dd HH:MM:ss Z", true)}`,
                 inline: true
             },
             {
                 name: `Last Collected Date`,
-                value: `${plot.building.last_collected.toLocaleString()}`,
+                value: `${dateFormat(plot.building.last_collected, "yyyy-mm-dd HH:MM:ss Z", true)}`,
                 inline: true
             },
         ],
@@ -255,17 +257,17 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
         fields: [
             {
                 name: `Stored Revenue`,
-                value: `${numFmt(plot.building.stored_lemons)} ${ctx.symbols.lemon} (Max: ${await getMaxStorage(ctx, plot)} ${ctx.symbols.lemon})`,
+                value: `${numFmt(plot.building.stored_lemons)} ${ctx.symbols.lemon} (Max: ${await getMaxStorage(ctx, plot, plot.guild_id)} ${ctx.symbols.lemon})`,
                 inline: true
             },
             {
                 name: `Installation Date`,
-                value: `${plot.building.install_date.toLocaleString()}`,
+                value: `${dateFormat(plot.building.install_date, "yyyy-mm-dd HH:MM:ss Z", true)}`,
                 inline: true
             },
             {
                 name: `Last Collected Date`,
-                value: `${plot.building.last_collected.toLocaleString()}`,
+                value: `${dateFormat(plot.building.last_collected, "yyyy-mm-dd HH:MM:ss Z", true)}`,
                 inline: true
             },
         ],
