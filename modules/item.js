@@ -81,7 +81,7 @@ const withItem = (callback) => (ctx, user, ...args) => {
     return callback(ctx, user, item, args)
 }
 
-const useItem = (ctx, user, item, index) => uses[item.type](ctx, user, item)
+const useItem = (ctx, user, item, index) => uses[item.type](ctx, user, item, index)
 const itemInfo = (ctx, user, item) => infos[item.type](ctx, user, item)
 const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
 const checkItem = (ctx, user, item) => checks[item.type](ctx, user, item)
@@ -104,7 +104,7 @@ const uses = {
         await emptyPlot.save()
 
         user.lemons -= item.levels[0].price
-        pullInventoryItem(user, item.id)
+        pullInventoryItem(user, item.id, index)
         await user.save()
 
         ctx.mixpanel.track(
@@ -126,7 +126,7 @@ const uses = {
             return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
 
         addUserCard(user, card.id)
-        pullInventoryItem(user, item.id)
+        pullInventoryItem(user, item.id, index)
         user.lastcard = card.id
         await user.save()
 
@@ -189,7 +189,7 @@ const uses = {
             removeUserCard(ctx, user, x)
             completed(ctx, user, ctx.cards[x])
         })
-        pullInventoryItem(user, item.id)
+        pullInventoryItem(user, item.id, index)
         user.effects.push(eobject)
         await user.save()
         user.markModified('cards')
