@@ -43,7 +43,7 @@ cmd(['plot'], ['plots'], async (ctx, user) => {
 
 cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
     const lots = await getUserPlots(ctx, true)
-
+    lots.sort((a, b) => a.guild_id - b.guild_id)
     let pages = []
 
     lots.map((x, i) => {
@@ -239,9 +239,10 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
     let plot = await getUserPlots(ctx, true)
     let plotLength = plot.length
 
-    if (plot.length === 0)
+    if (plotLength === 0)
         return ctx.reply(user, 'You have no plots!', 'red')
 
+    plot.sort((a, b) => a.guild_id - b.guild_id)
     let plotArg = arg - 1
     plot = plot[plotArg]
     if(!plot)
