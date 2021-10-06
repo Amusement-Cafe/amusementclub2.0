@@ -42,9 +42,11 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
         return ctx.reply(user, 'your inventory is empty', 'red')
 
     let items = mapUserInventory(ctx, user)
-
-    if(!isNaN(args[0]))
-        items = [items[parseInt(args[0]) - 1]]
+    let index
+    if(!isNaN(args[0])) {
+        index = parseInt(args[0]) - 1
+        items = [items[index]]
+    }
     else if(args.length > 0) {
         const reg = new RegExp(args.join('*.'), 'gi')
         items = items.filter(x => reg.test(x.id))
@@ -55,7 +57,7 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
     if(items.length === 0)
         return ctx.reply(user, `found 0 items with ID \`${args.join('')}\``, 'red')
 
-    return callback(ctx, user, items, args)
+    return callback(ctx, user, items, args, index)
 }
 
 const withItem = (callback) => (ctx, user, ...args) => {
@@ -79,13 +81,13 @@ const withItem = (callback) => (ctx, user, ...args) => {
     return callback(ctx, user, item, args)
 }
 
-const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
+const useItem = (ctx, user, item, index) => uses[item.type](ctx, user, item)
 const itemInfo = (ctx, user, item) => infos[item.type](ctx, user, item)
 const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
 const checkItem = (ctx, user, item) => checks[item.type](ctx, user, item)
 
 const uses = {
-    blueprint: async (ctx, user, item) => {
+    blueprint: async (ctx, user, item, index) => {
         const check = await checks.blueprint(ctx, user, item)
         if(check)
             return ctx.reply(user, check, 'red')
@@ -116,7 +118,7 @@ const uses = {
         return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**`)
     },
 
-    claim_ticket: async (ctx, user, item) => {
+    claim_ticket: async (ctx, user, item, index) => {
         const col = item.col? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity))
         const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === item.level))
 
@@ -125,6 +127,7 @@ const uses = {
 
         addUserCard(user, card.id)
         pullInventoryItem(user, item.id)
+        user.lastcard = card.id
         await user.save()
 
         return ctx.reply(user, {
@@ -134,7 +137,7 @@ const uses = {
         })
     },
 
-    recipe: async (ctx, user, item) => {
+    recipe: async (ctx, user, item, index) => {
         let eobject, desc
         const check = checks.recipe(ctx, user, item)
         if(check)
@@ -331,9 +334,13 @@ const getQuestion = (ctx, user, item) => {
     }
 }
 
-const pullInventoryItem = (user, itemid) => {
-    const el = user.inventory.find(x => x.id === itemid)
-    _.pullAt(user.inventory, user.inventory.indexOf(el))
+const pullInventoryItem = (user, itemid, index) => {
+    if (index) {
+        _.pullAt(user.inventory, index)
+    } else {
+        const el = user.inventory.find(x => x.id === itemid)
+        _.pullAt(user.inventory, user.inventory.indexOf(el))
+    }
     user.markModified('inventory')
 }
 

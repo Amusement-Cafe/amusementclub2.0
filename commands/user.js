@@ -124,7 +124,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     })
 }))
 
-cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
+cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
     const itemCheck = await checkItem(ctx, user, item)
 
@@ -134,7 +134,7 @@ cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
-        onConfirm: (x) => useItem(ctx, user, item)
+        onConfirm: (x) => useItem(ctx, user, item, index)
     })
 }))
 
