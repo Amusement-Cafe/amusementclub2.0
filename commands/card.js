@@ -4,6 +4,7 @@ const colors                = require('../utils/colors')
 const msToTime              = require('pretty-ms')
 const dateFormat            = require(`dateformat`)
 const User                  = require('../collections/user')
+const UserCard              = require('../collections/userCard')
 
 const _ = require('lodash')
 
@@ -58,6 +59,13 @@ const {
     plotPayout,
 } = require('../modules/plot')
 
+const { 
+    getUserCards,
+    addUserCards,
+    removeUserCards,
+} = require('../modules/user')
+const userCard = require('../collections/userCard')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
@@ -78,6 +86,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const normalprice = promo? price : claimCost(user, 0, amount)
     const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
     const activepromo = ctx.promos.find(x => x.starts < now && x.expires > now)
+    const userCards = await getUserCards(ctx, user)
 
     if(amount > 10)
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
@@ -101,22 +110,24 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
-        let card, boostdrop = false
+        let card, boostDrop = false
         const colCards = ctx.cards.filter(x => x.col === col.id)
         if(i === 0 && tohruEffect && colCards.some(x => x.level === 3)) {
             card = _.sample(colCards.filter(x => x.level === 3 && !x.excluded))
         }
         else if(boost && rng < boost.rate) {
-            boostdrop = true
+            boostDrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
         else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
-        const count = addUserCard(user, card.id)
+        const userCard = userCards.find(x => x.cardid === card.id)
 
-        await completed(ctx, user, card)
-
-        cards.push({count, boostdrop, card: _.clone(card)})
+        cards.push({ 
+            count: userCard? userCard.amount + 1 : 1, 
+            boostDrop, 
+            card,
+        })
     }
     
     cards.sort((a, b) => b.card.level - a.card.level)
@@ -125,7 +136,6 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
     const oldCards = cards.filter(x => x.count > 1)
-    oldCards.map(x => x.card.fav = user.cards.find(y => x.card.id === y.id).fav)
 
     if(promo) {
         curr = promo.currency
@@ -151,11 +161,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     user.xp += amount
     await user.save()
 
-
-    if(newCards.length > 0 && oldCards.length > 0) {
-        user.markModified('cards')
-        await user.save()
-    }
+    await addUserCards(ctx, user, cards.map(x => x.card.id))
 
     if(newCards.length > 0) {
         await bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
@@ -170,8 +176,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     let fields = []
     let description = `**${user.username}**, you got:`
-    fields.push({name: `New cards`, value: newCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
-    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostdrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
+    fields.push({name: `New cards`, value: newCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
+    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
     fields.push({name: `Receipt`, value: `You spent **${numFmt(price)}** ${curr} in total
         You have **${numFmt(Math.round(promo? user.promoexp : user.exp))}** ${curr} left
         You can claim **${max - 1}** more cards

@@ -24,6 +24,7 @@ const {
 const {
     fetchOnly,
     getQuest,
+    getUserCards,
 } = require('../modules/user')
 
 const {
@@ -316,7 +317,8 @@ cmd('profile', async (ctx, user, ...args) => {
     const completedSum = user.completedcols.length
     const cloutsum = user.cloutedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user.joined || user._id.getTimestamp()
-    const cards = mapUserCards(ctx, user)
+    const userCards = await getUserCards(ctx, user)
+    const cards = mapUserCards(ctx, userCards)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
     let price = 0
     let vials = 0
@@ -333,7 +335,7 @@ cmd('profile', async (ctx, user, ...args) => {
     })
     const resp = []
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
-    resp.push(`Cards: **${numFmt(user.cards.length)}** | Stars: **${numFmt(cards.map(x => x.level).reduce((a, b) => a + b, 0))}**`)
+    resp.push(`Cards: **${numFmt(userCards.length)}** | Stars: **${numFmt(cards.map(x => x.level).reduce((a, b) => a + b, 0))}**`)
 
     if (pargs.ids.length > 0 && !isNaN(price)) {
         resp.push(`Cards Worth: **${numFmt(price)}** ${ctx.symbols.tomato} or **${numFmt(vials)} ${ctx.symbols.vial}**`)

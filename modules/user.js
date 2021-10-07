@@ -1,4 +1,5 @@
 const User      = require('../collections/user')
+const UserCard  = require('../collections/userCard')
 const _         = require('lodash')
 const asdate    = require('add-subtract-date')
 
@@ -68,10 +69,49 @@ const getQuest = (ctx, user, tier, exclude) => {
     ))
 }
 
+const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id })
+
+const addUserCards = async (ctx, user, cardIds) => {
+    const updates = cardIds.map(x => ({
+        updateOne: {
+            filter: { 
+                userid: user.discord_id,
+                cardid: x,
+            }, 
+            update: {
+                $inc: { amount: 1 }
+            },
+            upsert: true,
+            setDefaultsOnInsert: true,
+        }
+    }))
+
+    return await UserCard.bulkWrite(updates)
+}
+
+const removeUserCards = async (ctx, user, cardIds) => {
+    const res = await UserCard.updateMany({ 
+        userid: user.discord_id, 
+        cardid: { $in: cardIds },
+    }, {
+        $inc: { amount: -1 }
+    })
+
+    await UserCard.deleteMany({
+        userid: user.discord_id,
+        amount: 0,
+    })
+
+    return res
+}
+
 module.exports = {
     fetchOrCreate,
     fetchOnly,
     onUsersFromArgs,
     updateUser,
-    getQuest
+    getQuest,
+    getUserCards,
+    addUserCards,
+    removeUserCards,
 }

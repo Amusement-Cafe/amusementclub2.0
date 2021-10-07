@@ -25,6 +25,10 @@ const {
     fetchInfo,
 } = require('./meta')
 
+const {
+    getUserCards,
+} = require('./user')
+
 const promoRarity = {
     halloween: '🎃',
     christmas: '❄',
@@ -226,8 +230,8 @@ const removeUserCard = (ctx, user, cardID) => {
     return user.cards[matched]? user.cards[matched].amount : 0
 }
 
-const mapUserCards = (ctx, user) => {
-    return user.cards.filter(x => x.id < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.id], x))
+const mapUserCards = (ctx, userCards) => {
+    return userCards.filter(x => x.cardid < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.cardid], x))
 }
 
 /**
@@ -236,11 +240,13 @@ const mapUserCards = (ctx, user) => {
  * @return {Promise}
  */
 const withCards = (callback) => async (ctx, user, ...args) => {
-    if(user.cards.length == 0)
+    const userCards = await getUserCards(ctx, user)
+    
+    if(userCards.length == 0)
         return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim\``, 'red')
 
     const parsedargs = parseArgs(ctx, args, user)
-    const map = mapUserCards(ctx, user)
+    const map = mapUserCards(ctx, userCards)
     let cards = filter(map, parsedargs)
 
     if(parsedargs.tags.length > 0) {

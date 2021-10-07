@@ -7,5 +7,5 @@ module.exports = model('UserCard', {
     fav:            { type: Boolean, default: false },
     amount:         { type: Number, default: 1 },
     rating:         { type: Number, default: 0 },
-    obtained:       { type: Date },
+    obtained:       { type: Date, default: Date.now },
 })
