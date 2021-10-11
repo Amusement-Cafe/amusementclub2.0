@@ -16,7 +16,6 @@ const {
 const {
     getUserPlots,
     getMaxStorage,
-    plotBuyCost,
 }   = require('../modules/plot')
 
 cmd(['plot'], ['plots'], async (ctx, user) => {
@@ -309,7 +308,8 @@ cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'cla
 
     let collection = 0
     plots.map(async y => {
-        collection += y.building.stored_lemons
+        if (y.building.stored_lemons > 0)
+            collection += y.building.stored_lemons
         y.building.stored_lemons = 0
         y.building.last_collected = new Date()
         await y.save()
