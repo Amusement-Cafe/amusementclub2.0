@@ -228,7 +228,7 @@ const auditFetchUserTags = async (user, args) => {
         tagList = res
     }
 
-    return tagList.sort().reverse()
+    return tagList.reverse()
 }
 
 const createFindUserEmbed = (ctx, user, findUser) => {
