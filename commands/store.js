@@ -21,11 +21,11 @@ cmd('store', 'shop', async (ctx, user, cat) => {
             title: `Welcome to the store!`,
             color: colors.deepgreen,
             description: `please select one of the categories and type 
-                \`->store [category]\` to view the items\n
+                \`${ctx.prefix}store [category]\` to view the items\n
                 ${cats.map((x, i) => `${i + 1}. ${x}`).join('\n')}`
             })
 
-    const items = ctx.items.filter(x => x.type === cat)
+    const items = ctx.items.filter(x => x.type === cat && x.price > 0)
     const embed = {
         author: { name: `${cat} list`.toUpperCase() },
         color: colors.deepgreen,
@@ -54,9 +54,12 @@ cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withItem(async (ctx, 
 }))
 
 cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) => {
-    let isBP = item.type === 'blueprint'
-    let symbol = isBP? ctx.symbols.lemon: ctx.symbols.tomato
-    let balance = isBP? user.lemons: user.exp
+    const catNum = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type)).indexOf(item.type) + 1
+    if (catNum == 3 && user.dailystats.store3 >= 3)
+        return ctx.reply(user, `you have run out of available purchases from this store. Please try again after your next daily!`, 'red')
+
+    let symbol = ctx.symbols[ctx.items.filter(x => x.type === item.type)[0].currency]
+    let balance = symbol === ctx.symbols.lemon? user.lemons: user.exp
     if(balance < item.price)
         return ctx.reply(user, `you have to have at least **${item.price}** ${symbol} to buy this item`, 'red')
 
@@ -65,11 +68,13 @@ cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) =>
         force: ctx.globals.force,
         onConfirm: async (x) => {
             buyItem(ctx, user, item)
-            isBP? user.lemons -= item.price: user.exp -= item.price
+            user.dailystats.store3 += 1
+            symbol === ctx.symbols.lemon? user.lemons -= item.price: user.exp -= item.price
             await user.save()
 
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
-                The item has been added to your inventory. See \`->inv info ${item.id}\` for details`, 'green')
+                The item has been added to your inventory. See \`${ctx.prefix}inv info ${item.id}\` for details
+                ${catNum == 3? `You have **${3-user.dailystats.store3}** purchase(s) left for this store today!`: ''}`, 'green')
         }
     })
 }))

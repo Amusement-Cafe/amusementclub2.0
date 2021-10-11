@@ -119,21 +119,42 @@ const uses = {
     },
 
     claim_ticket: async (ctx, user, item, index) => {
-        const col = item.col? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity))
-        const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === item.level))
+        if(!_.isArray(item.level))
+            item.level = [item.level]
+        let cards = []
+        let resp = `**${user.username}** you got:\n`
+        
+        item.level.map(x => {
+            let col = item.col && item.col !== 'random'? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo))
+            cards.push(_.sample(ctx.cards.filter(y => y.col === col.id && y.level === x)))
+        })
 
-        if(!card)
+        if(cards.length === 0)
             return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
 
-        addUserCard(user, card.id)
+        cards.map(x => {
+            const count = addUserCard(user, x.id)
+            if (count > 1)
+                resp += `**${formatName(x)}** #${count}\n`
+            else
+                resp += `**new** **${formatName(x)}**\n`
+        })
+        resp += `from using **${item.name}**`
+
         pullInventoryItem(user, item.id, index)
-        user.lastcard = card.id
+        user.lastcard = cards[0].id
         await user.save()
 
-        return ctx.reply(user, {
-            image: { url: card.url },
-            color: colors.blue,
-            description: `you got **${formatName(card)}**!`
+        const pages = cards.map(x => x.url)
+        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+            pages,
+            buttons: ['back', 'forward'],
+            switchPage: (data) => data.embed.image.url = data.pages[data.pagenum],
+            embed: {
+                color: colors.green,
+                description: resp,
+                image: { url: '' }
+            }
         })
     },
 
@@ -314,7 +335,20 @@ const checks = {
 
 const buys = {
     blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
-    claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
+    claim_ticket: (ctx, user, item) => {
+        let col
+        if(!_.isArray(item.level))
+            item.level = [item.level]
+
+        if(item.col !== "random")
+            col = _.sample(ctx.collections.filter(x => !x.rarity && !x.promo))
+
+        let uItem = { id: item.id, time: new Date() }
+        if (col)
+            uItem.col = col.id
+        
+        user.inventory.push(uItem)
+    },
     recipe: (ctx, user, item) => {
         const cards = item.recipe.reduce((arr, x) => {
             arr.push(_.sample(ctx.cards.filter(y => y.level === x 
@@ -329,7 +363,7 @@ const buys = {
 const getQuestion = (ctx, user, item) => {
     switch(item.type) {
         case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
-        case 'claim_ticket': return `Do you want to use **${item.name}** to get a **${item.level}★** card?`
+        case 'claim_ticket': return `Do you want to use **${item.name}** to get **${_.isArray(item.level)? `${item.level.length} ${item.level[0]}`: `1 ${item.level}`} ★** card(s)?`
         case 'recipe': return `Do you want to convert **${item.name}** into an Effect Card? The required cards will be consumed`
     }
 }
