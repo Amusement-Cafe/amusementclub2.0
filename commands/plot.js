@@ -3,11 +3,12 @@ const Plots         = require('../collections/plot')
 const colors        = require('../utils/colors')
 const _             = require('lodash')
 const dateFormat    = require(`dateformat`)
+const asdate        = require('add-subtract-date')
+const mstotime      = require('pretty-ms')
 
 
 const {
     numFmt,
-    plotBuyCost,
     XPtoLEVEL,
 }   = require('../utils/tools')
 
@@ -15,12 +16,13 @@ const {
 const {
     getUserPlots,
     getMaxStorage,
+    plotBuyCost,
 }   = require('../modules/plot')
 
 cmd(['plot'], ['plots'], async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
-        return ctx.reply(user, 'You have no plots in this guild!', 'red')
+        return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
     let pages = []
 
     lots.map((x, i) => {
@@ -46,6 +48,9 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
     lots.sort((a, b) => a.guild_id - b.guild_id)
     let pages = []
 
+    if (lots.length === 0)
+        return ctx.reply(user, `you have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+
     lots.map((x, i) => {
         if (i % 10 == 0) pages.push("`Plot # | Building | Level | Lemons | Guild Name`\n")
         let buildingName = x.building.id? x.building.id.padEnd(8) : 'None    '
@@ -65,10 +70,10 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
 
 cmd(['plot', 'buy'], async (ctx, user) => {
     const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 8) + 1
-    const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 2) + 1
+    const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 20)
     const userGlobalPlots = await getUserPlots(ctx, true)
     const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
-    const cost = plotBuyCost(user, 1, userGlobalPlots.length)
+    const cost = 25 * (2 ** userGlobalPlots.length)
     const buildingCount = ctx.items.filter(x => x.type === 'blueprint').length
 
     const check = async () => {
@@ -77,7 +82,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
 
         if (userGlobalPlots.length >= maxUserAmount)
-            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!`, 'red')
+            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!\nA new plot is unlocked every **20** levels.`, 'red')
 
         if (user.lemons < cost)
             return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
@@ -104,7 +109,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             await ctx.guild.save()
 
             let affordablePlots = 1
-            while(plotBuyCost(user, affordablePlots, userGlobalPlots.length) < user.lemons)
+            while(25 * (2 ** (userGlobalPlots.length + affordablePlots)) < user.lemons)
                 affordablePlots++
 
             let guildAllowedPlots = maxGuildAmount - (userGuildPlots.length + 1)
@@ -186,7 +191,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
     let plotLength = plot.length
 
     if (plot.length === 0)
-        return ctx.reply(user, 'You have no plots!', 'red')
+        return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
 
     let plotArg = arg - 1
     plot = plot[plotArg]
@@ -217,7 +222,9 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
                 inline: true
             },
         ],
-        color: colors.blue
+        color: colors.blue,
+        footer: {text: dateFormat(new Date(), "yyyy-mm-dd HH:MM:ss Z", true)}
+
     }
 
     let level = item.levels.map((x, i) => ({
@@ -240,7 +247,7 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
     let plotLength = plot.length
 
     if (plotLength === 0)
-        return ctx.reply(user, 'You have no plots!', 'red')
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
 
     plot.sort((a, b) => a.guild_id - b.guild_id)
     let plotArg = arg - 1
@@ -272,7 +279,7 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
                 inline: true
             },
         ],
-        color: colors.blue
+        color: colors.blue,
     }
 
     let level = item.levels.map((x, i) => ({
@@ -288,11 +295,17 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
 })
 
 cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {
+    const past = asdate.subtract(new Date(), 1, "hours")
     let plots = await getUserPlots(ctx)
-    plots = plots.filter(x=> x.building.stored_lemons > 0)
 
     if (plots.length === 0)
-        return ctx.reply(user, 'you have no plots in this guild that are ready for collection!', 'red')
+        return ctx.reply(user, `you don't have any plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+    
+    let lastCollected = plots[0].building.last_collected
+    plots = plots.filter(x=> x.building)
+
+    if (lastCollected > past)
+        return ctx.reply(user, `you have no plots in this guild that are ready for collection!\nYou can next collect from plots here in **${mstotime(lastCollected - past)}**.`, 'red')
 
     let collection = 0
     plots.map(async y => {
