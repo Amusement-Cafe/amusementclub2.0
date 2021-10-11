@@ -19,7 +19,7 @@ const check_achievements = async (ctx, user, action, channelID) => {
             achievement_name: complete.id,
             user_xp: user.xp,
         })
-        await plotPayout(ctx, 'tavern', 1, 50)
+        await plotPayout(ctx, 'tavern', 1, 25)
 
 
         return ctx.send(channelID || ctx.msg.channel.id, {
@@ -63,7 +63,7 @@ const check_daily = async (ctx, user, action, channelID) => {
     if (channelID)
         guildID = ctx.bot.getChannel(channelID).guild.id
 
-    await plotPayout(ctx,'tavern', 2, 20, guildID, user.discord_id)
+    await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
     return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,

@@ -114,7 +114,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, newcard)
                 await user.save()
 
-                await plotPayout(ctx, 'smithhub', 1, newcard.level * 10)
+                await plotPayout(ctx, 'smithhub', 1, 10)
 
                 const usercard = user.cards.find(x => x.id === newcard.id)
                 return ctx.reply(user, {
@@ -167,7 +167,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, card)
                 await user.save()
 
-                await plotPayout(ctx, 'smithhub', 2, card.level * 15)
+                await plotPayout(ctx, 'smithhub', 2, 15)
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
@@ -231,7 +231,7 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
                     removeUserCard(ctx, user, c.id)
                     user.dailystats.liquify += 1
                     user.dailystats[`liquify${c.level}`] += 1
-                    lemons += c.level * 15
+                    lemons += 15
                 })
                 await user.save()
                 await plotPayout(ctx, 'smithhub', 2, lemons)
@@ -354,7 +354,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
             user.dailystats[`draw${card.level}`] += 1
             await user.save()
 
-            await plotPayout(ctx, 'smithhub', 3, card.level * 20)
+            await plotPayout(ctx, 'smithhub', 3, 20)
 
             return ctx.reply(user, {
                 image: { url: card.url },

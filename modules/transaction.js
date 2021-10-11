@@ -46,7 +46,8 @@ const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, 
         await transaction.save()
         await lockFile.unlock('trans')
         return resolve(transaction)
-    }).catch((e) => {
+    }).catch(async (e) => {
+        await lockFile.unlock('trans')
         return reject(e)
     })
 })
