@@ -358,7 +358,7 @@ module.exports.create = async ({
                 prefix: curprefix, /* current prefix */
             })
             /* add user to cooldown q */
-            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
+            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 3, 'seconds')});
 
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
