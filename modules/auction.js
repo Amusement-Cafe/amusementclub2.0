@@ -71,7 +71,8 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
         await auc.save()
         await lockFile.unlock('auc')
         return resolve(auc)
-    }).catch(e => {
+    }).catch(async (e) => {
+        await lockFile.unlock('auc')
         return reject(e)
     })
 })
@@ -159,7 +160,7 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
         return ctx.reply(user, `you successfully increased your bid on auction \`${auc.id}\` to **${numFmt(bid)}** ${ctx.symbols.tomato}!
                                 You can add to your bid **${bidsLeft}** more times!`)
     else
-        await plotPayout(ctx, 'auchouse', 1, 75)
+        await plotPayout(ctx, 'auchouse', 1, 50)
 
     return ctx.reply(user, `you successfully bid on auction \`${auc.id}\` with **${numFmt(bid)}** ${ctx.symbols.tomato}!`)
 }

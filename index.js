@@ -39,7 +39,7 @@ module.exports.create = async ({
         baseurl, shorturl, auditc, debug, 
         maintenance, invite, data, dbl, 
         analytics, evalc, uniqueFrequency,
-        metac
+        metac, auctionLock
     }) => {
 
     const emitter = new Emitter()
@@ -191,7 +191,8 @@ module.exports.create = async ({
         sauce,
         settings: {
             wip: maintenance,
-            wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
+            wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',
+            aucLock: auctionLock
         }
     }
 

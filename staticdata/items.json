@@ -4,28 +4,29 @@
         "price": 150,
         "name": "Plot Castle",
         "type": "blueprint",
+        "currency": "lemon",
         "typedesc": "Blueprints are used to place buildings on your personal plots in guilds to help you gain the new currency based on the actions of other players! They all start as level 1 and are upgradable from there.",
         "desc": "The first and required building for plots",
         "fulldesc": "The castle is the protector of your lemons. Contributions are made to the castle daily even if no player has used the server. As it gets upgraded the castle allows your other buildings to store more lemon revenue before reaching their limit.",
         "levels": [
             {
                 "price": 0,
-                "level": 1,
+                "level": 20,
                 "maintenance": 10,
                 "desc": "Generates 30 lemons every 24 hours, allows you to place other buildings on plots in the same server."
             }, {
                 "price": 500,
-                "level": 10,
+                "level": 40,
                 "maintenance": 15,
                 "desc": "Increases all buildings storage capacity in placed guild by 10%, increases daily generation to 35"
             }, {
                 "price": 1000,
-                "level": 20,
+                "level": 60,
                 "maintenance": 20,
                 "desc": "Increases all buildings storage capacity in placed guild by 15%, increases daily generation to 40"
             }, {
                 "price": 2000,
-                "level": 50,
+                "level": 80,
                 "maintenance": 25,
                 "desc": "Increases all buildings storage capacity in placed guild by 20%, increases daily generation to 45"
             }, {
@@ -45,12 +46,12 @@
         "levels": [
             {
                 "price": 0,
-                "level": 15,
+                "level": 30,
                 "maintenance": 100,
                 "desc": "Gives lemons when a user does daily"
             }, {
                 "price": 2000,
-                "level": 25,
+                "level": 60,
                 "maintenance": 150,
                 "desc": "Gives lemons when a user claims cards or does daily"
             }
@@ -64,12 +65,12 @@
         "levels": [
             {
                 "price": 0,
-                "level": 20,
+                "level": 40,
                 "maintenance": 50,
                 "desc": "Gives lemons when someone completes an achievement in the guild"
             }, {
                 "price": 2000,
-                "level": 40,
+                "level": 80,
                 "maintenance": 70,
                 "desc": "Gives lemons when someone completes a quest or achievement in the guild"
             }
@@ -84,17 +85,17 @@
         "levels": [
             {
                 "price": 0,
-                "level": 3,
+                "level": 50,
                 "maintenance": 10,
                 "desc": "Gives lemons when people forge cards"
             }, {
                 "price": 2500,
-                "level": 17,
+                "level": 75,
                 "maintenance": 50,
                 "desc": "Gives lemons when people forge or liquefy cards"
             }, {
                 "price": 5000,
-                "level": 33,
+                "level": 100,
                 "maintenance": 100,
                 "desc": "Gives lemons when people forge, liquefy, or draw  cards"
             }
@@ -109,36 +110,28 @@
         "levels": [
             {
                 "price": 0,
-                "level": 3,
+                "level": 100,
                 "maintenance": 10,
                 "desc": "Gives lemons when someone successfully bids on an auction"
             }, {
                 "price": 10000,
-                "level": 10,
+                "level": 150,
                 "maintenance": 20,
                 "desc": "Gives 2x lemons when someone successfully bids on an auction"
             }, {
                 "price": 20000,
-                "level": 15,
+                "level": 200,
                 "maintenance": 50,
                 "desc": "Gives 3x lemons when someone successfully bids on an auction"
             }
         ]
-    }, {
-        "id": "legendticket",
-        "name": "Legendary Card Claim Ticket",
-        "price": -1,
-        "type": "claim_ticket",
-        "desc": "gives legendary card",
-        "typedesc": "Claim tickets are used to claim cards of certain rarity or collection. They are usually awarded during events or for completing quests and collections",
-        "fulldesc": "When used gives you legendary card. The collection is determined when awarded",
-        "level": 5
     }, {
         "id": "tohrugift",
         "effectid": "tohrugift",
         "name": "Gift From Tohru",
         "price": 1500,
         "type": "recipe",
+        "currency": "tomato",
         "desc": "3-star every day",
         "typedesc": "Use Effect Card recipes to obtain usable or passive Effect Cards",
         "fulldesc": "When used gives you **Gift From Tohru** effect card. This is a passive item, so make sure you equip it into hero's effect card slot",
@@ -316,5 +309,95 @@
         "fulldesc": "When used gives you **Memories of Valentines Day** effect card. This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
+    },
+
+    {
+        "id": "legendticket",
+        "name": "Legendary Card Claim Ticket",
+        "price": -1,
+        "type": "claim_ticket",
+        "currency": "lemon",
+        "desc": "gives legendary card",
+        "fulldesc": "When used gives you legendary card. The collection is determined when awarded",
+        "level": [5]
+    }, {
+        "id": "ticket1x1",
+        "name": "1 Star Claim Ticket",
+        "price": 150,
+        "type": "claim_ticket",
+        "currency": "lemon",
+        "desc": "gives a random 1 star card",
+        "typedesc": "Claim tickets are used to claim cards of certain rarity, collection, or both. They are gotten either by resetting collections or purchasing from the store.\n**Only 3 items in this store can be bought per day!**",
+        "fulldesc": "When used gives you a random 1 star card.",
+        "level": [1]
+    }, {
+        "id": "ticket1x2",
+        "name": "2 Star Claim Ticket",
+        "price": 300,
+        "type": "claim_ticket",
+        "currency": "lemon",
+        "desc": "gives a random 2 star card",
+        "fulldesc": "When used gives you a random 2 star card.",
+        "level": [2]
+    }, {
+        "id": "ticket1x3",
+        "name": "3 Star Claim Ticket",
+        "price": 450,
+        "type": "claim_ticket",
+        "currency": "lemon",
+        "desc": "gives a random 3 star card",
+        "fulldesc": "When used gives you a random 3 star card",
+        "level": [3]
+    },  {
+        "id": "ticket3x1s",
+        "name": "Triple 1 Star Claim Ticket",
+        "price": 500,
+        "type": "claim_ticket",
+        "desc": "gives 3 random, single collection, 1 star cards",
+        "fulldesc": "When used gives you 3 random 1 star cards from a single collection",
+        "level": [1, 1, 1]
+    },  {
+        "id": "ticket3x2s",
+        "name": "Triple 2 Star Claim Ticket",
+        "price": 950,
+        "type": "claim_ticket",
+        "desc": "gives 3 random, single collection, 1 star cards",
+        "fulldesc": "When used gives you 3 random 2 star cards from a single collection",
+        "level": [2, 2, 2]
+    },  {
+        "id": "ticket3x3s",
+        "name": "Triple 3 Star Claim Ticket",
+        "price": 1400,
+        "type": "claim_ticket",
+        "desc": "gives 3 random, single collection, 3 star cards",
+        "fulldesc": "When used gives you 3 random 3 star cards from a single collection",
+        "level": [3, 3, 3]
+    }, {
+        "id": "ticket3x1r",
+        "name": "Triple Random 1 Star Claim Ticket",
+        "price": 450,
+        "type": "claim_ticket",
+        "desc": "gives 3 random 1 star cards",
+        "fulldesc": "When used gives you 3 random 3 star cards from randomly chosen collections",
+        "level": [1, 1, 1],
+        "col": "random"
+    }, {
+        "id": "ticket3x2r",
+        "name": "Triple Random 2 Star Claim Ticket",
+        "price": 900,
+        "type": "claim_ticket",
+        "desc": "gives 3 random 2 star cards",
+        "fulldesc": "When used gives you 3 random 2 star cards from randomly chosen collections",
+        "level": [2, 2, 2],
+        "col": "random"
+    }, {
+        "id": "ticket3x3r",
+        "name": "Triple Random 3 Star Claim Ticket",
+        "price": 1350,
+        "type": "claim_ticket",
+        "desc": "gives 3 random 3 star cards",
+        "fulldesc": "When used gives you 3 random 3 star cards from randomly chosen collections",
+        "level": [3, 3, 3],
+        "col": "random"
     }
 ]

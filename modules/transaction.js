@@ -46,7 +46,8 @@ const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, 
         await transaction.save()
         await lockFile.unlock('trans')
         return resolve(transaction)
-    }).catch((e) => {
+    }).catch(async (e) => {
+        await lockFile.unlock('trans')
         return reject(e)
     })
 })
@@ -149,7 +150,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
     }
 
     if (transaction.cards.length === 1)
-        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 
     return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 }

@@ -6,7 +6,7 @@ const {
 
 const check_achievements = async (ctx, user, action, channelID) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
-    const complete = possible.find(x => x.check(ctx, user))
+    const complete = (await Promise.all(possible.map(async (x) => await x.check(ctx, user)? x : false))).find(x => x)
 
     if(complete) {
         const reward = complete.resolve(ctx, user)
@@ -19,19 +19,20 @@ const check_achievements = async (ctx, user, action, channelID) => {
             achievement_name: complete.id,
             user_xp: user.xp,
         })
-        await plotPayout(ctx, 'tavern', 1, 50)
+        await plotPayout(ctx, 'tavern', 1, 25)
 
 
         return ctx.send(channelID || ctx.msg.channel.id, {
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,
-            description: `(${complete.desc})`,
+            description: `\`${complete.desc}\``,
             thumbnail: { url: `${ctx.baseurl}/achievements/${complete.id}.png` },
             fields: [{
                 name: `Reward`,
                 value: reward
-            }]
+            }],
+            footer: {text: `To view your achievements use ${ctx.prefix}ach`}
         })
     }
 }
@@ -62,7 +63,7 @@ const check_daily = async (ctx, user, action, channelID) => {
     if (channelID)
         guildID = ctx.bot.getChannel(channelID).guild.id
 
-    await plotPayout(ctx,'tavern', 2, 20, guildID, user.discord_id)
+    await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
     return ctx.send(channelID || ctx.msg.channel.id, {
         color: colors.green,

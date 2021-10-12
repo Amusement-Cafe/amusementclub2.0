@@ -41,6 +41,10 @@
             {
                 "title": "->achievements",
                 "description": "List your completed achievements"
+            },
+            {
+                "title": "->achievements -miss",
+                "description": "List your missing achievements"
             }
         ]
 
@@ -607,7 +611,11 @@
                 "description": "Displays the information about the specific plot in the current guild."
             },
             {
-                "title": "->plot upgrade [building id]",
+                "title": "->plot info global [plot #]",
+                "description": "Displays the information about the specific plot from your global list."
+            },
+            {
+                "title": "->plot upgrade [plot #]",
                 "description": "Upgrade a specific building on one of your plots in the current guild."
             },
             {

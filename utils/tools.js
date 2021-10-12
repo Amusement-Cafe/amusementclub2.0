@@ -24,16 +24,6 @@ const promoClaimCost = (user, amount, totalClaims) => {
     return Math.round(total)
 }
 
-const plotBuyCost = (user, amount, totalPlots) => {
-    let total = 0
-    let plots = totalPlots || 0
-    for (let i = 0; i < amount; i++) {
-        plots++
-        total += plots * 50
-    }
-    return Math.round(total)
-}
-
 const tryGetUserID = (inp) => {
     inp = inp.trim()
 
@@ -130,6 +120,5 @@ module.exports = {
     arrayChunks,
     escapeRegex,
     numFmt,
-    plotBuyCost,
     urlRegex,
 }

@@ -28,6 +28,7 @@ module.exports = model('User', {
         forge2:         {type: Number, default: 0},
         forge3:         {type: Number, default: 0},
         rates:          {type: Number, default: 0},
+        store3:         {type: Number, default: 0},
     },
     
     effectusecount:     {

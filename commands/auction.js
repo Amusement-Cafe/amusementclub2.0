@@ -141,6 +141,8 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
 })).access('dm')
 
 cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+    if (ctx.settings.aucLock)
+        return ctx.reply(user, `selling on auction is currently disabled by the admins.\nFor more info you may inquire in the [Support Server](${ctx.invite}).`, 'red')
     const timelimit = asdate.subtract(new Date(), 1, 'hour')
     const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
 
@@ -263,6 +265,9 @@ cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
 
     if((!lastBidder && user.exp < bid) || (lastBidder && user.exp < bid - auc.highbid))
         return ctx.reply(user, `you don't have \`${numFmt(bid)}\` ${ctx.symbols.tomato} to bid`, 'red')
+
+    if(auc.cancelled)
+        return ctx.reply(user, `auction \`${auc.id}\` was cancelled and is now finished`, 'red')
 
     if(auc.expires < now || auc.finished)
         return ctx.reply(user, `auction \`${auc.id}\` already finished`, 'red')
