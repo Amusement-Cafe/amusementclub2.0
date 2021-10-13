@@ -95,7 +95,7 @@ const addGuildXP = (ctx, user, xp) => {
 }
 
 const clean_trans = async (ctx, now) => {
-    const transactionTime = asdate.subtract(new Date(), 10, 'days')
+    const transactionTime = asdate.subtract(new Date(), 14, 'days')
     const trClean = await Transaction.deleteMany({time: {$lt: transactionTime}})
     const aucClean = await Auction.deleteMany({time: {$lt: transactionTime}})
     if (trClean.n > 0 || aucClean.n > 0)

@@ -252,7 +252,7 @@ pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
 
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: paginate_guildtrslist(ctx, user, list),
+        pages: paginateGuildTrsList(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `${user.username}, here are the guild transactions for \`${arg.id}\` (${list.length} results)` },

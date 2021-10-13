@@ -69,6 +69,7 @@ const {
 
 const {
     plotPayout,
+    getUserPlots,
 } = require("../modules/plot");
 
 cmd('bal', 'balance', (ctx, user) => {
@@ -115,8 +116,8 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`->inv info [item id]\`
-                    To use the item \`->inv use [item id]\`` },
+                { name: `Usage`, value: `To view the item details use \`${ctx.prefix}inv info [item id]\`
+                    To use the item \`${ctx.prefix}inv use [item id]\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
             color: colors.blue,
@@ -124,7 +125,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     })
 }))
 
-cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
+cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
     const itemCheck = await checkItem(ctx, user, item)
 
@@ -134,7 +135,7 @@ cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args) => {
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
-        onConfirm: (x) => useItem(ctx, user, item)
+        onConfirm: (x) => useItem(ctx, user, item, index)
     })
 }))
 
@@ -164,6 +165,7 @@ cmd('daily', async (ctx, user) => {
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
+        const userLevel = XPtoLEVEL(user.xp)
 
         if(check_effect(ctx, user, 'cakeday')) {
             amount += 100 * (user.dailystats.claims || 0)
@@ -183,17 +185,13 @@ cmd('daily', async (ctx, user) => {
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
 
-        quests.push(getQuest(ctx, user, 2, quests[0].id))
+        quests.push(getQuest(ctx, user, userLevel > 10? 2 : 1, quests[0].id.slice(0,-1)))
         user.dailyquests.push(quests[1].id)
 
-        //if(tavern.level > 1) {
-            //quests.push(getQuest(ctx, user, 2, quests[0].id))
-            //user.dailyquests.push(quests[2].id)
-        //}
         user.markModified('dailyquests')
 
         addGuildXP(ctx, user, 10)
-        ctx.guild.balance += XPtoLEVEL(user.xp)
+        ctx.guild.balance += userLevel
         await ctx.guild.save()
 
         if(hero) {
@@ -213,16 +211,16 @@ cmd('daily', async (ctx, user) => {
         if(trs.length > 0) {
             const more = trs.splice(3, trs.length).length
             fields.push({name: `Incoming pending transactions`, 
-                value: trs.map(x => `\`${x.id}\` ${x.cards.length} cards from **${x.from}**`).join('\n')
+                value: trs.map(x => `\`${x.id}\` ${x.cards.length} card(s) from **${x.from}**`).join('\n')
                     + (more > 0? `\nand **${more}** more...` : '')
             })
         }
 
         if(promo || boosts.length > 0) {
             fields.push({name: `Current events and boosts`,
-                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`->claim promo\`)` : ''}
+                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`${ctx.prefix}claim promo\`)` : ''}
                 ${boosts.map(x => 
-                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`->claim ${x.id}\``).join('\n')}`
+                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`${ctx.prefix}claim ${x.id}\``).join('\n')}`
             })
         }
 
@@ -242,8 +240,9 @@ cmd('daily', async (ctx, user) => {
         }
 
         fields.push({
-            name: `Get rewarded`,
-            value: `Don\'t forget to vote for the bot every day and get in-game rewards. Check \`->vote\` for more information.`,
+            name: `Learn what you still need to do`,
+            value: `Use \`${ctx.prefix}todo\` to view a TODO list for the bot.
+                This will help you to figure out what else left to claim or complete today.`,
         })
 
         user.dailynotified = false
@@ -266,7 +265,9 @@ cmd('daily', async (ctx, user) => {
         })
     }
 
-    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**`, 'red')
+    return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**
+                If you want to be notified when your daily is ready use: 
+                \`${ctx.prefix}prefs set notify daily true\``, 'red')
 })
 
 cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) => {
@@ -464,7 +465,7 @@ cmd('has', async (ctx, user, ...args) => {
         return ctx.qhelp(ctx, user, 'has')
 
     if(user.discord_id == newArgs.ids[0])
-        return ctx.reply(user, 'you can use ->cards to see your own cards', 'red')
+        return ctx.reply(user, `you can use ${ctx.prefix}cards to see your own cards`, 'red')
 
     const otherUser = await fetchOnly(newArgs.ids[0])
     if(!otherUser)
@@ -503,8 +504,42 @@ cmd('quest', 'quests', async (ctx, user) => {
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
         author: { name: `${user.username}, your quests:` },
-        description: ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y))
-            .map((x, i) => `${i + 1}. \`${new Array(x.tier + 1).join('★')}\` ${x.name} (${x.reward(ctx)})`).join('\n')
+        description: user.dailyquests.map((x, i) => {
+            const qInfo = ctx.quests.daily.find(y => y.id === x)
+            return `${i + 1}. \`${new Array(qInfo.tier + 1).join('★')}\` ${qInfo.name} (${qInfo.reward(ctx)})`
+        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info [quest index]\``
+    }, user.discord_id)
+})
+
+cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
+    if(!args[0] || isNaN(args[0])) {
+        return ctx.reply(user, `please specify quest index (e.g. \`${ctx.prefix}quest info 1\`)`, 'red')
+    }
+
+    const index = parseInt(args[0]) - 1
+
+    if(user.dailyquests.length === 0 && user.questlines.length === 0)
+        return ctx.reply(user, `you don't have any quests`, 'red')
+
+    if(!user.dailyquests[index])
+        return ctx.reply(user, `cannot find quest with index **${index + 1}**.
+            Please indicate an indexing number like it appears in your quest list.`, 'red')
+
+    const resp = []
+    const quest = ctx.quests.daily.find(x => user.dailyquests[index] === x.id)
+    resp.push(`Tier: \`${new Array(quest.tier + 1).join('★')}\``)
+    resp.push(`Required user level: **${quest.min_level}**`)
+    resp.push(`Reward: ${quest.reward(ctx)}`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: quest.name },
+        description: resp.join('\n'),
+        fields: [
+            { name: 'Guide', value: quest.desc.replace(/->/gi, ctx.prefix) },
+            { name: 'Related help', value: `This quest is completed using **${quest.actions[0]}** command. 
+                For more information type: \`${ctx.prefix}help ${quest.actions[0]} -here\`` },
+        ]
     }, user.discord_id)
 })
 
@@ -521,22 +556,73 @@ cmd('stats', async (ctx, user) => {
     }, user.discord_id)
 })
 
-cmd('achievements', 'ach', async (ctx, user) => {
-    const list = user.achievements.map(x => {
+cmd('achievements', 'ach', async (ctx, user, ...args) => {
+    let list = user.achievements.map(x => {
         const item = ctx.achievements.find(y => y.id === x)
-        return `**${item.name}** (${item.desc})`
+        return `**${item.name}** • \`${item.desc}\``
     })
+
+    const miss = args.find(x => x === '-miss'|| x === '-diff')
+
+    if (miss)
+        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y)).map(z => `**${z.name}** • \`${z.desc}\``)
+
+    const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length})` }}
+
+    if (!miss)
+        embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(list, 15),
-        embed: { author: { name: `${user.username}, completed achievements: (${list.length})` } }
+        embed
     })
 })
 
 cmd('vote', async (ctx, user) => {
+    const now = new Date()
+    const future = asdate.add(user.lastvote, 12, 'hours')
+    const topggTime = msToTime(future - now, { compact: true })
+
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
-        description: `You can vote for Amusement Club every 12 hours and get rewards.
-        [Vote on top.gg](${ctx.dbl.url}) to get free cards.`
+        description: `You can vote for Amusement Club **every 12 hours** and get rewards.
+        Make sure you have allowed messages from server members in order to receive rewards in DMs.
+        - [Vote on top.gg](${ctx.dbl.topggUrl}) to get **free cards** (${future > now? topggTime : `ready`})
+        - [Vote on Discord Bot List](${ctx.dbl.dblUrl}) to get **free ${ctx.symbols.tomato}**`,
+        
+        fields: [
+            {
+                name: `Get notified`,
+                value: `You can enable bot notifications to let you know that it is time to vote. 
+                Simply run \`${ctx.prefix}prefs set notify vote true\``
+            }
+        ]
     }, user.discord_id)
+}).access('dm')
+
+cmd('todo', async (ctx, user) => {
+    const resp = []
+    const plots = await getUserPlots(ctx)
+    const now = new Date()
+    const futureDaily = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const futureVote = asdate.add(user.lastvote, 12, 'hours')
+    const daily = futureDaily < now
+    const vote = futureVote < now
+    const claim = user.dailystats.claims === 0
+    const quest = user.dailyquests.length > 0
+    const plot = plots.some(x=> x.building.stored_lemons > 0)
+    
+    resp.push(`${ctx.symbols.auc_sod} = done | ${ctx.symbols.auc_sbd} = not done`)
+    resp.push(`${daily? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim daily** [\`${ctx.prefix}daily\`] (this will reset your claim price)`)
+    resp.push(`${vote? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Vote for the bot** [\`${ctx.prefix}vote\`] (get rewards like cards and \`${ctx.symbols.tomato}\`)`)
+    resp.push(`${claim? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim a card** [\`${ctx.prefix}claim\`] (recommended to claim 4-6 cards per day)`)
+    resp.push(`${quest? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Complete quests** [\`${ctx.prefix}quests\`] (quests refresh daily)`)
+    resp.push(`${plot? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Collect plot income** [\`${ctx.prefix}plots\`] (you must have built at least one plot)`)
+    resp.push(`Use \`${ctx.prefix}stats\` to see what you did today`)
+
+    return ctx.send(ctx.msg.channel.id, {
+        color: colors.blue,
+        author: { name: `${user.username}, your TODO list:` },
+        description: resp.join('\n'),
+    })
 })

@@ -1,3 +1,7 @@
+const dateFormat    = require('dateformat')
+const msToTime      = require('pretty-ms')
+const _             = require('lodash')
+
 const {
     byAlias, 
     bestColMatch,
@@ -18,7 +22,7 @@ const {
 
 const {cmd}         = require('../utils/cmd')
 const colors        = require('../utils/colors')
-const _             = require('lodash')
+const { fetchOnly } = require('../modules/user')
 
 cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     const completed = args.find(x => x === '-completed' || x === '!completed')
@@ -86,6 +90,17 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
     resp.push(`Overall cards: **${numFmt(colCards.length)}**`)
     resp.push(`You have: **${numFmt(userCards.length)} (${((userCards.length / colCards.length) * 100).toFixed(2)}%)**`)
     resp.push(`Average rating: **${ratingAvg.toFixed(2)}**`)
+
+    const date = new Date(col.dateAdded)
+    resp.push(`Added: **${dateFormat(date, "yyyy-mm-dd")}** (${msToTime(new Date() - date, {compact: true})})`)
+
+    if(col.author) {
+        var author = await fetchOnly(col.author)
+
+        if (author) {
+            resp.push(`Template author: **${author.username}**`)
+        }
+    }
 
     if(clout && clout.amount > 0)
         resp.push(`Your clout: **${new Array(clout.amount + 1).join('★')}** (${clout.amount})`)

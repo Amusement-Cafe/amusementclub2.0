@@ -197,7 +197,9 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'],
     withTag(async (ctx, user, card, tag, tgTag) => {
 
         const targetUser = await fetchOnly(tag.author)
-        let log = await logTagAudit(ctx, user, tgTag, false, targetUser)
+        let log
+        if (targetUser)
+            log = await logTagAudit(ctx, user, tgTag, false, targetUser)
         tag.status = 'removed'
         await tag.save()
         if (log)
@@ -277,7 +279,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
         resp.push(`Card: **${formatName(card)}**`)
         resp.push(`Upvotes: **${tag.upvotes.length}**`)
         resp.push(`Downvotes: **${tag.downvotes.length}**`)
-        resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
+        if (author)
+            resp.push(`Author: **${author.username}** \`${author.discord_id}\``)
+        else
+            resp.push(`Author: **SYSTEM ADDED TAG**`)
         resp.push(`Status: **${tag.status}**`)
         resp.push(`Date Created: **${dateFormat(tag._id.getTimestamp(), "yyyy-mm-dd HH:MM:ss")}**`)
 

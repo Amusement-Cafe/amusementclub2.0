@@ -24,16 +24,6 @@ const promoClaimCost = (user, amount, totalClaims) => {
     return Math.round(total)
 }
 
-const plotBuyCost = (user, amount, totalPlots) => {
-    let total = 0
-    let plots = totalPlots || 0
-    for (let i = 0; i < amount; i++) {
-        plots++
-        total += plots * 50
-    }
-    return Math.round(total)
-}
-
 const tryGetUserID = (inp) => {
     inp = inp.trim()
 
@@ -115,6 +105,8 @@ const arrayChunks = (array, chunk_size) => Array(Math.ceil(array.length / chunk_
 
 const escapeRegex = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 
+const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
+
 module.exports = {
     cap,
     claimCost,
@@ -128,5 +120,5 @@ module.exports = {
     arrayChunks,
     escapeRegex,
     numFmt,
-    plotBuyCost
+    urlRegex,
 }

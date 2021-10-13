@@ -8,6 +8,7 @@
     "debug": true,
     "invite": "",
     "maintenance": false,
+    "auctionLock": false,
     "uniqueFrequency": 10,
     "auditc": {
         "channel": ["DISCORD_VALID_CHANNEL_ID_GOES_HERE", "CAN TAKE MULTIPLE"],
@@ -30,9 +31,13 @@
         "token": "",
         "port": 2727,
         "pass": "",
-        "url": ""
+        "topggUrl": "",
+        "dblUrl": ""
     },
     "analytics": {
         "mixpanel": ""
+    },
+    "metac": {
+        "sauceNaoToken": ""
     }
 }

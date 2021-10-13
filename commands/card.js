@@ -63,7 +63,9 @@ const {
     getUserCards,
     addUserCards,
     removeUserCards,
+    fetchOnly,
 } = require('../modules/user')
+
 const userCard = require('../collections/userCard')
 
 cmd('claim', 'cl', async (ctx, user, ...args) => {
@@ -101,6 +103,13 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
 
     if(!promo) {
         boost = curboosts.find(x => args.some(y => y === x.id))
+    }
+
+    if(!promo && !any && !boost && args.some(x => isNaN(x))) {
+        return ctx.reply(user, `unknown claim argument \`${args.filter(x => isNaN(x)).join(' ')}\`!
+            Please specify a number, boost ID, 'promo' (if there are promotions running) or 'any' (if current server is locked).
+            For more information type \`${ctx.prefix}help claim\`
+            To view boost IDs use \`${ctx.prefix}boosts\``, 'red')
     }
 
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
@@ -229,7 +238,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd(['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
+cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'], 
     withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.excluded)
 
@@ -243,7 +252,7 @@ cmd(['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'],
     }
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
+        pages: ctx.pgn.getPages(cards.map(c => `${formatName(c)}${parsedargs.evalQuery? ` ${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: ''}`), 15),
         embed: {
             author: { name: `Matched cards from database (${numFmt(cards.length)} results)` },
         }
@@ -573,7 +582,7 @@ cmd(['boost', 'info'], (ctx, user, args) => {
     list.push(`Expires in **${msToTime(boost.expires - now)}**`)
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10),
+        pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed: {
             author: { name: `${boost.name} boost` },
@@ -604,6 +613,8 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
         const oldrating = card.rating
         info.ratingsum -= oldrating
         info.usercount--
+    } else {
+        user.dailystats.rates++
     }
 
     user.cards.find(x => x.id === card.id).rating = rating
@@ -645,18 +656,35 @@ cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedarg
 })).access('dm')
 
 cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    if(user.wishlist.length === 0) {
-        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+    let targetUser
+    if(parsedargs.ids[0]) {
+        targetUser = await fetchOnly(parsedargs.ids[0])
+
+        if(targetUser.wishlist.length === 0)
+            return ctx.reply(user, `${targetUser.username}'s wishlist is empty!`)
+
+        cards = cards.filter(x => targetUser.wishlist.some(y => y === x.id))
+
+        if(cards.length === 0)
+            return ctx.reply(user, `there aren't any cards in ${targetUser.username}'s wishlist that match this request`, 'red')
+
+    } else {
+        
+        if(user.wishlist.length === 0)
+            return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+
+        cards = cards.filter(x => user.wishlist.some(y => y === x.id))
+
+        if(cards.length === 0)
+            return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
+
     }
 
-    cards = cards.filter(x => user.wishlist.some(y => y === x.id))
-    if(cards.length === 0) {
-        return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
-    }
+
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cards.map(x => `${formatName(x)}`), 15),
-        embed: { author: { name: `${user.username}, your wishlist (${numFmt(cards.length)} results)` } }
+        embed: { author: { name: `${user.username}, ${targetUser? `here is ${targetUser.username}'s` :`your`} wishlist (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 
@@ -665,7 +693,7 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
         return ctx.qhelp(ctx, user, 'wishlist')
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
 
@@ -691,7 +719,7 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
     cards = cards.filter(x => !user.wishlist.some(y => y === x.id))
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already in your wishlist`, 'red')
@@ -719,7 +747,7 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(
     }
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     const card = bestMatch(cards)
     if(!user.wishlist.some(x => x === card.id)) {
@@ -740,7 +768,7 @@ cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'al
     }
 
     if (parsedargs.diff)
-        cards = cards.filter(x => !user.cards.some(y => y.id === x.id))
+        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
 
     if(cards.length === 0)
         return ctx.reply(user, `none of the requested cards are in your wishlist`, 'red')

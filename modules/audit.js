@@ -1,7 +1,6 @@
 const asdate             = require('add-subtract-date')
 const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
-const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
 const {byAlias}          = require('./collection')
 const colors             = require('../utils/colors')
@@ -23,7 +22,7 @@ const {
 
 
 const clean_audits = async (ctx, now) => {
-    const auditcleanup = asdate.subtract(new Date(), 10, 'days')
+    const auditcleanup = asdate.subtract(new Date(), 14, 'days')
     const auditClean = await Audit.deleteMany({time: {$lt: auditcleanup}})
     const auditAucSellClean = await AuditAucSell.deleteMany({time: {$lt: auditcleanup}})
     if (auditClean.n > 0 || auditAucSellClean.n > 0)
@@ -65,7 +64,7 @@ const eval_fraud_check = async (ctx, auc, eval, card) => {
     const auditDB = await new Audit()
     auditDB.audit_id = auditIDGen(last_audit)
     auditDB.id = auc.id
-    auditDB.card = card.name
+    auditDB.card = card.id
     auditDB.bids = auc.bids.length
     auditDB.finished = auc.finished
     auditDB.eval = eval
@@ -186,15 +185,16 @@ const paginateCompletedAuditList = (ctx, user, list) => {
     return pages;
 }
 
-
-
-
-
+const ch_map = {
+    confirmed: "\`✅\`",
+    declined: "\`❌\`",
+    pending: "\`❗\`",
+    auction: "\`🔨\`"
+}
 
 const formatGuildTrsList = (ctx, user, gtrans) => {
     let resp = ""
     const timediff = msToTime(new Date() - gtrans.time, {compact: true})
-
     resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${gtrans.cards.length} card(s) **${gtrans.from}** \`->\` **${gtrans.to}**`
     return resp;
 }
@@ -228,7 +228,7 @@ const auditFetchUserTags = async (user, args) => {
         tagList = res
     }
 
-    return tagList.sort().reverse()
+    return tagList.reverse()
 }
 
 const createFindUserEmbed = (ctx, user, findUser) => {
@@ -244,7 +244,7 @@ const createFindUserEmbed = (ctx, user, findUser) => {
     let findEmbed = {
         author: {name: `${user.username} here is the info for ${findUser.username}`},
         description: `**${findUser.username}** \`${findUser.discord_id}\`
-                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**
+                      Currency: **${numFmt(findUser.exp)}${ctx.symbols.tomato}**, **${numFmt(findUser.vials)}${ctx.symbols.vial}**, **${numFmt(findUser.lemons)}${ctx.symbols.lemon}**
                       Promo Currency: **${numFmt(findUser.promoexp)}**
                       Embargoed?: **${findUser.ban.embargo? 'true': 'false'}**
                       Join Date: **${dateFormat(findUser.joined, "yyyy-mm-dd HH:MM:ss")}**
