@@ -306,7 +306,7 @@ cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
 
 cmd('profile', async (ctx, user, ...args) => {
     const pargs = parseArgs(ctx, args)
-    if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0])
+    if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0]).lean()
 
     if(!user)
         return ctx.send(ctx.msg.channel.id, {
@@ -317,7 +317,7 @@ cmd('profile', async (ctx, user, ...args) => {
     const completedSum = user.completedcols.length
     const cloutsum = user.cloutedcols.map(x => x.amount).reduce((a, b) => a + b, 0)
     const stamp = user.joined || user._id.getTimestamp()
-    const userCards = await getUserCards(ctx, user)
+    const userCards = await getUserCards(ctx, user).lean()
     const cards = mapUserCards(ctx, userCards)
     const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
     let price = 0

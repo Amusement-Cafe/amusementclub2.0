@@ -240,7 +240,7 @@ const mapUserCards = (ctx, userCards) => {
  * @return {Promise}
  */
 const withCards = (callback) => async (ctx, user, ...args) => {
-    const userCards = await getUserCards(ctx, user)
+    const userCards = await getUserCards(ctx, user).lean()
     
     if(userCards.length == 0)
         return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim\``, 'red')

@@ -3,7 +3,7 @@ const msToTime = require('pretty-ms')
 const lockFile  = require('proper-lockfile')
 
 const {
-    User, Transaction, Audit, Auction,
+    User, Transaction, UserCard,
 }   = require('../collections')
 
 const {
@@ -12,10 +12,14 @@ const {
 } = require('../utils/tools')
 
 const {
-    addUserCard, 
-    removeUserCard,
     formatName,
 } = require('./card')
+
+const {
+    addUserCards, 
+    removeUserCards,
+    fetchOnly,
+} = require('./user')
 
 const {
     completed,
@@ -73,7 +77,7 @@ const from_auc = async (auc, from, to) => {
 
 const confirm_trs = async (ctx, user, trs_id) => {
     if(typeof user === 'string')
-        user = await User.findOne({ discord_id: user })
+        user = await fetchOnly(user)
 
     if(!user) return;
 
@@ -82,14 +86,17 @@ const confirm_trs = async (ctx, user, trs_id) => {
     if(!transaction)
         return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red')
 
-    const from_user = await User.findOne({ discord_id: transaction.from_id })
-    const to_user = await User.findOne({ discord_id: transaction.to_id })
-    const cards = from_user.cards.filter(x => transaction.cards.some(y => y == x.id))
+    const from_user = await fetchOnly(transaction.from_id)
+    const to_user = await fetchOnly(transaction.to_id)
+    const cards = await UserCard.find({ 
+        userid: transaction.from_id,
+        cardid: { $in: transaction.cards } 
+    }).lean()
 
     if(cards.length != transaction.cards.length){
         transaction.status = 'declined'
         await transaction.save()
-        return ctx.reply(to_user, `this transaction is not valid anymore. Seller doesn't have some of the cards in this transaction.`, 'red')
+        return ctx.reply(to_user || from_user, `this transaction is not valid anymore. Seller doesn't have some of the cards in this transaction.`, 'red')
     }
 
     if(to_user) {
@@ -101,29 +108,26 @@ const confirm_trs = async (ctx, user, trs_id) => {
         
         to_user.exp -= transaction.price
 
+        // TODO make this better
         transaction.cards.map(async (x) => {
-            addUserCard(to_user, x)
             await completed(ctx, to_user, ctx.cards[x])
         })
+
         await to_user.save()
-        to_user.markModified('cards')
-        await to_user.save()
-
-
-
+        await addUserCards(ctx, to_user, transaction.cards)
 
     } else if(user.discord_id != transaction.from_id) {
         return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
     }
 
+    // TODO make this better
     transaction.cards.map(async (x) => {
-        removeUserCard(ctx, from_user, x)
         await completed(ctx, from_user, ctx.cards[x])
         await trans_fraud_check(ctx, from_user, transaction, x)
     })
+
     await from_user.save()
-    from_user.markModified('cards')
-    await from_user.save()
+    await removeUserCards(ctx, from_user, transaction.cards)
 
     from_user.exp += transaction.price
     transaction.status = 'confirmed'

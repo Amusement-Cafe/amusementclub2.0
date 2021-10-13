@@ -1,4 +1,5 @@
 const User      = require('../collections/user')
+const UserCard  = require('../collections/userCard')
 const Cardinfo  = require('../collections/cardinfo')
 const asdate    = require('add-subtract-date')
 const _         = require('lodash')
@@ -41,9 +42,8 @@ const evalCardFast = (ctx, card) => {
 }
 
 const updateCardUserCount = async (ctx, card, count) => {
-    const ownercount = count || (await User.countDocuments({
-        cards: { $elemMatch: { id: card.id }}, 
-        lastdaily: { $gt: evalLastDaily }}))
+    // TODO consider only active users
+    const ownercount = count || (await UserCard.countDocuments({ cardid: card.id }))
 
     const info = fetchInfo(ctx, card.id)
     const cachedCard = ctx.cards.find(x => x.id === card.id)
