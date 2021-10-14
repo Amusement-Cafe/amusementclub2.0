@@ -418,7 +418,7 @@ module.exports = [
         id: 'firstwish',
         name: `When you wish upon a card`,
         desc: 'Add a card to your wishlist',
-        actions: ['wish'],
+        actions: ['wish', 'wishlist'],
         check: (ctx, user) => user.wishlist.length > 0,
         resolve: (ctx, user) => {
             user.exp += 200
