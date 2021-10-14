@@ -229,6 +229,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
     let level = item.levels.map((x, i) => ({
         name: `Level ${i + 1}`,
         value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))
     level[plot.building.level - 1].name += ` (Current Level)`
@@ -284,6 +285,7 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
     let level = item.levels.map((x, i) => ({
         name: `Level ${i + 1}`,
         value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))
     level[plot.building.level - 1].name += ` (Current Level)`

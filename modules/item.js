@@ -237,6 +237,7 @@ const infos = {
         item.levels.map((x, i) => (embed.fields.push({
             name: `Level ${i + 1}`,
             value: `Price: **${x.price}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
         })))
         return embed
