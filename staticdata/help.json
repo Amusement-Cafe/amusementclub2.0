@@ -604,7 +604,7 @@
             },
             {
                 "title": "->plot buy",
-                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by 50, so your 10th plot would cost 500 lemons"
+                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by a factor of 2 from the one prior."
             },
             {
                 "title": "->plot info [plot #]",
@@ -940,11 +940,15 @@
     {
         "type": ["wishlist", "wish"],
         "title": "About wishlists",
-        "description": "Wishlists are a way to store a list of cards you don't own but would like to own. More information will be filled out as the feature matures. (Note there is currently no way to view someone else's wishlist, this will be added in the future)",
+        "description": "Wishlists are a way to store a list of cards you don't own but would like to own. More information will be filled out as the feature matures.",
         "fields": [
             {
                 "title": "->wishlist list",
                 "description": "Display your own wishlist"
+            },
+            {
+                "title": "->wishlist list [user ID]",
+                "description": "Display someone else's wishlist"
             },
             {
                 "title": "->wishlist [card]",
