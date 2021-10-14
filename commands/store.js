@@ -68,7 +68,8 @@ cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) =>
         force: ctx.globals.force,
         onConfirm: async (x) => {
             buyItem(ctx, user, item)
-            user.dailystats.store3 += 1
+            if (catNum == 3)
+                user.dailystats.store3 += 1
             symbol === ctx.symbols.lemon? user.lemons -= item.price: user.exp -= item.price
             await user.save()
 
