@@ -9,6 +9,8 @@ const {
 const {
     onUsersFromArgs,
     fetchOnly,
+    addUserCards,
+    removeUserCards,
 } = require('../modules/user')
 
 const {
@@ -23,8 +25,6 @@ const {
 
 const {
     formatName,
-    addUserCard,
-    removeUserCard,
     withGlobalCards,
     bestMatch,
 } = require('../modules/card')
@@ -170,14 +170,13 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withGlobalCards(async (ctx, user
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
 
-    var target = await fetchOnly(parsedargs.ids[0])
+    var target = await fetchOnly(parsedargs.ids[0]).lean()
 
     if(!target)
         throw new Error(`cannot find user with that ID`)
 
     const card = bestMatch(cards)
-    addUserCard(target, card.id)
-    await target.save()
+    await addUserCards(ctx, target, [card.id])
 
     return ctx.reply(user, `added ${formatName(card)} to **${target.username}**`)
 }))
@@ -192,7 +191,7 @@ pcmd(['admin', 'mod'], ['sudo', 'remove', 'card'], withGlobalCards(async (ctx, u
         throw new Error(`cannot find user with that ID`)
 
     const card = bestMatch(cards)
-    removeUserCard(ctx, target, card.id)
+    removeUserCards(ctx, target, [card.id])
     await target.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from **${target.username}**`)

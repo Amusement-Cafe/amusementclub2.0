@@ -139,10 +139,10 @@ cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     })
 }))
 
-cmd(['inv', 'info'], withUserItems((ctx, user, items, args) => {
+cmd(['inv', 'info'], withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
 
-    const embed = itemInfo(ctx, user, item)
+    const embed = await itemInfo(ctx, user, item)
     embed.color = colors.blue
     embed.author = { name: `${item.name} (${item.type.replace(/_/, ' ')})` }
 

@@ -1,8 +1,6 @@
 const {cmd}                 = require('../utils/cmd')
-const {fetchCardTags}       = require('../modules/tag')
 const colors                = require('../utils/colors')
 const msToTime              = require('pretty-ms')
-const dateFormat            = require(`dateformat`)
 const User                  = require('../collections/user')
 const UserCard              = require('../collections/userCard')
 
@@ -13,11 +11,6 @@ const {
     promoClaimCost,
     numFmt,
 } = require('../utils/tools')
-
-const {
-    bestColMatch,
-    completed,
-} = require('../modules/collection')
 
 const {
     evalCard, 
@@ -37,7 +30,6 @@ const {
 
 const {
     formatName,
-    addUserCard,
     withCards,
     withGlobalCards,
     bestMatch,

@@ -325,7 +325,8 @@ const withMultiQuery = (callback) => async (ctx, user, ...args) => {
     const parsedargs = [], cards = []
     argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' ').filter(y => y.length > 0), user)))
 
-    const map = mapUserCards(ctx, user)
+    const userCards = await getUserCards(ctx, user).lean()
+    const map = mapUserCards(ctx, userCards)
     try {
         await Promise.all(parsedargs.map(async (x, i) => {
             if(x.lastcard)

@@ -8,25 +8,23 @@ const {
 } = require('../utils/tools')
 
 const {
-    getGuildUser,
-    isUserOwner,
-    addGuildXP,
-    getBuilding,
-} = require('./guild')
-
-const {
-    addUserCard,
-    removeUserCard,
     formatName,
 } = require('./card')
 
 const {
-    completed
+    completed,
 } = require('./collection')
 
 const {
-    getUserPlots
+    getUserPlots,
 } = require('./plot')
+
+const { 
+    addUserCards,
+    removeUserCards,
+    findUserCards,
+    getUserCards,
+} = require('./user')
 
 const mapUserInventory = (ctx, user) => {
     return user.inventory.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
@@ -132,14 +130,19 @@ const uses = {
         if(cards.length === 0)
             return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
 
+        const cardIds = cards.map(x => x.id)
+        const existingCards = await findUserCards(ctx, user, cardIds).lean()
+
         cards.map(x => {
-            const count = addUserCard(user, x.id)
+            const count = existingCards.find(y => y.cardid == x.id)?.amount || 0
             if (count > 1)
-                resp += `**${formatName(x)}** #${count}\n`
+                resp += `**${formatName(x)}** #${count + 1}\n`
             else
                 resp += `**new** **${formatName(x)}**\n`
         })
         resp += `from using **${item.name}**`
+
+        await addUserCards(ctx, user, cardIds)
 
         pullInventoryItem(user, item.id, index)
         user.lastcard = cards[0].id
@@ -160,7 +163,7 @@ const uses = {
 
     recipe: async (ctx, user, item, index) => {
         let eobject, desc
-        const check = checks.recipe(ctx, user, item)
+        const check = await checks.recipe(ctx, user, item)
         if(check)
             return ctx.reply(user, check, 'red')
 
@@ -207,14 +210,14 @@ const uses = {
         })
 
         item.cards.map(x => {
-            removeUserCard(ctx, user, x)
             completed(ctx, user, ctx.cards[x])
         })
+
+        await removeUserCards(ctx, user, item.cards)
+
         pullInventoryItem(user, item.id, index)
         user.effects.push(eobject)
         await user.save()
-        user.markModified('cards')
-        await user.save() //double for cards
 
         return ctx.reply(user, {
             image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
@@ -246,12 +249,13 @@ const infos = {
         description: item.fulldesc
     }),
 
-    recipe: (ctx, user, item) => {
+    recipe: async (ctx, user, item) => {
         const effect = ctx.effects.find(x => x.id === item.effectid)
         let requires
         if(item.cards) {
+            const requiredUserCards = await findUserCards(ctx, user, item.cards).lean()
             requires = item.cards.map(x => {
-                const has = user.cards.some(y => y.id === x)
+                const has = requiredUserCards.some(y => y.cardid === x)
                 return `\`${has? ctx.symbols.accept : ctx.symbols.decline}\` ${formatName(ctx.cards[x])}`
             }).join('\n')
 
@@ -308,27 +312,21 @@ const checks = {
         return false
     },
 
-    recipe: (ctx, user, item) => {
-        const now = new Date()
+    recipe: async (ctx, user, item) => {
+        //const now = new Date()
 
         //Keeping this here in case we for some reason need to revert to not allowing stacking effects
         // if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))
         //     return `you already have this Effect Card`
-    
-        const effect = ctx.effects.find(x => x.id === item.effectid)
-        if(!item.cards.reduce((val, x) => val && user.cards.some(y => y.id === x), true))
+
+        const requiredUserCards = await findUserCards(ctx, user, item.cards).lean()
+        if(item.cards.length != requiredUserCards.length)
             return `you don't have all required cards in order to use this item.
-                Type \`->inv info ${item.id}\` to see the list of required cards`
-        
-        for(let i = 0; i < item.cards.length; i++) {
-            const itemCardID = item.cards[i]
-            const userCard = user.cards.find(y => y.id === itemCardID)
-            
-            if(userCard.fav && userCard.amount === 1) { 
-                const card = ctx.cards.find(y => y.id === itemCardID)
-                return `the last copy of required card ${formatName(card)} is marked as favourite.
-                    Please, use \`->fav remove ${card.name}\` to remove it from favourites first`
-            }
+                Type \`${ctx.prefix}inv info ${item.id}\` to see the list of required cards`
+
+        if(requiredUserCards.find(x => x.fav && x.amount === 1)) {
+            return `the last copy of required card ${formatName(card)} is marked as favourite.
+                    Please, use \`${ctx.prefix}fav remove ${card.name}\` to remove it from favourites first`
         }
     }
 }

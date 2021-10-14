@@ -98,6 +98,8 @@ const getQuest = (ctx, user, tier, exclude) => {
 
 const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id })
 
+const findUserCards = (ctx, user, cardIds) => UserCard.find({ userid: user.discord_id, cardid: { $in: cardIds } })
+
 const addUserCards = async (ctx, user, cardIds) => {
     const updates = cardIds.map(x => ({
         updateOne: {
@@ -139,6 +141,7 @@ module.exports = {
     updateUser,
     getQuest,
     getUserCards,
+    findUserCards,
     addUserCards,
     removeUserCards,
 }

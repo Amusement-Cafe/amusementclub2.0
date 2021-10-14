@@ -6,11 +6,9 @@ const _         = require('lodash')
 
 const {
     formatName,
-    addUserCard,
     withCards,
     withGlobalCards,
     bestMatch,
-    removeUserCard,
     withMultiQuery,
 } = require('../modules/card')
 
@@ -31,6 +29,9 @@ const {
 
 const {
     updateUser,
+    addUserCards,
+    removeUserCards,
+    findUserCards,
 } = require('../modules/user')
 
 const {
@@ -101,13 +102,13 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 if(!newcard)
                     return ctx.reply(user, `an error occured, please try again`, 'red')
 
-                removeUserCard(ctx, user, card1.id)
-                removeUserCard(ctx, user, card2.id)
+                removeUserCards(ctx, user, [card1.id, card2.id])
+
+                // Fix this
                 await completed(ctx, user, card1)
                 await completed(ctx, user, card2)
-                await user.save()
 
-                addUserCard(user, newcard.id)
+                await addUserCards(ctx, user, [newcard.id])
                 user.lastcard = newcard.id
                 user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`] + 1 || 1
                 user.markModified('dailystats')
@@ -116,13 +117,16 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
                 await plotPayout(ctx, 'smithhub', 1, 10)
 
-                const usercard = user.cards.find(x => x.id === newcard.id)
+                const usercards = await findUserCards(ctx, user, [newcard.id])
+                    .select('amount')
+                    .lean()
+                    
                 return ctx.reply(user, {
                     image: { url: newcard.url },
                     color: colors.blue,
                     description: `you got ${formatName(newcard)}!
                         **${numFmt(vialres)}** ${ctx.symbols.vial} were added to your account
-                        ${usercard.amount > 1 ? `*You already have this card*` : ''}`
+                        ${usercards[0].amount > 1 ? `*You already have this card*` : ''}`
                 })
             } catch(e) {
                 return ctx.reply(user, `an error occured while executing this command. 
@@ -149,7 +153,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
 
     if(card.fav && card.amount === 1)
         return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
-            Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+            Please, use \`${ctx.prefix}fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquify ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
         ${card.amount === 1? 'This is the last copy that you have' : `You will have **${card.amount - 1}** card(s) left`}`
@@ -163,7 +167,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 user.vials += vials
                 user.dailystats.liquify = user.dailystats.liquify + 1 || 1
                 user.dailystats[`liquify${card.level}`] += 1
-                removeUserCard(ctx, user, card.id)
+                await removeUserCards(ctx, user, [card.id])
                 await completed(ctx, user, card)
                 await user.save()
 
@@ -171,7 +175,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
-                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``)
             } catch(e) {
                 return ctx.reply(user, `an error occured while executing this command. 
                     Please try again`, 'red')
@@ -191,7 +195,7 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
     
     if(cards.some(x => x.fav && x.amount === 1))
         return ctx.reply(user, `you are about to liquify the last copy of your favourite card. 
-            Please, use \`->liq all !fav\` to include only non-favourite cards.`, 'yellow')
+            Please, use \`${ctx.prefix}liq all !fav\` to include only non-favourite cards.`, 'yellow')
 
     let vials = 0
     cards.forEach(card => {
@@ -217,31 +221,32 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
     }
 
     const question = `Do you want to liquify **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
-        To view cards that are going to be liquified, use \`->liq preview [query]\``
+        To view cards that are going to be liquified, use \`${ctx.prefix}liq preview [query]\``
 
     return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
         question,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
             try {
-                user.vials += vials
+                const cardCount = cards.length
+                const lemons = 15 * cardCount
 
-                let lemons = 0
+                user.vials += vials
+                user.dailystats.liquify += cardCount
+
                 cards.map(c => {
-                    removeUserCard(ctx, user, c.id)
-                    user.dailystats.liquify += 1
-                    user.dailystats[`liquify${c.level}`] += 1
-                    lemons += 15
+                    user.dailystats[`liquify${c.level}`]++
                 })
+
+                await removeUserCards(ctx, user, cards.map(x => x.id))
                 await user.save()
                 await plotPayout(ctx, 'smithhub', 2, lemons)
 
-
-                ctx.reply(user, `${cards.length} cards were liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
+                ctx.reply(user, `${cardCount} cards were liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
-                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`->draw\``)
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``)
             } catch(e) {
-                return ctx.reply(user, `an error occured while executing this command. 
+                return ctx.reply(user, `an error occurred while executing this command. 
                     Please try again`, 'red')
             }
         },
@@ -347,7 +352,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
         force: ctx.globals.force,
         onConfirm: async (x) => {
             user.vials -= vials
-            addUserCard(user, card.id)
+            await addUserCards(ctx, user, [card.id])
+
             user.lastcard = card.id
             await completed(ctx, user, card)
             user.dailystats.draw += 1
