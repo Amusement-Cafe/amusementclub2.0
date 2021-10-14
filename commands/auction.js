@@ -54,7 +54,7 @@ cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parse
 
     list = list.slice(0, 100)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_auclist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -122,7 +122,7 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
         }
     }))
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         switchPage: (data) => {
@@ -205,7 +205,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
         ${card.amount > 1? '' : 'This is the only copy that you have'}
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
-    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    ctx.sendCfm(ctx, user, {
         embed: { footer: { text: `This will cost ${numFmt(fee)} (10% fee)` } },
         force: ctx.globals.force,
         question,
@@ -310,7 +310,7 @@ cmd(['auc', 'cancel'], ['auction', 'cancel'], async (ctx, user, arg1, arg2) => {
     }
 
     const question = `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`
-    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    ctx.sendCfm(ctx, user, {
         embed: { footer: { text: `You won't get a fee refund` } },
         force: ctx.globals.force,
         question,

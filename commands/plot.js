@@ -32,7 +32,7 @@ cmd(['plot'], ['plots'], async (ctx, user) => {
         pages[Math.floor(i/10)] += `\`${(i+1).toString().padEnd(6)} | ${buildingName} | ${level} | ${lemons}\`\n`
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
@@ -57,7 +57,7 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
         let lemons = x.building.id? `${numFmt(x.building.stored_lemons)}`.padEnd(6): 'N/A   '
         pages[Math.floor(i/10)] += `\`${(i+1).toString().padEnd(6)} | ${buildingName} | ${level} | ${lemons} | ${x.guild_name}\`\n`
     })
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
@@ -92,7 +92,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
     if (userGuildPlots.length >= buildingCount)
         question += `\n**Note that there are currently only ${buildingCount} buildings available at this time and you cannot have two of the same building in a guild!**`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         check,
@@ -154,7 +154,7 @@ cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
 
     const question = `Do you want to upgrade **${item.name}** to level **${plot.building.level + 1}** for **${numFmt(level.price)}** ${ctx.symbols.lemon}?`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {

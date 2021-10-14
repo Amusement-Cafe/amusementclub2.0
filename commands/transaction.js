@@ -37,7 +37,7 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(list.length == 0)
         return ctx.reply(user, `you don't have recent transactions`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -56,7 +56,7 @@ cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, pa
     if(list.length == 0)
         return ctx.reply(user, `you don't have any pending transactions`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -77,7 +77,7 @@ cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedar
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent incoming transactions`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -98,7 +98,7 @@ cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsed
     if(list.length == 0)
         return ctx.reply(user, `you don't have any recent outgoing transactions`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -122,7 +122,7 @@ cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, ca
 
     const authorText = `${user.username}, your auction transactions (${list.length} results)`
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -147,7 +147,7 @@ cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(asyn
 
     const authorText = `${user.username}, your incoming auction transactions (${list.length} results)`
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -172,7 +172,7 @@ cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(as
     const authorText = `${user.username}, your outgoing auction transactions (${list.length} results)`
 
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -210,7 +210,7 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
     
     resp.push(`Date: **${dateFormat(trs.time, "yyyy-mm-dd HH:MM:ss")}**`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(trs.cards.map(c => formatName(ctx.cards[c])), 15, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed: {
@@ -233,7 +233,7 @@ pcmd(['admin', 'mod'], ['trans', 'find'], withGlobalCards(async (ctx, user, card
     if(list.length == 0)
         return ctx.reply(user, `matched ${cards.length} cards and 0 transactions`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {

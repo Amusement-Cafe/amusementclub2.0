@@ -48,7 +48,7 @@ pcmd(['admin'], ['sudo', 'help'], async (ctx, user, ...args) => {
     const help = ctx.audithelp.find(x => x.type === 'admin')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+    return ctx.sendPgn(ctx, user, curpgn)
 })
 
 pcmd(['admin'], ['sudo', 'add', 'role'], async (ctx, user, ...args) => {
@@ -105,7 +105,7 @@ pcmd(['admin'], ['sudo', 'in', 'role'], ['sudo', 'inrole'], ['sudo', 'has', 'rol
         if (i % 10 == 0) pages.push(``)
         pages[Math.floor(i/10)] += `${x.username} \`${x.discord_id}\` - ${x.roles.join(', ')}\n`
     })
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['first', 'back', 'forward', 'last'],
         embed: {
@@ -329,7 +329,7 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, use
 }))
 
 pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         embed: { footer: { text: `Run \`->sudo eval info\`first to make sure you have the correct card! ` } },
         question: `**${user.username}**, do you want to force waiting auction prices into eval for ${formatName(cards[0])}?`,
         onConfirm: async (x) => {
@@ -423,7 +423,7 @@ pcmd(['admin'], ['sudo', 'top', 'lemons'], async (ctx, user) => {
         pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\` - **${numFmt(Math.round(x.lemons))}**${ctx.symbols.lemon}\n`
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         embed: {
             author: {name:`Showing Top Lemon Balances for ${allUsersWithLemons.length} users`}
@@ -443,7 +443,7 @@ pcmd(['admin'], ['sudo', 'top', 'tomatoes'], async (ctx, user) => {
         pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\` - **${numFmt(Math.round(x.exp))}**${ctx.symbols.tomato}\n`
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         embed: {
             author: {name:`Showing Top Tomato Balances for ${allUsersWithTomatoes.length} users`}
@@ -463,7 +463,7 @@ pcmd(['admin'], ['sudo', 'top', 'vials'], async (ctx, user) => {
         pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\` - **${numFmt(Math.round(x.vials))}**${ctx.symbols.vial}\n`
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         embed: {
             author: {name:`Showing Top Vial Balances for ${allUsersWithVials.length} users`}
@@ -489,7 +489,7 @@ pcmd(['admin'], ['sudo', 'top', 'clout'], async (ctx, user) => {
         pages[Math.floor(i/20)] += `${i+1}: ${x.username} \`${x.discord_id}\`: **${x.amount}**★\n`
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         embed: {
             author: {name:`Showing Top Clout for ${allUsersWithClout.length} users`}

@@ -80,7 +80,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     if (parsedargs.firstTag)
         question += `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
 
-    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    ctx.sendCfm(ctx, user, {
         check,
         force: ctx.globals.force,
         question,
@@ -128,7 +128,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
         question = `Do you want to **remove** your tag **#${tgTag}** for ${formatName(card)}?`
     }
 
-    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    ctx.sendCfm(ctx, user, {
         check,
         force: ctx.globals.force,
         embed: { footer: { text: `Please, use downvote to remove only irrelevant or incorrect tags` } },
@@ -159,7 +159,7 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
     if(tags.length === 0)
         return ctx.reply(user, `this card doesn't have any tags`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(tags.map(x => 
             `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\`  **${x.name}** ${
                 (x.upvotes.includes(user.discord_id) || x.downvotes.includes(user.discord_id))? '*' : ''
@@ -180,7 +180,7 @@ cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) =>
     if(tags.length === 0)
         return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(tags.map(x => {
             const card = ctx.cards[x.card]
             return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
@@ -296,7 +296,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
             if (i % 10 == 0) pages.push("")
             pages[Math.floor(i/10)] += `${t}\n`
         })
-        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        return ctx.sendPgn(ctx, user, {
             pages, embed,
             buttons: ['back', 'forward'],
             switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum] || "no upvotes Found"}
@@ -317,7 +317,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
         }
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['first', 'back', 'forward', 'last'],
         embed: {
@@ -329,7 +329,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
 
 pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, visible, args) => {
     let question = `Do you want to remove all tags with the name ${args.tags[0]}?`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         onConfirm: async (x) => {
             let cardCount = visible.length
@@ -348,7 +348,7 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, v
 pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, visible, args) => {
     let target = await fetchOnly(args.ids[0])
     let question = `Do you want to remove all tags made by **${target.username}** with no upvotes?`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         onConfirm: async () => {
             await visible.map(async (tag, i) => {
@@ -373,7 +373,7 @@ pcmd(['admin', 'mod'], ['tag', 'log', 'removed'],async (ctx, user, ...args) => {
 
     let target = await fetchOnly(parsedArgs.id)
 
-    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question: `Do you want to add **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log?`,
         onConfirm: async () => {
             let auditlog = await logTagAdd(ctx, user, target, parsedArgs, false)
@@ -394,7 +394,7 @@ pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
 
     let target = await fetchOnly(parsedArgs.id)
 
-    ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question: `Do you want to add **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log?`,
         onConfirm: async () => {
             let auditlog = await logTagAdd(ctx, user, target, parsedArgs, true)
@@ -412,7 +412,7 @@ pcmd(['admin','mod', 'tagmod'], ['tagmod', 'help'], async (ctx, user) => {
     const help = ctx.audithelp.find(x => x.type === 'tagmod')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+    return ctx.sendPgn(ctx, user, curpgn)
 })
 
 

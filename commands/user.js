@@ -109,7 +109,7 @@ cmd('bal', 'balance', (ctx, user) => {
 }).access('dm')
 
 cmd('inv', withUserItems((ctx, user, items, args) => {
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`), 5),
         switchPage: (data) => data.embed.fields[1].value = data.pages[data.pagenum],
         buttons: ['back', 'forward'],
@@ -132,7 +132,7 @@ cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     if(itemCheck)
         return ctx.reply(user, itemCheck, 'red')
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
         onConfirm: (x) => useItem(ctx, user, item, index)
@@ -285,7 +285,7 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
         }, 'yellow')
     }
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
@@ -299,7 +299,7 @@ cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
@@ -412,7 +412,7 @@ cmd('diff', async (ctx, user, ...args) => {
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
         embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
@@ -452,7 +452,7 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
         embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
@@ -491,7 +491,7 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(diff.length === 0)
         return ctx.reply(user, `you have all cards matching this request!`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
         embed: { author: { name: `${user.username}, cards that you don't have (${numFmt(diff.length)} results)` } }
     })
@@ -572,7 +572,7 @@ cmd('achievements', 'ach', async (ctx, user, ...args) => {
     if (!miss)
         embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(list, 15),
         embed
     })

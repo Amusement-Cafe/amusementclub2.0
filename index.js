@@ -135,6 +135,19 @@ module.exports.create = async ({
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
+
+    const sendPgn = async (ctx, user, pgnObject, userqRemove = true) => {
+        await pgn.addPagination(user.discord_id, ctx.msg.channel.id, pgnObject)
+        if (userqRemove)
+            _.remove(userq, (x) => x.id === user.discord_id)
+    }
+
+    const sendCfm = async (ctx, user, cfmObject, userqRemove = true) => {
+        await pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, cfmObject)
+        if (userqRemove)
+            _.remove(userq, (x) => x.id === user.discord_id)
+    }
+
     const filter = new Filter()
     filter.addWords(...data.bannedwords)
 
@@ -163,6 +176,8 @@ module.exports.create = async ({
         mcn, /* mongoose database connection */
         bot, /* created and connected Eris bot instance */
         send, /* a sending function to send stuff to a specific channel */
+        sendPgn, /* a sending function to send pagination messages and remove user from cooldown*/
+        sendCfm, /* a sending function to send confirmation messages and remove user from cooldown*/
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: require('./staticdata/help'),

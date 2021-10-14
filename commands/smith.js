@@ -84,7 +84,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     const question = `Do you want to forge ${formatName(card1)}**(x${card1.amount})** and ${formatName(card2)}**(x${card2.amount})** using **${numFmt(cost)}** ${ctx.symbols.tomato}?
         You will get **${numFmt(vialres)}** ${ctx.symbols.vial} and a **${card1.level} ${ctx.symbols.star} card**`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
@@ -158,7 +158,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     const question = `Do you want to liquify ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
         ${card.amount === 1? 'This is the last copy that you have' : `You will have **${card.amount - 1}** card(s) left`}`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
@@ -223,7 +223,7 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
     const question = `Do you want to liquify **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
         To view cards that are going to be liquified, use \`${ctx.prefix}liq preview [query]\``
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
@@ -292,7 +292,7 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, card
 
     resp.sort((a, b) => b.cost - a.cost)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(resp.map(x => x.cardname), 10),
         embed: {
             author: { name: `Liquify preview (total ${numFmt(vials)} ${ctx.symbols.vial})` },
@@ -347,7 +347,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
         question += `\n(+**${numFmt(extra)}** for your #${amount + 1} draw today)`
     }
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {

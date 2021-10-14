@@ -169,7 +169,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withGlobalCards(asyn
     properties.push(`Pixiv ID: **${post.pixiv_id}**`)
 
     const card = bestMatch(cards)
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question: `Do you want to add this booru source to ${formatName(card)}?
             This will add the following properties to the card metadata`,
         embed: { 
@@ -244,7 +244,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withGlobalCards(as
     properties.push(`Pixiv ID: **${post.pixiv_id}**`)
 
     const card = bestMatch(cards)
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question: `Do you want to add this booru source to ${formatName(card)}?
             This will add the following properties to the card metadata`,
         embed: { 
@@ -312,7 +312,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
             try {
                 const res = await setSourcesFromRawData(ctx, rawData, col, authorID)
                 if(res.problems.length > 0) {
-                    ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+                    ctx.sendPgn(ctx, user, {
                         pages: ctx.pgn.getPages(res.problems, 10),
                         embed: {
                             author: { name: `Following cards were not found:` },
@@ -351,7 +351,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(a
         return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.shorturl}) \`[${c.col}]\` [source](${c.info.meta.source})`
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(names, 10),
         embed: {
             author: { name: `Found sourced ${names.length} / ${cards.length} overall` },
@@ -369,7 +369,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'unsourced'], withGlobalCards
         return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.url}) \`[${c.col}]\``
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(names, 10),
         embed: {
             author: { name: `Found ${cards.length} without sources` },

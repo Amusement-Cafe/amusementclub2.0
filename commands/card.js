@@ -196,7 +196,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }).filter(x => x && x.value)
 
     const pages = cards.map(x => x.card.url)
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.image.url = data.pages[data.pagenum],
@@ -206,7 +206,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             fields,
             image: { url: '' }
         }
-    })
+    }, false)
 })
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
@@ -243,7 +243,7 @@ cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list'
         })
     }
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(cards.map(c => `${formatName(c)}${parsedargs.evalQuery? ` ${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: ''}`), 15),
         embed: {
             author: { name: `Matched cards from database (${numFmt(cards.length)} results)` },
@@ -275,7 +275,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
         perms.confirm.push(user.discord_id)
     }
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         embed: { footer: { text: `ID: \`${trs.id}\`` } },
         force: trs.to === 'bot'? ctx.globals.force : false,
         question,
@@ -327,7 +327,7 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         perms.confirm.push(user.discord_id)
     }
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         embed: { footer: { text: `ID: \`${trs.id}\`` } },
         force: ctx.globals.force,
         question,
@@ -371,7 +371,7 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
 
     resp.sort((a, b) => b.eval - a.eval)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(resp.map(x => x.cardname), 10),
         embed: {
             author: { name: `Sell all preview (total ${numFmt(price)} ${ctx.symbols.tomato})` },
@@ -478,7 +478,7 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already marked as favourite`, 'red')
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         embed: { footer: { text: `Favourite cards can be accessed with -fav` } },
         force: ctx.globals.force,
         question: `**${user.username}**, do you want to mark **${numFmt(cards.length)}** cards as favourite?`,
@@ -520,7 +520,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
     if(cards.length === 0)
         return ctx.reply(user, `no favourited cards found`, 'red')
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: `**${user.username}**, do you want to remove **${numFmt(cards.length)}** cards from favourites?`,
         onConfirm: async (x) => {
@@ -573,7 +573,7 @@ cmd(['boost', 'info'], (ctx, user, args) => {
     list.push(`Command: \`${ctx.prefix}claim ${boost.id}\``)
     list.push(`Expires in **${msToTime(boost.expires - now)}**`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed: {
@@ -674,7 +674,7 @@ cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], 
 
 
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(cards.map(x => `${formatName(x)}`), 15),
         embed: { author: { name: `${user.username}, ${targetUser? `here is ${targetUser.username}'s` :`your`} wishlist (${numFmt(cards.length)} results)` } }
     })
@@ -716,7 +716,7 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
     if(cards.length === 0)
         return ctx.reply(user, `all cards from that request are already in your wishlist`, 'red')
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: `**${user.username}**, do you want add **${numFmt(cards.length)}** cards to your wishlist?`,
         onConfirm: async (_x) => {
@@ -765,7 +765,7 @@ cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'al
     if(cards.length === 0)
         return ctx.reply(user, `none of the requested cards are in your wishlist`, 'red')
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: `**${user.username}**, do you want remove **${numFmt(cards.length)}** cards from your wishlist?`,
         onConfirm: async (_x) => {

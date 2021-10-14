@@ -123,7 +123,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
         return ctx.reply(user, `you don't have **${numFmt(amount)}** ${ctx.symbols.tomato} to donate`, 'red')
 
     const question = `Do you want to donate **${numFmt(amount)}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**?`
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
@@ -296,7 +296,7 @@ cmd(['guild', 'lock'], async (ctx, user, arg1) => {
         You can unlock any time.
         Users will still be able to claim cards from general pool using \`->claim any\``
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
@@ -329,7 +329,7 @@ cmd(['guild', 'unlock'], async (ctx, user) => {
         This cannot be undone and won't reset lock cooldown.
         > This won't remove a lock override (if this guild has one)`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
@@ -376,7 +376,7 @@ cmd(['guild', 'lead'], async (ctx, user) => {
         return `${i + 1}. **${curUser.username}** (${xpSum}xp) ${hero? `\`${hero.name}\`` : ''}`
     }))
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         embed: {

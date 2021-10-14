@@ -63,7 +63,7 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
         return `${cloutstars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.floor(rate * 100)}%)` : ''}`
     }))
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
@@ -155,7 +155,7 @@ cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
         You will get a clout star ${legendary? ' + legendary ticket for resetting this collection' :
         `for resetting this collection\n> Please note that you won't get a legendary card ticket because this collection doesn't have any legendaries`}`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         onConfirm: (x) => reset(ctx, user, col, neededForReset),
     })

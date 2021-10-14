@@ -38,7 +38,7 @@ cmd('store', 'shop', async (ctx, user, cat) => {
         }]}
 
     const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${numFmt(x.price)} ${ctx.symbols[items[0].currency]}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages, embed,
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[1] = { name: `Item list`, value: data.pages[data.pagenum] }
@@ -63,7 +63,7 @@ cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) =>
     if(balance < item.price)
         return ctx.reply(user, `you have to have at least **${item.price}** ${symbol} to buy this item`, 'red')
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${symbol}?`,
         force: ctx.globals.force,
         onConfirm: async (x) => {

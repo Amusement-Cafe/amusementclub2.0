@@ -67,7 +67,7 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes, isEmpty) => {
         return ctx.reply(user, `you already have **${hero.name}** as a hero`, 'red')
 
     const lasthero = await get_hero(ctx, user.hero)
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question: `Do you want to set **${hero.name}** as your current hero?`,
         onConfirm: async (x) => {
             user.hero = hero.id
@@ -117,7 +117,7 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
     heroes.sort((a, b) => b.xp - a.xp)
     const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. \`[${x.id}]\` **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
@@ -159,7 +159,7 @@ cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects,
             return `${i + 1}. [${remaining > 0? msToTime(remaining, {compact:true}):'ready'}] ${formatUserEffect(ctx, user, x)}`
         }), 5)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[0] = { name: `Usable Effect Cards`, value: data.pages[data.pagenum] },
@@ -185,7 +185,7 @@ cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...
     if(pages.length === 0)
         pages.push(`You don't have any passive Effect Cards`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[2].value = data.pages[data.pagenum],
@@ -309,7 +309,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
 
     const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
     if(oldEffect && oldEffect.expires > now) {
-        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        return ctx.sendCfm(ctx, user, {
             force: ctx.globals.force,
             question: `Do you want to replace **${oldEffect.name}** with **${effect.name}** in slot #${slotNum}?`,
             onConfirm: (x) => equip(),
@@ -380,7 +380,7 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
         image: { url: char.image.large }
     }
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         embed,
         onConfirm: async (x) => {
             user.herosubmits++

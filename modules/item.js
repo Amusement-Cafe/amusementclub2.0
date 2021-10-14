@@ -149,7 +149,7 @@ const uses = {
         await user.save()
 
         const pages = cards.map(x => x.url)
-        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        return ctx.sendPgn(ctx, user, {
             pages,
             buttons: ['back', 'forward'],
             switchPage: (data) => data.embed.image.url = data.pages[data.pagenum],

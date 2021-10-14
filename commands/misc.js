@@ -25,7 +25,7 @@ cmd('help', async (ctx, user, ...args) => {
 
     if(sendHere){
         const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
-        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+        return ctx.sendPgn(ctx, user, curpgn)
 
     } else {
         try {
@@ -50,7 +50,7 @@ cmd('help', async (ctx, user, ...args) => {
 
 cmd('rules', async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, getHelpEmbed(ctx, help, `->`))
+    return ctx.sendPgn(ctx, user, getHelpEmbed(ctx, help, `->`))
 }).access('dm')
 
 cmd('announcement', async (ctx, user) => {

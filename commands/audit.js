@@ -48,7 +48,7 @@ pcmd(['admin', 'auditor'], ['audit', 'help'], async (ctx, user, ...args) => {
     const help = ctx.audithelp.find(x => x.type === 'audit')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+    return ctx.sendPgn(ctx, user, curpgn)
 })
 
 pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user) => {
@@ -58,8 +58,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user) => {
     const help = ctx.audithelp.find(x => x.type === 'audit')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
-
+    return ctx.sendPgn(ctx, user, curpgn)
 })
 
 pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) => {
@@ -71,7 +70,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
     if (overSell.length === 0)
         return ctx.reply(user, 'nothing found for fraud report 1!')
 
-    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: await paginateOversells(ctx, user, overSell),
         buttons: ['back', 'forward'],
         embed: {
@@ -90,7 +89,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
     if (overPrice.length === 0)
         return ctx.reply(user, 'nothing found for fraud report 2!')
 
-    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: await paginateOverPrice(ctx, user, overPrice),
         buttons: ['back', 'forward'],
         embed: {
@@ -109,7 +108,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
     if (buybacks.length === 0)
         return ctx.reply(user, 'nothing found for fraud report 3!')
 
-    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: await paginateRebuys(ctx, user, buybacks),
         buttons: ['back', 'forward'],
         embed: {
@@ -128,7 +127,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) 
     if (buybacks.length === 0)
         return ctx.reply(user, 'nothing found for fraud report 4!')
 
-    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: await paginateRebuys(ctx, user, buybacks),
         buttons: ['back', 'forward'],
         embed: {
@@ -147,7 +146,7 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) 
     if (botsells.length === 0)
         return ctx.reply(user, 'nothing found for fraud report 5!')
 
-    return  ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: await paginateBotSells(ctx, user, botsells),
         buttons: ['back', 'forward'],
         embed: {
@@ -164,7 +163,7 @@ pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
     const help = ctx.audithelp.find(x => x.type === 'audit')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, curpgn)
+    return ctx.sendPgn(ctx, user, curpgn)
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
@@ -196,7 +195,7 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
     if(!list)
         return ctx.reply(user, `there are no transactions found.`, 'red')
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginate_trslist(ctx, auditedUser, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -222,7 +221,7 @@ pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGloba
     if(tags.length === 0)
         return ctx.reply(user, `cannot find tags for matching cards (${cards.length} cards matched)`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(tags.map(x => {
             const card = ctx.cards[x.card]
             return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** ${x.status!='clear'? `(${x.status})`: ''} - ${formatName(card)}`
@@ -251,7 +250,7 @@ pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
         return ctx.reply(user, `there are no transactions found.`, 'red')
 
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginateGuildTrsList(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -281,7 +280,7 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
 
     resp.push(`Date: **${trans.time}**`)
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(trans.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
         switchPage: (data) => data.embed.fields[0].value = data.pages[data.pagenum],
         embed : {
@@ -366,7 +365,7 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
         fields: []
     }
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,embed,
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[0] = { name: `Auction Bids`, value: data.pages[data.pagenum] }
@@ -418,7 +417,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ct
     if(list.length == 0)
         return ctx.reply(user, `No matches found`, 'red')
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginateGuildTrsList(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
@@ -455,7 +454,7 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
     if (closedAudits.length === 0)
         return ctx.reply(user, 'No closed audits found', 'red')
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: paginateCompletedAuditList(ctx, user, closedAudits),
         buttons: ['back', 'forward'],
         embed: {
@@ -482,7 +481,7 @@ pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${c.amount}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
     })
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${numFmt(findCards.length)} results)` } }
     })
