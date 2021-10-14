@@ -361,7 +361,7 @@
         "name": "Triple 2 Star Claim Ticket",
         "price": 950,
         "type": "claim_ticket",
-        "desc": "gives 3 random, single collection, 1 star cards",
+        "desc": "gives 3 random, single collection, 2 star cards",
         "fulldesc": "When used gives you 3 random 2 star cards from a single collection",
         "level": [2, 2, 2]
     },  {
