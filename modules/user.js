@@ -100,6 +100,8 @@ const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id })
 
 const findUserCards = (ctx, user, cardIds) => UserCard.find({ userid: user.discord_id, cardid: { $in: cardIds } })
 
+const countUserCards = (ctx, user, cardIds) => UserCard.count({ userid: user.discord_id, cardid: { $in: cardIds } })
+
 const addUserCards = async (ctx, user, cardIds) => {
     const updates = cardIds.map(x => ({
         updateOne: {
@@ -144,4 +146,5 @@ module.exports = {
     findUserCards,
     addUserCards,
     removeUserCards,
+    countUserCards,
 }

@@ -1,5 +1,6 @@
-/* functions */
-
+const { 
+    countUserCards, getUserCards, removeUserCards,
+} = require('./user')
 
 const byAlias = (ctx, name) => {
     const regex = new RegExp(name, 'gi')
@@ -24,10 +25,10 @@ const completed = async (ctx, user, card) => {
     const legendary = ctx.cards.some(x => x.col === card.col && x.level === 5)
     const colCards = ctx.cards.filter(x => x.col === card.col && x.level < 5)
     const preCompleted = user.completedcols.find(x => x.id === card.col)
-    const userCards = user.cards.filter(x => x.id < ctx.cards.length).map(x => Object.assign({}, ctx.cards[x.id], x)).filter(x => x.col === card.col && x.level < 5)
+    const userCardCount = await countUserCards(ctx, user, colCards.map(x => x.id))
     let msg
 
-    if (!preCompleted && userCards.length < colCards.length)
+    if (!preCompleted && userCardCount < colCards.length)
         return
 
     if (preCompleted && preCompleted.amount) {
@@ -38,12 +39,12 @@ const completed = async (ctx, user, card) => {
     }
 
 
-    if (preCompleted && userCards.length < colCards.length){
+    if (preCompleted && userCardCount < colCards.length){
         msg = `you no longer have all of the cards required for full completion of **${card.col}**! This collection has now been removed from your completed list.`
         user.completedcols = user.completedcols.filter(x => x.id !== card.col)
     }
 
-    if (!preCompleted && userCards.length >= colCards.length) {
+    if (!preCompleted && userCardCount >= colCards.length) {
         msg = `You have just completed the **${card.col}** collection! 
         You can now decide if you want to reset the collection for a clout star ${legendary? 'and a legendary ticket to claim a legendary card from this collection!': '.'}
         One copy of each card below 5 stars will be consumed if the collection has 200 or fewer cards. Otherwise 200 specified cards will be taken based on overall card composition.
@@ -62,6 +63,7 @@ const completed = async (ctx, user, card) => {
 const reset = async (ctx, user, col, amounts) => {
     const clouted = user.cloutedcols.find(x => x.id === col.id)
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
+    const userCards = await getUserCards(ctx, user).lean()
 
     if(clouted)
         clouted.amount = clouted.amount + 1 || 1
@@ -70,34 +72,42 @@ const reset = async (ctx, user, col, amounts) => {
 
     user.markModified('cloutedcols')
     let emptyCard
-    user.cards.map(x => {
-        const exists = ctx.cards[x.id]
-        if (!exists)
-            return false
-        const level = ctx.cards[x.id].level
-        const notLegendary = level < 5
-        const isCol = ctx.cards[x.id].col === col.id
-        const reducable = amounts[level] > 0
-        const singleFav = x.fav && x.amount === 1
 
-        if(notLegendary && isCol && exists && reducable && !singleFav) {
-            x.amount--
-            amounts[level]--
+    const cardsToRemove = userCards.filter(x => {
+        const exists = ctx.cards[x.cardid]
+        if (exists) {
+            const level = ctx.cards[x.cardid].level
+            const notLegendary = level < 5
+            const isCol = ctx.cards[x.cardid].col === col.id
+            const reducable = amounts[level] > 0
+            const singleFav = x.fav && x.amount === 1
+
+            if (x.amount === 1) {
+                emptyCard = x
+            }
+
+            if(notLegendary && isCol && reducable && !singleFav) {
+                amounts[level]--
+                return true
+            }
         }
-        if (x.amount === 0) {
-            emptyCard = x
-        }
-    })
+
+        return false
+    }).map(x => x.cardid)
+
+    if(amounts[1] || amounts[2] || amounts[3] || amounts[4]) {
+        return ctx.reply(user, `an error occured while resetting this collection. Please check if you have all cards required.`, 'red')
+    }
 
     user.xp += amounts.total
-    user.cards = user.cards.filter(x => x.amount > 0)
+
     if(emptyCard)
-        await completed(ctx, user, ctx.cards[emptyCard.id])
-    user.markModified('cards')
+        await completed(ctx, user, ctx.cards[emptyCard.cardid])
 
     if(legendary)
         user.inventory.push({ id: 'legendticket', time: new Date(), col: col.id })
 
+    await removeUserCards(ctx, user, cardsToRemove)
     await user.save()
 
     return ctx.reply(user, `you successfully reset **${col.name}**!
