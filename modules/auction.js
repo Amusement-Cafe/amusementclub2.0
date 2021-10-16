@@ -48,7 +48,7 @@ const {
 
 const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolve, reject) => {
     const target = await fetchOnly(user.discord_id)
-    const targetCard = await findUserCards(ctx, target, [card.id]).lean()
+    const targetCard = await findUserCards(ctx, target, [card.id])
     if(!targetCard)
         return reject('no cards found')
 

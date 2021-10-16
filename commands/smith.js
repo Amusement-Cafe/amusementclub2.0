@@ -119,7 +119,6 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
                 const usercards = await findUserCards(ctx, user, [newcard.id])
                     .select('amount')
-                    .lean()
                     
                 return ctx.reply(user, {
                     image: { url: newcard.url },

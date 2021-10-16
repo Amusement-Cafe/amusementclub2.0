@@ -58,7 +58,7 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     if(cols.length === 0)
         return ctx.reply(user, `no collections found`, 'red')
 
-    const userCards = await getUserCards(ctx, user).lean()
+    const userCards = await getUserCards(ctx, user)
     const pages = ctx.pgn.getPages(cols.map(x => {
         const clout = user.cloutedcols? user.cloutedcols.find(y => x.id === y.id): null
         const overall = ctx.cards.filter(c => c.col === x.id).length
@@ -95,7 +95,7 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
         return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
 
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
-    const userCards = await findUserCards(ctx, user, colCards.map(x => x.id)).lean()
+    const userCards = await findUserCards(ctx, user, colCards.map(x => x.id))
     const card = _.sample(colCards)
     const clout = user.cloutedcols.find(x => x.id === col.id)
     const colInfos = colCards.map(x => ctx.cardInfos[x.id]).filter(x => x)

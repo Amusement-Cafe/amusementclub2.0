@@ -63,7 +63,7 @@ const completed = async (ctx, user, card) => {
 const reset = async (ctx, user, col, amounts) => {
     const clouted = user.cloutedcols.find(x => x.id === col.id)
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
-    const userCards = await getUserCards(ctx, user).lean()
+    const userCards = await getUserCards(ctx, user)
 
     if(clouted)
         clouted.amount = clouted.amount + 1 || 1

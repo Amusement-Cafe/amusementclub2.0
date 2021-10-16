@@ -43,7 +43,7 @@ cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parse
         list = list.filter(x => x.author !== user.discord_id)
 
     if (parsedargs.diff) {
-        const userCards = await findUserCards(ctx, user, list.map(x => x.card)).lean()
+        const userCards = await findUserCards(ctx, user, list.map(x => x.card))
         list = list.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.card))
     }
 
@@ -102,7 +102,7 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
         list = list.filter(x => x.author !== user.discord_id)
 
     if (parsedargs.diff) {
-        const userCards = await findUserCards(ctx, user, list.map(x => x.card)).lean()
+        const userCards = await findUserCards(ctx, user, list.map(x => x.card))
         list = list.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.card))
     }
 
@@ -188,7 +188,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
     }
 
     const check = async () => {
-        const usercard = (await findUserCards(ctx, user, [card.id]).lean())[0]
+        const usercard = (await findUserCards(ctx, user, [card.id]))[0]
 
         if(!usercard)
             return ctx.reply(user, `impossible to proceed with confirmation: ${formatName(card)} not found in your list`, 'red')

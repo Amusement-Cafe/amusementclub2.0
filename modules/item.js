@@ -131,7 +131,7 @@ const uses = {
             return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
 
         const cardIds = cards.map(x => x.id)
-        const existingCards = await findUserCards(ctx, user, cardIds).lean()
+        const existingCards = await findUserCards(ctx, user, cardIds)
 
         cards.map(x => {
             const count = existingCards.find(y => y.cardid == x.id)?.amount || 0
@@ -253,7 +253,7 @@ const infos = {
         const effect = ctx.effects.find(x => x.id === item.effectid)
         let requires
         if(item.cards) {
-            const requiredUserCards = await findUserCards(ctx, user, item.cards).lean()
+            const requiredUserCards = await findUserCards(ctx, user, item.cards)
             requires = item.cards.map(x => {
                 const has = requiredUserCards.some(y => y.cardid === x)
                 return `\`${has? ctx.symbols.accept : ctx.symbols.decline}\` ${formatName(ctx.cards[x])}`
@@ -319,7 +319,7 @@ const checks = {
         // if(user.effects.some(x => x.id === item.effectid && (x.expires || x.expires > now)))
         //     return `you already have this Effect Card`
 
-        const requiredUserCards = await findUserCards(ctx, user, item.cards).lean()
+        const requiredUserCards = await findUserCards(ctx, user, item.cards)
         if(item.cards.length != requiredUserCards.length)
             return `you don't have all required cards in order to use this item.
                 Type \`${ctx.prefix}inv info ${item.id}\` to see the list of required cards`
