@@ -71,6 +71,7 @@ const {
     plotPayout,
     getUserPlots,
 } = require("../modules/plot");
+const {getStats, incrementStats} = require("../modules/userstats");
 
 cmd('bal', 'balance', (ctx, user) => {
     let max = 1
@@ -166,6 +167,8 @@ cmd('daily', async (ctx, user) => {
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
+        let stats = await getStats(ctx, user)
+        stats.daily = now
 
         if(check_effect(ctx, user, 'cakeday')) {
             amount += 100 * (user.dailystats.claims || 0)
@@ -173,14 +176,15 @@ cmd('daily', async (ctx, user) => {
 
         if (promo) {
             user.promoexp += promoAmount
+            stats.promoin += promoAmount
         }
 
         user.lastdaily = now
-        user.dailystats = {}
         user.exp += amount
         user.xp += 10
         user.dailyquests = []
-        user.markModified('dailystats')
+        stats.tomatoin += amount
+
 
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
@@ -247,6 +251,7 @@ cmd('daily', async (ctx, user) => {
 
         user.dailynotified = false
         await user.save()
+        await stats.save()
         await plotPayout(ctx, 'gbank', 1, 5)
 
         ctx.mixpanel.track(
@@ -544,7 +549,8 @@ cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
 })
 
 cmd('stats', async (ctx, user) => {
-    const keys = Object.keys(user.dailystats).filter(x => user.dailystats[x] > 0 && user.dailystats[x] !== true)
+    let stats = await getStats(ctx, user)
+    const keys = Object.keys(stats.daily).filter(x => stats.daily[x] > 0 )
 
     if(keys.length === 0)
         return ctx.reply(user, `no statistics to display today`)
@@ -552,7 +558,7 @@ cmd('stats', async (ctx, user) => {
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,
         author: { name: `${user.username}, your daily stats:` },
-        description: keys.map(x => `${cap(x)}: **${user.dailystats[x]}**`).join('\n')
+        description: keys.map(x => `${cap(x)}: **${stats.daily[x]}**`).join('\n')
     }, user.discord_id)
 })
 

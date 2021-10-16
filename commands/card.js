@@ -59,6 +59,7 @@ const {
 } = require('../modules/user')
 
 const userCard = require('../collections/userCard')
+const {getStats} = require("../modules/userstats");
 
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
@@ -171,6 +172,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     if(price != normalprice) {
         ctx.guild.balance += Math.round(price - normalprice)
     }
+    console.log(ctx.guild.userstats)
+
 
     addGuildXP(ctx, user, amount)
     await ctx.guild.save()

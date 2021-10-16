@@ -390,6 +390,7 @@ module.exports.create = async ({
             }
 
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
+            isolatedCtx.action = action
             
             if(isolatedCtx.guild)
                 isolatedCtx.guild.lastcmdchannel = msg.channel.id
@@ -412,7 +413,7 @@ module.exports.create = async ({
 
             await trigger('cmd', isolatedCtx, usr, args, prefix)
             usr.unmarkModified('dailystats')
-            await check_all(isolatedCtx, usr, action)
+            // await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
             if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
@@ -446,7 +447,7 @@ module.exports.create = async ({
         await new Promise(r => setTimeout(r, 2000))
 
         const usr = await user.fetchOnly(obj.userID)
-        await check_all(isolatedCtx, usr, obj.action, obj.channel)
+        // await check_all(isolatedCtx, usr, obj.action, obj.channel)
     })
 
     return {

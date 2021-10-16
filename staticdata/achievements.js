@@ -16,7 +16,7 @@ module.exports = [
         name: 'More cards!',
         desc: 'Claim your first card',
         actions: ['claim', 'cl'],
-        check: (ctx, user) => user.dailystats.claims > 0,
+        check: (ctx, user, stats) => stats.daily.claims > 0,
         resolve: (ctx, user) => {
             user.exp += 2000
             return `**2,000** ${ctx.symbols.tomato}`
@@ -26,7 +26,7 @@ module.exports = [
         name: 'Playing the Auctions',
         desc: 'Auction your first card',
         actions: ['auc', 'auction'],
-        check: (ctx, user) => user.dailystats.aucs > 0,
+        check: (ctx, user, stats) => stats.daily.aucsell > 0,
         resolve: (ctx, user) => {
             user.exp += 1000
             return `**1,000** ${ctx.symbols.tomato}`
@@ -61,7 +61,7 @@ module.exports = [
         name: '1+1=1',
         desc: 'Forge cards for the first time',
         actions: ['forge'],
-        check: (ctx, user) => user.dailystats.forge1 > 0 || user.dailystats.forge2 > 0 || user.dailystats.forge3 > 0,
+        check: (ctx, user, stats) => stats.daily.forge1 > 0 || stats.daily.forge2 > 0 || stats.daily.forge3 > 0,
         resolve: (ctx, user) => {
             user.vials += 150
             return `**150** ${ctx.symbols.vial}`
@@ -71,7 +71,7 @@ module.exports = [
         name: `Didn't need that card anyway`,
         desc: 'Liquify card for the first time',
         actions: ['liq', 'liquify'],
-        check: (ctx, user) => user.dailystats.liquify > 0,
+        check: (ctx, user, stats) => stats.daily.liquify > 0,
         resolve: (ctx, user) => {
             user.vials += 1000
             return `**1,000** ${ctx.symbols.vial}`
@@ -81,7 +81,7 @@ module.exports = [
         name: 'Best Artist Around',
         desc: 'Draw card for the first time',
         actions: ['draw'],
-        check: (ctx, user) => user.dailystats.draw > 0,
+        check: (ctx, user, stats) => stats.daily.draw > 0,
         resolve: (ctx, user) => {
             user.vials += 1000
             return `**1,000** ${ctx.symbols.vial}`
@@ -267,7 +267,7 @@ module.exports = [
         name: `Max Claimer`,
         desc: 'Claim 10 cards in a day',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => user.dailystats.totalregclaims >= 10,
+        check: (ctx, user, stats) => stats.daily.totalregclaims >= 10,
         resolve: (ctx, user) => {
             user.exp += 500
             user.lemons += 10
@@ -278,7 +278,7 @@ module.exports = [
         name: `👀`,
         desc: 'Claim 15 cards in a day',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => user.dailystats.totalregclaims >= 15,
+        check: (ctx, user, stats) => stats.daily.totalregclaims >= 15,
         resolve: (ctx, user) => {
             user.exp += 750
             user.lemons += 15
@@ -289,7 +289,7 @@ module.exports = [
         name: `Big Spender`,
         desc: 'Claim 20 cards in a day',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => user.dailystats.totalregclaims >= 20,
+        check: (ctx, user, stats) => stats.daily.totalregclaims >= 20,
         resolve: (ctx, user) => {
             user.exp += 1000
             user.lemons += 20
@@ -300,10 +300,10 @@ module.exports = [
         name: `Seasonal Event Participant`,
         desc: 'Claim your first promo card',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => {
+        check: (ctx, user, stats) => {
             const now = new Date()
             const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
-            return promo && user.dailystats.promoclaims > 0
+            return promo && stats.daily.promoclaims > 0
         },
         resolve: (ctx, user) => {
             const now = new Date()
@@ -317,10 +317,10 @@ module.exports = [
         name: `Event Rush`,
         desc: 'Claim 5 promo cards in a day',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => {
+        check: (ctx, user, stats) => {
             const now = new Date()
             const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
-            return promo && user.dailystats.promoclaims >= 5
+            return promo && stats.daily.promoclaims >= 5
         },
         resolve: (ctx, user) => {
             const now = new Date()
@@ -334,10 +334,10 @@ module.exports = [
         name: `Maximum Promo`,
         desc: 'Claim 10 promo cards in a day',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => {
+        check: (ctx, user, stats) => {
             const now = new Date()
             const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
-            return promo && user.dailystats.promoclaims >= 10
+            return promo && stats.daily.promoclaims >= 10
         },
         resolve: (ctx, user) => {
             const now = new Date()
@@ -351,7 +351,7 @@ module.exports = [
         name: `Prolific Forger`,
         desc: 'Forge 10 times in a day',
         actions: ['forge'],
-        check: (ctx, user) => (user.dailystats.forge1 + user.dailystats.forge2 + user.dailystats.forge3) >= 10,
+        check: (ctx, user, stats) => (stats.daily.forge1 + stats.daily.forge2 + stats.daily.forge3) >= 10,
         resolve: (ctx, user) => {
             user.exp += 2000
             user.lemons += 250
@@ -362,7 +362,7 @@ module.exports = [
         name: `Painting happy little cards`,
         desc: 'Draw 6 cards in a day',
         actions: ['draw'],
-        check: (ctx, user) => user.dailystats.draw >= 6,
+        check: (ctx, user, stats) => stats.daily.draw >= 6,
         resolve: (ctx, user) => {
             user.vials += 200
             user.lemons += 50
@@ -373,7 +373,7 @@ module.exports = [
         name: `The Bob Ross of cards`,
         desc: 'Draw 10 cards in a day',
         actions: ['draw'],
-        check: (ctx, user) => user.dailystats.draw >= 10,
+        check: (ctx, user, stats) => stats.daily.draw >= 10,
         resolve: (ctx, user) => {
             user.vials += 300
             user.lemons += 75
@@ -384,7 +384,7 @@ module.exports = [
         name: `There's always a need for more`,
         desc: 'Liquefy 10 cards in a day',
         actions: ['liq', 'liquify'],
-        check: (ctx, user) => user.dailystats.liquify >= 10,
+        check: (ctx, user, stats) => stats.daily.liquify >= 10,
         resolve: (ctx, user) => {
             user.exp += 1000
             user.vials += 100
@@ -396,7 +396,7 @@ module.exports = [
         name: `There's no heart in these cards`,
         desc: 'Liquefy 20 cards in a day',
         actions: ['liq', 'liquify'],
-        check: (ctx, user) => user.dailystats.liquify >= 20,
+        check: (ctx, user, stats) => stats.daily.liquify >= 20,
         resolve: (ctx, user) => {
             user.exp += 2000
             user.vials += 200
@@ -408,7 +408,7 @@ module.exports = [
         name: `Card Critic`,
         desc: 'Rate a card for the first time',
         actions: ['rate'],
-        check: (ctx, user) => user.dailystats.rates > 0,
+        check: (ctx, user, stats) => stats.daily.rates > 0,
         resolve: (ctx, user) => {
             user.exp += 250
             user.lemons += 5

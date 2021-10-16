@@ -8,7 +8,7 @@ module.exports = {
             can_drop: true,
             min_level: 0,
             actions: ['claim', 'cl'],
-            check: (ctx, user) => user.dailystats.totalregclaims >= 4,
+            check: (ctx, user, stats) => stats.totalregclaims >= 4,
             resolve: (ctx, user) => {
                 user.exp += 600
                 user.xp += 2
@@ -23,7 +23,7 @@ module.exports = {
             can_drop: true,
             min_level: 10,
             actions: ['claim', 'cl'],
-            check: (ctx, user) => user.dailystats.totalregclaims >= 8,
+            check: (ctx, user, stats) => stats.totalregclaims >= 8,
             resolve: (ctx, user) => {
                 user.exp += 1400
                 user.xp += 5
@@ -38,7 +38,7 @@ module.exports = {
             can_drop: true,
             min_level: 15,
             actions: ['auc', 'auction'],
-            check: (ctx, user) => user.dailystats.bids >= 2,
+            check: (ctx, user, stats) => stats.aucbid >= 2,
             resolve: (ctx, user) => {
                 user.exp += 1000
                 user.xp += 2
@@ -53,7 +53,7 @@ module.exports = {
             can_drop: true,
             min_level: 50,
             actions: ['auc', 'auction'],
-            check: (ctx, user) => user.dailystats.bids >= 4,
+            check: (ctx, user, stats) => stats.aucbid >= 4,
             resolve: (ctx, user) => {
                 user.exp += 2000
                 user.xp += 8
@@ -69,7 +69,7 @@ module.exports = {
             min_level: 0,
             building: 'smithhub1',
             actions: ['forge'],
-            check: (ctx, user) => user.dailystats.forge1 >= 1,
+            check: (ctx, user, stats) => stats.forge1 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 500
                 user.xp += 1
@@ -85,7 +85,7 @@ module.exports = {
             min_level: 5,
             building: 'smithhub1',
             actions: ['forge'],
-            check: (ctx, user) => user.dailystats.forge2 >= 1,
+            check: (ctx, user, stats) => stats.forge2 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 800
                 user.vials += 30
@@ -102,7 +102,7 @@ module.exports = {
             min_level: 15,
             building: 'smithhub1',
             actions: ['forge'],
-            check: (ctx, user) => user.dailystats.forge3 >= 1,
+            check: (ctx, user, stats) => stats.forge3 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 1000
                 user.vials += 40
@@ -118,7 +118,7 @@ module.exports = {
             can_drop: false,
             min_level: 15,
             actions: ['tag'],
-            check: (ctx, user) => user.dailystats.tags >= 2,
+            check: (ctx, user, stats) => stats.tags >= 2,
             resolve: (ctx, user) => {
                 user.exp += 400
                 user.xp += 2
@@ -132,7 +132,7 @@ module.exports = {
             can_drop: false,
             min_level: 25,
             actions: ['tag'],
-            check: (ctx, user) => user.dailystats.tags >= 4,
+            check: (ctx, user, stats) => stats.tags >= 4,
             resolve: (ctx, user) => {
                 user.exp += 800
                 user.xp += 4
@@ -147,7 +147,7 @@ module.exports = {
             min_level: 10,
             building: 'smithhub2',
             actions: ['liq', 'liquify'],
-            check: (ctx, user) => user.dailystats.liquify >= 2,
+            check: (ctx, user, stats) => stats.liquify >= 2,
             resolve: (ctx, user) => {
                 user.vials += 60
                 user.xp += 3
@@ -163,7 +163,7 @@ module.exports = {
             min_level: 35,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user) => user.dailystats.liquify >= 4,
+            check: (ctx, user, stats) => stats.liquify >= 4,
             resolve: (ctx, user) => {
                 user.vials += 120
                 user.xp += 6
@@ -179,7 +179,7 @@ module.exports = {
             min_level: 20,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user) => user.dailystats.draw >= 2,
+            check: (ctx, user, stats) => stats.draw >= 2,
             resolve: (ctx, user) => {
                 user.exp += 1500
                 user.vials += 60
@@ -196,7 +196,7 @@ module.exports = {
             min_level: 40,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user) => user.dailystats.draw >= 4,
+            check: (ctx, user, stats) => stats.draw >= 4,
             resolve: (ctx, user) => {
                 user.exp += 3000
                 user.vials += 120
@@ -213,7 +213,7 @@ module.exports = {
             min_level: 5,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user) => user.dailystats.draw1 >= 1,
+            check: (ctx, user, stats) => stats.draw1 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 250
                 user.vials += 25
@@ -230,7 +230,7 @@ module.exports = {
             min_level: 15,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user) => user.dailystats.draw2 >= 1,
+            check: (ctx, user, stats) => stats.draw2 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 750
                 user.vials += 75
@@ -247,7 +247,7 @@ module.exports = {
             min_level: 25,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user) => user.dailystats.draw3 >= 1,
+            check: (ctx, user, stats) => stats.draw3 >= 1,
             resolve: (ctx, user) => {
                 user.exp += 900
                 user.vials += 200
@@ -263,7 +263,7 @@ module.exports = {
             can_drop: true,
             min_level: 0,
             actions: ['rate'],
-            check: (ctx, user) => user.dailystats.rates >= 2,
+            check: (ctx, user, stats) => stats.rates >= 2,
             resolve: (ctx, user) => {
                 user.exp += 250
                 user.xp += 2
@@ -278,7 +278,7 @@ module.exports = {
             can_drop: true,
             min_level: 10,
             actions: ['rate'],
-            check: (ctx, user) => user.dailystats.rates >= 5,
+            check: (ctx, user, stats) => stats.rates >= 5,
             resolve: (ctx, user) => {
                 user.exp += 1000
                 user.xp += 5

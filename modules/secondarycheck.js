@@ -4,9 +4,9 @@ const {
     plotPayout,
 }   = require('./plot')
 
-const check_achievements = async (ctx, user, action, channelID) => {
+const check_achievements = async (ctx, user, action, channelID, stats) => {
     const possible = ctx.achievements.filter(x => x.actions.includes(action) && !user.achievements.includes(x.id))
-    const complete = (await Promise.all(possible.map(async (x) => await x.check(ctx, user)? x : false))).find(x => x)
+    const complete = (await Promise.all(possible.map(async (x) => await x.check(ctx, user, stats)? x : false))).find(x => x)
 
     if(complete) {
         const reward = complete.resolve(ctx, user)
@@ -37,11 +37,11 @@ const check_achievements = async (ctx, user, action, channelID) => {
     }
 }
 
-const check_daily = async (ctx, user, action, channelID) => {
+const check_daily = async (ctx, user, action, channelID, stats) => {
     const rewards = []
     const complete = []
 
-    ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y && x.check(ctx, user)))
+    ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y && x.check(ctx, user, stats)))
     .map(x => {
         const reward = x.resolve(ctx, user)
         user.dailyquests = user.dailyquests.filter(y => y != x.id)
@@ -76,11 +76,11 @@ const check_daily = async (ctx, user, action, channelID) => {
     })
 }
 
-const check_all = async (ctx, user, action, channelID) => {
-    await check_achievements(ctx, user, action, channelID)
+const check_all = async (ctx, user, action, channelID, stats) => {
+    await check_achievements(ctx, user, action, channelID, stats)
 
     if(user.dailyquests.length > 0)
-        await check_daily(ctx, user, action, channelID)
+        await check_daily(ctx, user, action, channelID, stats)
 }
 
 module.exports = {
