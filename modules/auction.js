@@ -1,6 +1,8 @@
 const {Auction, AuditAucSell}         = require('../collections')
-const {evalCard}                      = require("../modules/eval");
-const {fetchOnly}                     = require('./user')
+
+const lockFile  = require('proper-lockfile')
+const asdate    = require('add-subtract-date')
+const msToTime  = require('pretty-ms')
 
 const {
     generateNextId,
@@ -22,13 +24,19 @@ const {
 
 const {
     formatName,
-    removeUserCard,
-    addUserCard,
 } = require('./card')
 
 const {
     aucEvalChecks,
-} = require("./eval");
+    evalCard,
+} = require('./eval')
+
+const {
+    fetchOnly, 
+    addUserCards,
+    removeUserCards,
+    findUserCards,
+} = require('./user')
 
 const {
     from_auc,
@@ -38,25 +46,18 @@ const {
     plotPayout,
 } = require('./plot')
 
-
-const lockFile  = require('proper-lockfile')
-const asdate    = require('add-subtract-date')
-const msToTime  = require('pretty-ms')
-
-
-const aucHide   = 5 * 60 * 1000
-
 const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolve, reject) => {
     const target = await fetchOnly(user.discord_id)
-    if(!target.cards.find(x => x.id === card.id))
+    const targetCard = await findUserCards(ctx, target, [card.id]).lean()
+    if(!targetCard)
         return reject('no cards found')
 
     lockFile.lock('auc', {retries: 10}).then(async (release) => {
-        removeUserCard(ctx, target, card.id)
-        await completed(ctx, target, card)
-        
-        await target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}})
-        await target.save()
+        await Promise.all([
+            removeUserCards(ctx, target, [card.id]),
+            completed(ctx, target, card),
+            target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}}),
+        ])
 
         const last_auc = (await Auction.find().sort({ _id: -1 }))[0]
         const auc = await new Auction()
@@ -180,10 +181,12 @@ const finish_aucs = async (ctx, now) => {
         const tback = check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
         lastBidder.exp += (auc.highbid - auc.price) + tback
         author.exp += auc.price
-        addUserCard(lastBidder, auc.card)
-        await author.save()
-        await lastBidder.save()
 
+        await Promise.all([
+            addUserCards(ctx, lastBidder, [auc.card]),
+            author.save(),
+            lastBidder.save(),
+        ])
 
         if(author.prefs.notifications.aucend) {
             try {
@@ -196,8 +199,6 @@ const finish_aucs = async (ctx, now) => {
             You ended up paying **${numFmt(Math.round(auc.price))}** ${ctx.symbols.tomato} and got **${numFmt(Math.round(auc.highbid - auc.price))}** ${ctx.symbols.tomato} back.
             ${tback > 0? `You got additional **${numFmt(tback)}** ${ctx.symbols.tomato} from your equipped effect` : ''}`)
         } catch (e) {}
-
-
 
         const aucCard = ctx.cards[auc.card]
         const eval = await evalCard(ctx, aucCard)
@@ -216,15 +217,19 @@ const finish_aucs = async (ctx, now) => {
             await audit_auc_stats(ctx, author, false)
         else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
-        addUserCard(author, auc.card)
-        await author.save()
-        await aucEvalChecks(ctx, auc, false)
-	if (author.prefs.notifications.aucend) {
-		try {
-			return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
-			You got your card back.`, 'yellow')
-		} catch (e) {}
-	}	
+        
+        await Promise.all([
+            addUserCards(ctx, author, [auc.card]),
+            author.save(),
+            aucEvalChecks(ctx, auc, false),
+        ])
+    
+        if (author.prefs.notifications.aucend) {
+            try {
+                return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
+                You got your card back.`, 'yellow')
+            } catch (e) {}
+        }
     }
 }
 

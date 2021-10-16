@@ -1,7 +1,6 @@
 const {cmd}             = require('../utils/cmd')
 const {numFmt}          = require('../utils/tools')
 const {evalCard}        = require('../modules/eval')
-const {fetchOnly}       = require('../modules/user')
 const msToTime          = require('pretty-ms')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
@@ -25,8 +24,13 @@ const {
     withGlobalCards,
 } = require('../modules/card')
 
+const {
+    fetchOnly, 
+    findUserCards,
+} = require('../modules/user')
+
 cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const now = new Date();
+    const now = new Date()
     const req = {finished: false}
 
     if(parsedargs.me === 1)
@@ -38,8 +42,10 @@ cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parse
     if (parsedargs.me === 2)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if (parsedargs.diff)
-        list = list.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.card))
+    if (parsedargs.diff) {
+        const userCards = await findUserCards(ctx, user, list.map(x => x.card)).lean()
+        list = list.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.card))
+    }
 
     if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
@@ -95,8 +101,10 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
     if (parsedargs.me === 2)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if (parsedargs.diff)
-        list = list.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.card))
+    if (parsedargs.diff) {
+        const userCards = await findUserCards(ctx, user, list.map(x => x.card)).lean()
+        list = list.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.card))
+    }
 
     if(parsedargs.bid === 1)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
@@ -180,8 +188,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
     }
 
     const check = async () => {
-        user = await fetchOnly(user.discord_id)
-        const usercard = user.cards.find(x => x.id === card.id)
+        const usercard = (await findUserCards(ctx, user, [card.id]).lean())[0]
 
         if(!usercard)
             return ctx.reply(user, `impossible to proceed with confirmation: ${formatName(card)} not found in your list`, 'red')
