@@ -39,7 +39,7 @@ module.exports.create = async ({
         baseurl, shorturl, auditc, debug, 
         maintenance, invite, data, dbl, 
         analytics, evalc, uniqueFrequency,
-        metac, auctionLock
+        metac, auctionLock, guildLogChannel,
     }) => {
 
     const emitter = new Emitter()
@@ -296,6 +296,23 @@ module.exports.create = async ({
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
+    })
+
+    bot.on('guildCreate', async (guild) => {
+        if (guildLogChannel)
+            await send(guildLogChannel, {
+                description:`Invited to a new guild!\nGuild Name: **${guild.name}**\nGuild ID: \`${guild.id}\``,
+                color: colors.green,
+                thumbnail: {url: guild.iconURL}
+            })
+    })
+
+    bot.on('guildDelete', async (guild) => {
+        if (guildLogChannel)
+            await send(guildLogChannel, {
+                description:`Kicked from guild!\nGuild Name: **${guild.name? guild.name: 'Uncached Guild'}**\nGuild ID: \`${guild.id}\``,
+                color: colors.red
+            })
     })
 
     bot.on('messageCreate', async (msg) => {
