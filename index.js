@@ -1,18 +1,18 @@
 const Eris          = require('eris')
-const mongoose      = require('mongoose')
-const colors        = require('./utils/colors')
-const commands      = require('./commands')
 const Emitter       = require('events')
+const Filter        = require('bad-words')
+const Mixpanel      = require('mixpanel')
+const mongoose      = require('mongoose')
+
+const _             = require('lodash')
 const asdate        = require('add-subtract-date')
 const paginator     = require('discord-paginator')
-const _             = require('lodash')
-const sagiri        = require("sagiri")
+const sagiri        = require('sagiri')
+
+const commands      = require('./commands')
+const colors        = require('./utils/colors')
 const {trigger}     = require('./utils/cmd')
 const {check_all}   = require('./modules/secondarycheck')
-const {connectDBL}  = require('./modules/dbl')
-const Filter        = require('bad-words')
-
-const Mixpanel = require('mixpanel');
 
 const {
     auction,
@@ -26,7 +26,6 @@ const {
     preferences,
     plot,
 } = require('./modules')
-const announcement = require('./collections/announcement')
 
 var userq = []
 var guildq = []
@@ -299,9 +298,6 @@ module.exports.create = async ({
         stopWebhooks()
         bot.disconnect()
     }
-
-    // if(dbl.token)
-    //     connectDBL(ctx);
     
     /* events */
     mongoose.connection.on('error', err => {
