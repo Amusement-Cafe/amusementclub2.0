@@ -49,15 +49,19 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
     return guild
 }
 
-const fetchOnly = async (discord_guild) => {
+const fetchGuild = async (discord_guild) => {
     if(!discord_guild)
         return null
 
+    return fetchGuildById(discord_guild.id)
+}
+
+const fetchGuildById = async (guildId) => {
     let fromcache = true
-    let guild = cache.find(x => x.id === discord_guild.id)
+    let guild = cache.find(x => x.id === guildId)
 
     if(!guild) {
-        guild = await Guild.findOne({ id: discord_guild.id })
+        guild = await Guild.findOne({ id: guildId })
         fromcache = false
     }
 
@@ -224,7 +228,8 @@ module.exports = Object.assign(module.exports, {
     getBuildingInfo,
     isUserManager,
     dropCache,
-    fetchOnly,
+    fetchGuild,
+    fetchGuildById,
     fetchGuildUsers,
     clean_trans,
 })

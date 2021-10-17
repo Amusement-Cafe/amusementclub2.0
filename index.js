@@ -315,7 +315,7 @@ module.exports.create = async ({
             return
 
         let curprefix = prefix
-        const curguild = await guild.fetchOnly(msg.channel.guild)
+        const curguild = await guild.fetchGuild(msg.channel.guild)
         if(curguild) {
             curprefix = curguild.prefix || prefix
         }
