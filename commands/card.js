@@ -185,7 +185,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         ctx.guild.balance += Math.round(price - normalprice)
     }
 
-    addGuildXP(ctx, user, amount)
+    ctx.guild.xp += Math.floor(amount * .05)
+    await addGuildXP(ctx, user, amount)
     await ctx.guild.save()
 
     const receipt = []

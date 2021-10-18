@@ -2,6 +2,7 @@ const Guild         = require('../collections/guild')
 const Transaction   = require('../collections/transaction')
 const Auction       = require('../collections/auction')
 const User          = require('../collections/user')
+const GuildUser     = require('../collections/guildUser')
 
 const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
@@ -12,7 +13,8 @@ const {
 } = require('./effect')
 
 const {
-    numFmt
+    numFmt,
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const m_hero = require('./hero')
@@ -71,12 +73,16 @@ const fetchGuildById = async (guildId) => {
     return guild
 }
 
-const addGuildXP = (ctx, user, xp) => {
-    let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+const addGuildXP = async (ctx, user, xp) => {
+    let guildUser = await GuildUser.findOne({ 
+        guildid: ctx.guild.id, 
+        userid: user.discord_id 
+    })
     
     if(!guildUser) {
-        ctx.guild.userstats.push({ id: user.discord_id, xp: 0, rank: 0 })
-        guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+        guildUser = new GuildUser()
+        guildUser.userid = user.discord_id
+        guildUser.guildid = ctx.guild.id
 
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
@@ -85,17 +91,17 @@ const addGuildXP = (ctx, user, xp) => {
         }
     }
 
-    ctx.guild.xp += xp * .05
     guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
-    const rank = XPtoRANK(guildUser.xp)
 
-    if(rank > guildUser.rank) {
-        ctx.reply(user, `you ranked up in **${ctx.discord_guild.name}!**
-            Your rank is now **${rank}**`)
+    const guildLevel = XPtoLEVEL(guildUser.xp)
+    if(guildLevel > guildUser.level) {
+        ctx.reply(user, `you leveled up in **${ctx.discord_guild.name}!**
+            Your guild level is now **${guildLevel}**`)
 
-        guildUser.xp -= rankXP[rank - 1]
-        guildUser.rank = rank
+        guildUser.level = guildLevel
     }
+
+    await guildUser.save()
 }
 
 const clean_trans = async (ctx, now) => {
@@ -190,7 +196,10 @@ const getBuildingInfo = (ctx, user, args) => {
 
 const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)
 
-const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.discord_id)
+const getGuildUser = (ctx, user) => GuildUser.findOne({ 
+    userid: user.discord_id, 
+    guildid: ctx.guild.id,
+})
 
 const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
 

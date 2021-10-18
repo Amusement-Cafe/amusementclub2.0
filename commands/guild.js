@@ -131,14 +131,16 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
             user.exp -= amount
             user.xp += xp
             ctx.guild.balance += amount
-            addGuildXP(ctx, user, xp)
 
-            await user.save()
-            await ctx.guild.save()
+            await Promise.all([
+                addGuildXP(ctx, user, xp),
+                user.save(),
+                ctx.guild.save(),
+            ])
 
             return ctx.reply(user, `you donated **${numFmt(amount)}** ${ctx.symbols.tomato} to **${ctx.discord_guild.name}**!
                 This guild now has **${numFmt(ctx.guild.balance)}** ${ctx.symbols.tomato}
-                You have been awarded **${Math.floor(xp)} xp** towards your next rank`)
+                You have been awarded **${Math.floor(xp)} xp** towards your next guild level`)
         }
     })
 })

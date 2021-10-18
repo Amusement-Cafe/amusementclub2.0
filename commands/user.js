@@ -190,8 +190,9 @@ cmd('daily', async (ctx, user) => {
 
         user.markModified('dailyquests')
 
-        addGuildXP(ctx, user, 10)
+        ctx.guild.xp += 5
         ctx.guild.balance += userLevel
+        await addGuildXP(ctx, user, 10)
         await ctx.guild.save()
 
         if(hero) {
