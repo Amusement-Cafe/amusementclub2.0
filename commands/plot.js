@@ -69,13 +69,16 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
 
 cmd(['plot', 'buy'], async (ctx, user) => {
     const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 8) + 1
-    const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 20)
+    const maxUserAmount = Math.floor(XPtoLEVEL(user.xp) / 20)
     const userGlobalPlots = await getUserPlots(ctx, true)
     const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
     const cost = 25 * (2 ** userGlobalPlots.length)
     const buildingCount = ctx.items.filter(x => x.type === 'blueprint').length
 
     const check = async () => {
+
+        if (maxUserAmount === 0)
+            return ctx.reply(user, `you can start using plots once you reach level **20**!\nGain levels by playing the bot normally and use \`${ctx.prefix}profile\` to see what level you are!`, 'red')
 
         if (userGuildPlots.length >= maxGuildAmount)
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
