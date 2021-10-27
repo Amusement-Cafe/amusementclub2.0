@@ -142,6 +142,9 @@ const uses = {
         resp += `from using **${item.name}**`
 
         pullInventoryItem(user, item.id, index)
+        await user.save()
+
+        user.markModified('cards')
         user.lastcard = cards[0].id
         await user.save()
 
