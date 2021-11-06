@@ -42,7 +42,7 @@ const {
 } = require('../modules/card')
 
 const {
-    addGuildXP,
+    addGuildUserXP,
 } = require('../modules/guild')
 
 const {
@@ -186,7 +186,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     ctx.guild.xp += Math.floor(amount * .05)
-    await addGuildXP(ctx, user, amount)
+    await addGuildUserXP(ctx, user, amount)
     await ctx.guild.save()
 
     const receipt = []

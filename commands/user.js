@@ -28,7 +28,7 @@ const {
 } = require('../modules/user')
 
 const {
-    addGuildXP,
+    addGuildUserXP,
     getBuilding,
     rankXP,
 } = require('../modules/guild')
@@ -192,7 +192,7 @@ cmd('daily', async (ctx, user) => {
 
         ctx.guild.xp += 5
         ctx.guild.balance += userLevel
-        await addGuildXP(ctx, user, 10)
+        await addGuildUserXP(ctx, user, 2)
         await ctx.guild.save()
 
         if(hero) {

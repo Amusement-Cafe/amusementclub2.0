@@ -11,7 +11,7 @@ const {
 
 const {
     rankXP,
-    addGuildXP,
+    addGuildUserXP,
     getMaintenanceCost,
     isUserOwner,
     getGuildUser,
@@ -68,10 +68,14 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
     //         Loyalty level **${ctx.guild.heroloyalty}**` })
     // }
 
-    const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    //const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    const curUser = await getGuildUser(ctx, user).lean()
     if(curUser){
-        userstat.push(`Current rank: **${curUser.rank}**`)
-        userstat.push(`Progress to the next rank: **${curUser.rank == 5? 'Max': Math.round((curUser.xp / rankXP[curUser.rank]) * 100) + '%'}**`)
+        const lastXP =  LEVELtoXP(curUser.level)
+        const levelupXP = LEVELtoXP(curUser.level + 1) - lastXP
+        const curProgress = curUser.xp - lastXP
+        userstat.push(`Current level: **${curUser.level}**`)
+        userstat.push(`Progress to next level: **${Math.round((curProgress / levelupXP) * 100) + '%'}**`)
         if(curUser.roles.length > 0)
             userstat.push(`Roles: **${curUser.roles.join(' | ')}**`)
     } else {
@@ -133,7 +137,7 @@ cmd(['guild', 'donate'], async (ctx, user, arg1) => {
             ctx.guild.balance += amount
 
             await Promise.all([
-                addGuildXP(ctx, user, xp),
+                addGuildUserXP(ctx, user, xp),
                 user.save(),
                 ctx.guild.save(),
             ])

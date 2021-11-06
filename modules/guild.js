@@ -73,7 +73,7 @@ const fetchGuildById = async (guildId) => {
     return guild
 }
 
-const addGuildXP = async (ctx, user, xp) => {
+const addGuildUserXP = async (ctx, user, xp) => {
     let guildUser = await GuildUser.findOne({ 
         guildid: ctx.guild.id, 
         userid: user.discord_id 
@@ -225,7 +225,7 @@ const guildLock = {
 
 module.exports = Object.assign(module.exports, {
     fetchOrCreate,
-    addGuildXP,
+    addGuildUserXP,
     XPtoRANK,
     rankXP,
     getGuildUser,
