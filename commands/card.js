@@ -11,6 +11,7 @@ const {
     claimCost, 
     promoClaimCost,
     numFmt,
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
@@ -189,6 +190,14 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         Your next claim will cost **${promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))}** ${curr}
         ${activepromo && !promo? `You got **${numFmt(extra)}** ${activepromo.currency}
         You now have **${numFmt(user.promoexp)}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
+
+    if (amount > 1 && XPtoLEVEL(user.xp) < 15) {
+        fields.push({name: `View your cards`, value:
+            `Use \`${ctx.prefix}sum [card name]\` to view the card
+            (e.g. \`${ctx.prefix}sum ${cards[0].card.name}\`)
+            Use \`${ctx.prefix}card info [card name]\` to view the card tags and metadata
+            (e.g. \`${ctx.prefix}card info ${cards[0].card.name}\`)`})
+    }
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
