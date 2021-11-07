@@ -37,7 +37,7 @@ cmd('help', async (ctx, user, ...args) => {
 
             if(ch.id != ctx.msg.channel.id)
                 await ctx.reply(user, `help was sent to you. 
-                    You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help ${help} -here\`) to see help in the current channel`)
+                    You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help ${help.type[0]} -here\`) to see help in the current channel`)
 
         } catch (e) {
             await ctx.reply(user, `failed to send direct message to you ੨( ･᷄ ︵･᷅ )ｼ
