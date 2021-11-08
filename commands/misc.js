@@ -37,7 +37,7 @@ cmd('help', async (ctx, user, ...args) => {
 
             if(ch.id != ctx.msg.channel.id)
                 await ctx.reply(user, `help was sent to you. 
-                    You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
+                    You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help ${help.type[0]} -here\`) to see help in the current channel`)
 
         } catch (e) {
             await ctx.reply(user, `failed to send direct message to you ੨( ･᷄ ︵･᷅ )ｼ
@@ -96,7 +96,7 @@ cmd('invite', async (ctx, user) => {
 cmd('license', async (ctx, user) => {
     const embed = {
         title: `Code License`,
-        description: `This bot's source code (or parts of it) is provided freely by NoxCaos#4905 and contributors under the [MPL-2.0 Licence](https://github.com/NoxCaos/amusementclub2.0/blob/master/LICENSE)
+        description: `This bot's source code (or parts of it) is provided freely by NoxCaos#4905 and contributors under the [MPL-2.0 License](https://github.com/NoxCaos/amusementclub2.0/blob/master/LICENSE)
         To view the source code of the main project, [click here](https://github.com/NoxCaos/amusementclub2.0/)
         If you are using some or part of the code for this bot in your works, some semi-public attribution may be required. 
         Leaving this command in and in help untouched, can count as such.`,
@@ -108,9 +108,11 @@ cmd('license', async (ctx, user) => {
 const getHelpEmbed = (ctx, o, prefix) => {
 
     const footerText = `Amusement Club Amethyst | xQAxThF | v${pjson.version} | by NoxCaos#4905 and contributors`
+    const docLink = o.docs? `\n[View this help in docs ↗️](https://docs.amusement.cafe/${o.docs})` : ''
     const embed = {
         title: o.title, 
-        description: o.description.replace(/->/g, prefix), fields: [],
+        description: o.description.replace(/->/g, prefix) + docLink,
+        fields: [],
         footer: { text: footerText },
         color: colors['green']
     }
