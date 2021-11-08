@@ -4,6 +4,19 @@ const asdate = require('add-subtract-date')
 
 const baseStorageCaps = [300, 600, 1200, 1800, 3600, 7200]
 
+const plotCost = async (ctx, user) => {
+    const userPlotsLength = (await getUserPlots(ctx, true, null, user? user.discord_id: null)).length
+    return 25 * (2 ** userPlotsLength)
+}
+
+const getLemonCap = async (ctx, user) => {
+    const nextPlotCost = await plotCost(ctx, user)
+    if (nextPlotCost < 100000)
+        return 100000
+
+    return nextPlotCost
+}
+
 const getUserPlots = async (ctx, global = false, building, user_id, guild_id) => {
     let q = {user_id: ctx.msg.author.id}
     if (user_id)
@@ -69,9 +82,9 @@ const castlePayments = async (ctx, now) => {
         let level = x.building.level
 
         let maxStored = baseStorageCaps[level]
-        const maxLvlStored = maxStored + ((maxStored * ((level * 5) / 100)))
+        const maxLvlStored = maxStored + ((maxStored * ((level * 25) / 100)))
 
-        x.building.stored_lemons += (level * 5) + 25
+        x.building.stored_lemons += (level * 10) + 20
 
         if (level > 1 && maxLvlStored < x.building.stored_lemons)
             x.building.stored_lemons = maxLvlStored
@@ -87,7 +100,7 @@ const getMaxStorage = async (ctx, plot) => {
     let castle = await getUserPlots(ctx, false, 'castle', plot.user_id, plot.guild_id)
     const baseCapacity = baseStorageCaps[plot.building.level]
     const castleLevel = castle[0].building.level
-    return castleLevel > 1 ? baseCapacity + ((baseCapacity * ((castleLevel * 5) / 100))) : baseCapacity
+    return castleLevel > 1 ? baseCapacity + ((baseCapacity * ((castleLevel * 25) / 100))) : baseCapacity
 }
 
 
@@ -97,7 +110,9 @@ module.exports = {
     castlePayments,
     getBuildingPlots,
     getGuildPlots,
+    getLemonCap,
     getMaxStorage,
     getUserPlots,
-    plotPayout
+    plotPayout,
+    plotCost,
 }

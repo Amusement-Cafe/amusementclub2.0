@@ -18,22 +18,22 @@
                 "price": 500,
                 "level": 40,
                 "maintenance": 15,
-                "desc": "Increases all buildings storage capacity in placed guild by 10%, increases daily generation to 35"
+                "desc": "Increases all buildings storage capacity in placed guild by 50%, increases daily generation to 40"
             }, {
                 "price": 1000,
                 "level": 60,
                 "maintenance": 20,
-                "desc": "Increases all buildings storage capacity in placed guild by 15%, increases daily generation to 40"
+                "desc": "Increases all buildings storage capacity in placed guild by 75%, increases daily generation to 50"
             }, {
                 "price": 2000,
                 "level": 80,
                 "maintenance": 25,
-                "desc": "Increases all buildings storage capacity in placed guild by 20%, increases daily generation to 45"
+                "desc": "Increases all buildings storage capacity in placed guild by 100%, increases daily generation to 90"
             }, {
                 "price": 5000,
                 "level": 100,
                 "maintenance": 50,
-                "desc": "Increases all buildings storage capacity in placed guild by 25%, increases daily generation to 50"
+                "desc": "Increases all buildings storage capacity in placed guild by 125%, increases daily generation to 110"
             }
         ]
     }, {
