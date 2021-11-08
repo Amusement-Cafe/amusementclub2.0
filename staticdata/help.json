@@ -632,6 +632,14 @@
                 "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by a factor of 2 from the one prior."
             },
             {
+                "title": "->plot delete [plot #]",
+                "description": "Delete a plot from the current guild's plot list, refunds 75% of cost for buildings placed on plot"
+            },
+            {
+                "title": "->plot delete global [plot #]",
+                "description": "Delete a plot from your global plot list, refunds 75% of cost for buildings placed on plot"
+            },
+            {
                 "title": "->plot info [plot #]",
                 "description": "Displays the information about the specific plot in the current guild."
             },
