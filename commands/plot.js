@@ -15,7 +15,9 @@ const {
 
 const {
     getUserPlots,
+    getLemonCap,
     getMaxStorage,
+    plotCost,
 }   = require('../modules/plot')
 
 cmd(['plot'], ['plots'], async (ctx, user) => {
@@ -69,10 +71,10 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
 
 cmd(['plot', 'buy'], async (ctx, user) => {
     const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 8) + 1
-    const maxUserAmount = Math.floor(XPtoLEVEL(user.xp) / 20)
+    const maxUserAmount = Math.floor(XPtoLEVEL(user.xp) / 20) === 0? 0 : Math.floor((XPtoLEVEL(user.xp) - 20) / 10) + 1
     const userGlobalPlots = await getUserPlots(ctx, true)
     const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
-    const cost = 25 * (2 ** userGlobalPlots.length)
+    const cost = await plotCost(ctx)
     const buildingCount = ctx.items.filter(x => x.type === 'blueprint').length
 
     const check = async () => {
@@ -84,13 +86,13 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
 
         if (userGlobalPlots.length >= maxUserAmount)
-            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!\nA new plot is unlocked every **20** levels.`, 'red')
+            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!\nA new plot is unlocked every **10** levels after you reach level 20.`, 'red')
 
         if (user.lemons < cost)
             return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
     }
 
-    let question = `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you ${numFmt(cost)} ${ctx.symbols.lemon}!`
+    let question = `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you **${numFmt(cost)}** ${ctx.symbols.lemon}!`
 
     if (userGuildPlots.length >= buildingCount)
         question += `\n**Note that there are currently only ${buildingCount} buildings available at this time and you cannot have two of the same building in a guild!**`
@@ -119,7 +121,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
 
             let buyablePlots = _.min([affordablePlots - 1, userAllowedPlots, guildAllowedPlots])
 
-            ctx.reply(user, `you have bought a plot for **${cost}** ${ctx.symbols.lemon} in **${ctx.msg.channel.guild.name}**!
+            ctx.reply(user, `you have bought a plot for **${numFmt(cost)}** ${ctx.symbols.lemon} in **${ctx.msg.channel.guild.name}**!
             You are currently able to buy **${buyablePlots}** more plots in this guild!`)
         },
     })
@@ -301,6 +303,7 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
 cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {
     const past = asdate.subtract(new Date(), 1, "hours")
     let plots = await getUserPlots(ctx)
+    let cap = await getLemonCap(ctx)
 
     if (plots.length === 0)
         return ctx.reply(user, `you don't have any plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
@@ -312,9 +315,30 @@ cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'cla
         return ctx.reply(user, `you have no plots in this guild that are ready for collection!\nYou can next collect from plots here in **${mstotime(lastCollected - past)}**.`, 'red')
 
     let collection = 0
+
     plots.map(async y => {
         if (y.building.stored_lemons > 0)
             collection += y.building.stored_lemons
+    })
+    let forfeit = (collection + user.lemons) - cap
+
+    if (collection + user.lemons > cap)
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            question: `You are about to collect **${numFmt(collection)}** ${ctx.symbols.lemon} which brings you above your lemon limit of **${numFmt(cap)}**! Collecting now will forfeit **${numFmt(forfeit)}** ${ctx.symbols.lemon}
+            Do you want to continue?`,
+            onConfirm: async () => {
+                plots.map(async y => {
+                    y.building.stored_lemons = 0
+                    y.building.last_collected = new Date()
+                    await y.save()
+                })
+                user.lemons = cap
+                await user.save()
+                return ctx.reply(user, `you have successfully collected **${numFmt(collection - forfeit)}** ${ctx.symbols.lemon} from this guild, forfeiting **${numFmt(forfeit)}**! 
+                You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
+            }
+        })
+    plots.map(async y => {
         y.building.stored_lemons = 0
         y.building.last_collected = new Date()
         await y.save()
@@ -323,4 +347,101 @@ cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'cla
     await user.save()
     return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
             You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
+})
+
+cmd(['plot', 'demolish'], ['plot', 'delete'], ['plot', 'remove'], ['plot', 'destroy'], async (ctx, user, arg) => {
+    if (!arg)
+        return ctx.reply(user, 'please specify a plot number to demolish!', 'red')
+
+    let plots = await getUserPlots(ctx, false)
+    let plotLength = plots.length
+
+    if (plotLength === 0)
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+
+    let plotArg = arg - 1
+    let plot = plots[plotArg]
+    if(!plot)
+        return ctx.reply(user, `you don't have a plot in position \`${arg}\`, you only have **${plotLength}** plots in this guild!`, 'red')
+
+    let question
+
+    if(!plot.building.id) {
+        question = `You are about to delete an empty plot, you will not get any lemons back for this action. Do you wish to continue?`
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, building: {$eq: null}})
+                return ctx.reply(user, `you have deleted an empty plot, you now have ${plotLength - 1} plot(s) total!`)
+            }
+        })
+    } else {
+        plots = plots.filter(x => x.building.id)
+        if (plots.length > 1 && plot.building.id === 'castle') {
+            return ctx.reply(user, `you cannot delete this plot as it has a castle on it and you have other plots with buildings in the guild.`, `red`)
+        }
+        const item = ctx.items.find(x => x.id === plot.building.id)
+        const levelPrices = item.levels.map(x => x.price).slice(0, plot.building.level)
+        const refund = levelPrices.length === 0? Math.floor(item.price * 0.75): Math.floor((levelPrices.reduce((a, b) => a + b) + item.price) * 0.75)
+
+        question = `You are about to demolish your \`${plot.building.id}\` in ${plot.guild_name}. You will get **${(numFmt(refund))}** ${ctx.symbols.lemon} back. Do you want to continue?`
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, "building.id": plot.building.id})
+                user.lemons += refund
+                await user.save()
+                return ctx.reply(user, `you have demolished your ${plot.building.id} in ${plot.guild_name}. You have received **${numFmt(refund)}** ${ctx.symbols.lemon} back.`)
+            }
+        })
+    }
+})
+
+cmd(['plot', 'demolish', 'global'], ['plot', 'delete', 'global'], ['plot', 'remove', 'global'], ['plot', 'destroy', 'global'], async (ctx, user, arg) => {
+    if (!arg)
+        return ctx.reply(user, 'please specify a plot number to demolish!', 'red')
+
+    let plots = await getUserPlots(ctx, true)
+    let plotLength = plots.length
+
+    if (plotLength === 0)
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+
+    plots.sort((a, b) => a.guild_id - b.guild_id)
+    let plotArg = arg - 1
+    let plot = plots[plotArg]
+    if(!plot)
+        return ctx.reply(user, `you don't have a plot in position \`${arg}\`, you only have **${plotLength}** plots globally!`, 'red')
+
+    let question
+
+    if(!plot.building.id) {
+        question = `You are about to delete an empty plot in ${plot.guild_name}, you will not get any lemons back for this action. Do you wish to continue?`
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, building: {$eq: null}})
+                return ctx.reply(user, `you have deleted an empty plot in ${plot.guild_name}, you now have ${plotLength - 1} plot(s) total!`)
+            }
+        })
+    } else {
+        plots = plots.filter(x => x.guild_id === plot.guild_id && x.building.id)
+        if (plots.length > 1 && plot.building.id === 'castle') {
+            return ctx.reply(user, `you cannot delete this plot as it has a castle on it and you have other plots with buildings in ${plot.guild_name}.`, `red`)
+        }
+        const item = ctx.items.find(x => x.id === plot.building.id)
+        const levelPrices = item.levels.map(x => x.price).slice(0, plot.building.level)
+        const refund = levelPrices.length === 0? Math.floor(item.price * 0.75): Math.floor((levelPrices.reduce((a, b) => a + b) + item.price) * 0.75)
+
+        question = `You are about to demolish your \`${plot.building.id}\` in ${plot.guild_name}. You will get **${(numFmt(refund))}** ${ctx.symbols.lemon} back. Do you want to continue?`
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, "building.id": plot.building.id})
+                user.lemons += refund
+                await user.save()
+                return ctx.reply(user, `you have demolished your ${plot.building.id} in ${plot.guild_name}. You have received **${numFmt(refund)}** ${ctx.symbols.lemon} back.`)
+            }
+        })
+    }
 })
