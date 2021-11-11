@@ -163,10 +163,8 @@ cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
-            const xp = Math.floor(level.price * .04)
             plot.building.level++
             user.lemons -= level.price
-            user.xp += xp
             await user.save()
             await plot.save()
 
@@ -180,8 +178,7 @@ cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
                 })
 
             return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${plot.building.level}**!
-                This building now *${level.desc.toLowerCase()}*
-                You have been awarded **${Math.floor(xp)} xp** towards your player level`)
+                This building now *${level.desc.toLowerCase()}*`)
 
         },
     })
