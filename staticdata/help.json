@@ -1,28 +1,28 @@
 [
     {
         "type": ["general"],
-        "title": "\u2B50 Amusement Club \u2B50 Card Game",
-        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play)",
+        "title": "Amusement Club - card collecting and trading",
+        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`.\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play).\n\nYou can add `help` in front of any command to get more information about it (e.g. `->help daily`).",
         "docs": "",
         "fields": [
             {
                 "title": "User",
-                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish\n->help prefs",
+                "description": "`->daily` (get daily bonus)\n`->bal` (check balance)\n`->diff` (card difference)\n`->profile` (view profile)\n`->miss` (missing cards)\n`->inv` (item inventory)\n`->wish` (card wishlist)\n`->prefs` (manage preferences)",
                 "inline": true
             },
             {
                 "title": "Card Management",
-                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help forge\n->help info\n->help query",
+                "description": "`->claim` (get cards)\n`->sum` (view one card)\n`->cards` (view your cards)\n`->sell` (sell card(s))\n`->fav` (favorite a card)\n`->tag` (add tags to card)\n`->draw` (draw any card)\n`->liq` (liquefy a card)\n`->forge` (combine cards)\n`->info` (view card info)\n`->query` (fetching guide)",
                 "inline": true
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules\n->license",
+                "description": "`->auc` (card auctions)\n`->trans` (transactions)\n`->store` (item shop)\n`->guild` (view server)\n`->cols` (view collections)\n`->effects` (view  effects)\n`->hero` (view hero)\n`->plot` (your buildings)\n`->rules` (bot rules)\n`->license` (code license)",
                 "inline": true
             },
             {
                 "title": "Links",
-                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
+                "description": "[Support Server](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Support the bot](https://ko-fi.com/noxcaos/)"
             },
             {
                 "title": "Running",
@@ -264,7 +264,7 @@
         ]
     },
     {
-        "type": ["craft", "forge"],
+        "type": ["forge", "craft"],
         "title": "About card forging",
         "description": "This command allows you to get new cards using cards that you have. Forge will consume old cards. \n If you got here with `->help craft` and are looking for craft cards. They are no longer a part of Amusement Club, see `->help effects` for the replacement(s)",
         "docs": "en/cards/forging",
@@ -278,6 +278,10 @@
                 "description": "To forge cards"
             },
             {
+                "title": "->forge [card query]",
+                "description": "Let bot pick 2 cards for you (that match the query) to forge"
+            },
+            {
                 "title": "Useful to know",
                 "description": "You can’t combine cards of different levels, both cards need to be unique"
             }
@@ -286,16 +290,28 @@
     {
         "type": ["daily"],
         "title": "About daily bonus",
-        "description": "You can get **500`🍅`** free Tomatoes every 20 hours, as well as reset your claim cost back down to 50.",
+        "description": "You can get **500`🍅`** free Tomatoes **every 20 hours** (or less with special effects), as well as reset your claim cost back down to **50**.",
         "docs": "en/user/daily",
         "fields": [
             {
-                "title": "Useful to know",
-                "description": "New players get a 1000`🍅` bonus\n"
-            },
-            {
                 "title": "->daily",
                 "description": "Get daily bonus"
+            }
+        ]
+    },
+    {
+        "type": ["quest", "quests"],
+        "title": "About quests",
+        "description": "Every time you claim your daily you also receive daily quests. If you complete them, they will award you certain amount of in-game currency. The quest difficulty depends on your user level. Please note that if you claim daily before you complete all quests, previous quests will be overwritten by the new ones. So make sure you complete all quests every day!",
+        "docs": "en/user/quests",
+        "fields": [
+            {
+                "title": "->quests",
+                "description": "View your quests available today"
+            },
+            {
+                "title": "->quest info [index]",
+                "description": "Get detailed guide about the quest in your list"
             }
         ]
     },

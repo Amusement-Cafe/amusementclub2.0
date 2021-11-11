@@ -497,7 +497,9 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
 cmd('quest', 'quests', async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
-        return ctx.reply(user, `you don't have any quests`, 'red')
+        return ctx.reply(user, `you don't have any quests.
+        You get new quests each time you claim your \`${ctx.prefix}daily\` bonus.
+        For more information see \`${ctx.prefix}help quests\``, 'red')
 
     return ctx.send(ctx.msg.channel.id, {
         color: colors.blue,

@@ -227,6 +227,9 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     user.lastcard = card.id
     await user.save()
 
+    let warn = `> This is a random card **that you own**.\nFor more info type \`${ctx.prefix}help summon\``
+    let lvl = XPtoLEVEL(user.xp)
+
     if(card.imgur) {
         await ctx.reply(user, {
             color: colors.blue,
@@ -239,7 +242,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,
-        description: `summons **${formatName(card)}**!`
+        description: `summons **${formatName(card)}**!\n${parsedargs.isEmpty() && lvl < 25? warn : ''}`
     })
 })).access('dm')
 

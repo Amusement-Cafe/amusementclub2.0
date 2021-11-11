@@ -39,7 +39,10 @@ const mapUserInventory = (ctx, user) => {
  */
 const withUserItems = (callback) => (ctx, user, ...args) => {
     if (user.inventory.length == 0) 
-        return ctx.reply(user, 'your inventory is empty', 'red')
+        return ctx.reply(user, `your inventory is empty.
+        You can obtain inventory items in the \`${ctx.prefix}store\`.
+        If you are looking for your cards, use \`${ctx.prefix}cards\` instead.
+        For more information see \`${ctx.prefix}help inventory\``, 'red')
 
     let items = mapUserInventory(ctx, user)
     let index
