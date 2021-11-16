@@ -88,12 +88,15 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
 
     if(!promo && price > user.exp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}`, 'red')
+        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+            You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}
+            ${user.dailyquests.length > 0? `Complete your \`${ctx.prefix}quests\` to get more ${ctx.symbols.tomato}` : ''}
+            Use \`${ctx.prefix}daily\` to reset your claim price and get extra ${ctx.symbols.tomato}`, 'red')
 
     if(promo && price > user.promoexp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}`, 'red')
+        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+            You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}
+            Claim regular cards using \`${ctx.prefix}claim\` or run \`${ctx.prefix}daily\` when it is ready to obtain more ${promo.currency}`, 'red')
 
     if(!promo) {
         boost = curboosts.find(x => args.some(y => y === x.id))
