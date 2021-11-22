@@ -25,6 +25,7 @@ const {
     meta,
     preferences,
     plot,
+    expedition,
 } = require('./modules')
 const announcement = require('./collections/announcement')
 
@@ -131,7 +132,10 @@ module.exports.create = async ({
         auc_wss: '▫️',
         accept: '✅',
         decline: '❌',
-        red_circle: '`🔴`'
+        red_circle: '`🔴`',
+        green_gem: '<:c_green:911746217250275359>',
+        purple_gem: '<:c_purple:911746217485152287>',
+        yellow_gem: '<:c_yellow:911746217862631495>',
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
@@ -157,6 +161,14 @@ module.exports.create = async ({
             console.log(e)
         }
     }
+
+    /* for event */
+    const expeditions = [
+        { name: 'Camp Alpine', green: [4, 5, 6], purple: [], yellow: [], time: 1 },
+        { name: 'Grand Swallow Wilds', green: [3, 4, 5], purple: [1, 2], yellow: [], time: 3 },
+        { name: 'The Serpent Fjord', green: [4, 5, 6], purple: [3, 4, 5], yellow: [], time: 6 },
+        { name: 'The Sanguine Summit', green: [4, 5, 6], purple: [2, 3], yellow: [1, 2], time: 12 },
+    ]
 
     /* create our context */
     const ctx = {
@@ -189,6 +201,7 @@ module.exports.create = async ({
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel,
         sauce,
+        expeditions,
         settings: {
             wip: maintenance,
             wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',
@@ -232,6 +245,12 @@ module.exports.create = async ({
         guild.clean_trans(ctx, now)
     }
 
+    /* service tick for expedition checks */
+    const exptick = (ctx) => {
+        const now = new Date()
+        expedition.finish_expeditions(ctx, now)
+    }
+
     const etick = () => {
         eval.checkQueue(ctx)
     }
@@ -250,7 +269,8 @@ module.exports.create = async ({
         const auditTick     =   setInterval(atick.bind({}, ctx), 600000)
         const evalTick      =   setInterval(etick.bind({}, ctx), eval.queueTick)
         const notifyTick    =   setInterval(notifytick.bind({}, ctx), 6000)
-        tickArray = [auctionTick, guildTick, userQueueTick, heroTick, auditTick, evalTick, notifyTick]
+        const expTick    =   setInterval(exptick.bind({}, ctx), 5500)
+        tickArray = [auctionTick, guildTick, userQueueTick, heroTick, auditTick, evalTick, notifyTick, expTick]
     }
 
     const stopTicks = () => {

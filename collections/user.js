@@ -90,6 +90,7 @@ module.exports = model('User', {
             daily:      { type: Boolean, default: false },
             vote:       { type: Boolean, default: false },
             completed:  { type: Boolean, default: true },
+            exp:        { type: Boolean, default: true },
         },
     }
 })

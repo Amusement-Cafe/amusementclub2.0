@@ -10,5 +10,7 @@ module.exports = {
     Audit: require('./audit'),
     AuditAucSell: require('./auditAucSell'),
     AuditTags: require('./auditTag'),
-    Plots: require('./plot')
+    Plots: require('./plot'),
+    Expedition: require('./expedition'),
+    BattleProfile: require('./battleProfile'),
 }

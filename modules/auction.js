@@ -216,15 +216,17 @@ const finish_aucs = async (ctx, now) => {
             await audit_auc_stats(ctx, author, false)
         else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {unsold: 1}})
+            
         addUserCard(author, auc.card)
         await author.save()
         await aucEvalChecks(ctx, auc, false)
-	if (author.prefs.notifications.aucend) {
-		try {
-			return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
-			You got your card back.`, 'yellow')
-		} catch (e) {}
-	}	
+
+        if (author.prefs.notifications.aucend) {
+            try {
+                return ctx.direct(author, `your auction \`${auc.id}\` for card ${formatName(ctx.cards[auc.card])} finished, but nobody bid on it.
+                You got your card back.`, 'yellow')
+            } catch (e) {}
+        }
     }
 }
 
