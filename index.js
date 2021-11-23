@@ -133,9 +133,16 @@ module.exports.create = async ({
         accept: '✅',
         decline: '❌',
         red_circle: '`🔴`',
+
         green_gem: '<:c_green:911746217250275359>',
         purple_gem: '<:c_purple:911746217485152287>',
         yellow_gem: '<:c_yellow:911746217862631495>',
+
+        atk: '⚔️',
+        def: '🛡️',
+        chance: '🎲',
+        hp: '❤️',
+        energy: '⚡',
     }
 
     const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
@@ -206,7 +213,8 @@ module.exports.create = async ({
             wip: maintenance,
             wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',
             aucLock: auctionLock
-        }
+        },
+        battleCol: 'christmas19',
     }
 
     const globalArgsMap = {

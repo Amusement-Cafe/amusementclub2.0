@@ -13,4 +13,5 @@ module.exports = {
     Plots: require('./plot'),
     Expedition: require('./expedition'),
     BattleProfile: require('./battleProfile'),
+    CardStats: require('./cardStats'),
 }

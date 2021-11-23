@@ -69,6 +69,9 @@ const parseArgs = (ctx, args, user) => {
         fav: false,
         evalQuery: false,
         userQuery: false,
+        battle: false,
+        battleSort: null,
+        sortAsc: false,
     }
 
     args.map(x => {
@@ -104,6 +107,13 @@ const parseArgs = (ctx, args, user) => {
                     sort = sortBuilder(ctx, sort,(a, b) => (a.rating || 0) - (b.rating || 0), lt)
                     q.userQuery = true
                     break
+                case 'atk':
+                case 'def':
+                case 'chance':
+                case 'hp':
+                    q.sortAsc = lt
+                    q.battleSort = substr
+                    break;
                 default: {
                     const eq = x[1] === '='
                     eq? substr = x.substr(2): substr
@@ -137,6 +147,7 @@ const parseArgs = (ctx, args, user) => {
                     case 'miss': q.diff = m? 1: 2; break
                     case 'me':  q.me = m? 1: 2; break
                     case 'bid': q.bid = m? 1 : 2; break
+                    case 'battle': q.battle = true; break;
                     default: {
                         const pcol = bestColMatch(ctx, substr)
                         if(m) {
@@ -160,6 +171,7 @@ const parseArgs = (ctx, args, user) => {
         }
     })
 
+    if(q.battle) q.filters.push(c => c.col === ctx.battleCol)
     if(cols.length > 0) q.filters.push(c => cols.includes(c.col))
     if(levels.length > 0) q.filters.push(c => levels.includes(c.level))
     if(anticols.length > 0) q.filters.push(c => !anticols.includes(c.col))
