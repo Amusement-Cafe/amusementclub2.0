@@ -184,6 +184,11 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
         return `you are not allowed to sell cards.
                 Your dealings were found to be in violation of our community rules.
                 You can inquire further on our [Bot Discord](${ctx.cafe})`
+
+    if(targetuser && targetuser.ban && (targetuser.ban.embargo || targetuser.ban.full))
+        return `the user you are attempting to sell to is embargoed.
+                Cards cannot be sold to this user until they have had their embargo lifted.
+                You can inquire further on our [Bot Discord](${ctx.cafe})`
     
     if(!ctx.msg.channel.guild)
         return `transactions are possible only in guild channel`
