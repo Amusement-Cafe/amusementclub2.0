@@ -26,6 +26,7 @@ const {
     evalCardFast,
     bulkIncrementUserCount,
     getVialCostFast,
+    pushUserCountUpdate,
 } = require('../modules/eval')
 
 const {
@@ -323,10 +324,11 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     let price = 0
     cards.forEach(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval)
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
     })
 
@@ -370,10 +372,11 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
     let price = 0
     const resp = cards.map(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval)
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
 
         return {
@@ -418,10 +421,11 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     let vials = 0
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval) * card.amount
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
         if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
