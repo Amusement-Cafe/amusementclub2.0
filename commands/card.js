@@ -1,15 +1,21 @@
-const {cmd}                 = require('../utils/cmd')
-const colors                = require('../utils/colors')
-const msToTime              = require('pretty-ms')
-const User                  = require('../collections/user')
-const UserCard              = require('../collections/userCard')
+const {cmd}         = require('../utils/cmd')
+const colors        = require('../utils/colors')
 
-const _ = require('lodash')
+const User          = require('../collections/user')
+const UserCard      = require('../collections/userCard')
+const Claim         = require('../collections/claim')
+
+const _             = require('lodash')
+const msToTime      = require('pretty-ms')
+const dateFormat    = require('dateformat')
 
 const {
     claimCost, 
     promoClaimCost,
+    generateNextId,
     numFmt,
+    findCardsFast,
+    formatDateTimeRelative,
 } = require('../utils/tools')
 
 const {
@@ -59,7 +65,7 @@ const {
 } = require('../modules/user')
 
 const userCard = require('../collections/userCard')
-const {getStats} = require("../modules/userstats");
+const card = require('../modules/card')
 
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
@@ -134,6 +140,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     
     cards.sort((a, b) => b.card.level - a.card.level)
 
+    let totalPossible = 0
     let curr = ctx.symbols.tomato, max = 1
     const extra = Math.round(price * .25)
     const newCards = cards.filter(x => x.count === 1)
@@ -142,21 +149,26 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     if(promo) {
         curr = promo.currency
         user.promoexp -= price
-        await user.updateOne({$inc: {'dailystats.promoclaims': amount}})
         user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
-        while(promoClaimCost(user, max) < user.promoexp)
+
+        while(totalPossible < user.promoexp) { 
+            totalPossible += promoClaimCost(user, max)
             max++
+        }
     } else {
         user.exp -= price
         if (activepromo){
             user.promoexp += extra
         }
-        await user.updateOne({$inc: {'dailystats.claims': amount}})
+
         user.dailystats.claims = user.dailystats.claims + amount || amount
         user.dailystats.totalregclaims += amount
         await plotPayout(ctx, 'gbank', 2, Math.floor(amount * 1.5))
-        while(claimCost(user, ctx.guild.tax, max) < user.exp)
+
+        while(totalPossible < user.exp) {
+            totalPossible += claimCost(user, ctx.guild.tax, max)
             max++
+        }
     }
 
     user.lastcard = cards[0].card.id
@@ -178,16 +190,29 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     addGuildXP(ctx, user, amount)
     await ctx.guild.save()
 
+    const receipt = []
+    receipt.push(`Total spent: **${numFmt(price)}** ${curr} | Remaining: **${numFmt(Math.round(promo? user.promoexp : user.exp))}** ${curr}`)
+
+    // if(recommendedClaims == 0) {
+    //     receipt.push(`**Reached maximum recommended amount of claims today.**`)
+    //     receipt.push(`Claim cost: **${promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))}** ${curr}`)
+    // } else {
+    // }
+
+    const curClaimCount = promo? user.dailystats.promoclaims : user.dailystats.claims
+    const nextClaim = promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))
+    receipt.push(`Claimed **${curClaimCount}** card(s) today | Next claim **${nextClaim}** ${curr}`)
+
+    if(activepromo && !promo) {
+        receipt.push(`Got **+${numFmt(extra)}** ${activepromo.currency} | You have: **${numFmt(user.promoexp)}** ${activepromo.currency}`)
+    }
+
     let fields = []
     let description = `**${user.username}**, you got:`
     fields.push({name: `New cards`, value: newCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
     fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
-    fields.push({name: `Receipt`, value: `You spent **${numFmt(price)}** ${curr} in total
-        You have **${numFmt(Math.round(promo? user.promoexp : user.exp))}** ${curr} left
-        You can claim **${max - 1}** more cards
-        Your next claim will cost **${promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))}** ${curr}
-        ${activepromo && !promo? `You got **${numFmt(extra)}** ${activepromo.currency}
-        You now have **${numFmt(user.promoexp)}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
+    fields.push({name: `Receipt`, value: receipt.join('\n') })
+
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
@@ -198,7 +223,20 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         description += `\n**${x.name}**\n${x.value}`
     }).filter(x => x && x.value)
 
-    const pages = cards.map(x => x.card.url)
+    const lastClaim = await Claim.findOne().lean()
+
+    const claimInfo = new Claim()
+    claimInfo.id = lastClaim? generateNextId(lastClaim.id, 6) : generateNextId('aaaaaa', 6)
+    claimInfo.user = user.discord_id
+    claimInfo.guild = ctx.guild.id
+    claimInfo.cost = price
+    claimInfo.promo = promo != undefined
+    claimInfo.lock = lock
+    claimInfo.date = new Date()
+    claimInfo.cards = cards.map(x => x.card.id)
+    await claimInfo.save()
+
+    const pages = newCards.concat(oldCards).map(x => x.card.url)
     return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
@@ -210,6 +248,66 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
             image: { url: '' }
         }
     }, false)
+})
+
+cmd(['claim', 'history'], ['cl', 'history'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const claimHistory = await Claim.find(
+        { user: user.discord_id }, 
+        { cards: 1, date: 1, id: 1 }, 
+        { sort: { date: -1 }, limit: 100 })
+        .lean()
+
+    let aggregation = claimHistory.reduce((arr, x) => { 
+        x.cards.map(c => arr.push({ date: x.date, card: c, id: x.id }))
+        return arr
+    }, [])
+
+    if(!parsedargs.isEmpty()) {
+        aggregation = findCardsFast(aggregation, cards, 'card')
+    }
+    
+    if(aggregation.length === 0) {
+        return ctx.reply(user, `no matching claims found`, 'red')
+    }
+
+    return ctx.sendPgn(ctx, user, {
+        pages: ctx.pgn.getPages(aggregation.map(x => `\`${x.id}\` ${formatDateTimeRelative(x.date)} ${formatName(ctx.cards[x.card])}`), 10),
+        embed: {
+            author: { name: `Matched (${numFmt(aggregation.length)} card(s) from ${numFmt(claimHistory.length)} claim(s))` },
+        }
+    })
+})).access('dm')
+
+cmd(['claim', 'info'], ['cl', 'info'], async (ctx, user, arg1) => {
+    const claim = await Claim.findOne({ id: arg1, user: user.discord_id })
+
+    if(!claim)
+        return ctx.reply(user, `claim with ID \`${arg1}\` was not found`, 'red')
+
+    const guild = ctx.bot.guilds.get(claim.guild)
+    const resp = []
+    resp.push(`Cards: **${claim.cards.length}**`)
+    resp.push(`Price: **${numFmt(claim.cost)}** ${ctx.symbols.tomato}`)
+
+    if(guild) {
+        resp.push(`Guild: **${guild.name}**`)
+    }
+
+    if(claim.lock) {
+        resp.push(`With lock to: **${claim.lock}**`)
+    }
+    
+    resp.push(formatDateTimeRelative(claim.date))
+
+    return ctx.send(ctx.msg.channel.id, {
+        author: { name: `Claim [${claim.id}] by ${user.username}` },
+        description: resp.join('\n'),
+        color: colors.blue,
+        fields: [{
+            name: "Cards",
+            value: claim.cards.map(c => formatName(ctx.cards[c])).join('\n')
+        }]
+    }, user.discord_id)
 })
 
 cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
