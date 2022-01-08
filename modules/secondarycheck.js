@@ -57,12 +57,11 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
 const check_daily = async (ctx, user, action, channelID, stats) => {
     const rewards = []
     const complete = []
-    let tier
 
     ctx.quests.daily.filter(x => user.dailyquests.some(y => x.id === y && x.check(ctx, user, stats)))
     .map(x => {
         const reward = x.resolve(ctx, user, stats)
-        tier = x.tier
+        stats[`t${x.tier}quests`]++
         user.dailyquests = user.dailyquests.filter(y => y != x.id)
         rewards.push(x.reward(ctx))
         complete.push(x.name.replace('-star', ctx.symbols.star))
@@ -84,8 +83,6 @@ const check_daily = async (ctx, user, action, channelID, stats) => {
         guildID = ctx.bot.getChannel(channelID).guild.id
 
     await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
-    stats[`t${tier}quests`]++
-    await stats.save()
 
 
     return ctx.send(channelID || ctx.msg.channel.id, {
