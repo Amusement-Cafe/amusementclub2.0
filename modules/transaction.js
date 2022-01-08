@@ -3,7 +3,9 @@ const msToTime = require('pretty-ms')
 const lockFile  = require('proper-lockfile')
 
 const {
-    User, Transaction, UserCard,
+    User,
+    Transaction,
+    UserCard,
 }   = require('../collections')
 
 const {
@@ -28,6 +30,10 @@ const {
 const {
     trans_fraud_check,
 } = require('./audit')
+
+const {
+    getStats,
+} = require("./userstats");
 
 const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, reject) => {
 
@@ -93,6 +99,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         userid: transaction.from_id,
         cardid: { $in: transaction.cards } 
     }).lean()
+    let fromStats = await getStats(ctx, from_user, from_user.lastdaily)
 
     if(cards.length != transaction.cards.length){
         transaction.status = 'declined'
@@ -106,19 +113,29 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
         if(to_user.exp < transaction.price)
             return ctx.reply(to_user, `you need **${numFmt(Math.floor(transaction.price - to_user.exp))}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
-        
+
         to_user.exp -= transaction.price
+
+        let toStats = await getStats(ctx, to_user, to_user.lastdaily)
+        toStats.userbuy += transaction.cards.length
+        toStats.tomatoout += transaction.price
+        await toStats.save()
+
+        fromStats.usersell += transaction.cards.length
 
         // TODO make this better
         transaction.cards.map(async (x) => {
             await completed(ctx, to_user, ctx.cards[x])
         })
 
+
         await to_user.save()
         await addUserCards(ctx, to_user, transaction.cards)
 
     } else if(user.discord_id != transaction.from_id) {
         return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
+    } else {
+        fromStats.botsell += transaction.cards.length
     }
 
     // TODO make this better
@@ -127,14 +144,17 @@ const confirm_trs = async (ctx, user, trs_id) => {
         await trans_fraud_check(ctx, from_user, transaction, x)
     })
 
+
     await from_user.save()
     await removeUserCards(ctx, from_user, transaction.cards)
 
     from_user.exp += transaction.price
+    fromStats.tomatoin += transaction.price
     transaction.status = 'confirmed'
 
     await from_user.save()
     await transaction.save()
+    await fromStats.save()
 
     /*ctx.mixpanel.track(
         "Card Sell", { 

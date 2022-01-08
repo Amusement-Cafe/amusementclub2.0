@@ -26,6 +26,11 @@ const {
     getUserCards,
 } = require('./user')
 
+const {
+    getStats,
+    saveAndCheck
+} = require("./userstats");
+
 const mapUserInventory = (ctx, user) => {
     return user.inventory.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
 }
@@ -90,6 +95,7 @@ const uses = {
         if(check)
             return ctx.reply(user, check, 'red')
 
+        let stats = await getStats(ctx, user, user.lastdaily)
         let emptyPlot = await getUserPlots(ctx, false)
         emptyPlot = emptyPlot.filter(x => !x.building.id)[0]
 
@@ -103,7 +109,9 @@ const uses = {
 
         user.lemons -= item.levels[0].price
         pullInventoryItem(user, item.id, index)
+        stats.lemonout += item.levels[0].price
         await user.save()
+        await saveAndCheck(ctx, user, stats)
 
         ctx.mixpanel.track(
             "Building Build", {

@@ -9,10 +9,12 @@ module.exports = {
             min_level: 0,
             actions: ['claim', 'cl'],
             check: (ctx, user, stats) => stats.totalregclaims >= 4,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 600
                 user.xp += 2
                 user.lemons += 15
+                stats.tomatoin += 600
+                stats.lemonin += 15
             },
             reward: (ctx) => `**600** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **2** xp`
         }, {
@@ -24,10 +26,12 @@ module.exports = {
             min_level: 10,
             actions: ['claim', 'cl'],
             check: (ctx, user, stats) => stats.totalregclaims >= 8,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 1400
                 user.xp += 5
                 user.lemons += 30
+                stats.tomatoin += 1400
+                stats.lemonin += 30
             },
             reward: (ctx) => `**1,400** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **5** xp`
         }, {
@@ -39,10 +43,12 @@ module.exports = {
             min_level: 15,
             actions: ['auc', 'auction'],
             check: (ctx, user, stats) => stats.aucbid >= 2,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 1000
                 user.xp += 2
                 user.lemons += 15
+                stats.tomatoin += 1000
+                stats.lemonin += 15
             },
             reward: (ctx) => `**1,000** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **2** xp`
         }, {
@@ -54,10 +60,12 @@ module.exports = {
             min_level: 50,
             actions: ['auc', 'auction'],
             check: (ctx, user, stats) => stats.aucbid >= 4,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 2000
                 user.xp += 8
                 user.lemons += 30
+                stats.tomatoin += 2000
+                stats.lemonin += 30
             },
             reward: (ctx) => `**2,000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **8** xp`
         }, {
@@ -70,10 +78,12 @@ module.exports = {
             building: 'smithhub1',
             actions: ['forge'],
             check: (ctx, user, stats) => stats.forge1 >= 1,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 500
                 user.xp += 1
                 user.lemons += 15
+                stats.tomatoin += 500
+                stats.lemonin += 15
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **1** xp`
         }, {
@@ -86,11 +96,14 @@ module.exports = {
             building: 'smithhub1',
             actions: ['forge'],
             check: (ctx, user, stats) => stats.forge2 >= 1,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 800
                 user.vials += 30
                 user.xp += 2
                 user.lemons += 15
+                stats.tomatoin += 800
+                stats.lemonin += 15
+                stats.vialin += 30
             },
             reward: (ctx) => `**800** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **30** ${ctx.symbols.vial} | **2** xp`
         }, {
@@ -103,11 +116,14 @@ module.exports = {
             building: 'smithhub1',
             actions: ['forge'],
             check: (ctx, user, stats) => stats.forge3 >= 1,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 1000
                 user.vials += 40
                 user.xp += 5
                 user.lemons += 30
+                stats.tomatoin += 1000
+                stats.lemonin += 30
+                stats.vialin += 40
             },
             reward: (ctx) => `**1,000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **40** ${ctx.symbols.vial} | **5** xp`
         }, {
@@ -119,9 +135,10 @@ module.exports = {
             min_level: 15,
             actions: ['tag'],
             check: (ctx, user, stats) => stats.tags >= 2,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 400
                 user.xp += 2
+                stats.tomatoin += 400
             },
             reward: (ctx) => `**400** ${ctx.symbols.tomato} | **2** xp`
         }, {
@@ -133,9 +150,10 @@ module.exports = {
             min_level: 25,
             actions: ['tag'],
             check: (ctx, user, stats) => stats.tags >= 4,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 800
                 user.xp += 4
+                stats.tomatoin += 800
             },
             reward: (ctx) => `**800** ${ctx.symbols.tomato} | **4** xp`
         }, {
@@ -147,11 +165,13 @@ module.exports = {
             min_level: 10,
             building: 'smithhub2',
             actions: ['liq', 'liquify'],
-            check: (ctx, user, stats) => stats.liquify >= 2,
-            resolve: (ctx, user) => {
+            check: (ctx, user, stats) => stats.liquefy >= 2,
+            resolve: (ctx, user, stats) => {
                 user.vials += 60
                 user.xp += 3
                 user.lemons += 30
+                stats.vialin += 60
+                stats.lemonin += 30
             },
             reward: (ctx) => `**60** ${ctx.symbols.vial} | **30** ${ctx.symbols.lemon} | **3** xp`
         }, {
@@ -163,11 +183,13 @@ module.exports = {
             min_level: 35,
             building: 'smithhub2',
             actions: ['draw'],
-            check: (ctx, user, stats) => stats.liquify >= 4,
-            resolve: (ctx, user) => {
+            check: (ctx, user, stats) => stats.liquefy >= 4,
+            resolve: (ctx, user, stats) => {
                 user.vials += 120
                 user.xp += 6
                 user.lemons += 30
+                stats.vialin += 120
+                stats.lemonin += 30
             },
             reward: (ctx) => `**120** ${ctx.symbols.vial} | **30** ${ctx.symbols.lemon} | **6** xp`
         }, {
@@ -180,11 +202,14 @@ module.exports = {
             building: 'smithhub2',
             actions: ['draw'],
             check: (ctx, user, stats) => stats.draw >= 2,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 1500
                 user.vials += 60
                 user.xp += 3
                 user.lemons += 30
+                stats.tomatoin += 1500
+                stats.lemonin += 30
+                stats.vialin += 60
             },
             reward: (ctx) => `**1,500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **60** ${ctx.symbols.vial} | **3** xp`
         }, {
@@ -197,11 +222,14 @@ module.exports = {
             building: 'smithhub2',
             actions: ['draw'],
             check: (ctx, user, stats) => stats.draw >= 4,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 3000
                 user.vials += 120
                 user.xp += 6
                 user.lemons += 30
+                stats.tomatoin += 3000
+                stats.lemonin += 30
+                stats.vialin += 120
             },
             reward: (ctx) => `**3,000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **120** ${ctx.symbols.vial} | **6** xp`
         }, {
@@ -214,11 +242,14 @@ module.exports = {
             building: 'smithhub2',
             actions: ['draw'],
             check: (ctx, user, stats) => stats.draw1 >= 1,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 250
                 user.vials += 25
                 user.xp += 2
                 user.lemons += 15
+                stats.tomatoin += 250
+                stats.lemonin += 15
+                stats.vialin += 25
             },
             reward: (ctx) => `**250** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **25** ${ctx.symbols.vial} | **3** xp`
         }, {
@@ -231,11 +262,14 @@ module.exports = {
             building: 'smithhub2',
             actions: ['draw'],
             check: (ctx, user, stats) => stats.draw2 >= 1,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 750
                 user.vials += 75
                 user.xp += 3
                 user.lemons += 15
+                stats.tomatoin += 750
+                stats.vialin += 75
+                stats.lemonin += 15
             },
             reward: (ctx) => `**750** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **75** ${ctx.symbols.vial} | **3** xp`
         }, {
@@ -248,11 +282,14 @@ module.exports = {
             building: 'smithhub2',
             actions: ['draw'],
             check: (ctx, user, stats) => stats.draw3 >= 1,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 900
                 user.vials += 200
                 user.xp += 4
                 user.lemons += 30
+                stats.tomatoin += 900
+                stats.vialin += 200
+                stats.lemonin += 30
             },
             reward: (ctx) => `**900** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **200** ${ctx.symbols.vial} | **4** xp`
         }, {
@@ -264,10 +301,12 @@ module.exports = {
             min_level: 0,
             actions: ['rate'],
             check: (ctx, user, stats) => stats.rates >= 2,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 250
                 user.xp += 2
                 user.lemons += 15
+                stats.tomatoin += 250
+                stats.lemonin += 15
             },
             reward: (ctx) => `**250** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **2** xp`
         }, {
@@ -279,10 +318,12 @@ module.exports = {
             min_level: 10,
             actions: ['rate'],
             check: (ctx, user, stats) => stats.rates >= 5,
-            resolve: (ctx, user) => {
+            resolve: (ctx, user, stats) => {
                 user.exp += 1000
                 user.xp += 5
                 user.lemons += 30
+                stats.tomatoin += 1000
+                stats.lemonin += 30
             },
             reward: (ctx) => `**1,000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **5** xp`
         },

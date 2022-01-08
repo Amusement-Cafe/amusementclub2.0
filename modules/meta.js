@@ -2,7 +2,7 @@ const Danbooru  = require('danbooru')
 
 const {
     Tag, 
-    Cardinfo
+    Cardinfo,
 } = require('../collections')
 
 const {
