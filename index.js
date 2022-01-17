@@ -365,7 +365,7 @@ module.exports.create = async ({
         if (interaction instanceof Eris.ComponentInteraction) {
             if (interaction.applicationID !== bot.application.id)
                 return
-            const reply = (user, str, clr = 'default') => send(interaction.channel.id, toObj(user, str, clr), user.discord_id)
+            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
             let isoCtx = Object.assign({}, ctx, {
                 reply,
                 interaction: interaction,
