@@ -80,7 +80,7 @@ cmd(['guild', 'info'], async (ctx, user, ...args) => {
 
     fields.push({ name: `Your guild stats`, value: userstat.join('\n') })
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         author: { name: ctx.discord_guild.name },
         description: resp.join('\n'),
         thumbnail: { url: ctx.discord_guild.iconURL },
@@ -104,7 +104,7 @@ cmd(['guild', 'status'], (ctx, user) => {
         resp.push(`> There are no maintenance charges for this guild!`)
     }
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         author: { name: ctx.discord_guild.name },
         description: resp.join('\n'),
         color: (ratio <= 1? color.green : color.red)

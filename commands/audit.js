@@ -312,7 +312,7 @@ pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
             description: `**${warnedUser.username}**, ${arg.extraArgs.join(" ")}`,
             color: colors['yellow']
         }
-        await ctx.send(ch.id, embed, user.discord_id)
+        await ctx.direct(warnedUser, embed)
     } catch(e) {
         return ctx.reply(user, `insufficient permissions to send a DM message. Warning message not sent.`, 'red')
     }
@@ -386,7 +386,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
 
     let embed = createFindUserEmbed(ctx, user, findUser)
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object'], async (ctx, user, ...args) => {
@@ -403,7 +403,7 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object']
 
     let embed = createFindUserEmbed(ctx, user, findUser)
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ctx, user, cards, ...args) => {

@@ -31,7 +31,7 @@ cmd(['prefs', 'notify'], (ctx, user) => {
         }
     }).filter(x => x)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: `Notification Preferences`,
         color: colors.deepgreen,
         description: `Get a DM notification when:\n${fields.join('\n')}\n\n

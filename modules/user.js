@@ -24,7 +24,8 @@ const fetchOrCreate = async (ctx, userid, username) => {
         /* save, and send welcome msg */
         await user.save()
 
-        await ctx.send(ctx.msg.channel.id, {
+        await ctx.bot.createMessage(ctx.interaction.channel.id, {
+            embed: {
             color: colors.blue,
             author: { name: `Welcome to Amusement Club!` },
             description: `You are now part of the community card collecting game. Check your \`${ctx.prefix}todo\` list to get started.`,
@@ -48,7 +49,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
                         Join the [support server](${ctx.cafe}) to ask any questions.`
                 }
             ]
-        }, user.discord_id)
+        }})
     }
 
     if(user.username != username) {

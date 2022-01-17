@@ -51,7 +51,7 @@ cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
         { name: `Effect Card slot 2`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty' },
     ]
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 }))
 
 cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes, isEmpty) => {
@@ -110,7 +110,7 @@ cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
             embed.description += `\nCurrent guild: **${discord_guild.name}**`
     }
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 }))
 
 cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
@@ -144,7 +144,7 @@ cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
     embed.image = { url: `${ctx.baseurl}/effects/${item.effectid}.gif` }
     embed.color = colors.blue
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects, ...args) => {

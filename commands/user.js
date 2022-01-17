@@ -149,7 +149,7 @@ cmd(['inv', 'info'], withUserItems(async (ctx, user, items, args) => {
     if(item.col)
         embed.description += `\nThis ticket is for collection \`${item.col}\``
 
-    return ctx.send(ctx.msg.channel.id, embed)
+    return ctx.send(ctx.interaction, embed)
 }))
 
 cmd('daily', async (ctx, user) => {
@@ -310,7 +310,7 @@ cmd('profile', async (ctx, user, ...args) => {
     if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0]).lean()
 
     if(!user)
-        return ctx.send(ctx.msg.channel.id, {
+        return ctx.send(ctx.interaction, {
             description: `Cannot find user with ID ${pargs.ids[0]}`,
             color: colors.red
         })
@@ -347,7 +347,7 @@ cmd('profile', async (ctx, user, ...args) => {
         resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
     }
 
-    resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
+    resp.push(`In game since: **<t:${stamp / 1000}:D>** (<t:${stamp / 1000}:R>)`)
 
     if(completedSum > 0) {
         resp.push(`Completed collections: **${numFmt(user.completedcols.length)}**`)
@@ -367,7 +367,7 @@ cmd('profile', async (ctx, user, ...args) => {
         resp.push(`Roles: **${user.roles.join(" **|** ")}**`)
 
     const botuser = ctx.bot.users.find(x => x.id === user.discord_id)
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         description: resp.join('\n'),
         color: colors['yellow'],
         author: {
@@ -531,7 +531,7 @@ cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
     resp.push(`Required user level: **${quest.min_level}**`)
     resp.push(`Reward: ${quest.reward(ctx)}`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: quest.name },
         description: resp.join('\n'),
@@ -549,7 +549,7 @@ cmd('stats', async (ctx, user) => {
     if(keys.length === 0)
         return ctx.reply(user, `no statistics to display today`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your daily stats:` },
         description: keys.map(x => `${cap(x)}: **${user.dailystats[x]}**`).join('\n')
@@ -583,7 +583,7 @@ cmd('vote', async (ctx, user) => {
     const future = asdate.add(user.lastvote, 12, 'hours')
     const topggTime = msToTime(future - now, { compact: true })
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         description: `You can vote for Amusement Club **every 12 hours** and get rewards.
         Make sure you have allowed messages from server members in order to receive rewards in DMs.
@@ -620,7 +620,7 @@ cmd('todo', async (ctx, user) => {
     resp.push(`${plot? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Collect plot income** [\`${ctx.prefix}plots\`] (you must have built at least one plot)`)
     resp.push(`Use \`${ctx.prefix}stats\` to see what you did today`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your TODO list:` },
         description: resp.join('\n'),

@@ -143,7 +143,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
         }
     }
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 
 })).access('dm')
 

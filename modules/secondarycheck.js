@@ -65,7 +65,7 @@ const check_daily = async (ctx, user, action, channelID) => {
 
     await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
-    return ctx.send(channelID || ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.green,
         author: { name: `${user.username}, you completed:` },
         description: complete.join('\n'),

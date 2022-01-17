@@ -45,7 +45,7 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
         resp.push(`**This tag was automatically added by the system**`)
     } 
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: `#${tag.name}`,
         description: resp.join('\n'),
         color: colors['blue']

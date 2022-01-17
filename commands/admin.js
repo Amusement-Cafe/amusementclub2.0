@@ -339,7 +339,7 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withGlobalCards(async (ctx, use
         color: colors.green
     }
 
-    await ctx.send(ctx.msg.channel.id, pricesEmbed)
+    await ctx.send(ctx.interaction, pricesEmbed)
 }))
 
 pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {

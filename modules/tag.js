@@ -221,7 +221,7 @@ const newAuditTag = async (ctx, user, tag, target, ban, embed, now) => {
     ban? auditTag.tagsBanned.push(tag): auditTag.tagsRemoved.push(tag)
     ban? embed.fields[0].value = tag: embed.fields[1].value = tag
 
-    let newMessage = await ctx.send(ctx.audit.taglogchannel, embed)
+    let newMessage = await ctx.bot.createMessage(ctx.audit.taglogchannel, {embed: embed})
 
     auditTag.message_id = newMessage.id
     return auditTag

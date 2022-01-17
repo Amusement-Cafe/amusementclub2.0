@@ -297,7 +297,7 @@ cmd(['claim', 'info'], ['cl', 'info'], async (ctx, user, arg1) => {
     
     resp.push(formatDateTimeRelative(claim.date))
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         author: { name: `Claim [${claim.id}] by ${user.username}` },
         description: resp.join('\n'),
         color: colors.blue,
@@ -319,7 +319,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
             description: `summons **${formatName(card)}**!`
         })
 
-        return ctx.bot.createMessage(ctx.msg.channel.id, card.imgur)
+        return ctx.bot.createMessage(ctx.interaction.channel.id, card.imgur)
     }
 
     return ctx.reply(user, {
@@ -648,7 +648,7 @@ cmd('boost', 'boosts', (ctx, user) => {
     const description = boosts.map(x => 
         `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim ${x.id}\`)`).join('\n')
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         description,
         color: colors.blue,
         title: `Current boosts`

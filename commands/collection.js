@@ -128,7 +128,7 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
 
     resp.push(`Sample card: ${formatName(card)}`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: col.name,
         image: { url: card.url },
         description: resp.join('\n'),

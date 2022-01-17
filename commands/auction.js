@@ -80,7 +80,7 @@ cmd(['auc', 'info'], ['auction', 'info'], async (ctx, user, arg1) => {
     const aucformat = await format_auc(ctx, auc, author)
     const card = ctx.cards[auc.card]
 
-    return ctx.send(ctx.interaction.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: `Auction [${auc.id}]`,
         image: { url: card.url },
         description: aucformat,

@@ -253,7 +253,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         info.aucevalinfo.lasttoldeval = newEval
 
         if (ctx.eval.aucEval.evalUpdateChannel)
-            await ctx.send(ctx.eval.aucEval.evalUpdateChannel, pricesEmbed)
+            await ctx.bot.createMessage(ctx.eval.aucEval.evalUpdateChannel, {embed: pricesEmbed})
     }
 
     await info.save()

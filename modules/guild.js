@@ -149,11 +149,12 @@ const bill_guilds = async (ctx, now) => {
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
     
-    return ctx.send(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
+    return ctx.bot.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
+        embed: {
             author: { name: `Receipt for ${now}` },
             description: report.join('\n'),
             color: (ratio < 1? color.red : color.green),
-    })
+    }})
 }
 
 const getMaintenanceCost = (ctx) => {
@@ -185,7 +186,7 @@ const getBuildingInfo = (ctx, user, args) => {
     embed.fields.push({ name: `Health`, value: `**${building.health}** ${heart}` })
     embed.fields[0].name += ` (current)`
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 }
 
 const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)

@@ -12,7 +12,6 @@ const sagiri        = require('sagiri')
 const commands      = require('./commands')
 const colors        = require('./utils/colors')
 const {trigger}     = require('./utils/cmd')
-const pagi          = require('./utils/pagination')
 const {check_all}   = require('./modules/secondarycheck')
 
 const {
@@ -81,7 +80,7 @@ module.exports.create = async ({
     await fillCardOwnerCount(data.cards)
 
     /* create our glorious sending fn */
-    const send = (ch, content, userid) => { 
+    const send = (interaction, content, userid) => {
         if(content.description)
             content.description = content.description.replace(/\s\s+/gm, '\n')
 
@@ -91,7 +90,7 @@ module.exports.create = async ({
         if(userid)
             _.remove(userq, (x) => x.id === userid)
 
-        return bot.createMessage(ch, { embed: content })
+        return interaction.createMessage({ embed: content })
     }
 
     const toObj = (user, str, clr) => {
@@ -107,7 +106,7 @@ module.exports.create = async ({
     /* create direct reply fn */
     const direct = async (user, str, clr = 'default') => {
         const ch = await bot.getDMChannel(user.discord_id)
-        return send(ch.id, toObj(user, str, clr), user.discord_id)
+        return bot.createMessage(ch.id, {embed: toObj(user, str, clr)})
     }
 
     const qhelp = (ctx, user, cat) => {
@@ -328,7 +327,7 @@ module.exports.create = async ({
             const curguild = await guild.fetchGuild(interaction.guildID)
 
             await interaction.acknowledge()
-            const reply = (user, str, clr = 'default') => send(interaction.channel.id, toObj(user, str, clr), user.discord_id)
+            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
 
             const base = [interaction.data.name]
             const options = interaction.data.options? interaction.data.options.map(x => {

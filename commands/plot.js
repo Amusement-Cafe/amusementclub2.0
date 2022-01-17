@@ -235,7 +235,7 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
     level.map(x => embed.fields.push(x))
 
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, arg) => {
@@ -290,7 +290,7 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
     level.map(x => embed.fields.push(x))
 
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {

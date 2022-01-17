@@ -12,58 +12,60 @@ const defaults = {
     pgnEmbed: { title: 'Pagination Dialog' },
     cfmEmbed: { title: 'Confirmation Dialog' },
     pgnButtons: ['first', 'back', 'forward', 'last'],
-    chars: {
-        first: '⏪',
-        back: '⬅',
-        forward: '➡',
-        last: '⏩',
-        close: '🚫',
-        confirm: '✅',
-        decline: '❌'
+}
+
+const chars = {
+    first: '⏪',
+    back: '⬅',
+    forward: '➡',
+    last: '⏩',
+    close: '🚫',
+    confirm: '✅',
+    decline: '❌'
+}
+
+const buttons = {
+    first: {
+        type: 2,
+        label: "First",
+        style: 1,
+        custom_id: "⏪"
     },
-    buttons: {
-        first: {
-            type: 2,
-            label: "First",
-            style: 1,
-            custom_id: "⏪"
-        },
-        back: {
-            type: 2,
-            label: "Back",
-            style: 1,
-            custom_id: "⬅"
-        },
-        forward: {
-            type: 2,
-            label: "Next",
-            style: 1,
-            custom_id: "➡"
-        },
-        last: {
-            type: 2,
-            label: "Last",
-            style: 1,
-            custom_id: "⏩"
-        },
-        close: {
-            type: 2,
-            label: "Delete",
-            style: 4,
-            custom_id: "🚫"
-        },
-        confirm: {
-            type: 2,
-            label: "Confirm",
-            style: 3,
-            custom_id: "✅"
-        },
-        decline: {
-            type: 2,
-            label: "Decline",
-            style: 4,
-            custom_id: "❌"
-        }
+    back: {
+        type: 2,
+        label: "Back",
+        style: 1,
+        custom_id: "⬅"
+    },
+    forward: {
+        type: 2,
+        label: "Next",
+        style: 1,
+        custom_id: "➡"
+    },
+    last: {
+        type: 2,
+        label: "Last",
+        style: 1,
+        custom_id: "⏩"
+    },
+    close: {
+        type: 2,
+        label: "Delete",
+        style: 4,
+        custom_id: "🚫"
+    },
+    confirm: {
+        type: 2,
+        label: "Confirm",
+        style: 3,
+        custom_id: "✅"
+    },
+    decline: {
+        type: 2,
+        label: "Decline",
+        style: 4,
+        custom_id: "❌"
     }
 }
 
@@ -104,11 +106,11 @@ const addPagination = async (interaction, params) => {
     try {
         if(obj.pages.length > 1) {
             obj.components.push({ type: 1, components: []})
-            if(obj.buttons.includes('first')) obj.components[0].components.push(defaults.buttons.first)
-            if(obj.buttons.includes('back')) obj.components[0].components.push(defaults.buttons.back)
-            if(obj.buttons.includes('forward')) obj.components[0].components.push(defaults.buttons.forward)
-            if(obj.buttons.includes('last')) obj.components[0].components.push(defaults.buttons.last)
-            if(obj.buttons.includes('close')) obj.components[0].components.push(defaults.buttons.close)
+            if(obj.buttons.includes('first')) obj.components[0].components.push(buttons.first)
+            if(obj.buttons.includes('back')) obj.components[0].components.push(buttons.back)
+            if(obj.buttons.includes('forward')) obj.components[0].components.push(buttons.forward)
+            if(obj.buttons.includes('last')) obj.components[0].components.push(buttons.last)
+            if(obj.buttons.includes('close')) obj.components[0].components.push(buttons.close)
         }
     } catch(e) {
         paginations = paginations.filter(x => x.userID != userID)
@@ -153,8 +155,8 @@ const addConfirmation = async (interaction, params) => {
     obj.embed.color = obj.embed.color || colors.yellow
     obj.embed.description = obj.embed.description || params.question
 
-    obj.components[0].components.push(defaults.buttons.confirm)
-    obj.components[0].components.push(defaults.buttons.decline)
+    obj.components[0].components.push(buttons.confirm)
+    obj.components[0].components.push(buttons.decline)
 
     confirmations.push(obj)
 
@@ -186,14 +188,13 @@ const doSwitch =  async (ctx, newpage) => {
 }
 
 const doResolve = async (ctx, reaction) => {
-    console.log(ctx.interaction)
     let data
     const userID = ctx.interaction.member.id
-    if(reaction === defaults.chars.confirm)
+    if(reaction === chars.confirm)
         data = confirmations.filter(x => x.msg === ctx.interaction.message.id
             && x.perms.confirm.includes(userID))[0]
 
-    if(reaction === defaults.chars.decline)
+    if(reaction === chars.decline)
         data = confirmations.filter(x => x.msg === ctx.interaction.message.id
             && x.perms.decline.includes(userID))[0]
 
@@ -201,13 +202,13 @@ const doResolve = async (ctx, reaction) => {
 
     confirmations = confirmations.filter(x => x.msg != ctx.interaction.message.id)
 
-    if(reaction === defaults.chars.decline)
+    if(reaction === chars.decline)
         await data.onDecline(userID)
 
     if(data.check && await data.check())
         return await data.onError(userID)
 
-    if(reaction === defaults.chars.confirm)
+    if(reaction === chars.confirm)
         await data.onConfirm(userID)
 
     // emitter.emit('resolve', reaction === chars.confirm, data)
@@ -248,17 +249,19 @@ const sendTimeout = (interaction) => {
     interaction.editOriginalMessage({embed: {description: 'This confirmation dialog has expired!', color: colors.grey}, components: []})
 }
 
-rct(defaults.chars.first,   (ctx) => doSwitch(ctx,cur => 0))
-rct(defaults.chars.back,    (ctx) => doSwitch(ctx,cur => cur - 1))
-rct(defaults.chars.forward, (ctx) => doSwitch(ctx,cur => cur + 1))
-rct(defaults.chars.last,    (ctx) => doSwitch(ctx,cur => Infinity))
-rct(defaults.chars.confirm, (ctx) => doResolve(ctx, defaults.chars.confirm))
-rct(defaults.chars.decline, (ctx) => doResolve(ctx, defaults.chars.decline))
+rct(chars.first,   (ctx) => doSwitch(ctx,cur => 0))
+rct(chars.back,    (ctx) => doSwitch(ctx,cur => cur - 1))
+rct(chars.forward, (ctx) => doSwitch(ctx,cur => cur + 1))
+rct(chars.last,    (ctx) => doSwitch(ctx,cur => Infinity))
+rct(chars.confirm, (ctx) => doResolve(ctx, chars.confirm))
+rct(chars.decline, (ctx) => doResolve(ctx, chars.decline))
 
 
 
 module.exports = {
     addPagination,
     addConfirmation,
+    buttons,
+    chars,
     getPages
 }

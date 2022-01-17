@@ -50,7 +50,7 @@ cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withItem(async (ctx, 
     embed.color = colors.deepgreen
     embed.author = { name: item.name }
 
-    return ctx.send(ctx.msg.channel.id, embed)
+    return ctx.send(ctx.interaction, embed)
 }))
 
 cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) => {

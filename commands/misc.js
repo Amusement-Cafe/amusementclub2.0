@@ -79,7 +79,7 @@ cmd('pat', async (ctx, user, ...args) => {
         description: `**${user.username}** pats **${otheruser.username}** ${_.sample(pats)}`,
         color: Math.floor(Math.random() * 16777215)
     }
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 cmd('invite', async (ctx, user) => {
@@ -90,7 +90,7 @@ cmd('invite', async (ctx, user) => {
         color: colors.green
     }
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 cmd('license', async (ctx, user) => {
@@ -102,7 +102,7 @@ cmd('license', async (ctx, user) => {
         Leaving this command in and in help untouched, can count as such.`,
         color: colors.green
     }
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
 const getHelpEmbed = (ctx, o, prefix) => {
