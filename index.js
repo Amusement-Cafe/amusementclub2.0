@@ -12,6 +12,7 @@ const sagiri        = require('sagiri')
 const commands      = require('./commands')
 const colors        = require('./utils/colors')
 const {trigger}     = require('./utils/cmd')
+const pagi          = require('./utils/pagination')
 const {check_all}   = require('./modules/secondarycheck')
 
 const {
@@ -111,7 +112,7 @@ module.exports.create = async ({
 
     const qhelp = (ctx, user, cat) => {
         const help = ctx.help.filter(x => x.type.includes(cat))[0]
-        return send(ctx.msg.channel.id, {
+        return send(ctx.interaction.channel.id, {
             author: { name: `Possible options:` },
             fields: help.fields.slice(0, 5).map(x => ({ name: x.title, value: x.description })),
             color: colors.blue,
@@ -133,16 +134,17 @@ module.exports.create = async ({
         red_circle: '`🔴`'
     }
 
-    const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
+    // const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
+    const pgn = require('./utils/pagination')
 
     const sendPgn = async (ctx, user, pgnObject, userqRemove = true) => {
-        await pgn.addPagination(user.discord_id, ctx.msg.channel.id, pgnObject)
+        await pgn.addPagination(ctx.interaction, pgnObject)
         if (userqRemove)
             _.remove(userq, (x) => x.id === user.discord_id)
     }
 
     const sendCfm = async (ctx, user, cfmObject, userqRemove = true) => {
-        await pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, cfmObject)
+        await pgn.addConfirmation(ctx.interaction, cfmObject)
         if (userqRemove)
             _.remove(userq, (x) => x.id === user.discord_id)
     }
@@ -185,6 +187,7 @@ module.exports.create = async ({
         achievements: require('./staticdata/achievements'),
         quests: require('./staticdata/quests'),
         effects: require('./staticdata/effects'),
+        slashCmd: require('./staticdata/slashcommands'),
         promos: data.promos,
         boosts: data.boosts,
         cardInfos,
@@ -223,7 +226,7 @@ module.exports.create = async ({
     /* service tick for guilds */
     const gtick = (ctx) => {
         const now = new Date()
-        guild.bill_guilds(ctx, now)
+        // guild.bill_guilds(ctx, now)
         plot.castlePayments(ctx, now)
     }
 
@@ -251,7 +254,7 @@ module.exports.create = async ({
     }
 
     const notifytick = () => {
-        preferences.notifyCheck(ctx)
+        // preferences.notifyCheck(ctx)
     }
 
     let tickArray, reconnecting
@@ -307,6 +310,74 @@ module.exports.create = async ({
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
+        ctx.settings.wip = false
+        const gCommands = await bot.getGuildCommands('651599467174428703')
+        ctx.slashCmd.map(x => {
+            const matchCommand = gCommands.find(y => x.name === y.name)
+            if (matchCommand)
+                return bot.editGuildCommand('651599467174428703', matchCommand.id, x)
+            bot.createGuildCommand('651599467174428703', x)
+        })
+    })
+
+    bot.on('interactionCreate', async (interaction) => {
+        if (interaction instanceof Eris.CommandInteraction) {
+            if (interaction.member.user.bot || userq.some(x => x.id === interaction.member.id))
+                return
+
+            const curguild = await guild.fetchGuild(interaction.guildID)
+
+            await interaction.acknowledge()
+            const reply = (user, str, clr = 'default') => send(interaction.channel.id, toObj(user, str, clr), user.discord_id)
+
+            const base = [interaction.data.name]
+            const options = interaction.data.options? interaction.data.options.map(x => {
+                if (x.type === 1) {
+                    base.push(x.name)
+                    return x.options? x.options.map(y => {
+                        if (y.type === 3)
+                            return y.value.trim()
+                        return y.value
+                    }).join(' '): ''
+                }
+                return x.value
+            }).join(): ''
+
+            let capitalMsg = _.concat(base, options)
+            let msg = _.concat(base, options.toLowerCase())
+            const isolatedCtx = Object.assign({}, ctx, {
+                msg, /* current icoming msg object */
+                capitalMsg,
+                reply, /* quick reply function to the channel */
+                globals: {}, /* global parameters */
+                discord_guild: interaction.member.guild,  /* current discord guild */
+                prefix: '/', /* current prefix */
+                interaction: interaction
+            })
+
+            let usr = await user.fetchOrCreate(isolatedCtx, interaction.member.id, interaction.member.user.username)
+            usr.username = usr.username.replace(/\*/gi, '')
+            const cntnt = msg.map(x => x.trim()).join(' ')
+            let args = cntnt.split(/ +/)
+            isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
+            await trigger('cmd', isolatedCtx, usr, args, prefix)
+        }
+
+        if (interaction instanceof Eris.ComponentInteraction) {
+            if (interaction.applicationID !== bot.application.id)
+                return
+            const reply = (user, str, clr = 'default') => send(interaction.channel.id, toObj(user, str, clr), user.discord_id)
+            let isoCtx = Object.assign({}, ctx, {
+                reply,
+                interaction: interaction,
+                discord_guild: interaction.member.guild
+            })
+
+            let usr = await user.fetchOrCreate(isoCtx, interaction.member.id, interaction.member.user.username)
+            usr.username = usr.username.replace(/\*/gi, '')
+            await interaction.acknowledge()
+            await trigger('rct', isoCtx, null, [interaction.data.custom_id])
+        }
     })
 
     bot.on('messageCreate', async (msg) => {
@@ -331,6 +402,7 @@ module.exports.create = async ({
             const setbotmsg = 'guild set bot'
             const setreportmsg = 'guild set report'
             const cntnt = msg.content.trim().substring(curprefix.length)
+
             if(curguild 
                 && !cntnt.includes(setbotmsg)
                 && !cntnt.includes(setreportmsg)
@@ -342,13 +414,13 @@ module.exports.create = async ({
                 if(guildq.some(x => x === curguild.id))
                     return
 
-                const warnmsg = await send(msg.channel.id, { 
+                const warnmsg = await bot.createMessage(msg.channel.id, {embed: {
                     description: `**${msg.author.username}**, bot commands are only available in these channels: 
                         ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
                         \nGuild owner or administrator can add a bot channel by typing \`${curprefix}${setbotmsg}\` in the target channel.`, 
                     footer: { text: `This message will be removed in 10s` },
                     color: colors.red
-                })
+                }})
 
                 try {
                     guildq.push(curguild.id)
@@ -368,12 +440,16 @@ module.exports.create = async ({
                 discord_guild: msg.channel.guild,  /* current discord guild */
                 prefix: curprefix, /* current prefix */
             })
-            /* add user to cooldown q */
-            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 3, 'seconds')});
-
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
             usr.username = usr.username.replace(/\*/gi, '')
+            return bot.createMessage(msg.channel.id, {embed: toObj(usr, `all commands have been moved to slash commands as [verified bots are losing their access to see messages](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-for-Verified-Bots) soon.
+            Check out discord's \`/\` menu to find our commands!
+            Your new command should look like \`/${args[0]}\``, 'red')})
+            /* add user to cooldown q */
+            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 3, 'seconds')});
+
+
 
             const action = args[0]
             if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
@@ -421,10 +497,10 @@ module.exports.create = async ({
     })
 
     bot.on('messageReactionAdd', async (msg, emoji, userID) => {
-        if (!msg.author || msg.author.id != bot.user.id || userID == bot.user.id)
+        if (!msg.author || msg.author.id == bot.user.id || userID == bot.user.id)
             return
         try {
-            await pgn.trigger(userID, msg, emoji.name)
+            await trigger("rct", userID, msg, [emoji.name])
         } catch (e) {
             emitter.emit('error', e)
         }
@@ -434,16 +510,16 @@ module.exports.create = async ({
         emitter.emit('error', err, sh)
     })
 
-    pgn.emitter.on('resolve', async (res, obj) => {
-        if(!res || !obj.channel || !obj.onConfirm)
-            return
-
-        const isolatedCtx = Object.assign({}, ctx)
-        await new Promise(r => setTimeout(r, 2000))
-
-        const usr = await user.fetchOnly(obj.userID)
-        await check_all(isolatedCtx, usr, obj.action, obj.channel)
-    })
+    // pgn.emitter.on('resolve', async (res, obj) => {
+    //     if(!res || !obj.channel || !obj.onConfirm)
+    //         return
+    //
+    //     const isolatedCtx = Object.assign({}, ctx)
+    //     await new Promise(r => setTimeout(r, 2000))
+    //
+    //     const usr = await user.fetchOnly(obj.userID)
+    //     await check_all(isolatedCtx, usr, obj.action, obj.channel)
+    // })
 
     return {
         emitter,

@@ -29,7 +29,7 @@ const {
     findUserCards,
 } = require('../modules/user')
 
-cmd('auc', 'auction', 'auctions', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('auc', 'auction', 'auctions', ['auction', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const req = {finished: false}
 
@@ -80,7 +80,7 @@ cmd(['auc', 'info'], ['auction', 'info'], async (ctx, user, arg1) => {
     const aucformat = await format_auc(ctx, auc, author)
     const card = ctx.cards[auc.card]
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction.channel.id, {
         title: `Auction [${auc.id}]`,
         image: { url: card.url },
         description: aucformat,

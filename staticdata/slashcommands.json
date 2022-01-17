@@ -1,0 +1,218 @@
+[
+    {
+        "type": 1,
+        "name": "daily",
+        "description": "Use this command to claim your daily bonus and reset your claim cost!"
+    },
+    {
+        "type": 1,
+        "name": "todo",
+        "description": "List a recommended list of things to do!"
+    },
+    {
+        "type": 1,
+        "name": "auction",
+        "description": "Use this command to claim your daily bonus and reset your claim cost!",
+        "options": [
+            {
+                "name": "sell",
+                "description": "Sell a card on auction",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "query_arguments",
+                        "description": "Put the card query arguments here to filter for a specific card to auction!",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "description": "See what cards are currently on auction",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "query_arguments",
+                        "description": "Put the card query arguments here to filter for a specific card to auction!",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "See information about a current or past auction!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "auction_id",
+                        "description": "Put the auction ID you want more info about here!",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "bid",
+                "description": "Bid on a currently running auction!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "auction_id",
+                        "description": "Put the auction ID you want to bid on here!",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "price",
+                        "description": "Put the maximum amount you are willing to pay here!",
+                        "type": 4,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "preview",
+                "description": "View up to 25 auction info's at once!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "query_arguments",
+                        "description": "Put any card query arguments here!",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "cancel",
+                "description": "Cancel an auction you have placed without any bidders.",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "auction_id",
+                        "description": "Put the auction ID to cancel here!",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "cards",
+        "description": "Use this command to see your cards!",
+        "options": [
+            {
+                "name": "query_arguments",
+                "description": "Put any card query options here!",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "claim",
+        "description": "Claim cards!",
+        "options": [
+            {
+                "name": "extra_arguments",
+                "description": "Put an amount to claim more than 1 card at once, or promo if there is an ongoing event!",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "cards",
+        "description": "Use this command to see your cards!",
+        "options": [
+            {
+                "name": "query_arguments",
+                "description": "Put any card query options here!",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "cl",
+        "description": "Use this command to claim your daily bonus and reset your claim cost!",
+        "options": [
+            {
+                "name": "history",
+                "description": "View your claim history!",
+                "type": 1
+            },
+            {
+                "name": "info",
+                "description": "Get information about a specific claim in your history!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "claim_id",
+                        "description": "Put the claim ID you want more info about here!",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "summon",
+        "description": "Summon a card you own!",
+        "options": [
+            {
+                "name": "card_query",
+                "description": "Specify a card you want to summon, or leave empty for a random card you own!",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "search",
+        "description": "Search the card database for specific cards!",
+        "options": [
+            {
+                "name": "query_arguments",
+                "description": "Put any card queries here!",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "boosts",
+        "description": "Lists any ongoing card boosts or events!"
+    },
+    {
+        "type": 1,
+        "name": "boost",
+        "description": "Use this command to claim your daily bonus and reset your claim cost!",
+        "options": [
+            {
+                "name": "info",
+                "description": "Put the claim ID you !",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "boost_id",
+                        "description": "Put the boost ID you want more info about here!",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    }
+]
