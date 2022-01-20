@@ -52,7 +52,7 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
     }, user.discord_id)
 }))
 
-cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+cmd('tag', ['tag', 'one'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     
     tgTag = tgTag.replace(/[^\w]/gi, '')
 
@@ -148,8 +148,7 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
     })
 }))
 
-
-cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('tags', ['card', 'tags'], ['tag', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 
@@ -172,7 +171,7 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
     })
 }))
 
-cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['tag', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const userTags = await fetchUserTags(user)
     const cardIDs = cards.map(x => x.id)
     const tags = userTags.filter(x => cardIDs.includes(x.card))

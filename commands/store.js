@@ -9,7 +9,7 @@ const {
     withItem,
 } = require('../modules/item')
 
-cmd('store', 'shop', async (ctx, user, cat) => {
+cmd('store', 'shop', ['store', 'view'], async (ctx, user, cat) => {
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
     cat = cat? cat.replace(/s$/i, '') : null
 

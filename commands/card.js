@@ -67,7 +67,7 @@ const {
 const userCard = require('../collections/userCard')
 const card = require('../modules/card')
 
-cmd('claim', 'cl', async (ctx, user, ...args) => {
+cmd('claim', 'cl', ['claim', 'regular'], async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
 
@@ -350,7 +350,7 @@ cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list'
     })
 })).access('dm')
 
-cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('sell', ['sell', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
@@ -385,7 +385,7 @@ cmd('sell', withCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
-cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['sell', 'all'], ['sell', 'many'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
@@ -481,7 +481,7 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
 
 }))
 
-cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('eval', ['eval', 'one'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'eval')
 
@@ -492,7 +492,7 @@ cmd('eval', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         `card ${formatName(card)} is worth: **${numFmt(price)}** ${ctx.symbols.tomato} ${card.level < 4? `or **${numFmt(vials)}** ${ctx.symbols.vial}` : ``}`)
 }))
 
-cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['eval', 'all'], ['eval', 'many'], withCards(async (ctx, user, cards, parsedargs) => {
 
     let price = 0
     let vials = 0
@@ -522,7 +522,7 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))
 
-cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['eval', 'all', 'global'], ['eval', 'global'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     let price = 0
     let vials = 0
@@ -552,7 +552,7 @@ cmd(['eval', 'all', 'global'], withGlobalCards(async (ctx, user, cards, parsedar
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))
 
-cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('fav', ['fav', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'fav')
 
@@ -571,7 +571,7 @@ cmd('fav', withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.reply(user, `marked ${formatName(card)} as favourite`)
 })).access('dm')
 
-cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['fav', 'all'], ['fav', 'many'], withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.fav)
 
     if(cards.length === 0)
@@ -594,7 +594,7 @@ cmd(['fav', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     })
 })).access('dm')
 
-cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd('unfav', ['fav', 'remove'], ['fav', 'remove', 'one'], ['unfav', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'fav')
 
@@ -613,7 +613,7 @@ cmd('unfav', ['fav', 'remove'], withCards(async (ctx, user, cards, parsedargs) =
     return ctx.reply(user, `removed ${formatName(card)} from favourites`)
 })).access('dm')
 
-cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['unfav', 'all'], ['fav', 'remove', 'all'], ['fav', 'remove', 'many'], ['unfav', 'many'], withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => x.fav)
 
     if(cards.length === 0)
@@ -635,7 +635,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], withCards(async (ctx, user, card
     })
 })).access('dm')
 
-cmd('boost', 'boosts', (ctx, user) => {
+cmd('boost', 'boosts', ['boost', 'list'], (ctx, user) => {
     const now = new Date()
     const boosts = ctx.boosts
         .filter(x => x.starts < now && x.expires > now)
@@ -687,7 +687,7 @@ cmd(['boost', 'info'], (ctx, user, args) => {
     })
 })
 
-cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('rate', ['rate', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'rate')
 
@@ -719,7 +719,7 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.reply(user, `set rating **${rating}** for ${formatName(card)}`)
 })).access('dm')
 
-cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['rate', 'remove'], ['unrate'], ['unrate', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'rate')
 
@@ -779,7 +779,7 @@ cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], 
     })
 })).access('dm')
 
-cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], ['wish', 'one'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -803,7 +803,7 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
     return ctx.reply(user, `added ${formatName(card)} to the wishlist ${userHasCard? '(you own this card)' : ''}`)
 })).access('dm')
 
-cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], ['wish', 'many'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -829,7 +829,7 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
     })
 })).access('dm')
 
-cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], ['wish', 'remove', 'one'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -851,7 +851,7 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(
     return ctx.reply(user, `removed ${formatName(card)} from your wishlist`)
 })).access('dm')
 
-cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'all'], ['wish', 'remove', 'many'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => user.wishlist.some(y => y === x.id))
 
     if(user.wishlist.length === 0) {

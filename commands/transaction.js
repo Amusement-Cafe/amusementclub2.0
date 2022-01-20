@@ -18,15 +18,15 @@ const {
     getPending,
 } = require('../modules/transaction')
 
-cmd(['trans', 'confirm'], 'confirm', 'cfm', 'accept', (ctx, user, arg1) => {
+cmd(['trans', 'confirm'], 'confirm', 'cfm', 'accept', ['transaction', 'confirm'], (ctx, user, arg1) => {
     confirm_trs(ctx, user, arg1)
 })
 
-cmd(['trans', 'decline'], 'decline', 'dcl', 'reject', (ctx, user, arg1) => {
+cmd(['trans', 'decline'], 'decline', 'dcl', 'reject', ['transaction', 'decline'], (ctx, user, arg1) => {
     decline_trs(ctx, user, arg1)
 })
 
-cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('trans', ['transaction', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({ 
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }] 
     }).sort({ time: -1 })
@@ -47,7 +47,7 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
-cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['trans', 'pending'], 'pending', ['transaction', 'pending'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await getPending(ctx, user)
 
     if(!parsedargs.isEmpty())
@@ -66,7 +66,7 @@ cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, pa
     })
 }))
 
-cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['trans', 'gets'], 'gets', ['transaction', 'received'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         to_id: user.discord_id
     }).sort({ time: -1 })
@@ -87,7 +87,7 @@ cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedar
     })
 }))
 
-cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['trans', 'sends'], 'sends', ['transaction', 'sent'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         from_id: user.discord_id
     }).sort({ time: -1 })
@@ -108,7 +108,7 @@ cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsed
     })
 }))
 
-cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, cards, parsedargs, arg1) => {
+cmd(['trans', 'auction'], ['trans', 'auc'], ['transaction', 'auction', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs, arg1) => {
     let list = await Transaction.find({
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
         status: 'auction'
@@ -132,7 +132,7 @@ cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, ca
     })
 }))
 
-cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], ['transaction', 'auction', 'received'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         to_id: user.discord_id ,
         status: 'auction'
@@ -157,7 +157,7 @@ cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(asyn
     })
 }))
 
-cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], ['transaction', 'auction', 'sent'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         from_id: user.discord_id,
         status: 'auction'
@@ -183,7 +183,7 @@ cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(as
 }))
 
 
-cmd(['trans', 'info'], async (ctx, user, arg1) => {
+cmd(['trans', 'info'], ['transaction', 'info'], async (ctx, user, arg1) => {
     const trs = await Transaction.findOne({ id: arg1 })
 
     if(!trs)

@@ -38,7 +38,7 @@ const {
 
 const Anilist = new anilist();
 
-cmd(['hero'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['hero'], ['hero', 'show'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
     await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
@@ -147,7 +147,7 @@ cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
     return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
-cmd(['effects'], ['hero', 'effects'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['effects'], ['hero', 'effects'], ['effect', 'list'], withUserEffects(async (ctx, user, effects, ...args) => {
 
     if(!effects.some(x => !x.passive))
         return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')

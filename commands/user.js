@@ -108,7 +108,7 @@ cmd('bal', 'balance', (ctx, user) => {
     return ctx.reply(user, embed)
 }).access('dm')
 
-cmd('inv', withUserItems((ctx, user, items, args) => {
+cmd('inv', ['inventory', 'list'], withUserItems((ctx, user, items, args) => {
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`), 5),
         switchPage: (data) => data.embed.fields[1].value = data.pages[data.pagenum],
@@ -125,7 +125,7 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
     })
 }))
 
-cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
+cmd(['inv', 'use'], ['inventory', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
     const itemCheck = await checkItem(ctx, user, item)
 
@@ -139,7 +139,7 @@ cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     })
 }))
 
-cmd(['inv', 'info'], withUserItems(async (ctx, user, items, args) => {
+cmd(['inv', 'info'], ['inventory', 'info'], withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
 
     const embed = await itemInfo(ctx, user, item)
@@ -379,7 +379,7 @@ cmd('profile', async (ctx, user, ...args) => {
     }, user.discord_id)
 }).access('dm')
 
-cmd('diff', async (ctx, user, ...args) => {
+cmd('diff', ['diff', 'from'], async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
@@ -418,7 +418,7 @@ cmd('diff', async (ctx, user, ...args) => {
     })
 })
 
-cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
+cmd(['diff', 'reverse'], ['diff', 'rev'], ['diff', 'for'], async (ctx, user, ...args) => {
     const newArgs = parseArgs(ctx, args, user)
 
     if(!newArgs.ids[0])
@@ -471,15 +471,16 @@ cmd('has', async (ctx, user, ...args) => {
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
-    const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+    const otherCards = await getUserCards(ctx, otherUser)
+    const otherFilteredCards = filter(mapUserCards(ctx, otherCards), newArgs)
 
-    if (otherCards.length === 0)
+    if (otherFilteredCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have that card.`, 'red')
 
-    if (newArgs.filters.length === 0 || otherCards.map(x=> `${formatName(x)}`).length > 1) {
+    if (newArgs.filters.length === 0 || otherFilteredCards.map(x=> `${formatName(x)}`).length > 1) {
         return ctx.reply(user, 'Please specify a single card to match', 'red')
     }
-    return ctx.reply(user, `Matched card ${otherCards.map(x => `${formatName(x)} ${x.fav? 'and it is marked as **favorite**': ''}`)}`)
+    return ctx.reply(user, `Matched card ${otherFilteredCards.map(x => `${formatName(x)} ${x.fav? 'and it is marked as **favorite**': ''}`)}`)
 })
 
 cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -497,7 +498,7 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
-cmd('quest', 'quests', async (ctx, user) => {
+cmd('quest', 'quests', ['quest', 'list'], async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests`, 'red')
 

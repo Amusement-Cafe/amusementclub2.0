@@ -135,7 +135,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
-cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('liq', 'liquify', ['liquefy', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -183,7 +183,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
     })
 }))
 
-cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -252,7 +252,7 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
     })
 }))
 
-cmd(['liq', 'preview'], ['liquify', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liq', 'preview'], ['liquify', 'preview'], ['liquefy', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 

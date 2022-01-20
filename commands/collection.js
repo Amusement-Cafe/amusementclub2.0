@@ -29,7 +29,7 @@ const {
 const {cmd}         = require('../utils/cmd')
 const colors        = require('../utils/colors')
 
-cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
+cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], async (ctx, user, ...args) => {
     const completed = args.find(x => x === '-completed' || x === '!completed')
     const clouted = args.find(x => x === '-clouted' || x === '!clouted')
     args = args.filter(x => x != '-completed' && x != '!completed' && x != '-clouted' && x != '!clouted')

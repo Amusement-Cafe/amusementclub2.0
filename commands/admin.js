@@ -95,7 +95,6 @@ pcmd(['admin'], ['sudo', 'rm', 'role'], async (ctx, user, ...args) => {
     return ctx.reply(user, rpl.join('\n'))
 })
 
-
 pcmd(['admin'], ['sudo', 'in', 'role'], ['sudo', 'inrole'], ['sudo', 'has', 'role'], async (ctx, user, ...args) => {
     const inRole = await Users.find({roles: {$ne: [], $in: args}}).sort('username')
     if (inRole.length === 0)
@@ -423,7 +422,6 @@ pcmd(['admin'], ['sudo', 'announce'], async (ctx, user, ...args) => {
         footer: { text: `Date: ${announcement.date}` },
     })
 })
-
 
 pcmd(['admin'], ['sudo', 'top', 'lemons'], async (ctx, user) => {
     let allUsersWithLemons = await Users.find(

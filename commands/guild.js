@@ -111,7 +111,6 @@ cmd(['guild', 'status'], (ctx, user) => {
     }, user.discord_id)
 })
 
-
 cmd(['guild', 'donate'], async (ctx, user, arg1) => {
     let amount = parseInt(arg1)
 
@@ -197,7 +196,7 @@ cmd(['guild', 'unset', 'bot'], async (ctx, user) => {
     return ctx.reply(user, `removed this channel from bot channel list`)
 })
 
-cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...args) => {
+cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], ['guild', 'manager', 'add'], async (ctx, user, ...args) => {
     if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can add guild managers`, 'red')
 
@@ -223,7 +222,7 @@ cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], async (ctx, user, ...a
     return ctx.reply(user, `successfully assigned manager role to **${tgUser.username}**`)
 })
 
-cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], async (ctx, user, ...args) => {
+cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], ['guild', 'manager', 'remove'], async (ctx, user, ...args) => {
     if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can remove guild managers`, 'red')
 
