@@ -214,5 +214,462 @@
                 ]
             }
         ]
+    },
+    {
+        "type": 1,
+        "name": "balance",
+        "description": "Display your current balances!"
+    },
+    {
+        "type": 1,
+        "name": "profile",
+        "description": "Display your bot profile!",
+        "options": [
+            {
+                "name": "user_id",
+                "description": "If you want to see someone else's profile, but their discord ID here!",
+                "required": false,
+                "type": 6
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "has",
+        "description": "Use this command to see if another user has a card!",
+        "options": [
+            {
+                "name": "user_id",
+                "description": "The user you want to check",
+                "required": true,
+                "type": 6
+            },
+            {
+                "name": "card_arguments",
+                "description": "Specify the card you want to check!",
+                "required": true,
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "favs",
+        "description": "View your list of favorited cards!",
+        "options": [
+            {
+                "name": "card_arguments",
+                "description": "Specify a card or card query here!",
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "miss",
+        "description": "View a list of cards you do not own!",
+        "options": [
+            {
+                "name": "card_arguments",
+                "description": "Specify a card or card query here!",
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "stats",
+        "description": "View your daily stats!"
+    },
+    {
+        "type": 1,
+        "name": "achievements",
+        "description": "View your list of achievements!",
+        "options": [
+            {
+                "name": "diff",
+                "description": "Add -diff to see achievements you have not gained",
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "vote",
+        "description": "Get a list of websites to vote for the bot and gain rewards!"
+    },
+    {
+        "type": 1,
+        "name": "guild",
+        "description": "Base for all guild commands!",
+        "options": [
+            {
+                "name": "status",
+                "description": "Get the guilds current financial status(Only useful if you are locking the server)",
+                "type": 1
+            },
+            {
+                "name": "info",
+                "description": "Get the guilds current info",
+                "type": 1
+            },
+            {
+                "name": "lead",
+                "description": "View the guild leaderboard(activity based)",
+                "type": 1
+            },
+            {
+                "name": "lock",
+                "description": "View the guild leaderboard(activity based)",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "collection_id",
+                        "description": "The name of the collection you want to lock the guild to",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "unlock",
+                "description": "Remove current guild lock",
+                "type": 1
+            },
+            {
+                "name": "set",
+                "description": "Set a property in the guild",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "tax",
+                        "description": "Set the guild's tax on claiming",
+                        "type": 1,
+                        "options": [
+                            {
+                                "type": 4,
+                                "name": "tax_percentage",
+                                "description": "The % you want to tax on each claim",
+                                "min_value": 0,
+                                "max_value": 15
+                            }
+                        ]
+                    },
+                    {
+                        "name": "report",
+                        "description": "Set the bot report channel",
+                        "type": 1
+                    },
+                    {
+                        "name": "bot",
+                        "description": "Set or add a channel to be used for the bot",
+                        "type": 1
+                    }
+                ]
+            },
+            {
+                "name": "unset",
+                "description": "Unset a property in the guild",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "bot",
+                        "description": "Remove a channel to be used for the bot",
+                        "type": 1
+                    }
+                ]
+            },
+            {
+                "name": "manager",
+                "type": 2,
+                "description": "Subcommand group for adding or removing guild managers",
+                "options": [
+                    {
+                        "name": "add",
+                        "description": "Add a user to the guild manager list",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user",
+                                "description": "User to add as a manager",
+                                "type": 6,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "remove",
+                        "description": "Remove a user from the guild manager list",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user",
+                                "description": "User to remove as a manager",
+                                "type": 6,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "info",
+        "description": "Display information about a card!",
+        "options": [
+            {
+                "type": 3,
+                "name": "card_query",
+                "description": "The card query/card name you want more info on",
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "plot",
+        "description": "Base command for all plot commands",
+        "type": 1,
+        "options": [
+            {
+                "type": 1,
+                "name": "list",
+                "description": "List your plots in the current guild"
+            },
+            {
+                "type": 1,
+                "name": "collect",
+                "description": "Collect from plots in the current guild"
+            },
+            {
+                "type": 1,
+                "name": "buy",
+                "description": "Buy a plot in the current guild"
+            },
+            {
+                "type": 1,
+                "name": "global",
+                "description": "List all of your plots you own across all guilds"
+            },
+            {
+                "type": 1,
+                "name": "info",
+                "description": "Get information about a plot in the current guild",
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "description": "Specify the specific plot number",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "type": 1,
+                "name": "upgrade",
+                "description": "Upgrade a building already on a plot in the current guild",
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "description": "Specify the specific plot number",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "type": 2,
+                "name": "status",
+                "description": "Subcommand header for status",
+                "options": [
+                    {
+                        "type": 1,
+                        "name": "global",
+                        "description": "Get information about a specific plot in any guild",
+                        "options": [
+                            {
+                                "name": "extra_arguments",
+                                "description": "Specify the specific plot number from plot global",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            }
+
+        ]
+    },
+    {
+        "type": 1,
+        "name": "preferences",
+        "description": "Base command for everything related to preferences",
+        "options": [
+            {
+                "type": 2,
+                "name": "set",
+                "description": "Subcommand head for preference setting",
+                "options": [
+                    {
+                        "name": "notify",
+                        "description": "Notification Preferences",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "notification_options",
+                                "description": "The name of the option you want to toggle",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": 2,
+                "name": "show",
+                "description": "Subcommand head for preference listing",
+                "options": [
+                    {
+                        "name": "notify",
+                        "description": "Notification Preferences",
+                        "type": 1
+                    },
+                    {
+                        "name": "all",
+                        "description": "All Preference Groups",
+                        "type": 1
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "forge",
+        "description": "Forge 2 cards of the same rarity to get another!",
+        "options": [
+            {
+                "name": "card_1",
+                "description": "Enter either a card name, or card query here. If using query, only fill out this option!",
+                "type": 3,
+                "required": true
+            },
+            {
+                "name": "card_2",
+                "description": "Enter either a card name here if you entered a card name for card 1!",
+                "type": 3,
+                "required": false
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "draw",
+        "description": "Draw a 1-3 star non-event card of your choosing!",
+        "options": [
+            {
+                "name": "card",
+                "description": "Enter either a card name, or card query here!",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "collection",
+        "description": "Base command for all collection commands!",
+        "options": [
+            {
+                "name": "list",
+                "description": "List the collections in the bot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "description": "Add collection name or query to filter the collection list",
+                        "type": 3
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "Get more information about a collection in the bot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "collection_id",
+                        "description": "Add the collection ID here",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "reset",
+                "description": "Reset a collection for a clout star and a legendary card if the collection contains one",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "collection_id",
+                        "description": "Add the collection ID to reset here",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "help",
+        "description": "Get help via our help menus!",
+        "options": [
+            {
+                "name": "help_menu",
+                "description": "Specify the help page you want to display or leave blank to see all options",
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "rules",
+        "description": "Display the bot rules!"
+    },
+    {
+        "type": 1,
+        "name": "announcement",
+        "description": "Display the current global bot announcement!"
+    },
+    {
+        "type": 1,
+        "name": "baka",
+        "description": "Ping tester!"
+    },
+    {
+        "type": 1,
+        "name": "pat",
+        "description": "Pat another bot user!",
+        "options": [
+            {
+                "name": "user_id",
+                "description": "The ID of the bot user you want to pat",
+                "type": 6,
+                "required": true
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "invite",
+        "description": "Get the invite link to invite the bot to your own server!"
+    },
+    {
+        "type": 1,
+        "name": "license",
+        "description": "The license the bot and it's code are under!"
     }
 ]

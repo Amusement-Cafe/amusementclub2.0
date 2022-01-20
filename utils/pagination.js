@@ -124,7 +124,6 @@ const addPagination = async (interaction, params) => {
 
 const addConfirmation = async (interaction, params) => {
     const userID = interaction.member.id
-    const channelID = interaction.channel.id
     const old = confirmations.filter(x => x.userID === userID)[0]
     try {
         if(old && old.channel && old.msg)
@@ -142,7 +141,8 @@ const addConfirmation = async (interaction, params) => {
         onDecline: () => sendDecline(interaction),
         onTimeout: () => sendTimeout(interaction),
         onError: () => { },
-        expires: asdate.add(new Date(), defaults.confirmExpires, 'seconds'),
+        expires: asdate.add(new Date(), defaults.confirmExpiration, 'seconds'),
+        interaction,
     }, params)
 
     if(obj.check && await obj.check())
@@ -178,7 +178,6 @@ const doSwitch =  async (ctx, newpage) => {
     else if(defaults.wrap && data.pagenum > max) data.pagenum = 0
     else if(!defaults.wrap) data.pagenum = Math.min(Math.max(data.pagenum, 0), max)
 
-    // emitter.emit('switch', data)
     data.switchPage(data)
 
     if(data.embed.footer.text.startsWith('Page'))
@@ -210,8 +209,6 @@ const doResolve = async (ctx, reaction) => {
 
     if(reaction === chars.confirm)
         await data.onConfirm(userID)
-
-    // emitter.emit('resolve', reaction === chars.confirm, data)
 }
 
 const getPages = (array, split = 10, maxCharacters = 4096) => {
@@ -233,12 +230,17 @@ const getPages = (array, split = 10, maxCharacters = 4096) => {
     return pages
 }
 
-const remove = () => {
+const remove = (ctx) => {
+    const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(ctx.interaction.member.user.id))[0]
+    if (!data)
+        return
 
+    paginations.filter(x => x.msg !== ctx.interaction.message.id)
+    ctx.interaction.deleteOriginalMessage()
 }
 
 const sendConfirm = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'Operaction was confirmed!', color: colors.green}, components: []})
+    interaction.editOriginalMessage({embed: {description: 'Operation was confirmed!', color: colors.green}, components: []})
 }
 
 const sendDecline = (interaction) => {
@@ -249,12 +251,31 @@ const sendTimeout = (interaction) => {
     interaction.editOriginalMessage({embed: {description: 'This confirmation dialog has expired!', color: colors.grey}, components: []})
 }
 
+const timeoutTick = () => {
+    const now = new Date()
+    paginations.filter(x => x.expires < now).map(async y => {
+        try {
+            await y.interaction.editOriginalMessage({embed: y.embed, components: []})
+        } catch (e) {}
+    })
+    paginations = paginations.filter(x => x.expires >= now)
+
+    confirmations.filter(x => x.expires < now).map(async y => {
+        try {
+            await y.interaction.editOriginalMessage({embed: y.embed, components: []})
+            await y.onTimeout()
+        } catch (e) {}
+    })
+    confirmations = confirmations.filter(x => x.expires >= now)
+}
+
 rct(chars.first,   (ctx) => doSwitch(ctx,cur => 0))
 rct(chars.back,    (ctx) => doSwitch(ctx,cur => cur - 1))
 rct(chars.forward, (ctx) => doSwitch(ctx,cur => cur + 1))
 rct(chars.last,    (ctx) => doSwitch(ctx,cur => Infinity))
 rct(chars.confirm, (ctx) => doResolve(ctx, chars.confirm))
 rct(chars.decline, (ctx) => doResolve(ctx, chars.decline))
+rct(chars.close,   (ctx) => remove(ctx))
 
 
 
@@ -263,5 +284,6 @@ module.exports = {
     addConfirmation,
     buttons,
     chars,
-    getPages
+    getPages,
+    timeoutTick,
 }

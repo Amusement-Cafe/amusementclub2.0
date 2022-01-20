@@ -18,7 +18,7 @@ const {
     getMaxStorage,
 }   = require('../modules/plot')
 
-cmd(['plot'], ['plots'], async (ctx, user) => {
+cmd(['plot'], ['plots'], ['plot', 'list'], async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
         return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')

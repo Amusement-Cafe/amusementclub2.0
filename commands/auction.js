@@ -88,7 +88,7 @@ cmd(['auc', 'info'], ['auction', 'info'], async (ctx, user, arg1) => {
     }, user.discord_id)
 }).access('dm')
 
-cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], ['auction', 'preview'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date();
     const req = {finished: false}
 
@@ -117,7 +117,7 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], withGlobalCards(async (c
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
 
-    list = list.slice(0, 15)
+    list = list.slice(0, 25)
 
     const pages = await Promise.all(list.map(async auc => {
         const author = await fetchOnly(auc.author).select('username')

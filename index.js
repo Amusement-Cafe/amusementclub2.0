@@ -12,6 +12,7 @@ const sagiri        = require('sagiri')
 const commands      = require('./commands')
 const colors        = require('./utils/colors')
 const {trigger}     = require('./utils/cmd')
+const pgn           = require('./utils/pagination')
 const {check_all}   = require('./modules/secondarycheck')
 
 const {
@@ -134,7 +135,6 @@ module.exports.create = async ({
     }
 
     // const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
-    const pgn = require('./utils/pagination')
 
     const sendPgn = async (ctx, user, pgnObject, userqRemove = true) => {
         await pgn.addPagination(ctx.interaction, pgnObject)
@@ -220,6 +220,7 @@ module.exports.create = async ({
     const tick = (ctx) => {
         const now = new Date()
         auction.finish_aucs(ctx, now)
+        pgn.timeoutTick()
     }
 
     /* service tick for guilds */
@@ -321,6 +322,7 @@ module.exports.create = async ({
 
     bot.on('interactionCreate', async (interaction) => {
         if (interaction instanceof Eris.CommandInteraction) {
+
             if (interaction.member.user.bot || userq.some(x => x.id === interaction.member.id))
                 return
 
@@ -329,18 +331,21 @@ module.exports.create = async ({
             await interaction.acknowledge()
             const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
 
-            const base = [interaction.data.name]
-            const options = interaction.data.options? interaction.data.options.map(x => {
-                if (x.type === 1) {
-                    base.push(x.name)
-                    return x.options? x.options.map(y => {
-                        if (y.type === 3)
-                            return y.value.trim()
-                        return y.value
-                    }).join(' '): ''
-                }
-                return x.value
-            }).join(): ''
+            let base = [interaction.data.name]
+            let options = ''
+
+            let cursor = interaction.data
+            while (cursor.hasOwnProperty('options')) {
+                cursor = cursor.options
+                cursor.map(x => {
+                    if (x.type === 1 || x.type === 2) {
+                        base.push(x.name)
+                        cursor = x
+                    } else {
+                        options += `${x.value} `
+                    }
+                })
+            }
 
             let capitalMsg = _.concat(base, options)
             let msg = _.concat(base, options.toLowerCase())
@@ -358,11 +363,14 @@ module.exports.create = async ({
             usr.username = usr.username.replace(/\*/gi, '')
             const cntnt = msg.map(x => x.trim()).join(' ')
             let args = cntnt.split(/ +/)
+            console.log(`[${usr.username}]: ${cntnt}`)
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
         }
 
         if (interaction instanceof Eris.ComponentInteraction) {
+
+
             if (interaction.applicationID !== bot.application.id)
                 return
             const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)

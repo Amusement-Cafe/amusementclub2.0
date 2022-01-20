@@ -12,7 +12,7 @@ const desc = {
     completed: `when you complete, or lose completion on a collection`,
 }
 
-cmd('prefs', (ctx, user) => {
+cmd('prefs', ['preferences', 'show', 'all'], (ctx, user) => {
     const cats = []
     cats.push(`\`notify\` **Notifications** (set events that bot can DM you about)`)
 
@@ -23,7 +23,7 @@ cmd('prefs', (ctx, user) => {
     })
 }).access('dm')
 
-cmd(['prefs', 'notify'], (ctx, user) => {
+cmd(['prefs', 'notify'], ['preferences', 'show', 'notify'], (ctx, user) => {
     const notify = user.prefs.notifications
     const fields = Object.keys(notify).map(x => {
         if(desc.hasOwnProperty(x)) {
@@ -39,7 +39,7 @@ cmd(['prefs', 'notify'], (ctx, user) => {
     })
 }).access('dm')
 
-cmd(['prefs', 'set', 'notify'], async (ctx, user, type, switcher) => {
+cmd(['prefs', 'set', 'notify'], ['preferences', 'set', 'notify'], async (ctx, user, type, switcher) => {
     const notify = user.prefs.notifications
     if(!notify.hasOwnProperty(type)) {
         return ctx.reply(user, `notify setting \`${type}\` doesn't exist.`, 'red')
