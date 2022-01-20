@@ -1,13 +1,20 @@
 [
     {
         "type": 1,
-        "name": "daily",
-        "description": "Use this command to claim your daily bonus and reset your claim cost!"
+        "name": "achievements",
+        "description": "View your list of achievements!",
+        "options": [
+            {
+                "name": "diff",
+                "description": "Add -diff to see achievements you have not gained",
+                "type": 3
+            }
+        ]
     },
     {
         "type": 1,
-        "name": "todo",
-        "description": "List a recommended list of things to do!"
+        "name": "announcement",
+        "description": "Display the current global bot announcement!"
     },
     {
         "type": 1,
@@ -102,6 +109,41 @@
     },
     {
         "type": 1,
+        "name": "baka",
+        "description": "Ping tester!"
+    },
+    {
+        "type": 1,
+        "name": "balance",
+        "description": "Display your current balances!"
+    },
+    {
+        "type": 1,
+        "name": "boost",
+        "description": "Boost Main Command",
+        "options": [
+            {
+                "name": "info",
+                "description": "List the cards available in an ongoing boost!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "boost_id",
+                        "description": "Put the boost ID you want more info about here!",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "type": 1,
+                "description": "Lists any ongoing card boosts or events!"
+            }
+        ]
+    },
+    {
+        "type": 1,
         "name": "cards",
         "description": "Use this command to see your cards!",
         "options": [
@@ -174,102 +216,280 @@
     },
     {
         "type": 1,
-        "name": "cards",
-        "description": "Use this command to see your cards!",
+        "name": "collection",
+        "description": "Base command for all collection commands!",
         "options": [
             {
-                "name": "query_arguments",
-                "description": "Put any card query options here!",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "summon",
-        "description": "Summon a card you own!",
-        "options": [
-            {
-                "name": "card_query",
-                "description": "Specify a card you want to summon, or leave empty for a random card you own!",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "search",
-        "description": "Search the card database for specific cards!",
-        "options": [
-            {
-                "name": "query_arguments",
-                "description": "Put any card queries here!",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "boost",
-        "description": "Boost Main Command",
-        "options": [
-            {
-                "name": "info",
-                "description": "List the cards available in an ongoing boost!",
+                "name": "list",
+                "description": "List the collections in the bot",
                 "type": 1,
                 "options": [
                     {
-                        "name": "boost_id",
-                        "description": "Put the boost ID you want more info about here!",
+                        "name": "extra_arguments",
+                        "description": "Add collection name or query to filter the collection list",
+                        "type": 3
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "Get more information about a collection in the bot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "collection_id",
+                        "description": "Add the collection ID here",
                         "type": 3,
                         "required": true
                     }
                 ]
             },
             {
-                "name": "list",
+                "name": "reset",
+                "description": "Reset a collection for a clout star and a legendary card if the collection contains one",
                 "type": 1,
-                "description": "Lists any ongoing card boosts or events!"
+                "options": [
+                    {
+                        "name": "collection_id",
+                        "description": "Add the collection ID to reset here",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
             }
         ]
     },
     {
         "type": 1,
-        "name": "balance",
-        "description": "Display your current balances!"
+        "name": "daily",
+        "description": "Use this command to claim your daily bonus and reset your claim cost!"
     },
     {
         "type": 1,
-        "name": "profile",
-        "description": "Display your bot profile!",
+        "name": "diff",
+        "description": "Base command for diff!",
         "options": [
             {
-                "name": "user_id",
-                "description": "If you want to see someone else's profile, but their discord ID here!",
-                "required": false,
-                "type": 6
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "has",
-        "description": "Use this command to see if another user has a card!",
-        "options": [
-            {
-                "name": "user_id",
-                "description": "The user you want to check",
-                "required": true,
-                "type": 6
+                "name": "for",
+                "description": "Get a list of cards you have that the specified user doesn't",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "user_id",
+                        "description": "The user ID or mention of the user you want to compare with",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to compare",
+                        "type": 3,
+                        "required": false
+                    }
+
+                ]
             },
             {
-                "name": "card_arguments",
-                "description": "Specify the card you want to check!",
-                "required": true,
-                "type": 3
+                "name": "from",
+                "description": "Get a list of cards you don't have, that the specified user does",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "user_id",
+                        "description": "The user ID or mention of the user you want to compare with",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to compare",
+                        "type": 3,
+                        "required": false
+                    }
+
+                ]
+            }
+
+        ]
+    },
+    {
+        "type": 1,
+        "name": "draw",
+        "description": "Draw a 1-3 star non-event card of your choosing!",
+        "options": [
+            {
+                "name": "card",
+                "description": "Enter either a card name, or card query here!",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "effect",
+        "description": "Base command for effects!",
+        "options": [
+            {
+                "name": "list",
+                "description": "Subgroup List",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "actives",
+                        "description": "List your created active effects",
+                        "type": 1
+                    },
+                    {
+                        "name": "passives",
+                        "description": "List your created passive effects",
+                        "type": 1
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "Get information about an effect",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "effect_name",
+                        "description": "The effect you want more information about",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "use",
+                "description": "Use an active effect from your effect list active",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "effect_name",
+                        "description": "The name of the effect you want to use",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "extra_arguments",
+                        "description": "If the effect takes extra arguments, put them here",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "eval",
+        "description": "Base command for eval!",
+        "options": [
+            {
+                "name": "one",
+                "description": "Get the current price of a card, or it's cost in vials",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to eval",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "many",
+                "description": "Get the current price of a group of cards you own, or their cost in vials",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to eval",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "global",
+                "description": "Get the current price of a group of cards, or their cost in vials",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to eval",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "fav",
+        "description": "Base command for favorites!",
+        "options": [
+            {
+                "name": "one",
+                "description": "Add a card to your favorites!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to favorite",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "many",
+                "description": "Add many cards to your favorites!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to favorite",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "SubGroup remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "one",
+                        "description": "Remove a card from your favorites!",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove from your favorites",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "many",
+                        "description": "Remove many cards from your favorites!",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query of the cards you want to remove from your favorites",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     },
@@ -287,37 +507,22 @@
     },
     {
         "type": 1,
-        "name": "miss",
-        "description": "View a list of cards you do not own!",
+        "name": "forge",
+        "description": "Forge 2 cards of the same rarity to get another!",
         "options": [
             {
-                "name": "card_arguments",
-                "description": "Specify a card or card query here!",
-                "type": 3
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "stats",
-        "description": "View your daily stats!"
-    },
-    {
-        "type": 1,
-        "name": "achievements",
-        "description": "View your list of achievements!",
-        "options": [
+                "name": "card_1",
+                "description": "Enter either a card name, or card query here. If using query, only fill out this option!",
+                "type": 3,
+                "required": true
+            },
             {
-                "name": "diff",
-                "description": "Add -diff to see achievements you have not gained",
-                "type": 3
+                "name": "card_2",
+                "description": "Enter either a card name here if you entered a card name for card 1!",
+                "type": 3,
+                "required": false
             }
         ]
-    },
-    {
-        "type": 1,
-        "name": "vote",
-        "description": "Get a list of websites to vote for the bot and gain rewards!"
     },
     {
         "type": 1,
@@ -438,6 +643,120 @@
     },
     {
         "type": 1,
+        "name": "has",
+        "description": "Use this command to see if another user has a card!",
+        "options": [
+            {
+                "name": "user_id",
+                "description": "The user you want to check",
+                "required": true,
+                "type": 6
+            },
+            {
+                "name": "card_arguments",
+                "description": "Specify the card you want to check!",
+                "required": true,
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "help",
+        "description": "Get help via our help menus!",
+        "options": [
+            {
+                "name": "help_menu",
+                "description": "Specify the help page you want to display or leave blank to see all options",
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "hero",
+        "description": "Base command for heroes!",
+        "options": [
+            {
+                "name": "list",
+                "description": "View a list of all heroes",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "hero",
+                        "description": "The hero name or ID you want to find in the list",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "Get information about a hero",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "hero",
+                        "description": "The hero name or ID you want more info on",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "equip",
+                "description": "Equip a passive effect into an empty hero slot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "slot_number",
+                        "description": "The slot number to equip into",
+                        "type": 4,
+                        "required": true
+                    },
+                    {
+                        "name": "effect_name",
+                        "description": "The effect name to equip",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "get",
+                "description": "Get a hero from the hero list",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "hero",
+                        "description": "The hero name or ID you want",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "submit",
+                "description": "Submit a hero for consideration",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "anilist_link",
+                        "description": "A link to the character on anilist.co",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "slots",
+                "description": "View your current hero slots, also known as effect list passive",
+                "type": 1
+            }
+        ]
+    },
+    {
+        "type": 1,
         "name": "info",
         "description": "Display information about a card!",
         "options": [
@@ -445,6 +764,125 @@
                 "type": 3,
                 "name": "card_query",
                 "description": "The card query/card name you want more info on",
+                "required": true
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "inventory",
+        "description": "Base command for inventory!",
+        "options": [
+            {
+                "name": "list",
+                "description": "View all of your current inventory items (recipes, blueprints, claim_tickets)",
+                "type": 1
+            },
+            {
+                "name": "info",
+                "description": "Get information about a specific inventory item",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "inventory_item",
+                        "description": "The number position or name of the item you want more information about",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "use",
+                "description": "Use an item in your inventory",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "inventory_item",
+                        "description": "The number position or name of the item you want to use",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "invite",
+        "description": "Get the invite link to invite the bot to your own server!"
+    },
+    {
+        "type": 1,
+        "name": "license",
+        "description": "The license the bot and it's code are under!"
+    },
+    {
+        "type": 1,
+        "name": "liquefy",
+        "description": "Base command for liquefying!",
+        "options": [
+            {
+                "name": "one",
+                "description": "Liquefy a card to receive vials!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to liquefy",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "many",
+                "description": "Liquefy up to 100 cards to receive vials!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to liquefy",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "preview",
+                "description": "View the list of cards that would be taken in liquefy many",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to liquefy",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "miss",
+        "description": "View a list of cards you do not own!",
+        "options": [
+            {
+                "name": "card_arguments",
+                "description": "Specify a card or card query here!",
+                "type": 3
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "pat",
+        "description": "Pat another bot user!",
+        "options": [
+            {
+                "name": "user_id",
+                "description": "The ID of the bot user you want to pat",
+                "type": 6,
                 "required": true
             }
         ]
@@ -569,215 +1007,15 @@
     },
     {
         "type": 1,
-        "name": "forge",
-        "description": "Forge 2 cards of the same rarity to get another!",
-        "options": [
-            {
-                "name": "card_1",
-                "description": "Enter either a card name, or card query here. If using query, only fill out this option!",
-                "type": 3,
-                "required": true
-            },
-            {
-                "name": "card_2",
-                "description": "Enter either a card name here if you entered a card name for card 1!",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "draw",
-        "description": "Draw a 1-3 star non-event card of your choosing!",
-        "options": [
-            {
-                "name": "card",
-                "description": "Enter either a card name, or card query here!",
-                "type": 3,
-                "required": true
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "collection",
-        "description": "Base command for all collection commands!",
-        "options": [
-            {
-                "name": "list",
-                "description": "List the collections in the bot",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "extra_arguments",
-                        "description": "Add collection name or query to filter the collection list",
-                        "type": 3
-                    }
-                ]
-            },
-            {
-                "name": "info",
-                "description": "Get more information about a collection in the bot",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "collection_id",
-                        "description": "Add the collection ID here",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "reset",
-                "description": "Reset a collection for a clout star and a legendary card if the collection contains one",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "collection_id",
-                        "description": "Add the collection ID to reset here",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "help",
-        "description": "Get help via our help menus!",
-        "options": [
-            {
-                "name": "help_menu",
-                "description": "Specify the help page you want to display or leave blank to see all options",
-                "type": 3
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "rules",
-        "description": "Display the bot rules!"
-    },
-    {
-        "type": 1,
-        "name": "announcement",
-        "description": "Display the current global bot announcement!"
-    },
-    {
-        "type": 1,
-        "name": "baka",
-        "description": "Ping tester!"
-    },
-    {
-        "type": 1,
-        "name": "pat",
-        "description": "Pat another bot user!",
+        "name": "profile",
+        "description": "Display your bot profile!",
         "options": [
             {
                 "name": "user_id",
-                "description": "The ID of the bot user you want to pat",
-                "type": 6,
-                "required": true
+                "description": "If you want to see someone else's profile, but their discord ID here!",
+                "required": false,
+                "type": 6
             }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "invite",
-        "description": "Get the invite link to invite the bot to your own server!"
-    },
-    {
-        "type": 1,
-        "name": "license",
-        "description": "The license the bot and it's code are under!"
-    },
-    {
-        "type": 1,
-        "name": "inventory",
-        "description": "Base command for inventory!",
-        "options": [
-            {
-                "name": "list",
-                "description": "View all of your current inventory items (recipes, blueprints, claim_tickets)",
-                "type": 1
-            },
-            {
-                "name": "info",
-                "description": "Get information about a specific inventory item",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "inventory_item",
-                        "description": "The number position or name of the item you want more information about",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "use",
-                "description": "Use an item in your inventory",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "inventory_item",
-                        "description": "The number position or name of the item you want to use",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "diff",
-        "description": "Base command for diff!",
-        "options": [
-            {
-                "name": "for",
-                "description": "Get a list of cards you have that the specified user doesn't",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "user_id",
-                        "description": "The user ID or mention of the user you want to compare with",
-                        "type": 6,
-                        "required": true
-                    },
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to compare",
-                        "type": 3,
-                        "required": false
-                    }
-
-                ]
-            },
-            {
-                "name": "from",
-                "description": "Get a list of cards you don't have, that the specified user does",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "user_id",
-                        "description": "The user ID or mention of the user you want to compare with",
-                        "type": 6,
-                        "required": true
-                    },
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to compare",
-                        "type": 3,
-                        "required": false
-                    }
-
-                ]
-            }
-
         ]
     },
     {
@@ -802,6 +1040,73 @@
                         "required": true
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "rate",
+        "description": "Head command for rating!",
+        "options": [
+            {
+                "name": "one",
+                "description": "Add a rating for a card",
+                "type": 1,
+                "options": [
+                    {
+                        "type": 4,
+                        "name": "rating",
+                        "description": "Your rating for the card, prefixed by : (e.g. :9)",
+                        "min_value": 1,
+                        "max_value": 10,
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to rate",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "Subgroup remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "one",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            }
+
+        ]
+    },
+    {
+        "type": 1,
+        "name": "rules",
+        "description": "Display the bot rules!"
+    },
+    {
+        "type": 1,
+        "name": "search",
+        "description": "Search the card database for specific cards!",
+        "options": [
+            {
+                "name": "query_arguments",
+                "description": "Put any card queries here!",
+                "type": 3,
+                "required": false
             }
         ]
     },
@@ -871,434 +1176,8 @@
     },
     {
         "type": 1,
-        "name": "eval",
-        "description": "Base command for eval!",
-        "options": [
-            {
-                "name": "one",
-                "description": "Get the current price of a card, or it's cost in vials",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to eval",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "many",
-                "description": "Get the current price of a group of cards you own, or their cost in vials",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to eval",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "global",
-                "description": "Get the current price of a group of cards, or their cost in vials",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to eval",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "fav",
-        "description": "Base command for favorites!",
-        "options": [
-            {
-                "name": "one",
-                "description": "Add a card to your favorites!",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to favorite",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "many",
-                "description": "Add many cards to your favorites!",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to favorite",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "remove",
-                "description": "SubGroup remove",
-                "type": 2,
-                "options": [
-                    {
-                        "name": "one",
-                        "description": "Remove a card from your favorites!",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove from your favorites",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
-                    },
-                    {
-                        "name": "many",
-                        "description": "Remove many cards from your favorites!",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "The card query of the cards you want to remove from your favorites",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "rate",
-        "description": "Head command for rating!",
-        "options": [
-            {
-                "name": "one",
-                "description": "Add a rating for a card",
-                "type": 1,
-                "options": [
-                    {
-                        "type": 4,
-                        "name": "rating",
-                        "description": "Your rating for the card, prefixed by : (e.g. :9)",
-                        "min_value": 1,
-                        "max_value": 10,
-                        "required": true
-                    },
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to rate",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "remove",
-                "description": "Subgroup remove",
-                "type": 2,
-                "options": [
-                    {
-                        "name": "one",
-                        "description": "Remove a rating from a card",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove a rating for",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
-                    }
-                ]
-            }
-
-        ]
-    },
-    {
-        "type": 1,
-        "name": "wish",
-        "description": "Head command for wishing!",
-        "options": [
-            {
-                "name": "one",
-                "description": "Add a card to your wishlist!",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to add to your wishlist",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "many",
-                "description": "Add many cards to your wishlist",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to add to your wishlist",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "list",
-                "description": "List cards in a wishlist!",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card name or query you want to use to filter the wishlist",
-                        "type": 3,
-                        "required": false
-                    },
-                    {
-                        "name": "user_id",
-                        "description": "The user ID or mention of a user to view their wishlist, leave empty for your own",
-                        "type": 6,
-                        "required": false
-                    }
-                ]
-            },
-            {
-                "name": "remove",
-                "description": "Subgroup remove",
-                "type": 2,
-                "options": [
-                    {
-                        "name": "one",
-                        "description": "Remove a card from your wishlist",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove from your wishlist",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
-                    },
-                    {
-                        "name": "many",
-                        "description": "Remove many cards from your wishlist",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "The card query of the cards you want to remove from your wishlist",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "hero",
-        "description": "Base command for heroes!",
-        "options": [
-            {
-                "name": "list",
-                "description": "View a list of all heroes",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "hero",
-                        "description": "The hero name or ID you want to find in the list",
-                        "type": 3,
-                        "required": false
-                    }
-                ]
-            },
-            {
-                "name": "info",
-                "description": "Get information about a hero",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "hero",
-                        "description": "The hero name or ID you want more info on",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "equip",
-                "description": "Equip a passive effect into an empty hero slot",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "slot_number",
-                        "description": "The slot number to equip into",
-                        "type": 4,
-                        "required": true
-                    },
-                    {
-                        "name": "effect_name",
-                        "description": "The effect name to equip",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "get",
-                "description": "Get a hero from the hero list",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "hero",
-                        "description": "The hero name or ID you want",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "submit",
-                "description": "Submit a hero for consideration",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "anilist_link",
-                        "description": "A link to the character on anilist.co",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "slots",
-                "description": "View your current hero slots, also known as effect list passive",
-                "type": 1
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "effect",
-        "description": "Base command for effects!",
-        "options": [
-            {
-                "name": "list",
-                "description": "Subgroup List",
-                "type": 2,
-                "options": [
-                    {
-                        "name": "actives",
-                        "description": "List your created active effects",
-                        "type": 1
-                    },
-                    {
-                        "name": "passives",
-                        "description": "List your created passive effects",
-                        "type": 1
-                    }
-                ]
-            },
-            {
-                "name": "info",
-                "description": "Get information about an effect",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "effect_name",
-                        "description": "The effect you want more information about",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "use",
-                "description": "Use an active effect from your effect list active",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "effect_name",
-                        "description": "The name of the effect you want to use",
-                        "type": 3,
-                        "required": true
-                    },
-                    {
-                        "name": "extra_arguments",
-                        "description": "If the effect takes extra arguments, put them here",
-                        "type": 3,
-                        "required": false
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "type": 1,
-        "name": "liquefy",
-        "description": "Base command for liquefying!",
-        "options": [
-            {
-                "name": "one",
-                "description": "Liquefy a card to receive vials!",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to liquefy",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "many",
-                "description": "Liquefy up to 100 cards to receive vials!",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to liquefy",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "name": "preview",
-                "description": "View the list of cards that would be taken in liquefy many",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to liquefy",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
-            }
-        ]
+        "name": "stats",
+        "description": "View your daily stats!"
     },
     {
         "type": 1,
@@ -1343,6 +1222,19 @@
                         "required": true
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "summon",
+        "description": "Summon a card you own!",
+        "options": [
+            {
+                "name": "card_query",
+                "description": "Specify a card you want to summon, or leave empty for a random card you own!",
+                "type": 3,
+                "required": false
             }
         ]
     },
@@ -1438,6 +1330,11 @@
     },
     {
         "type": 1,
+        "name": "todo",
+        "description": "List a recommended list of things to do!"
+    },
+    {
+        "type": 1,
         "name": "transaction",
         "description": "Base command for transaction!",
         "options": [
@@ -1527,6 +1424,96 @@
                                 "name": "card_query",
                                 "description": "Add a card query to filter for specific transactions",
                                 "type": 3
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "vote",
+        "description": "Get a list of websites to vote for the bot and gain rewards!"
+    },
+    {
+        "type": 1,
+        "name": "wish",
+        "description": "Head command for wishing!",
+        "options": [
+            {
+                "name": "one",
+                "description": "Add a card to your wishlist!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to add to your wishlist",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "many",
+                "description": "Add many cards to your wishlist",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to add to your wishlist",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "description": "List cards in a wishlist!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card name or query you want to use to filter the wishlist",
+                        "type": 3,
+                        "required": false
+                    },
+                    {
+                        "name": "user_id",
+                        "description": "The user ID or mention of a user to view their wishlist, leave empty for your own",
+                        "type": 6,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "Subgroup remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "one",
+                        "description": "Remove a card from your wishlist",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove from your wishlist",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "many",
+                        "description": "Remove many cards from your wishlist",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query of the cards you want to remove from your wishlist",
+                                "type": 3,
+                                "required": true
                             }
                         ]
                     }
