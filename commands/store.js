@@ -46,7 +46,7 @@ cmd('store', 'shop', ['store', 'view'], async (ctx, user, cat) => {
 })
 
 cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withItem(async (ctx, user, item, args) => {
-    const embed = itemInfo(ctx, user, item)
+    const embed = await itemInfo(ctx, user, item)
     embed.color = colors.deepgreen
     embed.author = { name: item.name }
 
