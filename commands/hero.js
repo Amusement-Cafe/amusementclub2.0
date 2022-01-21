@@ -147,7 +147,7 @@ cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
     return ctx.send(ctx.interaction, embed, user.discord_id)
 })
 
-cmd(['effects'], ['hero', 'effects'], ['effect', 'list'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['effects'], ['hero', 'effects'], ['effect', 'list', 'actives'], withUserEffects(async (ctx, user, effects, ...args) => {
 
     if(!effects.some(x => !x.passive))
         return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
@@ -173,7 +173,7 @@ cmd(['effects'], ['hero', 'effects'], ['effect', 'list'], withUserEffects(async 
     })
 }))
 
-cmd(['slots'], ['hero', 'slots'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['slots'], ['hero', 'slots'], ['effect', 'list', 'passives'], withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
     effects = effects.filter(x => !x.expires || x.expires > now)
 

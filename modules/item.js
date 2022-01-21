@@ -325,6 +325,7 @@ const checks = {
                 Type \`${ctx.prefix}inv info ${item.id}\` to see the list of required cards`
 
         if(requiredUserCards.find(x => x.fav && x.amount === 1)) {
+            const card = requiredUserCards.find(x => x.fav && x.amount === 1)
             return `the last copy of required card ${formatName(card)} is marked as favourite.
                     Please, use \`${ctx.prefix}fav remove ${card.name}\` to remove it from favourites first`
         }
