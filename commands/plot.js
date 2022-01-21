@@ -87,7 +87,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
     }
 
-    let question = `Would you like to purchase a plot in **${ctx.msg.channel.guild.name}**? It will cost you ${numFmt(cost)} ${ctx.symbols.lemon}!`
+    let question = `Would you like to purchase a plot in **${ctx.interaction.channel.guild.name}**? It will cost you ${numFmt(cost)} ${ctx.symbols.lemon}!`
 
     if (userGuildPlots.length >= buildingCount)
         question += `\n**Note that there are currently only ${buildingCount} buildings available at this time and you cannot have two of the same building in a guild!**`
@@ -98,7 +98,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
         check,
         onConfirm: async () => {
             let newLot = new Plots
-            newLot.user_id = ctx.msg.author.id
+            newLot.user_id = ctx.interaction.member.id
             newLot.guild_id = ctx.guild.id
             newLot.guild_name = ctx.discord_guild.name
             await newLot.save()
@@ -116,7 +116,7 @@ cmd(['plot', 'buy'], async (ctx, user) => {
 
             let buyablePlots = _.min([affordablePlots - 1, userAllowedPlots, guildAllowedPlots])
 
-            ctx.reply(user, `you have bought a plot for **${cost}** ${ctx.symbols.lemon} in **${ctx.msg.channel.guild.name}**!
+            ctx.reply(user, `you have bought a plot for **${cost}** ${ctx.symbols.lemon} in **${ctx.interaction.channel.guild.name}**!
             You are currently able to buy **${buyablePlots}** more plots in this guild!`)
         },
     })

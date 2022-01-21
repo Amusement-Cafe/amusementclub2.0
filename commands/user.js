@@ -502,7 +502,7 @@ cmd('quest', 'quests', ['quest', 'list'], async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests`, 'red')
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your quests:` },
         description: user.dailyquests.map((x, i) => {

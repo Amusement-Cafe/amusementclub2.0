@@ -35,7 +35,7 @@ cmd('help', async (ctx, user, ...args) => {
                 ${curpgn.embed.description}`
             await ctx.pgn.addPagination(user.discord_id, ch.id, curpgn)
 
-            if(ch.id != ctx.msg.channel.id)
+            if(ch.id != ctx.interaction.channel.id)
                 await ctx.reply(user, `help was sent to you. 
                     You can also use \`-here\` (e.g. \`${ctx.guild.prefix}help guild -here\`) to see help in the current channel`)
 
@@ -64,7 +64,8 @@ cmd('announcement', async (ctx, user) => {
 }).access('dm')
 
 cmd('baka', async (ctx, user, ...args) => {
-    const time = msToTime(Date.now() - new Date(ctx.msg.timestamp))
+    return
+    const time = msToTime(Date.now() - new Date(ctx.interaction.timestamp))
     return ctx.reply(user, `you baka in \`${time}\``)
 })
 
