@@ -113,7 +113,7 @@ const uses = {
                 guild: ctx.guild.id,
         })
 
-        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**`)
+        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.interaction.channel.guild.name}**`)
     },
 
     claim_ticket: async (ctx, user, item, index) => {
@@ -360,7 +360,7 @@ const buys = {
 
 const getQuestion = (ctx, user, item) => {
     switch(item.type) {
-        case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
+        case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.interaction.channel.guild.name}**?`
         case 'claim_ticket': return `Do you want to use **${item.name}** to get **${_.isArray(item.level)? `${item.level.length} ${item.level[0]}`: `1 ${item.level}`} ★** card(s)?`
         case 'recipe': return `Do you want to convert **${item.name}** into an Effect Card? The required cards will be consumed`
     }

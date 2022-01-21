@@ -91,7 +91,7 @@ module.exports.create = async ({
         if(userid)
             _.remove(userq, (x) => x.id === userid)
 
-        return interaction.createMessage({ embed: content })
+        return interaction.editOriginalMessage({ embed: content })
     }
 
     const toObj = (user, str, clr) => {

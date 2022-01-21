@@ -22,7 +22,7 @@ const check_achievements = async (ctx, user, action, channelID) => {
         await plotPayout(ctx, 'tavern', 1, 25)
 
 
-        return ctx.send(channelID || ctx.msg.channel.id, {
+        return ctx.send(channelID || ctx.interaction.channel.id, {
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,

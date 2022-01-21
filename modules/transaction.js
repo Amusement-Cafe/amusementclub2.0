@@ -41,8 +41,8 @@ const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, 
         transaction.from_id = user.discord_id
         transaction.to = target? target.username : 'bot'
         transaction.to_id = to_id
-        transaction.guild = ctx.msg.channel.guild.name
-        transaction.guild_id = ctx.msg.channel.guild.id
+        transaction.guild = ctx.interaction.channel.guild.name
+        transaction.guild_id = ctx.interaction.channel.guild.id
         transaction.status = 'pending'
         transaction.time = new Date()
         transaction.cards = cards.map(x => x.id)
@@ -189,7 +189,7 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
                 Your dealings were found to be in violation of our community rules.
                 You can inquire further on our [Bot Discord](${ctx.cafe})`
     
-    if(!ctx.msg.channel.guild)
+    if(!ctx.interaction.channel.guild)
         return `transactions are possible only in guild channel`
 
     const pending = await getPendingFrom(ctx, user)

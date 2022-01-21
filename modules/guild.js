@@ -34,8 +34,8 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
     if (!guild) {
         guild = await new Guild()
         guild.id = discord_guild.id
-        guild.botchannels = [ctx.msg.channel.id]
-        guild.reportchannel = ctx.msg.channel.id
+        guild.botchannels = [ctx.interaction.channel.id]
+        guild.reportchannel = ctx.interaction.channel.id
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
 
         await guild.save()
@@ -193,7 +193,7 @@ const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.
 
 const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.discord_id)
 
-const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
+const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === user.discord_id
 
 const fetchGuildUsers = (ctx) => User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
 
