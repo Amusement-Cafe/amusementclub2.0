@@ -311,13 +311,14 @@ module.exports.create = async ({
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
         ctx.settings.wip = false
-        const gCommands = await bot.getGuildCommands('651599467174428703')
-        ctx.slashCmd.map(x => {
-            const matchCommand = gCommands.find(y => x.name === y.name)
-            if (matchCommand)
-                return bot.editGuildCommand('651599467174428703', matchCommand.id, x)
-            bot.createGuildCommand('651599467174428703', x)
-        })
+        // const gCommands = await bot.getGuildCommands('651599467174428703')
+        // gCommands.map(x => bot.deleteGuildCommand('651599467174428703', x.id))
+        // ctx.slashCmd.map(x => {
+        //     const matchCommand = gCommands.find(y => x.name === y.name)
+        //     if (matchCommand)
+        //         return bot.editGuildCommand('651599467174428703', matchCommand.id, x)
+        //     bot.createGuildCommand('651599467174428703', x)
+        // })
     })
 
     bot.on('interactionCreate', async (interaction) => {
@@ -332,7 +333,7 @@ module.exports.create = async ({
             const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id, [])
 
             let base = [interaction.data.name]
-            let options = ''
+            let options = []
 
             let cursor = interaction.data
             while (cursor.hasOwnProperty('options')) {
@@ -342,13 +343,13 @@ module.exports.create = async ({
                         base.push(x.name)
                         cursor = x
                     } else {
-                        options += `${x.value} `
+                        options.push(x.value)
                     }
                 })
             }
 
             let capitalMsg = _.concat(base, options)
-            let msg = _.concat(base, options.toLowerCase())
+            let msg = _.concat(base.map(x=>x.toLowerCase()), options.map(x=>x.toLowerCase()))
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
                 capitalMsg,
