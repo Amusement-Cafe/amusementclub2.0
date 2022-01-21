@@ -127,7 +127,7 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
     })
 }))
 
-cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
+cmd(['effect', 'info'], ['hero', 'effect', 'info'], async (ctx, user, ...args) => {
     if(args.length === 0)
         return ctx.qhelp(ctx, user, 'effect')
 
@@ -137,7 +137,7 @@ cmd(['effect', 'info'], ['hero', 'effect', 'info'], (ctx, user, ...args) => {
     if(!item)
         return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
 
-    const embed = itemInfo(ctx, user, item)
+    const embed = await itemInfo(ctx, user, item)
     embed.author = { name: item.name }
     embed.description = embed.fields[0].value
     embed.fields = embed.fields.slice(1)
