@@ -81,7 +81,7 @@ module.exports.create = async ({
     await fillCardOwnerCount(data.cards)
 
     /* create our glorious sending fn */
-    const send = (interaction, content, userid) => {
+    const send = (interaction, content, userid, components) => {
         if(content.description)
             content.description = content.description.replace(/\s\s+/gm, '\n')
 
@@ -91,7 +91,7 @@ module.exports.create = async ({
         if(userid)
             _.remove(userq, (x) => x.id === userid)
 
-        return interaction.editOriginalMessage({ embed: content })
+        return interaction.editOriginalMessage({ embed: content, components: components })
     }
 
     const toObj = (user, str, clr) => {
@@ -329,7 +329,7 @@ module.exports.create = async ({
             const curguild = await guild.fetchGuild(interaction.guildID)
 
             await interaction.acknowledge()
-            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
+            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id, [])
 
             let base = [interaction.data.name]
             let options = ''
@@ -366,6 +366,7 @@ module.exports.create = async ({
             console.log(`[${usr.username}]: ${cntnt}`)
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
+            await check_all(isolatedCtx, usr, args[0], interaction.channel.id)
         }
 
         if (interaction instanceof Eris.ComponentInteraction) {

@@ -22,7 +22,7 @@ const check_achievements = async (ctx, user, action, channelID) => {
         await plotPayout(ctx, 'tavern', 1, 25)
 
 
-        return ctx.send(channelID || ctx.interaction.channel.id, {
+        return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,
@@ -33,7 +33,7 @@ const check_achievements = async (ctx, user, action, channelID) => {
                 value: reward
             }],
             footer: {text: `To view your achievements use ${ctx.prefix}ach`}
-        })
+        }})
     }
 }
 
@@ -65,15 +65,15 @@ const check_daily = async (ctx, user, action, channelID) => {
 
     await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
-    return ctx.send(ctx.interaction, {
-        color: colors.green,
-        author: { name: `${user.username}, you completed:` },
-        description: complete.join('\n'),
-        fields: [{
-            name: `Rewards`,
-            value: rewards.join('\n')
-        }]
-    })
+    return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
+            color: colors.green,
+            author: {name: `${user.username}, you completed:`},
+            description: complete.join('\n'),
+            fields: [{
+                name: `Rewards`,
+                value: rewards.join('\n')
+            }]
+        }})
 }
 
 const check_all = async (ctx, user, action, channelID) => {
