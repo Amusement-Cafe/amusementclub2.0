@@ -107,7 +107,9 @@ module.exports.create = async ({
     /* create direct reply fn */
     const direct = async (user, str, clr = 'default') => {
         const ch = await bot.getDMChannel(user.discord_id)
-        return bot.createMessage(ch.id, {embed: toObj(user, str, clr)})
+        try {
+            return bot.createMessage(ch.id, {embed: toObj(user, str, clr)})
+        } catch (e) {}
     }
 
     const qhelp = (ctx, user, cat) => {
@@ -365,6 +367,9 @@ module.exports.create = async ({
             const cntnt = msg.map(x => x.trim()).join(' ')
             let args = cntnt.split(/ +/)
             console.log(`[${usr.username}]: ${cntnt}`)
+            args.filter(x => x.length === 2 && x[0] === '-').map(x => {
+                isolatedCtx.globals[globalArgsMap[x[1]]] = true
+            })
             isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
             await check_all(isolatedCtx, usr, args[0], interaction.channel.id)
