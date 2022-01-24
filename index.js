@@ -345,7 +345,7 @@ module.exports.create = async ({
                         base.push(x.name)
                         cursor = x
                     } else {
-                        options.push(x.value)
+                        options.push(`${x.value}`)
                     }
                 })
             }
