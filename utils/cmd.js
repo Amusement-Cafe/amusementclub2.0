@@ -80,6 +80,10 @@ const trigger = async (type, ctx, user, args) => {
             return ctx.reply(user, `this command is possible only in guild (server) channel`, 'red')
         }
     }
+    
+    if (!cursor.hasOwnProperty('_callback'))
+        return
+
 
     const newArgs = [ctx, user || { }].concat(args)
 
