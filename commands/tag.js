@@ -303,7 +303,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
 
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'list'], async (ctx, user, arg) => {
     const tags = await fetchTagNames(ctx, arg);
     const pages = []
 
