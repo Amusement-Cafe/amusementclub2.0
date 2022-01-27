@@ -221,7 +221,7 @@ cmd('claim', 'cl', ['claim', 'regular'], async (ctx, user, ...args) => {
         description += `\n**${x.name}**\n${x.value}`
     }).filter(x => x && x.value)
 
-    const lastClaim = await Claim.findOne().lean()
+    const lastClaim = await Claim.findOne().sort({_id: 'desc'}).lean()
 
     const claimInfo = new Claim()
     claimInfo.id = lastClaim? generateNextId(lastClaim.id, 6) : generateNextId('aaaaaa', 6)

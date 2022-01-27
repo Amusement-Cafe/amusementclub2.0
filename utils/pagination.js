@@ -76,7 +76,7 @@ const defaultpgn = {
 }
 
 const addPagination = async (interaction, params) => {
-    const userID = interaction.member.id
+    const userID = interaction.member? interaction.member.id: interaction.user.id
     const oldpagination = paginations.filter(x => x.userID === userID)[0]
     try {
         if(oldpagination && oldpagination.channel && oldpagination.msg) {
@@ -123,7 +123,7 @@ const addPagination = async (interaction, params) => {
 }
 
 const addConfirmation = async (interaction, params) => {
-    const userID = interaction.member.id
+    const userID = interaction.member? interaction.member.id: interaction.user.id
     const old = confirmations.filter(x => x.userID === userID)[0]
     try {
         if(old && old.channel && old.msg)
@@ -167,7 +167,7 @@ const addConfirmation = async (interaction, params) => {
 }
 
 const doSwitch =  async (ctx, newpage) => {
-    const userID = ctx.interaction.member.id
+    const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
     const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(userID))[0]
     if(!data) return
 
@@ -188,7 +188,7 @@ const doSwitch =  async (ctx, newpage) => {
 
 const doResolve = async (ctx, reaction) => {
     let data
-    const userID = ctx.interaction.member.id
+    const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
     if(reaction === chars.confirm)
         data = confirmations.filter(x => x.msg === ctx.interaction.message.id
             && x.perms.confirm.includes(userID))[0]
@@ -231,7 +231,7 @@ const getPages = (array, split = 10, maxCharacters = 4096) => {
 }
 
 const remove = (ctx) => {
-    const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(ctx.interaction.member.user.id))[0]
+    const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(ctx.interaction.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id))[0]
     if (!data)
         return
 

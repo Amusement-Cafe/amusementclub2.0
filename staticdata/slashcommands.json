@@ -109,11 +109,6 @@
     },
     {
         "type": 1,
-        "name": "baka",
-        "description": "Ping tester!"
-    },
-    {
-        "type": 1,
         "name": "balance",
         "description": "Display your current balances!"
     },

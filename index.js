@@ -313,20 +313,19 @@ module.exports.create = async ({
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
         ctx.settings.wip = false
-        // const gCommands = await bot.getGuildCommands('651599467174428703')
-        // gCommands.map(x => bot.deleteGuildCommand('651599467174428703', x.id))
-        // ctx.slashCmd.map(x => {
-        //     const matchCommand = gCommands.find(y => x.name === y.name)
-        //     if (matchCommand)
-        //         return bot.editGuildCommand('651599467174428703', matchCommand.id, x)
-        //     bot.createGuildCommand('651599467174428703', x)
-        // })
+        const globalCommands = await bot.getCommands()
+        if (globalCommands.length !== ctx.slashCmd.length)
+            await bot.bulkEditCommands(ctx.slashCmd)
     })
 
     bot.on('interactionCreate', async (interaction) => {
         if (interaction instanceof Eris.CommandInteraction) {
+            if (interaction.applicationID !== bot.application.id)
+                return
 
-            if (interaction.member.user.bot || userq.some(x => x.id === interaction.member.id))
+            const interactionUser = interaction.user || interaction.member.user
+
+            if (interactionUser.bot || userq.some(x => x.id === interactionUser.id))
                 return
 
             const curguild = await guild.fetchGuild(interaction.guildID)
@@ -357,12 +356,12 @@ module.exports.create = async ({
                 capitalMsg,
                 reply, /* quick reply function to the channel */
                 globals: {}, /* global parameters */
-                discord_guild: interaction.member.guild,  /* current discord guild */
+                discord_guild: interaction.member? interaction.member.guild: null,  /* current discord guild */
                 prefix: '/', /* current prefix */
                 interaction: interaction
             })
 
-            let usr = await user.fetchOrCreate(isolatedCtx, interaction.member.id, interaction.member.user.username)
+            let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.username)
             usr.username = usr.username.replace(/\*/gi, '')
             const cntnt = msg.map(x => x.trim()).join(' ')
             let args = cntnt.split(/ +/)
@@ -370,24 +369,26 @@ module.exports.create = async ({
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
             })
-            isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
+            if (isolatedCtx.discord_guild)
+                isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
             await check_all(isolatedCtx, usr, args[0], interaction.channel.id)
         }
 
         if (interaction instanceof Eris.ComponentInteraction) {
-
-
             if (interaction.applicationID !== bot.application.id)
                 return
+
+            const interactionUser = interaction.user || interaction.member.user
+
             const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
             let isoCtx = Object.assign({}, ctx, {
                 reply,
                 interaction: interaction,
-                discord_guild: interaction.member.guild
+                discord_guild: interaction.member? interaction.member.guild: null
             })
 
-            let usr = await user.fetchOrCreate(isoCtx, interaction.member.id, interaction.member.user.username)
+            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
             usr.username = usr.username.replace(/\*/gi, '')
             await interaction.acknowledge()
             await trigger('rct', isoCtx, null, [interaction.data.custom_id])
