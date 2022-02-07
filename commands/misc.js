@@ -107,7 +107,7 @@ cmd('license', async (ctx, user) => {
 
 const getHelpEmbed = (ctx, o, prefix) => {
 
-    const footerText = `Amusement Club Amethyst | xQAxThF | v${pjson.version} | by NoxCaos#4905 and contributors`
+    const footerText = `Amusement Club Amethyst | xQAxThF | v${pjson.version} | by noxc#4905 and Mj11jM#1111`
     const docLink = o.docs? `\n[View this help in docs ↗️](https://docs.amusement.cafe/${o.docs})` : ''
     const embed = {
         title: o.title, 
