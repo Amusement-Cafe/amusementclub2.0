@@ -75,12 +75,12 @@ const defaultpgn = {
     buttons: defaults.pgnButtons
 }
 
-const addPagination = async (interaction, params) => {
-    const userID = interaction.member? interaction.member.id: interaction.user.id
+const addPagination = async (ctx, params) => {
+    const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
     const oldpagination = paginations.filter(x => x.userID === userID)[0]
     try {
         if(oldpagination && oldpagination.channel && oldpagination.msg) {
-            await interaction.editMessage(oldpagination.msg, {components: []})
+            await ctx.interaction.editMessage(oldpagination.msg, {components: []})
         }
     } catch(e) {}
 
@@ -94,7 +94,7 @@ const addPagination = async (interaction, params) => {
         embed: Object.assign({}, defaults.pgnEmbed),
         expires: asdate.add(new Date(), defaults.expires, 'seconds'),
         components: [],
-        interaction
+        interaction: ctx.interaction
     }, defaultpgn, params)
 
     obj.embed.color = obj.embed.color || colors.blue
@@ -116,18 +116,25 @@ const addPagination = async (interaction, params) => {
         paginations = paginations.filter(x => x.userID != userID)
     }
 
+    let interMsg
 
-    const interMsg = await interaction.createMessage({ embed: obj.embed, components: obj.components })
+    if (params.direct) {
+        const ch = await ctx.bot.getDMChannel(userID)
+        interMsg = await ctx.bot.createMessage(ch.id, {embed: obj.embed, components: obj.components})
+        await ctx.interaction.createMessage({embed: {color: colors.green, description: 'A DM has been sent to you'}})
+    } else {
+        interMsg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
+    }
     obj.msg = interMsg.id
     obj.channel = interMsg.channel.id
 }
 
-const addConfirmation = async (interaction, params) => {
-    const userID = interaction.member? interaction.member.id: interaction.user.id
+const addConfirmation = async (ctx, params) => {
+    const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
     const old = confirmations.filter(x => x.userID === userID)[0]
     try {
         if(old && old.channel && old.msg)
-            await interaction.editMessage(old.msg, {components: []})
+            await ctx.interaction.editMessage(old.msg, {components: []})
     } catch(e) {}
 
     confirmations = confirmations.filter(x => x.userID != userID)
@@ -137,12 +144,12 @@ const addConfirmation = async (interaction, params) => {
         userID,
         embed: Object.assign({}, defaults.cfmEmbed),
         perms: { confirm: [userID], decline: [userID] },
-        onConfirm: () => sendConfirm(interaction),
-        onDecline: () => sendDecline(interaction),
-        onTimeout: () => sendTimeout(interaction),
+        onConfirm: () => sendConfirm(ctx.interaction),
+        onDecline: () => sendDecline(ctx.interaction),
+        onTimeout: () => sendTimeout(ctx.interaction),
         onError: () => { },
         expires: asdate.add(new Date(), defaults.confirmExpiration, 'seconds'),
-        interaction,
+        interaction: ctx.interaction,
     }, params)
 
     if(obj.check && await obj.check())
@@ -160,7 +167,7 @@ const addConfirmation = async (interaction, params) => {
 
     confirmations.push(obj)
 
-    const msg = await interaction.createMessage({ embed: obj.embed, components: obj.components })
+    const msg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
     obj.msg = msg.id
     obj.channel = msg.channel.id
     obj.channelType = msg.channel.type

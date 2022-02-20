@@ -78,17 +78,17 @@ const getInfo = async (ctx, user, id) => {
     }
 }
 
-const withHeroes = (callback) => async (ctx, user, ...args) => {
+const withHeroes = (callback) => async (ctx, user, args) => {
     if(hcache.length === 0)
         await reloadCache()
 
     let list = hcache
-    if(args.length > 0) {
-        const id = parseInt(args[0])
+    if(args.hero) {
+        const id = parseInt(args.hero)
         if(id) {
             list = hcache.filter(x => x.id == id)
         } else {
-            const reg = new RegExp(args.join('.*'), 'gi')
+            const reg = new RegExp(args.hero, 'gi')
             list = hcache.filter(x => reg.test(x.name))
         }
     }
@@ -96,7 +96,7 @@ const withHeroes = (callback) => async (ctx, user, ...args) => {
     if(list.length === 0)
         return ctx.reply(user, `no heroes found matching that request`, 'red')
     
-    return callback(ctx, user, list, args.length === 0)
+    return callback(ctx, user, list, args.hero)
 }
 
 const checkGuildLoyalty = async (ctx) => {

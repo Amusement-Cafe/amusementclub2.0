@@ -44,7 +44,11 @@ const {
     fetchOnly
 } = require('../modules/user')
 
-cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
+cmd('info', ['card', 'info'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'info')
 
@@ -145,7 +149,7 @@ cmd('info', ['card', 'info'], withGlobalCards(async (ctx, user, cards, parsedarg
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
 
-})).access('dm')
+}))).access('dm')
 
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const booruID = parsedargs.extra[0]

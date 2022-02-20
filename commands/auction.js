@@ -29,17 +29,21 @@ const {
     findUserCards,
 } = require('../modules/user')
 
-cmd('auc', 'auction', 'auctions', ['auction', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
+cmd('auc', 'auction', 'auctions', ['auction', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const req = {finished: false}
 
-    if(parsedargs.me === 1)
+    if(parsedargs.me)
         req.author = user.discord_id
 
-    let list = (await Auction.find(req).sort({ expires: 1 }))
+    let list = (await Auction.find(req).sort({ expires: 1 }).lean())
         .filter(x => x.expires > now)
 
-    if (parsedargs.me === 2)
+    if (!parsedargs.me && parsedargs.me !== undefined)
         list = list.filter(x => x.author !== user.discord_id)
 
     if (parsedargs.diff) {
@@ -47,9 +51,9 @@ cmd('auc', 'auction', 'auctions', ['auction', 'list'], withGlobalCards(async (ct
         list = list.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.card))
     }
 
-    if(parsedargs.bid === 1)
+    if(parsedargs.bid)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
-    else if(parsedargs.bid === 2) 
+    else if(!parsedargs.bid && parsedargs.bid !== undefined)
         list = list.filter(x => !x.lastbidder || x.lastbidder != user.discord_id)
 
     if(!parsedargs.isEmpty())
@@ -58,7 +62,7 @@ cmd('auc', 'auction', 'auctions', ['auction', 'list'], withGlobalCards(async (ct
     if(list.length === 0)
         return ctx.reply(user, `found 0 active auctions`, 'red')
 
-    list = list.slice(0, 100)
+    list = list.slice(0, 200)
 
     return ctx.sendPgn(ctx, user, {
         pages: paginate_auclist(ctx, user, list),
@@ -68,13 +72,13 @@ cmd('auc', 'auction', 'auctions', ['auction', 'list'], withGlobalCards(async (ct
             color: colors.blue,
         }
     })
-})).access('dm')
+}))).access('dm')
 
-cmd(['auc', 'info'], ['auction', 'info'], async (ctx, user, arg1) => {
-    const auc = await Auction.findOne({ id: arg1 })
+cmd(['auc', 'info'], ['auction', 'info'], withInteraction(async (ctx, user, args) => {
+    const auc = await Auction.findOne({ id: args.aucID })
 
     if(!auc)
-        return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
+        return ctx.reply(user, `auction with ID \`${args.aucID}\` was not found`, 'red')
 
     const author = await fetchOnly(auc.author)
     const aucformat = await format_auc(ctx, auc, author)
@@ -86,32 +90,32 @@ cmd(['auc', 'info'], ['auction', 'info'], async (ctx, user, arg1) => {
         description: aucformat,
         color: colors['blue']
     }, user.discord_id)
-}).access('dm')
+})).access('dm')
 
-cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], ['auction', 'preview'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], ['auction', 'preview'], withInteraction(withGlobalCards(async (ctx, user, cards, args) => {
     const now = new Date();
     const req = {finished: false}
 
-    if(parsedargs.me === 1)
+    if(args.me)
         req.author = user.discord_id
 
     let list = (await Auction.find(req).sort({ expires: 1 }))
         .filter(x => x.expires > now)
 
-    if (parsedargs.me === 2)
+    if (!args.me && args.me !== undefined)
         list = list.filter(x => x.author !== user.discord_id)
 
-    if (parsedargs.diff) {
+    if (args.diff) {
         const userCards = await findUserCards(ctx, user, list.map(x => x.card))
-        list = list.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.card))
+        list = list.filter(x => args.diff == 1 ^ userCards.some(y => y.cardid === x.card))
     }
 
-    if(parsedargs.bid === 1)
+    if(args.bid)
         list = list.filter(x => x.lastbidder && x.lastbidder === user.discord_id)
-    else if(parsedargs.bid === 2)
+    else if(args.bid !== undefined)
         list = list.filter(x => !x.lastbidder || x.lastbidder != user.discord_id)
 
-    if(!parsedargs.isEmpty())
+    if(!args.isEmpty())
         list = list.filter(x => cards.some(y => x.card === y.id))
 
     if(list.length === 0)
@@ -146,13 +150,11 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], ['auction', 'preview'], 
             color: colors.blue
         }
     })
-})).access('dm')
+}))).access('dm')
 
-cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auc', 'sell'], ['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if (ctx.settings.aucLock)
         return ctx.reply(user, `selling on auction is currently disabled by the admins.\nFor more info you may inquire in the [Support Server](${ctx.invite}).`, 'red')
-    const timelimit = asdate.subtract(new Date(), 1, 'hour')
-    const curaucs = await Auction.find({finished: false, author: user.discord_id, time: {$gt: timelimit}})
 
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
@@ -162,15 +164,9 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
 
-    if (user.dailystats.aucs >= 150)
-        return ctx.reply(user, `you have reached the maximum amount of auctions you can create in one daily. Please wait until your next daily to create more!`, 'red')
-
-    if (curaucs.length >= 30)
-        return ctx.reply(user, `you have reached the maximum amount of auctions you can have listed at a time per hour. Please wait an hour before listing again!`, 'red')
-
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
-    let price = parsedargs.extra.filter(x => x.length < 7 && !isNaN(x) && Number(x) > 0).map(x => Number(x))[0] || Math.round(ceval)
+    let price = parsedargs.price || Math.round(ceval)
 
     if(price <= 4)
         price *= ceval
@@ -180,7 +176,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
     const fee = Math.round(price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
-    const timenum = -parsedargs.extra.filter(x => x[0] === '-').map(x => parseInt(x))[0]
+    const timenum = parsedargs.timeLength
     let time = 6
 
     if(timenum) {
@@ -244,17 +240,17 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withCards(async (ctx, user, cards, par
             })
         },
     })
-}))
+})))
 
-cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
+cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', withInteraction(async (ctx, user, args) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
                                 You can inquire further on our [Bot Discord](${ctx.cafe})`, 'red')
 
     const now = new Date();
-    const bid = parseInt(args.find(x => !isNaN(x)))
-    const id = args.find(x => isNaN(x))
+    const bid = args.price
+    const id = args.aucID
 
     if(!id)
         return ctx.reply(user, `please specify auction ID`, 'red')
@@ -293,18 +289,18 @@ cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', async (ctx, user, ...args) => {
         await bid_auc(ctx, user, auc, bid)
     }
 
-}).access('dm')
+}, true)).access('dm')
 
-cmd(['auc', 'cancel'], ['auction', 'cancel'], async (ctx, user, arg1, arg2) => {
-    let auc = await Auction.findOne({ id: arg1 })
+cmd(['auc', 'cancel'], ['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
+    let auc = await Auction.findOne({ id: args.aucID })
 
     if(!auc)
-        return ctx.reply(user, `auction with ID \`${arg1}\` was not found`, 'red')
+        return ctx.reply(user, `auction with ID \`${args.aucID}\` was not found`, 'red')
 
     const card = ctx.cards[auc.card]
 
     const check = async () => {
-        auc = await Auction.findOne({ id: arg1 })
+        auc = await Auction.findOne({ id: args.aucID })
 
         if(auc.author != user.discord_id)
             return ctx.reply(user, `you don't have rights to cancel this auction`, 'red')
@@ -330,4 +326,4 @@ cmd(['auc', 'cancel'], ['auction', 'cancel'], async (ctx, user, arg1, arg2) => {
             return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)
         }
     })
-}).access('dm')
+})).access('dm')

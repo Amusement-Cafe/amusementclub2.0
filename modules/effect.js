@@ -33,7 +33,7 @@ const mapUserEffects = (ctx, user) => {
         x))
 }
 
-const withUserEffects = (callback) => (ctx, user, ...args) => {
+const withUserEffects = (callback) => (ctx, user, args) => {
     if(!user.hero)
         return ctx.reply(user, `you don't have a hero yet. You can select hero from the list using \`->hero list\`
             You can search for the hero using \`->hero list [hero name]\`
@@ -41,7 +41,7 @@ const withUserEffects = (callback) => (ctx, user, ...args) => {
             For more information type \`->help hero -here\``, 'red')
 
     const map = mapUserEffects(ctx, user)
-    return callback(ctx, user, map, ...args)
+    return callback(ctx, user, map, args)
 }
 
 module.exports = {

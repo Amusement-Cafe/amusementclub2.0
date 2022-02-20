@@ -94,13 +94,13 @@ module.exports = [
         passive: false,
         cooldown: 40,
         use: async (ctx, user, args) => {
-            if(args.length === 0)
-                return { msg: `please specify collection`, used: false }
+            if(!args.extraArgs)
+                return { msg: `please specify collection in extra_arguments`, used: false }
 
-            const name = args.join('').replace(/^-/, '')
+            const name = args.extraArgs.replace(/^-/, '')
             const col = byAlias(ctx, name)[0]
             if(!col)
-                return { msg: `collection with ID \`${args.join('')}\` wasn't found`, used: false }
+                return { msg: `collection with ID \`${args.extraArgs}\` wasn't found`, used: false }
 
             if(col.promo)
                 return { msg: `cannot use this effect on promo collections`, used: false }
@@ -127,21 +127,23 @@ module.exports = [
         passive: false,
         cooldown: 48,
         use: async (ctx, user, args) => {
-            if(args.length === 0)
-                return { msg: `please specify effect ID`, used: false }
+            if(!args.extraArgs)
+                return { msg: `please specify effect ID in extra_arguments`, used: false }
 
-            const reg = new RegExp(args[0], 'gi')
-            effect = ctx.effects.filter(x => !x.passive).find(x => reg.test(x.id))
+            const effectArgs = args.extraArgs.split(' ')
+            const reg = new RegExp(effectArgs[0], 'gi')
+            let effect = ctx.effects.filter(x => !x.passive).find(x => reg.test(x.id))
 
             if(!effect)
-                return { msg: `effect with ID \`${args[0]}\` was not found or it is not usable`, used: false }
+                return { msg: `effect with ID \`${effectArgs[0]}\` was not found or it is not usable`, used: false }
 
             let excludedEffects = ["memoryval", "memoryxmas", "memorybday", "memoryhall", "judgeday"]
 
             if(excludedEffects.includes(effect.id))
                 return { msg: `you cannot use that effect card with Judgment Day`, used: false }
 
-            const res = await effect.use(ctx, user, args.slice(1))
+            args.extraArgs = effectArgs.slice(1).join(' ')
+            const res = await effect.use(ctx, user, args)
             return res
         }
     }, {

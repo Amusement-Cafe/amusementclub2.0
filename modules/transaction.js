@@ -76,7 +76,7 @@ const from_auc = async (auc, from, to) => {
     return transaction.save()
 }
 
-const confirm_trs = async (ctx, user, trs_id) => {
+const confirm_trs = async (ctx, user, trs_id, edit = true) => {
     if(typeof user === 'string')
         user = await fetchOnly(user)
 
@@ -85,7 +85,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
-        return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red')
+        return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red', edit)
 
     const from_user = await fetchOnly(transaction.from_id)
     const to_user = await fetchOnly(transaction.to_id)
@@ -97,15 +97,15 @@ const confirm_trs = async (ctx, user, trs_id) => {
     if(cards.length != transaction.cards.length){
         transaction.status = 'declined'
         await transaction.save()
-        return ctx.reply(to_user || from_user, `this transaction is not valid anymore. Seller doesn't have some of the cards in this transaction.`, 'red')
+        return ctx.reply(to_user || from_user, `this transaction is not valid anymore. Seller doesn't have some of the cards in this transaction.`, 'red', edit)
     }
 
     if(to_user) {
         if(user.discord_id != transaction.to_id)
-            return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
+            return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red', edit)
 
         if(to_user.exp < transaction.price)
-            return ctx.reply(to_user, `you need **${numFmt(Math.floor(transaction.price - to_user.exp))}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
+            return ctx.reply(to_user, `you need **${numFmt(Math.floor(transaction.price - to_user.exp))}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red', edit)
         
         to_user.exp -= transaction.price
 
@@ -118,7 +118,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
         await addUserCards(ctx, to_user, transaction.cards)
 
     } else if(user.discord_id != transaction.from_id) {
-        return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
+        return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red', edit)
     }
 
     // TODO make this better
@@ -148,18 +148,18 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
     if(to_user) {
         if (transaction.cards.length === 1)
-            return ctx.reply(from_user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+            return ctx.reply(from_user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 
-        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
     }
 
     if (transaction.cards.length === 1)
-        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 
-    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 }
 
-const decline_trs = async (ctx, user, trs_id) => {
+const decline_trs = async (ctx, user, trs_id, edit) => {
     if(typeof user === 'string')
         user = await User.findOne({ discord_id: user })
 
@@ -168,15 +168,15 @@ const decline_trs = async (ctx, user, trs_id) => {
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
-        return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red')
+        return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red', edit)
 
     if(!(user.discord_id === transaction.from_id || user.discord_id === transaction.to_id) && !user.isMod)
-        return ctx.reply(user, `you don't have rights to decline this transaction`, 'red')
+        return ctx.reply(user, `you don't have rights to decline this transaction`, 'red', edit)
 
     transaction.status = 'declined'
     await transaction.save()
 
-    return ctx.reply(user, `transaction \`${trs_id}\` was declined`)
+    return ctx.reply(user, `transaction \`${trs_id}\` was declined`, 'green', edit)
 }
 
 const check_trs = async (ctx, user, target) => {

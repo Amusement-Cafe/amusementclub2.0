@@ -1,7 +1,7 @@
 const {cmd, pcmd}   = require('../utils/cmd')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
-const anilist       = require('anilist-node');
+const anilist       = require('anilist-node')
 const colors        = require('../utils/colors')
 const Guild         = require('../collections/guild')
 
@@ -36,9 +36,13 @@ const {
     check_effect,
 } = require('../modules/effect')
 
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
 const Anilist = new anilist();
 
-cmd(['hero'], ['hero', 'show'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['hero'], ['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
     const now = new Date()
     await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
@@ -52,10 +56,10 @@ cmd(['hero'], ['hero', 'show'], withUserEffects(async (ctx, user, effects, ...ar
     ]
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-}))
+}))).access('dm')
 
-cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes, isEmpty) => {
-    if(isEmpty)
+cmd(['hero', 'get'], withInteraction(withHeroes(async (ctx, user, heroes, notEmpty) => {
+    if(!notEmpty)
         return ctx.reply(user, `please specify hero name`, 'red')
 
     const hero = await get_hero(ctx, heroes[0].id)
@@ -90,13 +94,13 @@ cmd(['hero', 'get'], withHeroes(async (ctx, user, heroes, isEmpty) => {
                     hero_followers: hero.followers,
             })
 
-            return ctx.reply(user, `say hello to your new hero **${hero.name}**!`)
+            return ctx.reply(user, `say hello to your new hero **${hero.name}**!`, 'green', true)
         }
     })
-}))
+}))).access('dm')
 
-cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
-    if(isEmpty) return ctx.qhelp(ctx, user, 'hero')
+cmd(['hero', 'info'], withInteraction(withHeroes(async (ctx, user, heroes, notEmpty) => {
+    if(!notEmpty) return ctx.qhelp(ctx, user, 'hero')
 
     const hero = heroes[0]
     const usr = await fetchOnly(hero.user)
@@ -111,9 +115,9 @@ cmd(['hero', 'info'], withHeroes(async (ctx, user, heroes, isEmpty) => {
     }
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-}))
+}))).access('dm')
 
-cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
+cmd(['heroes'], ['hero', 'list'], withInteraction(withHeroes(async (ctx, user, heroes) => {
     heroes.sort((a, b) => b.xp - a.xp)
     const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. \`[${x.id}]\` **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
 
@@ -125,17 +129,17 @@ cmd(['heroes'], ['hero', 'list'], withHeroes(async (ctx, user, heroes) => {
             color: colors.blue,
         }
     })
-}))
+}))).access('dm')
 
-cmd(['effect', 'info'], ['hero', 'effect', 'info'], async (ctx, user, ...args) => {
-    if(args.length === 0)
+cmd(['effect', 'info'], ['hero', 'effect', 'info'], withInteraction(async (ctx, user, args) => {
+    if(!args.effect)
         return ctx.qhelp(ctx, user, 'effect')
 
-    const reg = new RegExp(args.join('*.'), 'gi')
+    const reg = new RegExp(args.effect, 'gi')
     let item = ctx.items.find(x => reg.test(x.id))
 
     if(!item)
-        return ctx.reply(user, `item with ID \`${args.join('')}\` not found`, 'red')
+        return ctx.reply(user, `item with ID \`${args.effect}\` not found`, 'red')
 
     const embed = await itemInfo(ctx, user, item)
     embed.author = { name: item.name }
@@ -145,9 +149,9 @@ cmd(['effect', 'info'], ['hero', 'effect', 'info'], async (ctx, user, ...args) =
     embed.color = colors.blue
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+})).access('dm')
 
-cmd(['effects'], ['hero', 'effects'], ['effect', 'list', 'actives'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['effects'], ['hero', 'effects'], ['effect', 'list', 'actives'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
 
     if(!effects.some(x => !x.passive))
         return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
@@ -171,9 +175,9 @@ cmd(['effects'], ['hero', 'effects'], ['effect', 'list', 'actives'], withUserEff
             color: colors.blue
         }
     })
-}))
+}))).access('dm')
 
-cmd(['slots'], ['hero', 'slots'], ['effect', 'list', 'passives'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['slots'], ['hero', 'slots'], ['effect', 'list', 'passives'], withInteraction(withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
     effects = effects.filter(x => !x.expires || x.expires > now)
 
@@ -204,32 +208,27 @@ cmd(['slots'], ['hero', 'slots'], ['effect', 'list', 'passives'], withUserEffect
             ]
         }
     })
-}))
+}))).access('dm')
 
-cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, user, effects, ...args) => {
-    if(args.length === 0)
+cmd(['use'], ['hero', 'use'], ['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
+    if(!args.effect)
         return ctx.qhelp(ctx, user, 'effect')
 
     const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
-    const intArg = parseInt(args[0])
 
-    let effect
-    if(intArg) {
-        effect = usables[intArg - 1]
-    } else {
-        const reg = new RegExp(args[0], 'gi')
-        effect = usables.find(x => reg.test(x.id))
-    }
+    let effect, effectArgs
+    const reg = new RegExp(args.effect, 'gi')
+    effect = usables.find(x => reg.test(x.id))
 
     if(!effect)
-        return ctx.reply(user, `effect with ID \`${args[0]}\` was not found or it is not usable`, 'red')
+        return ctx.reply(user, `effect with ID \`${args.effect}\` was not found or it is not usable`, 'red')
 
     const userEffect = user.effects.find(x => x.id === effect.id)
     const now = new Date()
     if(effect.cooldownends > now)
         return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
 
-    const res = await effect.use(ctx, user, args.slice(1))
+    const res = await effect.use(ctx, user, args)
     if(!res.used)
         return ctx.reply(user, res.msg, 'red')
 
@@ -255,32 +254,32 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withUserEffects(async (ctx, use
     }
 
     return ctx.reply(user, embed)
-}))
+}))).access('dm')
 
-cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['equip'], ['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
     if(args.length === 0)
         return ctx.qhelp(ctx, user, 'effect')
 
     const passives = effects.filter(x => x.passive)
 
-    let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
-    const slotNum = intArgs.shift()
+    // let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+    const slotNum = args.slot
     if(!slotNum || slotNum < 1 || slotNum > 2)
         return ctx.reply(user, `please specify valid slot number`, 'red')
 
-    args = args.filter(x => x != slotNum)
+    // args = args.filter(x => x != slotNum)
 
     let effect
     const now = new Date()
-    if(intArgs[0]) {
-        effect = passives[intArgs[0] - 1]
+    if(!isNaN(parseInt(args.effect))) {
+        effect = passives[parseInt(args.effect) - 1]
     } else {
-        const reg = new RegExp(args.join(''), 'gi')
+        const reg = new RegExp(args.effect, 'gi')
         effect = passives.find(x => reg.test(x.id))
     }
 
     if(!effect)
-        return ctx.reply(user, `effect with ID \`${args.join('')}\` was not found or it is not a passive`, 'red')
+        return ctx.reply(user, `effect with ID \`${args.effect}\` was not found or it is not a passive`, 'red')
 
     if(effect.expires && effect.expires < now)
         return ctx.reply(user, `passive **${effect.name}** has expired. Please purchase a new recipe and use it to make a new effect`, 'red')
@@ -304,7 +303,7 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
         user.markModified('herocooldown')
         
         await user.save()
-        return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`)
+        return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`, 'green', true)
     }
 
     const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
@@ -317,20 +316,21 @@ cmd(['equip'], ['hero', 'equip'], withUserEffects(async (ctx, user, effects, ...
     }
 
     return equip()
-}))
+}))).access('dm')
 
-cmd(['hero', 'submit'], async (ctx, user, arg1) => {
+cmd(['hero', 'submit'], withInteraction(async (ctx, user, args) => {
     if(XPtoLEVEL(user.xp) < 25)
         return ctx.reply(user, `you have to be level **25** or higher to submit a hero`, 'red')
 
-    if(!arg1)
+    const aniLink = args.anilistLink
+    if(!aniLink)
         return ctx.reply(user, `please specify Anilist character URL`, 'red')
 
     const price = 512 * (2 ** user.herosubmits)
     if(user.exp < price)
         return ctx.reply(user, `you have to have at least **${numFmt(price)}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
-    const charID = arg1.replace('https://', '').split('/')[2]
+    const charID = aniLink.value.replace('https://', '').split('/')[2]
     if(!charID)
         return ctx.reply(user, `seems like this URL is invalid.
             Please specify Anilist character URL`, 'red')
@@ -388,10 +388,10 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
             await user.save()
             await new_hero(ctx, user, char)
 
-            return ctx.reply(user, `your hero suggestion has been submitted and will be reviewed by moderators soon`)
+            return ctx.reply(user, `your hero suggestion has been submitted and will be reviewed by moderators soon`, 'green', true)
         }
     })
-})
+})).access('dm')
 
 pcmd(['admin'], ['sudo', 'hero', 'cache', 'flush'], async (ctx, user) => {
     await reloadCache()

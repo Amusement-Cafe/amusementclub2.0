@@ -211,6 +211,8 @@ const finish_aucs = async (ctx, now) => {
         await completed(ctx, lastBidder, aucCard)
         await aucEvalChecks(ctx, auc)
         await from_auc(auc, author, lastBidder)
+        await author.save()
+        await lastBidder.save()
 
     } else {
         if(!findSell)

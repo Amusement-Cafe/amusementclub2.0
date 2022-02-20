@@ -28,7 +28,11 @@ const {
     bestMatch,
 } = require('../modules/card')
 
-cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
+cmd(['tag', 'info'], withInteraction(withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
 
     const resp = []
@@ -50,9 +54,9 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
         description: resp.join('\n'),
         color: colors['blue']
     }, user.discord_id)
-}))
+})))
 
-cmd('tag', ['tag', 'one'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+cmd('tag', ['tag', 'one'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     
     tgTag = tgTag.replace(/[^\w]/gi, '')
 
@@ -101,16 +105,16 @@ cmd('tag', ['tag', 'one'], withTag(async (ctx, user, card, tag, tgTag, parsedarg
                     tag: tgTag,
             });
 
-            ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
+            ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`, 'green', true)
         },
 
         onDecline: async (x) => {
-            ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
+            ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red', true)
         }
     })
-}, false))
+}, false)))
 
-cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+cmd(['tag', 'down'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     const check = () => {
         if(tag.downvotes.includes(user.discord_id))
             return ctx.reply(user, `you already downvoted this tag`, 'red')
@@ -143,12 +147,12 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             }
             user = await updateUser(user, {$inc: {'dailystats.tags': (user.dailystats.tags <= 0? 0 : -1)}})
 
-            return ctx.reply(user, `${remove? 'removed' : 'downvoted'} tag **#${tgTag}** for ${formatName(card)}`)
+            return ctx.reply(user, `${remove? 'removed' : 'downvoted'} tag **#${tgTag}** for ${formatName(card)}`, 'green', true)
         }
     })
-}))
+})))
 
-cmd('tags', ['card', 'tags'], ['tag', 'list'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd('tags', ['card', 'tags'], ['tag', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 
@@ -169,9 +173,9 @@ cmd('tags', ['card', 'tags'], ['tag', 'list'], withGlobalCards(async (ctx, user,
             color: colors.blue,
         }
     })
-}))
+})))
 
-cmd(['tag', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['tag', 'created'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const userTags = await fetchUserTags(user)
     const cardIDs = cards.map(x => x.id)
     const tags = userTags.filter(x => cardIDs.includes(x.card))
@@ -185,12 +189,12 @@ cmd(['tag', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => 
             return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
         }, 10)),  
         switchPage: (data) => data.embed.description = `**${user.username}**, tags you created:\n\n${data.pages[data.pagenum]}`,
-        buttons: ['back', 'forward'],
+        buttons: ['first', 'back', 'forward', 'last'],
         embed: {
             color: colors.blue,
         }
     })
-}))
+})))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 
     withTag(async (ctx, user, card, tag, tgTag) => {

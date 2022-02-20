@@ -52,7 +52,7 @@ const formatName = (x) => {
     //return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
-const parseArgs = (ctx, args, user) => {
+const parseArgs = (ctx, user, option) => {
     const lastdaily = user? user.lastdaily: asdate.subtract(new Date(), 1, 'day')
 
     const cols = [], levels = [], keywords = []
@@ -67,16 +67,18 @@ const parseArgs = (ctx, args, user) => {
         extra: [],
         lastcard: false,
         diff: 0,
-        me: 0,
-        bid: 0,
         fav: false,
         evalQuery: false,
         userQuery: false,
     }
 
-    args.map(x => {
-        let substr = x.substr(1)
 
+
+    //Card Selection Related
+    const cardOption = option || ctx.options.find(x => x.name === 'card_query' || x.name === `card_query_1` || x.name === 'card_query_2')
+    const cardArgs = cardOption? cardOption.value.split(' ').map(x => x.toLowerCase()): []
+    cardArgs.map(x => {
+        let substr = x.substr(1)
         if(x === '.') {
             q.lastcard = true
 
@@ -138,8 +140,6 @@ const parseArgs = (ctx, args, user) => {
                     case 'promo': const mcol = bestColMatchMulti(ctx, substr); m? mcol.map(x=> cols.push(x.id)): mcol.map(x=> anticols.push(x.id)); break
                     case 'diff': q.diff = m? 1: 2; break
                     case 'miss': q.diff = m? 1: 2; break
-                    case 'me':  q.me = m? 1: 2; break
-                    case 'bid': q.bid = m? 1 : 2; break
                     default: {
                         const pcol = bestColMatch(ctx, substr)
                         if(m) {
@@ -162,6 +162,15 @@ const parseArgs = (ctx, args, user) => {
             else keywords.push(x)
         }
     })
+
+    const userID = ctx.options.find(x => x.name === 'user_id')
+    if(userID)
+        q.ids.push(userID.value)
+
+    //Tag Related
+    const tagOption = ctx.options.find(x => x.name === 'tag')
+    if(tagOption)
+        q.tags.push(tagOption.value.replace(/[^\w]/gi, '_'))
 
     if(cols.length > 0) q.filters.push(c => cols.includes(c.col))
     if(levels.length > 0) q.filters.push(c => levels.includes(c.level))
@@ -239,40 +248,39 @@ const mapUserCards = (ctx, userCards) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withCards = (callback) => async (ctx, user, ...args) => {
+const withCards = (callback) => async (ctx, user, args) => {
     const userCards = await getUserCards(ctx, user)
-    
+
     if(userCards.length == 0)
         return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim\``, 'red')
 
-    const parsedargs = parseArgs(ctx, args, user)
     const map = mapUserCards(ctx, userCards)
-    let cards = filter(map, parsedargs)
+    let cards = filter(map, args)
 
-    if(parsedargs.tags.length > 0) {
-        const tgcards = await fetchTaggedCards(parsedargs.tags)
+    if(args.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
     }
 
-    if(parsedargs.antitags.length > 0) {
-        const tgcards = await fetchTaggedCards(parsedargs.antitags)
+    if(args.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.antitags)
         cards = cards.filter(x => !tgcards.includes(x.id))
     }
 
-    if(parsedargs.lastcard)
+    if(args.lastcard)
         cards = map.filter(x => x.id === user.lastcard)
 
     if(cards.length == 0)
-        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `no cards found matching \`${args.cardQuery}\``, 'red')
 
-    cards.sort(parsedargs.sort)
+    cards.sort(args.sort)
 
-    if(!parsedargs.lastcard && cards.length > 0) {
+    if(!args.lastcard && cards.length > 0) {
         user.lastcard = cards[0].id
         await user.save()
     }
 
-    return callback(ctx, user, cards, parsedargs, args)
+    return callback(ctx, user, cards, args)
 }
 
 /**
@@ -280,39 +288,38 @@ const withCards = (callback) => async (ctx, user, ...args) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withGlobalCards = (callback) => async(ctx, user, ...args) => {
-    const parsedargs = parseArgs(ctx, args, user)
+const withGlobalCards = (callback) => async(ctx, user, args) => {
     let allcards
-    if(parsedargs.userQuery)
+    if(args.userQuery)
         allcards = mapUserCards(ctx, user)
     else 
         allcards = ctx.cards.slice()
 
-    let cards = filter(allcards, parsedargs)
-    if(parsedargs.tags.length > 0) {
-        const tgcards = await fetchTaggedCards(parsedargs.tags)
+    let cards = filter(allcards, args)
+    if(args.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.tags)
         cards = cards.filter(x => tgcards.includes(x.id))
     }
 
-    if(parsedargs.antitags.length > 0) {
-        const tgcards = await fetchTaggedCards(parsedargs.antitags)
+    if(args.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.antitags)
         cards = cards.filter(x => !tgcards.includes(x.id))
     }
 
-    if(parsedargs.lastcard)
+    if(args.lastcard)
         cards = [ctx.cards[user.lastcard]]
 
     if(cards.length == 0)
-        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `no cards found matching \`${args.cardQuery}\``, 'red')
 
-    cards.sort(parsedargs.sort)
+    cards.sort(args.sort)
 
-    if(!parsedargs.lastcard && cards.length > 0) {
+    if(!args.lastcard && cards.length > 0) {
         user.lastcard = cards[0].id
         await user.save()
     }
 
-    return callback(ctx, user, cards, parsedargs, args)
+    return callback(ctx, user, cards, args)
 }
 
 /**
@@ -320,10 +327,11 @@ const withGlobalCards = (callback) => async(ctx, user, ...args) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withMultiQuery = (callback) => async (ctx, user, ...args) => {
-    const argsplit = args.join(' ').split(',').map(x => x.trim())
+const withMultiQuery = (callback) => async (ctx, user, args) => {
     const parsedargs = [], cards = []
-    argsplit.map(x => parsedargs.push(parseArgs(ctx, x.split(' ').filter(y => y.length > 0), user)))
+    parsedargs.push(args.cardArgs1)
+    if (args.cardArgs2)
+        parsedargs.push(args.cardArgs2)
 
     const userCards = await getUserCards(ctx, user)
     const map = mapUserCards(ctx, userCards)

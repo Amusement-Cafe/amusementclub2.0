@@ -81,7 +81,7 @@ module.exports.create = async ({
     await fillCardOwnerCount(data.cards)
 
     /* create our glorious sending fn */
-    const send = (interaction, content, userid, components) => {
+    const send = (interaction, content, userid, components, edit = false) => {
         if(content.description)
             content.description = content.description.replace(/\s\s+/gm, '\n')
 
@@ -91,7 +91,10 @@ module.exports.create = async ({
         if(userid)
             _.remove(userq, (x) => x.id === userid)
 
-        return interaction.editOriginalMessage({ embed: content, components: components })
+        if (edit)
+            return interaction.editOriginalMessage({ embed: content, components: components })
+
+        return interaction.createMessage({ embed: content, components: components })
     }
 
     const toObj = (user, str, clr) => {
@@ -108,13 +111,13 @@ module.exports.create = async ({
     const direct = async (user, str, clr = 'default') => {
         const ch = await bot.getDMChannel(user.discord_id)
         try {
-            return bot.createMessage(ch.id, {embed: toObj(user, str, clr)})
+            return bot.createMessage(ch.id, {embed: toObj(user, str, clr)}).catch(e => console.log(e))
         } catch (e) {}
     }
 
     const qhelp = (ctx, user, cat) => {
         const help = ctx.help.filter(x => x.type.includes(cat))[0]
-        return send(ctx.interaction.channel.id, {
+        return send(ctx.interaction, {
             author: { name: `Possible options:` },
             fields: help.fields.slice(0, 5).map(x => ({ name: x.title, value: x.description })),
             color: colors.blue,
@@ -139,13 +142,13 @@ module.exports.create = async ({
     // const pgn = paginator.create({ bot, pgnButtons: ['first', 'last', 'back', 'forward'] })
 
     const sendPgn = async (ctx, user, pgnObject, userqRemove = true) => {
-        await pgn.addPagination(ctx.interaction, pgnObject)
+        await pgn.addPagination(ctx, pgnObject)
         if (userqRemove)
             _.remove(userq, (x) => x.id === user.discord_id)
     }
 
     const sendCfm = async (ctx, user, cfmObject, userqRemove = true) => {
-        await pgn.addConfirmation(ctx.interaction, cfmObject)
+        await pgn.addConfirmation(ctx, cfmObject)
         if (userqRemove)
             _.remove(userq, (x) => x.id === user.discord_id)
     }
@@ -319,19 +322,19 @@ module.exports.create = async ({
     })
 
     bot.on('interactionCreate', async (interaction) => {
+        //Slash Commands
         if (interaction instanceof Eris.CommandInteraction) {
             if (interaction.applicationID !== bot.application.id)
                 return
 
             const interactionUser = interaction.user || interaction.member.user
-
             if (interactionUser.bot || userq.some(x => x.id === interactionUser.id))
                 return
 
-            const curguild = await guild.fetchGuild(interaction.guildID)
+            const curguild = await guild.fetchGuildById(interaction.guildID)
 
-            await interaction.acknowledge()
-            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id, [])
+            const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
+
 
             let base = [interaction.data.name]
             let options = []
@@ -343,14 +346,38 @@ module.exports.create = async ({
                     if (x.type === 1 || x.type === 2) {
                         base.push(x.name)
                         cursor = x
+                    } else if (x.name === 'global' && x.value) {
+                        base.push(x.name)
                     } else {
-                        options.push(`${x.value}`)
+                        options.push(x)
                     }
                 })
             }
 
-            let capitalMsg = _.concat(base, options)
-            let msg = _.concat(base.map(x=>x.toLowerCase()), options.map(x=>x.toLowerCase()))
+            const setbotmsg = 'guild set bot'
+            const setreportmsg = 'guild set report'
+
+            if(curguild
+                && !base.join(' ').includes(setbotmsg)
+                && !base.join(' ').includes(setreportmsg)
+                && !base.join(' ').includes('summon')
+                && !base.join(' ').includes('pat')
+                && !curguild.botchannels.some(x => x === interaction.channel.id)) {
+
+                await interaction.acknowledge(64)
+
+
+                return interaction.createMessage({embed: {
+                        description: `**${interactionUser.username}**, bot commands are only available in these channels: 
+                        ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
+                        \nGuild owner or administrator can add a bot channel by typing \`/${setbotmsg}\` in the target channel.`,
+                        color: colors.red
+                    }})
+
+            }
+
+            let capitalMsg = base
+            let msg = base.map(x=>x.toLowerCase())
             const isolatedCtx = Object.assign({}, ctx, {
                 msg, /* current icoming msg object */
                 capitalMsg,
@@ -358,7 +385,8 @@ module.exports.create = async ({
                 globals: {}, /* global parameters */
                 discord_guild: interaction.member? interaction.member.guild: null,  /* current discord guild */
                 prefix: '/', /* current prefix */
-                interaction: interaction
+                interaction: interaction,
+                options
             })
 
             let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.username)
@@ -375,6 +403,7 @@ module.exports.create = async ({
             await check_all(isolatedCtx, usr, args[0], interaction.channel.id)
         }
 
+        //Buttons
         if (interaction instanceof Eris.ComponentInteraction) {
             if (interaction.applicationID !== bot.application.id)
                 return

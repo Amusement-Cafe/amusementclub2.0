@@ -72,7 +72,11 @@ const {
     getUserPlots,
 } = require("../modules/plot");
 
-cmd('bal', 'balance', (ctx, user) => {
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
+cmd('bal', 'balance', withInteraction((ctx, user) => {
     let max = 1
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
@@ -106,9 +110,9 @@ cmd('bal', 'balance', (ctx, user) => {
     }
 
     return ctx.reply(user, embed)
-}).access('dm')
+})).access('dm')
 
-cmd('inv', ['inventory', 'list'], withUserItems((ctx, user, items, args) => {
+cmd('inv', ['inventory', 'list'], withInteraction(withUserItems((ctx, user, items, args) => {
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`), 5),
         switchPage: (data) => data.embed.fields[1].value = data.pages[data.pagenum],
@@ -123,9 +127,9 @@ cmd('inv', ['inventory', 'list'], withUserItems((ctx, user, items, args) => {
             color: colors.blue,
         }
     })
-}))
+})))
 
-cmd(['inv', 'use'], ['inventory', 'use'], withUserItems(async (ctx, user, items, args, index) => {
+cmd(['inv', 'use'], ['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
     const itemCheck = await checkItem(ctx, user, item)
 
@@ -135,11 +139,11 @@ cmd(['inv', 'use'], ['inventory', 'use'], withUserItems(async (ctx, user, items,
     return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
-        onConfirm: (x) => useItem(ctx, user, item, index)
+        onConfirm: (x) => useItem(ctx, user, item, index, true)
     })
-}))
+})))
 
-cmd(['inv', 'info'], ['inventory', 'info'], withUserItems(async (ctx, user, items, args) => {
+cmd(['inv', 'info'], ['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
 
     const embed = await itemInfo(ctx, user, item)
@@ -150,9 +154,9 @@ cmd(['inv', 'info'], ['inventory', 'info'], withUserItems(async (ctx, user, item
         embed.description += `\nThis ticket is for collection \`${item.col}\``
 
     return ctx.send(ctx.interaction, embed)
-}))
+})))
 
-cmd('daily', async (ctx, user) => {
+cmd('daily', withInteraction(async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
 
     const now = new Date()
@@ -268,9 +272,9 @@ cmd('daily', async (ctx, user) => {
     return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**
                 If you want to be notified when your daily is ready use: 
                 \`${ctx.prefix}prefs set notify daily true\``, 'red')
-})
+}))
 
-cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('cards', 'li', 'ls', 'list', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
@@ -289,11 +293,13 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
-})).access('dm')
+}))).access('dm')
 
-cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('favs', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     cards = cards.filter(x => x.fav)
+    if (cards.length === 0)
+        return ctx.reply(user, 'you have no cards favorited!', 'red')
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
@@ -303,15 +309,14 @@ cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
-})).access('dm')
+}))).access('dm')
 
-cmd('profile', async (ctx, user, ...args) => {
-    const pargs = parseArgs(ctx, args)
-    if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0]).lean()
+cmd('profile', withInteraction(async (ctx, user, args) => {
+    if(args.ids.length > 0) user = await fetchOnly(args.ids[0]).lean()
 
     if(!user)
         return ctx.send(ctx.interaction, {
-            description: `Cannot find user with ID ${pargs.ids[0]}`,
+            description: `Cannot find user with ID ${args.ids[0]}`,
             color: colors.red
         })
 
@@ -338,7 +343,7 @@ cmd('profile', async (ctx, user, ...args) => {
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${numFmt(userCards.length)}** | Stars: **${numFmt(cards.map(x => x.level).reduce((a, b) => a + b, 0))}**`)
 
-    if (pargs.ids.length > 0 && !isNaN(price)) {
+    if (args.ids.length > 0 && !isNaN(price)) {
         resp.push(`Cards Worth: **${numFmt(price)}** ${ctx.symbols.tomato} or **${numFmt(vials)} ${ctx.symbols.vial}**`)
     } else if (!isNaN(price)) {
         resp.push(`Net Worth: **${numFmt(price + user.exp)}** ${ctx.symbols.tomato} or **${numFmt(vials + user.vials)} ${ctx.symbols.vial}**`)
@@ -377,37 +382,39 @@ cmd('profile', async (ctx, user, ...args) => {
             url: botuser? botuser.avatarURL : ''
         }
     }, user.discord_id)
-}).access('dm')
+})).access('dm')
 
-cmd('diff', ['diff', 'from'], async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args, user)
+cmd('diff', ['diff', 'from'], withInteraction(async (ctx, user, args) => {
+    // const newArgs = parseArgs(ctx, args, user)
 
-    if(!newArgs.ids[0])
+    if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
 
-    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherUser = await fetchOnly(args.ids[0])
     if(!otherUser)
         return ctx.reply(user, `could not find target user`, 'red')
 
-    let otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+    const otherUserCards = await getUserCards(ctx, otherUser)
+    let otherCards = filter(mapUserCards(ctx, otherUserCards), args)
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
 
-    if(newArgs.tags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.tags)
+    if(args.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.tags)
         otherCards = otherCards.filter(x => tgcards.includes(x.id))
     }
 
-    if(newArgs.antitags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.antitags)
+    if(args.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.antitags)
         otherCards = otherCards.filter(x => !tgcards.includes(x.id))
     }
 
-    const ids = user.cards.map(x => x.id)
-    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
-        .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
-        .sort(newArgs.sort)
+    const selfCards = await getUserCards(ctx, user)
+    const ids = selfCards.map(x => x.cardid)
+    const diff = otherCards.filter(x => ids.indexOf(x.cardid) === -1)
+        .filter(x => x.fav && x.amount == 1 && !args.fav? x.cardid === -1 : x)
+        .sort(args.sort)
 
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
@@ -416,38 +423,37 @@ cmd('diff', ['diff', 'from'], async (ctx, user, ...args) => {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
         embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
-})
+}))
 
-cmd(['diff', 'reverse'], ['diff', 'rev'], ['diff', 'for'], async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args, user)
-
-    if(!newArgs.ids[0])
+cmd(['diff', 'reverse'], ['diff', 'rev'], ['diff', 'for'], withInteraction(async (ctx, user, args) => {
+    if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
 
-    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherUser = await fetchOnly(args.ids[0])
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
-    const otherCards = otherUser.cards
-    let mappedCards = filter(mapUserCards(ctx, user), newArgs)
+    const otherCards = await getUserCards(ctx, otherUser)
+    const userCards = await getUserCards(ctx, user)
+    let mappedCards = filter(mapUserCards(ctx, userCards), args)
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
 
-    if(newArgs.tags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.tags)
+    if(args.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.tags)
         mappedCards = mappedCards.filter(x => tgcards.includes(x.id))
     }
 
-    if(newArgs.antitags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.antitags)
+    if(args.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.antitags)
         mappedCards = mappedCards.filter(x => !tgcards.includes(x.id))
     }
 
-    const ids = otherCards.map(x => x.id)
-    const diff = mappedCards.filter(x => ids.indexOf(x.id) === -1)
-        .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
-        .sort(newArgs.sort)
+    const ids = otherCards.map(x => x.cardid)
+    const diff = mappedCards.filter(x => ids.indexOf(x.cardid) === -1)
+        .filter(x => x.fav && x.amount == 1 && !args.fav? x.cardid === -1 : x)
+        .sort(args.sort)
 
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
@@ -456,35 +462,34 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], ['diff', 'for'], async (ctx, user, ...
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
         embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
-})
+}))
 
-cmd('has', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args, user)
-
-    if(!newArgs.ids[0])
+cmd('has', withInteraction(async (ctx, user, args) => {
+    if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'has')
 
-    if(user.discord_id == newArgs.ids[0])
+    if(user.discord_id == args.ids[0])
         return ctx.reply(user, `you can use ${ctx.prefix}cards to see your own cards`, 'red')
 
-    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherUser = await fetchOnly(args.ids[0])
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
     const otherCards = await getUserCards(ctx, otherUser)
-    const otherFilteredCards = filter(mapUserCards(ctx, otherCards), newArgs)
+    const otherFilteredCards = filter(mapUserCards(ctx, otherCards), args)
 
     if (otherFilteredCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have that card.`, 'red')
 
-    if (newArgs.filters.length === 0 || otherFilteredCards.map(x=> `${formatName(x)}`).length > 1) {
+    if (args.filters.length === 0 || otherFilteredCards.map(x=> `${formatName(x)}`).length > 1) {
         return ctx.reply(user, 'Please specify a single card to match', 'red')
     }
     return ctx.reply(user, `Matched card ${otherFilteredCards.map(x => `${formatName(x)} ${x.fav? 'and it is marked as **favorite**': ''}`)}`)
-})
+}))
 
-cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const ids = user.cards.map(x => x.id)
+cmd('miss', withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const userCards = await getUserCards(ctx, user)
+    const ids = userCards.map(x => x.cardid)
     const diff = cards.filter(x => ids.indexOf(x.id) === -1)
         .filter(x => !x.excluded)
         .sort(parsedargs.sort)
@@ -496,9 +501,9 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
         embed: { author: { name: `${user.username}, cards that you don't have (${numFmt(diff.length)} results)` } }
     })
-}))
+})))
 
-cmd('quest', 'quests', ['quest', 'list'], async (ctx, user) => {
+cmd('quest', 'quests', ['quest', 'list'], withInteraction(async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests`, 'red')
 
@@ -510,14 +515,10 @@ cmd('quest', 'quests', ['quest', 'list'], async (ctx, user) => {
             return `${i + 1}. \`${new Array(qInfo.tier + 1).join('★')}\` ${qInfo.name} (${qInfo.reward(ctx)})`
         }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info [quest index]\``
     }, user.discord_id)
-})
+}))
 
-cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
-    if(!args[0] || isNaN(args[0])) {
-        return ctx.reply(user, `please specify quest index (e.g. \`${ctx.prefix}quest info 1\`)`, 'red')
-    }
-
-    const index = parseInt(args[0]) - 1
+cmd(['quest', 'info'], ['quests', 'info'], withInteraction(async (ctx, user, args) => {
+    const index = args.questNum - 1
 
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests`, 'red')
@@ -542,9 +543,9 @@ cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
                 For more information type: \`${ctx.prefix}help ${quest.actions[0]} -here\`` },
         ]
     }, user.discord_id)
-})
+}))
 
-cmd('stats', async (ctx, user) => {
+cmd('stats', withInteraction(async (ctx, user) => {
     const keys = Object.keys(user.dailystats).filter(x => user.dailystats[x] > 0 && user.dailystats[x] !== true)
 
     if(keys.length === 0)
@@ -555,15 +556,15 @@ cmd('stats', async (ctx, user) => {
         author: { name: `${user.username}, your daily stats:` },
         description: keys.map(x => `${cap(x)}: **${user.dailystats[x]}**`).join('\n')
     }, user.discord_id)
-})
+}))
 
-cmd('achievements', 'ach', async (ctx, user, ...args) => {
+cmd('achievements', 'ach', withInteraction(async (ctx, user, args) => {
     let list = user.achievements.map(x => {
         const item = ctx.achievements.find(y => y.id === x)
         return `**${item.name}** • \`${item.desc}\``
     })
 
-    const miss = args.find(x => x === '-miss'|| x === '-diff')
+    const miss = args.missing
 
     if (miss)
         list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y)).map(z => `**${z.name}** • \`${z.desc}\``)
@@ -577,9 +578,9 @@ cmd('achievements', 'ach', async (ctx, user, ...args) => {
         pages: ctx.pgn.getPages(list, 15),
         embed
     })
-})
+}))
 
-cmd('vote', async (ctx, user) => {
+cmd('vote', withInteraction(async (ctx, user) => {
     const now = new Date()
     const future = asdate.add(user.lastvote, 12, 'hours')
     const topggTime = msToTime(future - now, { compact: true })
@@ -599,11 +600,11 @@ cmd('vote', async (ctx, user) => {
             }
         ]
     }, user.discord_id)
-}).access('dm')
+})).access('dm')
 
-cmd('todo', async (ctx, user) => {
+cmd('todo', withInteraction(async (ctx, user) => {
     const resp = []
-    const plots = await getUserPlots(ctx)
+    const plots = await getUserPlots(ctx, true)
     const now = new Date()
     const futureDaily = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
     const futureVote = asdate.add(user.lastvote, 12, 'hours')
@@ -626,4 +627,4 @@ cmd('todo', async (ctx, user) => {
         author: { name: `${user.username}, your TODO list:` },
         description: resp.join('\n'),
     })
-})
+}))

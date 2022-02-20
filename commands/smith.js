@@ -32,13 +32,18 @@ const {
     addUserCards,
     removeUserCards,
     findUserCards,
+    getUserCards,
 } = require('../modules/user')
 
 const {
     plotPayout,
 } = require('../modules/plot')
 
-cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
+cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedargs) => {
     if(!parsedargs[0] || parsedargs[0].isEmpty())
         return ctx.qhelp(ctx, user, 'forge')
 
@@ -126,20 +131,20 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                     description: `you got ${formatName(newcard)}!
                         **${numFmt(vialres)}** ${ctx.symbols.vial} were added to your account
                         ${usercards[0].amount > 1 ? `*You already have this card*` : ''}`
-                })
+                }, 'green', true)
             } catch(e) {
                 return ctx.reply(user, `an error occured while executing this command. 
-                    Please try again`, 'red')
+                    Please try again`, 'red', true)
             }
         }
     })
-}))
+})))
 
-cmd('liq', 'liquify', ['liquefy', 'one'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd('liq', 'liquify', ['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
-    const card = bestMatch(cards)
+    const card = cards[0]
     let vials = Math.round((await getVialCost(ctx, card)) * .25)
     if(vials === Infinity)
         vials = 5
@@ -174,26 +179,26 @@ cmd('liq', 'liquify', ['liquefy', 'one'], withCards(async (ctx, user, cards, par
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
-                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``)
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``, 'green', true)
             } catch(e) {
                 return ctx.reply(user, `an error occured while executing this command. 
-                    Please try again`, 'red')
+                    Please try again`, 'red', true)
             }
         },
     })
-}))
+})))
 
-cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
     cards.splice(100, cards.length)
     
     if(cards.some(x => x.level > 3))
-        return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
+        return ctx.reply(user, `you cannot liquefy cards higher than 3 ${ctx.symbols.star}`, 'red')
     
     if(cards.some(x => x.fav && x.amount === 1))
-        return ctx.reply(user, `you are about to liquify the last copy of your favourite card. 
+        return ctx.reply(user, `you are about to liquefy the last copy of your favourite card. 
             Please, use \`${ctx.prefix}liq all !fav\` to include only non-favourite cards.`, 'yellow')
 
     let vials = 0
@@ -219,8 +224,8 @@ cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withCards(async (ct
             Please try again in **${msToTime(evalTime)}**.`, 'yellow')
     }
 
-    const question = `Do you want to liquify **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
-        To view cards that are going to be liquified, use \`${ctx.prefix}liq preview [query]\``
+    const question = `Do you want to liquefy **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
+        To view cards that are going to be liquefied, use \`${ctx.prefix}liq preview [query]\``
 
     return ctx.sendCfm(ctx, user, {
         question,
@@ -241,18 +246,18 @@ cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withCards(async (ct
                 await user.save()
                 await plotPayout(ctx, 'smithhub', 2, lemons)
 
-                ctx.reply(user, `${cardCount} cards were liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
+                ctx.reply(user, `${cardCount} cards were liquefied. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
-                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``)
+                    You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``, 'green', true)
             } catch(e) {
                 return ctx.reply(user, `an error occurred while executing this command. 
-                    Please try again`, 'red')
+                    Please try again`, 'red', true)
             }
         },
     })
-}))
+})))
 
-cmd(['liq', 'preview'], ['liquify', 'preview'], ['liquefy', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liq', 'preview'], ['liquify', 'preview'], ['liquefy', 'preview'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -299,28 +304,22 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], ['liquefy', 'preview'], withCard
             color: colors.blue,
         }
     })
-}))
+})))
 
-cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+cmd(['draw'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'draw')
 
-    if (parsedargs.diff) {
-        let waitMSG
-        if (cards.length > 1500)
-            waitMSG = await ctx.reply(user, `you have used \`diff\` or \`miss\` in this query and the result contains a lot of cards. Please wait for the bot to filter your cards before attempting to run this command again!`, 'yellow')
+    const userCards = await getUserCards(ctx, user)
+    if (parsedargs.diff)
+        cards = cards.filter(x => parsedargs.diff == 1 ^ userCards.some(y => y.cardid === x.id))
 
-        cards = cards.filter(x => parsedargs.diff == 1 ^ user.cards.some(y => y.id === x.id))
-
-        if (waitMSG)
-            await ctx.bot.deleteMessage(waitMSG.channel.id, waitMSG.id, 'removal of time warning')
-    }
 
     const amount = user.dailystats.draw || 0
     const card = bestMatch(cards)
 
     if (!card)
-        return ctx.reply(user, `no cards found matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `no cards found matching \`${parsedargs.cardQuery}\``, 'red')
 
     const cost = await getVialCost(ctx, card)
     const extra = Math.floor(cost * .2 * amount)
@@ -366,7 +365,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
                 color: colors.blue,
                 description: `you got ${formatName(card)}!
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial} remaining`
-            })
+            }, 'green', true)
         }
     })
-}))
+})))

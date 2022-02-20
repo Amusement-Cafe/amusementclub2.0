@@ -9,12 +9,14 @@ const {
     withItem,
 } = require('../modules/item')
 
-cmd('store', 'shop', ['store', 'view'], async (ctx, user, cat) => {
-    const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
-    cat = cat? cat.replace(/s$/i, '') : null
+const {
+    withInteraction,
+} = require("../modules/interactions")
 
-    if(parseInt(cat))
-        cat = cats[parseInt(cat) - 1]
+cmd('store', 'shop', ['store', 'view'], withInteraction(async (ctx, user, args) => {
+    let cat = args.store || null
+    const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
+    cat = cat? cats[args.store - 1]: null
 
     if(!cat || !cats.includes(cat))
         return ctx.reply(user, {
@@ -43,17 +45,17 @@ cmd('store', 'shop', ['store', 'view'], async (ctx, user, cat) => {
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[1] = { name: `Item list`, value: data.pages[data.pagenum] }
     })
-})
+}))
 
-cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withItem(async (ctx, user, item, args) => {
+cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withInteraction(withItem(async (ctx, user, item, args) => {
     const embed = await itemInfo(ctx, user, item)
     embed.color = colors.deepgreen
     embed.author = { name: item.name }
 
     return ctx.send(ctx.interaction, embed)
-}))
+})))
 
-cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) => {
+cmd(['store', 'buy'], ['shop', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => {
     const catNum = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type)).indexOf(item.type) + 1
     if (catNum == 3 && user.dailystats.store3 >= 3)
         return ctx.reply(user, `you have run out of available purchases from this store. Please try again after your next daily!`, 'red')
@@ -74,7 +76,7 @@ cmd(['store', 'buy'], ['shop', 'buy'], withItem(async (ctx, user, item, args) =>
 
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
                 The item has been added to your inventory. See \`${ctx.prefix}inv info ${item.id}\` for details
-                ${catNum == 3? `You have **${3-user.dailystats.store3}** purchase(s) left for this store today!`: ''}`, 'green')
+                ${catNum == 3? `You have **${3-user.dailystats.store3}** purchase(s) left for this store today!`: ''}`, 'green', true)
         }
     })
-}))
+})))

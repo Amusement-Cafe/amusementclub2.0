@@ -26,30 +26,35 @@ const {
     getUserCards,
 } = require('../modules/user')
 
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
 const {cmd}         = require('../utils/cmd')
 const colors        = require('../utils/colors')
 
-cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], async (ctx, user, ...args) => {
-    const completed = args.find(x => x === '-completed' || x === '!completed')
-    const clouted = args.find(x => x === '-clouted' || x === '!clouted')
-    args = args.filter(x => x != '-completed' && x != '!completed' && x != '-clouted' && x != '!clouted')
 
-    let cols = _.flatten(args.map(x => byAlias(ctx, x.replace('-', ''))))
+cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], withInteraction(async (ctx, user, args) => {
+    let cols
+    if (args.cols.length > 0)
+        cols = _.flattenDeep(args.cols)
+    else
+        cols = byAlias(ctx, ``)
 
-    if (args.length === 0)
-        cols = byAlias(ctx, args.join().replace('-', ''))
+    const completed = args.completed? true: args.completed === false
+    const clouted = args.clouted? true: args.clouted === false
 
     cols = _.uniqBy(cols, 'id').sort((a, b) => nameSort(a, b, 'id')).filter(x => x)
 
     if(completed) {
-        if(completed[0] === '-') 
+        if(args.completed)
             cols = cols.filter(x => user.completedcols.some(y => y.id === x.id))
         else
             cols = cols.filter(x => !user.completedcols.some(y => y.id === x.id))
     }
 
     if (clouted) {
-        if(clouted[0] === '-')
+        if(args.clouted)
             cols = cols.filter(x => user.cloutedcols.some(y => y.id === x.id))
         else
             cols = cols.filter(x => !user.cloutedcols.some(y => y.id === x.id))
@@ -76,7 +81,7 @@ cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], async (c
             }
         }
 
-        return `${cloutstars}**${x.name}** \`${x.id}\` ${rateText}`
+        return `${cloutstars}**${x.name}** \`${x.id}\` ${rateText} ${rateText === `(100%)`? ``: `[${usercount}/${overall}]`}`
     }))
 
     return ctx.sendPgn(ctx, user, {
@@ -86,13 +91,13 @@ cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], async (c
             author: { name: `found ${cols.length} collections` }
         }
     })
-})
+})).access('dm')
 
-cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
-    const col = bestColMatch(ctx, args.join().replace('-', ''));
+cmd(['col', 'info'], ['collection', 'info'], withInteraction(async (ctx, user, args) => {
+    const col = _.flattenDeep(args.cols)[0];
 
     if(!col)
-        return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `found 0 collections matching \`${args.colQuery}\``, 'red')
 
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
     const userCards = await findUserCards(ctx, user, colCards.map(x => x.id))
@@ -134,10 +139,10 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
         description: resp.join('\n'),
         color: colors.blue
     }, user.discord_id)
-})
+})).access('dm')
 
-cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
-    const col = bestColMatch(ctx, args.join().replace('-', ''));
+cmd(['col', 'reset'], ['collection', 'reset'], withInteraction(async (ctx, user, args) => {
+    const col = _.flattenDeep(args.cols)[0];
 
     if(!col)
         return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
@@ -176,4 +181,4 @@ cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
         question,
         onConfirm: (x) => reset(ctx, user, col, neededForReset),
     })
-})
+}))

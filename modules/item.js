@@ -35,31 +35,30 @@ const mapUserInventory = (ctx, user) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withUserItems = (callback) => (ctx, user, ...args) => {
-    if (user.inventory.length == 0) 
+const withUserItems = (callback) => (ctx, user, args) => {
+    if (user.inventory.length == 0)
         return ctx.reply(user, 'your inventory is empty', 'red')
 
     let items = mapUserInventory(ctx, user)
     let index
-    if(!isNaN(args[0])) {
-        index = parseInt(args[0]) - 1
+    if(!isNaN(parseInt(args.invItem))) {
+        index = parseInt(args.invItem) - 1
         items = [items[index]]
-    }
-    else if(args.length > 0) {
-        const reg = new RegExp(args.join('*.'), 'gi')
+    } else {
+        const reg = new RegExp(args.invItem, 'gi')
         items = items.filter(x => reg.test(x.id))
     }
 
     items = items.filter(x => x)
 
     if(items.length === 0)
-        return ctx.reply(user, `found 0 items with ID \`${args.join('')}\``, 'red')
+        return ctx.reply(user, `found 0 items with ID \`${args.invItem}\``, 'red')
 
     return callback(ctx, user, items, args, index)
 }
 
-const withItem = (callback) => (ctx, user, ...args) => {
-    const intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+const withItem = (callback) => (ctx, user, args) => {
+    const intArgs = args.itemID.split(' ').filter(x => !isNaN(x)).map(y => parseInt(y))
     let item
     if(intArgs.length > 0) {
         if(intArgs.length < 2)
@@ -69,12 +68,12 @@ const withItem = (callback) => (ctx, user, ...args) => {
         const cat = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))[intArgs[0] - 1]
         item = ctx.items.filter(x => x.price > 0 && x.type === cat)[intArgs[1] - 1]
     } else {
-        const reg = new RegExp(args.join('*.'), 'gi')
+        const reg = new RegExp(args.itemID, 'gi')
         item = ctx.items.find(x => x.price > 0 && reg.test(x.id))
     }
 
     if(!item)
-        return ctx.reply(user, `item with ID \`${args.join('')}\` not found or cannot be purchased`, 'red')
+        return ctx.reply(user, `item with ID \`${args.itemID}\` not found or cannot be purchased`, 'red')
 
     return callback(ctx, user, item, args)
 }
@@ -113,7 +112,7 @@ const uses = {
                 guild: ctx.guild.id,
         })
 
-        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.interaction.channel.guild.name}**`)
+        return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.interaction.channel.guild.name}**`, 'green', true)
     },
 
     claim_ticket: async (ctx, user, item, index) => {
@@ -128,7 +127,7 @@ const uses = {
         })
 
         if(cards.length === 0)
-            return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
+            return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red', true)
 
         const cardIds = cards.map(x => x.id)
         const existingCards = await findUserCards(ctx, user, cardIds)
@@ -184,7 +183,7 @@ const uses = {
             } else {
                 desc = `you already own this effect and it has never been equipped! You can only extend effects that have been equipped.`
                 if (!userEffect.expires)
-                    return ctx.reply(user, desc, 'red')
+                    return ctx.reply(user, desc, 'red', true)
                 eobject.expires = asdate.add(userEffect.expires, item.lasts, 'days')
             }
             user.effects = user.effects.filter(x => x.id != userEffect.id)
@@ -222,7 +221,7 @@ const uses = {
         return ctx.reply(user, {
             image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
             description: desc
-        }, 'blue')
+        }, 'blue', true)
 
 
     }

@@ -54,8 +54,8 @@ const delete_tag = (tag) => Tag.deleteOne({ name: tag.name, card: tag.card })
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
-    const parsedargs = cardMod.parseArgs(ctx, args)
+const withTag = (callback, forceFind = true) => async(ctx, user, args) => {
+    const parsedargs = args
 
     if(parsedargs.isEmpty(false))
         return ctx.qhelp(ctx, user, 'tag')

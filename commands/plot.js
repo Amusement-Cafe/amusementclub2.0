@@ -12,13 +12,17 @@ const {
     XPtoLEVEL,
 }   = require('../utils/tools')
 
-
 const {
     getUserPlots,
     getMaxStorage,
 }   = require('../modules/plot')
 
-cmd(['plot'], ['plots'], ['plot', 'list'], async (ctx, user) => {
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
+
+cmd(['plot'], ['plots'], ['plot', 'list'], withInteraction(async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
         return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
@@ -40,9 +44,9 @@ cmd(['plot'], ['plots'], ['plot', 'list'], async (ctx, user) => {
             color: colors.blue,
         }
     })
-})
+}))
 
-cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
+cmd(['plot', 'global'], ['plots', 'global'], ['plot', 'list', 'global'], withInteraction(async (ctx, user) => {
     const lots = await getUserPlots(ctx, true)
     lots.sort((a, b) => a.guild_id - b.guild_id)
     let pages = []
@@ -65,9 +69,9 @@ cmd(['plot', 'global'], ['plots', 'global'], async (ctx, user) => {
             color: colors.blue,
         }
     })
-})
+})).access('dm')
 
-cmd(['plot', 'buy'], async (ctx, user) => {
+cmd(['plot', 'buy'], withInteraction(async (ctx, user) => {
     const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 8) + 1
     const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 20)
     const userGlobalPlots = await getUserPlots(ctx, true)
@@ -117,27 +121,24 @@ cmd(['plot', 'buy'], async (ctx, user) => {
             let buyablePlots = _.min([affordablePlots - 1, userAllowedPlots, guildAllowedPlots])
 
             ctx.reply(user, `you have bought a plot for **${cost}** ${ctx.symbols.lemon} in **${ctx.interaction.channel.guild.name}**!
-            You are currently able to buy **${buyablePlots}** more plots in this guild!`)
+            You are currently able to buy **${buyablePlots}** more plots in this guild!`, 'green', true)
         },
     })
-})
+}))
 
-cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
-    if (!arg)
-        return ctx.reply(user, 'please specify a plot number to upgrade!', 'red')
-
-    let plot = await getUserPlots(ctx, false, arg)
+cmd(['plot', 'upgrade'], withInteraction(async (ctx, user, args) => {
+    let plot = await getUserPlots(ctx, false, args.plot)
 
     if (plot.length === 0)
         plot = await getUserPlots(ctx, false)
 
-    if (arg - 1 > plot.length)
-        return ctx.reply(user, `no plot found in position ${arg}!`, 'red')
+    if (args.plot - 1 > plot.length)
+        return ctx.reply(user, `no plot found in position ${args.plot}!`, 'red')
 
-    plot = plot[arg - 1] || plot[0]
+    plot = plot[args.plot - 1] || plot[0]
 
     if (!plot || !plot.building.id)
-        return ctx.reply(user, `no plots found with a building with the argument **${arg}**!`, 'red')
+        return ctx.reply(user, `no plots found with a building with the argument **${args.plot}**!`, 'red')
 
     const item = ctx.items.find(x => x.id === plot.building.id)
     const level = item.levels[plot.building.level]
@@ -176,26 +177,23 @@ cmd(['plot', 'upgrade'], async (ctx, user, arg) => {
 
             return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${plot.building.level}**!
                 This building now *${level.desc.toLowerCase()}*
-                You have been awarded **${Math.floor(xp)} xp** towards your player level`)
+                You have been awarded **${Math.floor(xp)} xp** towards your player level`, 'green', true)
 
         },
     })
-})
+}))
 
-cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
-    if (!arg)
-        return ctx.reply(user, 'please specify a plot number to see info on!', 'red')
-
+cmd(['plot', 'info'], ['plot', 'status'], withInteraction(async (ctx, user, args) => {
     let plot = await getUserPlots(ctx, false)
     let plotLength = plot.length
 
     if (plot.length === 0)
         return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
 
-    let plotArg = arg - 1
+    let plotArg = args.plot - 1
     plot = plot[plotArg]
     if(!plot)
-        return ctx.reply(user, `you don't have a plot in position ${arg}, you only have ${plotLength} plots in this guild!`, 'red')
+        return ctx.reply(user, `you don't have a plot in position ${args.plot}, you only have ${plotLength} plots in this guild!`, 'red')
 
     if(!plot.building.id)
         return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix}store\` and place them on this plot!`)
@@ -236,12 +234,9 @@ cmd(['plot', 'info'], ['plot', 'status'], async (ctx, user, arg) => {
 
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+}))
 
-cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, arg) => {
-    if (!arg)
-        return ctx.reply(user, 'please specify a plot number to see info on!', 'red')
-
+cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], withInteraction(async (ctx, user, args) => {
     let plot = await getUserPlots(ctx, true)
     let plotLength = plot.length
 
@@ -249,10 +244,10 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
         return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
 
     plot.sort((a, b) => a.guild_id - b.guild_id)
-    let plotArg = arg - 1
+    let plotArg = args.plot - 1
     plot = plot[plotArg]
     if(!plot)
-        return ctx.reply(user, `you don't have a plot in position ${arg}, you only have ${plotLength} plots globally!`, 'red')
+        return ctx.reply(user, `you don't have a plot in position ${args.plot}, you only have ${plotLength} plots globally!`, 'red')
 
     if(!plot.building.id)
         return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix}store\` and place them on this plot!`)
@@ -291,9 +286,9 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], async (ctx, user, 
 
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+}))
 
-cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], async (ctx, user) => {
+cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], withInteraction(async (ctx, user) => {
     const past = asdate.subtract(new Date(), 1, "hours")
     let plots = await getUserPlots(ctx)
 
@@ -318,4 +313,95 @@ cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'cla
     await user.save()
     return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
             You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
-})
+}))
+
+cmd(['plot', 'demolish'], ['plot', 'delete'], ['plot', 'remove'], ['plot', 'destroy'], withInteraction(async (ctx, user, args) => {
+    let plots = await getUserPlots(ctx, false)
+    let plotLength = plots.length
+
+    if (plotLength === 0)
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+
+    let plotArg = args.plot - 1
+    let plot = plots[plotArg]
+    if(!plot)
+        return ctx.reply(user, `you don't have a plot in position \`${args.plot}\`, you only have **${plotLength}** plots in this guild!`, 'red')
+
+    let question
+
+    if(!plot.building.id) {
+        question = `You are about to delete an empty plot, you will not get any lemons back for this action. Do you wish to continue?`
+        return ctx.sendCfm(ctx, user, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, building: {$eq: null}})
+                return ctx.reply(user, `you have deleted an empty plot, you now have ${plotLength - 1} plot(s) total!`, 'green', true)
+            }
+        })
+    } else {
+        plots = plots.filter(x => x.building.id)
+        if (plots.length > 1 && plot.building.id === 'castle') {
+            return ctx.reply(user, `you cannot delete this plot as it has a castle on it and you have other plots with buildings in the guild.`, `red`)
+        }
+        const item = ctx.items.find(x => x.id === plot.building.id)
+        const levelPrices = item.levels.map(x => x.price).slice(0, plot.building.level)
+        const refund = levelPrices.length === 0? Math.floor(item.price * 0.75): Math.floor((levelPrices.reduce((a, b) => a + b) + item.price) * 0.75)
+
+        question = `You are about to demolish your \`${plot.building.id}\` and plot in ${plot.guild_name}. You will get **${(numFmt(refund))}** ${ctx.symbols.lemon} back. Do you want to continue?`
+        return ctx.sendCfm(ctx, user, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, "building.id": plot.building.id})
+                user.lemons += refund
+                await user.save()
+                return ctx.reply(user, `you have demolished your ${plot.building.id} and plot in ${plot.guild_name}. You have received **${numFmt(refund)}** ${ctx.symbols.lemon} back.`)
+            }
+        })
+    }
+}))
+
+cmd(['plot', 'demolish', 'global'], ['plot', 'delete', 'global'], ['plot', 'remove', 'global'], ['plot', 'destroy', 'global'], withInteraction(async (ctx, user, args) => {
+    let plots = await getUserPlots(ctx, true)
+    let plotLength = plots.length
+
+    if (plotLength === 0)
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+
+    plots.sort((a, b) => a.guild_id - b.guild_id)
+    let plotArg = args.plot - 1
+    let plot = plots[plotArg]
+    if(!plot)
+        return ctx.reply(user, `you don't have a plot in position \`${args.plot}\`, you only have **${plotLength}** plots globally!`, 'red')
+
+    let question
+
+    if(!plot.building.id) {
+        question = `You are about to delete an empty plot in ${plot.guild_name}, you will not get any lemons back for this action. Do you wish to continue?`
+        return ctx.sendCfm(ctx, user, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, building: {$eq: null}})
+                return ctx.reply(user, `you have deleted an empty plot in ${plot.guild_name}, you now have ${plotLength - 1} plot(s) total!`, 'green', true)
+            }
+        })
+    } else {
+        plots = plots.filter(x => x.guild_id === plot.guild_id && x.building.id)
+        if (plots.length > 1 && plot.building.id === 'castle') {
+            return ctx.reply(user, `you cannot delete this plot as it has a castle on it and you have other plots with buildings in ${plot.guild_name}.`, `red`)
+        }
+        const item = ctx.items.find(x => x.id === plot.building.id)
+        const levelPrices = item.levels.map(x => x.price).slice(0, plot.building.level)
+        const refund = levelPrices.length === 0? Math.floor(item.price * 0.75): Math.floor((levelPrices.reduce((a, b) => a + b) + item.price) * 0.75)
+
+        question = `You are about to demolish your \`${plot.building.id}\` and plot in ${plot.guild_name}. You will get **${(numFmt(refund))}** ${ctx.symbols.lemon} back. Do you want to continue?`
+        return ctx.sendCfm(ctx, user, {
+            question,
+            onConfirm: async () => {
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, "building.id": plot.building.id})
+                user.lemons += refund
+                await user.save()
+                return ctx.reply(user, `you have demolished your ${plot.building.id} and plot in ${plot.guild_name}. You have received **${numFmt(refund)}** ${ctx.symbols.lemon} back.`)
+            }
+        })
+    }
+}))

@@ -5,9 +5,9 @@
         "description": "View your list of achievements!",
         "options": [
             {
-                "name": "diff",
-                "description": "Add -diff to see achievements you have not gained",
-                "type": 3
+                "name": "missing",
+                "description": "See achievements you have not gained",
+                "type": 5
             }
         ]
     },
@@ -27,10 +27,24 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "query_arguments",
+                        "name": "card_query",
                         "description": "Put the card query arguments here to filter for a specific card to auction!",
                         "type": 3,
                         "required": true
+                    },
+                    {
+                        "name": "price",
+                        "description": "Set a price for the auction, set either a whole number or 0.5-4.0 for an easy multiplier",
+                        "type": 10,
+                        "required": false
+                    },
+                    {
+                        "name": "time_length",
+                        "description": "Set the length of time in hours the auction will be listed for!",
+                        "type": 4,
+                        "required": false,
+                        "min_value": 1,
+                        "max_value": 10
                     }
                 ]
             },
@@ -40,10 +54,20 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "query_arguments",
+                        "name": "card_query",
                         "description": "Put the card query arguments here to filter for a specific card to auction!",
                         "type": 3,
                         "required": false
+                    },
+                    {
+                        "name": "me",
+                        "description": "Filter for only your auctions? (Leave empty for all)",
+                        "type": 5
+                    },
+                    {
+                        "name": "bid",
+                        "description": "Filter for auctions you have bid on? (Leave empty for all)",
+                        "type": 5
                     }
                 ]
             },
@@ -85,10 +109,20 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "query_arguments",
-                        "description": "Put any card query arguments here!",
+                        "name": "card_query",
+                        "description": "Put the card query arguments here to filter for a specific card to auction!",
                         "type": 3,
                         "required": false
+                    },
+                    {
+                        "name": "me",
+                        "description": "Filter for only your auctions? (Leave empty for all)",
+                        "type": 5
+                    },
+                    {
+                        "name": "bid",
+                        "description": "Filter for auctions you have bid on? (Leave empty for all)",
+                        "type": 5
                     }
                 ]
             },
@@ -143,10 +177,15 @@
         "description": "Use this command to see your cards!",
         "options": [
             {
-                "name": "query_arguments",
+                "name": "card_query",
                 "description": "Put any card query options here!",
                 "type": 3,
                 "required": false
+            },
+            {
+                "name": "global",
+                "description": "Use this to search all of the cards in the bot, and not just owned cards",
+                "type": 5
             }
         ]
     },
@@ -156,28 +195,31 @@
         "description": "Claim cards!",
         "options": [
             {
-                "name": "regular",
+                "name": "cards",
                 "description": "Claim a card from a non-promotion collection",
                 "type": 1,
                 "options": [
                     {
-                        "name": "extra_arguments",
-                        "description": "Put an amount to claim more than 1 card at once, or a boost ID if there is an ongoing boost!",
+                        "name": "count",
+                        "description": "Put an amount to claim more than 1 card at a time!",
                         "type": 3,
                         "required": false
-                    }
-                ]
-            },
-            {
-                "name": "promo",
-                "description": "Claim a card from a promotion collection if one is ongoing",
-                "type": 1,
-                "options": [
+                    },
                     {
-                        "name": "extra_arguments",
-                        "description": "Put an amount to claim more than 1 card at once!",
+                        "name": "boost_id",
+                        "description": "Put a boost ID to claim here if there is an ongoing boost!",
                         "type": 3,
                         "required": false
+                    },
+                    {
+                        "name": "promo",
+                        "description": "Claim from an active promo collection if one is ongoing!",
+                        "type": 5
+                    },
+                    {
+                        "name": "unlocked",
+                        "description": "If claiming in a locked server, use this to claim from all claimable cards",
+                        "type": 5
                     }
                 ]
             },
@@ -220,9 +262,19 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "extra_arguments",
+                        "name": "collection",
                         "description": "Add collection name or query to filter the collection list",
                         "type": 3
+                    },
+                    {
+                        "name": "clouted",
+                        "description": "True: Lists only collections that have been reset, False: Lists only collections not reset",
+                        "type": 5
+                    },
+                    {
+                        "name": "completed",
+                        "description": "True: Lists only collections that are completed, False: Lists only collections not completed",
+                        "type": 5
                     }
                 ]
             },
@@ -232,7 +284,7 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "collection_id",
+                        "name": "collection",
                         "description": "Add the collection ID here",
                         "type": 3,
                         "required": true
@@ -245,7 +297,7 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "collection_id",
+                        "name": "collection",
                         "description": "Add the collection ID to reset here",
                         "type": 3,
                         "required": true
@@ -313,7 +365,7 @@
         "description": "Draw a 1-3 star non-event card of your choosing!",
         "options": [
             {
-                "name": "card",
+                "name": "card_query",
                 "description": "Enter either a card name, or card query here!",
                 "type": 3,
                 "required": true
@@ -404,19 +456,11 @@
                         "description": "The card query of the cards you want to eval",
                         "type": 3,
                         "required": true
-                    }
-                ]
-            },
-            {
-                "name": "global",
-                "description": "Get the current price of a group of cards, or their cost in vials",
-                "type": 1,
-                "options": [
+                    },
                     {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to eval",
-                        "type": 3,
-                        "required": true
+                        "name": "global",
+                        "description": "Use this to get the eval based on all cards in the database and not just owned cards",
+                        "type": 5
                     }
                 ]
             }
@@ -494,7 +538,7 @@
         "description": "View your list of favorited cards!",
         "options": [
             {
-                "name": "card_arguments",
+                "name": "card_query",
                 "description": "Specify a card or card query here!",
                 "type": 3
             }
@@ -506,14 +550,14 @@
         "description": "Forge 2 cards of the same rarity to get another!",
         "options": [
             {
-                "name": "card_1",
+                "name": "card_query_1",
                 "description": "Enter either a card name, or card query here. If using query, only fill out this option!",
                 "type": 3,
                 "required": true
             },
             {
-                "name": "card_2",
-                "description": "Enter either a card name here if you entered a card name for card 1!",
+                "name": "card_query_2",
+                "description": "Enter a card query or name here if you entered a card name for card 1!",
                 "type": 3,
                 "required": false
             }
@@ -545,9 +589,22 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "collection_id",
+                        "name": "collection",
                         "description": "The name of the collection you want to lock the guild to",
                         "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "donate",
+                "description": "Donate tomatoes to fund a guild lock",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "amount",
+                        "description": "The amount of tomatoes you want to donate",
+                        "type": 10,
                         "required": true
                     }
                 ]
@@ -612,7 +669,7 @@
                         "type": 1,
                         "options": [
                             {
-                                "name": "user",
+                                "name": "user_id",
                                 "description": "User to add as a manager",
                                 "type": 6,
                                 "required": true
@@ -625,7 +682,7 @@
                         "type": 1,
                         "options": [
                             {
-                                "name": "user",
+                                "name": "user_id",
                                 "description": "User to remove as a manager",
                                 "type": 6,
                                 "required": true
@@ -648,7 +705,7 @@
                 "type": 6
             },
             {
-                "name": "card_arguments",
+                "name": "card_query",
                 "description": "Specify the card you want to check!",
                 "required": true,
                 "type": 3
@@ -664,6 +721,11 @@
                 "name": "help_menu",
                 "description": "Specify the help page you want to display or leave blank to see all options",
                 "type": 3
+            },
+            {
+                "name": "here",
+                "description": "Whether the bot will post the help in current channel or in DM",
+                "type": 5
             }
         ]
     },
@@ -672,6 +734,11 @@
         "name": "hero",
         "description": "Base command for heroes!",
         "options": [
+            {
+                "name": "show",
+                "description": "View your current hero",
+                "type": 1
+            },
             {
                 "name": "list",
                 "description": "View a list of all heroes",
@@ -771,7 +838,15 @@
             {
                 "name": "list",
                 "description": "View all of your current inventory items (recipes, blueprints, claim_tickets)",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "inventory_item",
+                        "description": "The number position or name of the item you want more information about",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
             },
             {
                 "name": "info",
@@ -863,7 +938,7 @@
         "description": "View a list of cards you do not own!",
         "options": [
             {
-                "name": "card_arguments",
+                "name": "card_query",
                 "description": "Specify a card or card query here!",
                 "type": 3
             }
@@ -890,7 +965,14 @@
             {
                 "type": 1,
                 "name": "list",
-                "description": "List your plots in the current guild"
+                "description": "List plots in your plot list",
+                "options": [
+                    {
+                        "name": "global",
+                        "description": "Use this if you want to see all of your plots you own across all guilds",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "type": 1,
@@ -904,19 +986,37 @@
             },
             {
                 "type": 1,
-                "name": "global",
-                "description": "List all of your plots you own across all guilds"
+                "name": "info",
+                "description": "Get information about a plot",
+                "options": [
+                    {
+                        "name": "plot_number",
+                        "description": "Specify the specific plot number",
+                        "type": 4,
+                        "required": true
+                    },
+                    {
+                        "name": "global",
+                        "description": "Use this if you want to get info about one of your plots you own across all guilds",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "type": 1,
-                "name": "info",
-                "description": "Get information about a plot in the current guild",
+                "name": "demolish",
+                "description": "Destroy a plot",
                 "options": [
                     {
-                        "name": "extra_arguments",
+                        "name": "plot_number",
                         "description": "Specify the specific plot number",
-                        "type": 3,
+                        "type": 4,
                         "required": true
+                    },
+                    {
+                        "name": "global",
+                        "description": "Use this if you want to destroy a plot using your global list",
+                        "type": 5
                     }
                 ]
             },
@@ -926,34 +1026,13 @@
                 "description": "Upgrade a building already on a plot in the current guild",
                 "options": [
                     {
-                        "name": "extra_arguments",
+                        "name": "plot_number",
                         "description": "Specify the specific plot number",
-                        "type": 3,
+                        "type": 4,
                         "required": true
                     }
                 ]
-            },
-            {
-                "type": 2,
-                "name": "status",
-                "description": "Subcommand header for status",
-                "options": [
-                    {
-                        "type": 1,
-                        "name": "global",
-                        "description": "Get information about a specific plot in any guild",
-                        "options": [
-                            {
-                                "name": "extra_arguments",
-                                "description": "Specify the specific plot number from plot global",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
-                    }
-                ]
             }
-
         ]
     },
     {
@@ -972,7 +1051,7 @@
                         "type": 1,
                         "options": [
                             {
-                                "name": "notification_options",
+                                "name": "notification_option",
                                 "description": "The name of the option you want to toggle",
                                 "type": 3,
                                 "required": true
@@ -1029,9 +1108,9 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "quest_index",
+                        "name": "quest_number",
                         "description": "The number next to the quest you want more information about",
-                        "type": 3,
+                        "type": 4,
                         "required": true
                     }
                 ]
@@ -1098,7 +1177,7 @@
         "description": "Search the card database for specific cards!",
         "options": [
             {
-                "name": "query_arguments",
+                "name": "card_query",
                 "description": "Put any card queries here!",
                 "type": 3,
                 "required": false
@@ -1251,7 +1330,7 @@
                     },
                     {
                         "name": "tag",
-                        "description": "The tag you want to add, prefixed by # (e.g. #senko)",
+                        "description": "The tag you want to add",
                         "type": 3,
                         "required": true
                     }
@@ -1270,7 +1349,7 @@
                     },
                     {
                         "name": "tag",
-                        "description": "The tag you want to view more info about, prefixed by # (e.g. #senko)",
+                        "description": "The tag you want to view more info about",
                         "type": 3,
                         "required": true
                     }
@@ -1289,7 +1368,7 @@
                     },
                     {
                         "name": "tag",
-                        "description": "The tag you want to downvote, prefixed by # (e.g. #senko)",
+                        "description": "The tag you want to downvote",
                         "type": 3,
                         "required": true
                     }
@@ -1333,6 +1412,45 @@
         "name": "transaction",
         "description": "Base command for transaction!",
         "options": [
+            {
+                "name": "info",
+                "description": "Get detailed information about a transaction!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "transaction_id",
+                        "description": "The transaction ID you want to see more info about",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "confirm",
+                "description": "Confirm a transaction!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "transaction_id",
+                        "description": "The transaction ID you want to confirm",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "decline",
+                "description": "Decline a transaction!",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "transaction_id",
+                        "description": "The transaction ID you want to decline",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
             {
                 "name": "all",
                 "description": "View a list of all of your prior transactions",
