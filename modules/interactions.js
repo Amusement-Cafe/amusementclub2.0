@@ -37,7 +37,6 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'missing': interactionArgs.missing = x.value; break;
             case 'effect_name': interactionArgs.effect = x.value; break;
             case 'extra_arguments': interactionArgs.extraArgs = x.value; break;
-            case 'global': interactionArgs.global = x.value; break;
             case 'hero': interactionArgs.hero = x.value; break;
             case 'inventory_item': interactionArgs.invItem = x.value; break;
             case 'item_id': interactionArgs.itemID = x.value; break;

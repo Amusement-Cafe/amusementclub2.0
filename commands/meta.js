@@ -48,7 +48,7 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
-cmd('info', ['card', 'info'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['card', 'info'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'info')
 

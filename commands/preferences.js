@@ -16,7 +16,7 @@ const desc = {
     completed: `when you complete, or lose completion on a collection`,
 }
 
-cmd('prefs', ['preferences', 'show', 'all'], withInteraction((ctx, user) => {
+cmd(['preferences', 'show', 'all'], withInteraction((ctx, user) => {
     const cats = []
     cats.push(`\`notify\` **Notifications** (set events that bot can DM you about)`)
 
@@ -27,7 +27,7 @@ cmd('prefs', ['preferences', 'show', 'all'], withInteraction((ctx, user) => {
     })
 })).access('dm')
 
-cmd(['prefs', 'notify'], ['preferences', 'show', 'notify'], withInteraction((ctx, user) => {
+cmd(['preferences', 'show', 'notify'], withInteraction((ctx, user) => {
     const notify = user.prefs.notifications
     const fields = Object.keys(notify).map(x => {
         if(desc.hasOwnProperty(x)) {
@@ -43,7 +43,7 @@ cmd(['prefs', 'notify'], ['preferences', 'show', 'notify'], withInteraction((ctx
     })
 })).access('dm')
 
-cmd(['prefs', 'set', 'notify'], ['preferences', 'set', 'notify'], withInteraction(async (ctx, user, args) => {
+cmd(['preferences', 'set', 'notify'], withInteraction(async (ctx, user, args) => {
     const notify = user.prefs.notifications
     if(!notify.hasOwnProperty(args.option)) {
         return ctx.reply(user, `notify setting \`${args.option}\` doesn't exist.`, 'red')

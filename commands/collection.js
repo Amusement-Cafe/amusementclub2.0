@@ -34,7 +34,7 @@ const {cmd}         = require('../utils/cmd')
 const colors        = require('../utils/colors')
 
 
-cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], withInteraction(async (ctx, user, args) => {
+cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
     let cols
     if (args.cols.length > 0)
         cols = _.flattenDeep(args.cols)
@@ -93,7 +93,7 @@ cmd('col', 'cols', 'collection', 'collections', ['collection', 'list'], withInte
     })
 })).access('dm')
 
-cmd(['col', 'info'], ['collection', 'info'], withInteraction(async (ctx, user, args) => {
+cmd(['collection', 'info'], withInteraction(async (ctx, user, args) => {
     const col = _.flattenDeep(args.cols)[0];
 
     if(!col)
@@ -141,7 +141,7 @@ cmd(['col', 'info'], ['collection', 'info'], withInteraction(async (ctx, user, a
     }, user.discord_id)
 })).access('dm')
 
-cmd(['col', 'reset'], ['collection', 'reset'], withInteraction(async (ctx, user, args) => {
+cmd(['collection', 'reset'], withInteraction(async (ctx, user, args) => {
     const col = _.flattenDeep(args.cols)[0];
 
     if(!col)

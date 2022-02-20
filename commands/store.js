@@ -13,7 +13,7 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
-cmd('store', 'shop', ['store', 'view'], withInteraction(async (ctx, user, args) => {
+cmd(['store', 'view'], withInteraction(async (ctx, user, args) => {
     let cat = args.store || null
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
     cat = cat? cats[args.store - 1]: null
@@ -47,7 +47,7 @@ cmd('store', 'shop', ['store', 'view'], withInteraction(async (ctx, user, args) 
     })
 }))
 
-cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withInteraction(withItem(async (ctx, user, item, args) => {
+cmd(['store', 'info'], withInteraction(withItem(async (ctx, user, item, args) => {
     const embed = await itemInfo(ctx, user, item)
     embed.color = colors.deepgreen
     embed.author = { name: item.name }
@@ -55,7 +55,7 @@ cmd(['store', 'info'], ['shop', 'info'], ['item', 'info'], withInteraction(withI
     return ctx.send(ctx.interaction, embed)
 })))
 
-cmd(['store', 'buy'], ['shop', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => {
+cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => {
     const catNum = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type)).indexOf(item.type) + 1
     if (catNum == 3 && user.dailystats.store3 >= 3)
         return ctx.reply(user, `you have run out of available purchases from this store. Please try again after your next daily!`, 'red')

@@ -76,7 +76,7 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
-cmd('bal', 'balance', withInteraction((ctx, user) => {
+cmd('balance', withInteraction((ctx, user) => {
     let max = 1
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
@@ -112,7 +112,7 @@ cmd('bal', 'balance', withInteraction((ctx, user) => {
     return ctx.reply(user, embed)
 })).access('dm')
 
-cmd('inv', ['inventory', 'list'], withInteraction(withUserItems((ctx, user, items, args) => {
+cmd(['inventory', 'list'], withInteraction(withUserItems((ctx, user, items, args) => {
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`), 5),
         switchPage: (data) => data.embed.fields[1].value = data.pages[data.pagenum],
@@ -129,7 +129,7 @@ cmd('inv', ['inventory', 'list'], withInteraction(withUserItems((ctx, user, item
     })
 })))
 
-cmd(['inv', 'use'], ['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items, args, index) => {
+cmd(['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
     const itemCheck = await checkItem(ctx, user, item)
 
@@ -143,7 +143,7 @@ cmd(['inv', 'use'], ['inventory', 'use'], withInteraction(withUserItems(async (c
     })
 })))
 
-cmd(['inv', 'info'], ['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items, args) => {
+cmd(['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
 
     const embed = await itemInfo(ctx, user, item)
@@ -274,7 +274,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
                 \`${ctx.prefix}prefs set notify daily true\``, 'red')
 }))
 
-cmd('cards', 'li', 'ls', 'list', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
+cmd('cards', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
@@ -384,9 +384,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
     }, user.discord_id)
 })).access('dm')
 
-cmd('diff', ['diff', 'from'], withInteraction(async (ctx, user, args) => {
-    // const newArgs = parseArgs(ctx, args, user)
-
+cmd(['diff', 'from'], withInteraction(async (ctx, user, args) => {
     if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
 
@@ -425,7 +423,7 @@ cmd('diff', ['diff', 'from'], withInteraction(async (ctx, user, args) => {
     })
 }))
 
-cmd(['diff', 'reverse'], ['diff', 'rev'], ['diff', 'for'], withInteraction(async (ctx, user, args) => {
+cmd(['diff', 'for'], withInteraction(async (ctx, user, args) => {
     if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
 
@@ -503,7 +501,7 @@ cmd('miss', withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs)
     })
 })))
 
-cmd('quest', 'quests', ['quest', 'list'], withInteraction(async (ctx, user) => {
+cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests`, 'red')
 
@@ -517,7 +515,7 @@ cmd('quest', 'quests', ['quest', 'list'], withInteraction(async (ctx, user) => {
     }, user.discord_id)
 }))
 
-cmd(['quest', 'info'], ['quests', 'info'], withInteraction(async (ctx, user, args) => {
+cmd(['quest', 'info'], withInteraction(async (ctx, user, args) => {
     const index = args.questNum - 1
 
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
@@ -558,7 +556,7 @@ cmd('stats', withInteraction(async (ctx, user) => {
     }, user.discord_id)
 }))
 
-cmd('achievements', 'ach', withInteraction(async (ctx, user, args) => {
+cmd('achievements', withInteraction(async (ctx, user, args) => {
     let list = user.achievements.map(x => {
         const item = ctx.achievements.find(y => y.id === x)
         return `**${item.name}** • \`${item.desc}\``

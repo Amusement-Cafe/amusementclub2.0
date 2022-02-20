@@ -56,7 +56,7 @@ cmd(['tag', 'info'], withInteraction(withTag(async (ctx, user, card, tag) => {
     }, user.discord_id)
 })))
 
-cmd('tag', ['tag', 'one'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+cmd(['tag', 'one'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     
     tgTag = tgTag.replace(/[^\w]/gi, '')
 
@@ -152,7 +152,7 @@ cmd(['tag', 'down'], withInteraction(withTag(async (ctx, user, card, tag, tgTag,
     })
 })))
 
-cmd('tags', ['card', 'tags'], ['tag', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['tag', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 

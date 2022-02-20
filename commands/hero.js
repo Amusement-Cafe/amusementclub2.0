@@ -42,7 +42,7 @@ const {
 
 const Anilist = new anilist();
 
-cmd(['hero'], ['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
+cmd(['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
     const now = new Date()
     await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
@@ -117,7 +117,7 @@ cmd(['hero', 'info'], withInteraction(withHeroes(async (ctx, user, heroes, notEm
     return ctx.send(ctx.interaction, embed, user.discord_id)
 }))).access('dm')
 
-cmd(['heroes'], ['hero', 'list'], withInteraction(withHeroes(async (ctx, user, heroes) => {
+cmd(['hero', 'list'], withInteraction(withHeroes(async (ctx, user, heroes) => {
     heroes.sort((a, b) => b.xp - a.xp)
     const pages = ctx.pgn.getPages(heroes.map((x, i) => `${i + 1}. \`[${x.id}]\` **${x.name}** lvl **${XPtoLEVEL(x.xp)}**`))
 
@@ -131,7 +131,7 @@ cmd(['heroes'], ['hero', 'list'], withInteraction(withHeroes(async (ctx, user, h
     })
 }))).access('dm')
 
-cmd(['effect', 'info'], ['hero', 'effect', 'info'], withInteraction(async (ctx, user, args) => {
+cmd(['effect', 'info'], withInteraction(async (ctx, user, args) => {
     if(!args.effect)
         return ctx.qhelp(ctx, user, 'effect')
 
@@ -151,7 +151,7 @@ cmd(['effect', 'info'], ['hero', 'effect', 'info'], withInteraction(async (ctx, 
     return ctx.send(ctx.interaction, embed, user.discord_id)
 })).access('dm')
 
-cmd(['effects'], ['hero', 'effects'], ['effect', 'list', 'actives'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
+cmd(['effect', 'list', 'actives'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
 
     if(!effects.some(x => !x.passive))
         return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
@@ -177,7 +177,7 @@ cmd(['effects'], ['hero', 'effects'], ['effect', 'list', 'actives'], withInterac
     })
 }))).access('dm')
 
-cmd(['slots'], ['hero', 'slots'], ['effect', 'list', 'passives'], withInteraction(withUserEffects(async (ctx, user, effects, ...args) => {
+cmd(['hero', 'slots'], ['effect', 'list', 'passives'], withInteraction(withUserEffects(async (ctx, user, effects, ...args) => {
     const now = new Date()
     effects = effects.filter(x => !x.expires || x.expires > now)
 
@@ -210,7 +210,7 @@ cmd(['slots'], ['hero', 'slots'], ['effect', 'list', 'passives'], withInteractio
     })
 }))).access('dm')
 
-cmd(['use'], ['hero', 'use'], ['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
+cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
     if(!args.effect)
         return ctx.qhelp(ctx, user, 'effect')
 
@@ -256,7 +256,7 @@ cmd(['use'], ['hero', 'use'], ['effect', 'use'], withInteraction(withUserEffects
     return ctx.reply(user, embed)
 }))).access('dm')
 
-cmd(['equip'], ['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
+cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
     if(args.length === 0)
         return ctx.qhelp(ctx, user, 'effect')
 

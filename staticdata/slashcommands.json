@@ -1173,19 +1173,6 @@
     },
     {
         "type": 1,
-        "name": "search",
-        "description": "Search the card database for specific cards!",
-        "options": [
-            {
-                "name": "card_query",
-                "description": "Put any card queries here!",
-                "type": 3,
-                "required": false
-            }
-        ]
-    },
-    {
-        "type": 1,
         "name": "sell",
         "description": "Base command for selling!",
         "options": [

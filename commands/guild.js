@@ -50,7 +50,7 @@ cmd(['guild'], withInteraction(async (ctx, user) => {
     return ctx.qhelp(ctx, user, 'guild')
 }))
 
-cmd(['guild', 'info'], withInteraction(async (ctx, user, ...args) => {
+cmd(['guild', 'info'], withInteraction(async (ctx, user, args) => {
 
     const resp = [], userstat = [], fields = []
     const guildlvl = XPtoLEVEL(ctx.guild.xp)
@@ -200,7 +200,7 @@ cmd(['guild', 'unset', 'bot'], withInteraction(async (ctx, user) => {
     return ctx.reply(user, `removed this channel from bot channel list`)
 }))
 
-cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], ['guild', 'manager', 'add'], withInteraction(async (ctx, user, args) => {
+cmd(['guild', 'manager', 'add'], withInteraction(async (ctx, user, args) => {
     if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can add guild managers`, 'red')
 
@@ -225,7 +225,7 @@ cmd(['guild', 'add', 'manager'], ['guild', 'add', 'mod'], ['guild', 'manager', '
     return ctx.reply(user, `successfully assigned manager role to **${tgUser.username}**`)
 }))
 
-cmd(['guild', 'remove', 'manager'], ['guild', 'remove', 'mod'], ['guild', 'manager', 'remove'], withInteraction(async (ctx, user, args) => {
+cmd(['guild', 'manager', 'remove'], withInteraction(async (ctx, user, args) => {
     if(!isUserOwner(ctx, user) && !user.roles.includes('admin'))
         return ctx.reply(user, `only owner can remove guild managers`, 'red')
 

@@ -140,7 +140,7 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
     })
 })))
 
-cmd('liq', 'liquify', ['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -150,7 +150,7 @@ cmd('liq', 'liquify', ['liquefy', 'one'], withInteraction(withCards(async (ctx, 
         vials = 5
 
     if(card.level > 3)
-        return ctx.reply(user, `you cannot liquify card higher than 3 ${ctx.symbols.star}`, 'red')
+        return ctx.reply(user, `you cannot liquefy card higher than 3 ${ctx.symbols.star}`, 'red')
 
     if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
         vials += vials * .25
@@ -159,7 +159,7 @@ cmd('liq', 'liquify', ['liquefy', 'one'], withInteraction(withCards(async (ctx, 
         return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
             Please, use \`${ctx.prefix}fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
-    const question = `Do you want to liquify ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
+    const question = `Do you want to liquefy ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
         ${card.amount === 1? 'This is the last copy that you have' : `You will have **${card.amount - 1}** card(s) left`}`
 
     return ctx.sendCfm(ctx, user, {
@@ -177,7 +177,7 @@ cmd('liq', 'liquify', ['liquefy', 'one'], withInteraction(withCards(async (ctx, 
 
                 await plotPayout(ctx, 'smithhub', 2, 15)
 
-                ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
+                ctx.reply(user, `card ${formatName(card)} was liquefied. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
                     You can use vials to draw **any 1-3 ${ctx.symbols.star}** card that you want. Use \`${ctx.prefix}draw\``, 'green', true)
             } catch(e) {
@@ -188,7 +188,7 @@ cmd('liq', 'liquify', ['liquefy', 'one'], withInteraction(withCards(async (ctx, 
     })
 })))
 
-cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
@@ -257,14 +257,14 @@ cmd(['liq', 'all'], ['liquify', 'all'], ['liquefy', 'many'], withInteraction(wit
     })
 })))
 
-cmd(['liq', 'preview'], ['liquify', 'preview'], ['liquefy', 'preview'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['liquefy', 'preview'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
     cards.splice(100, cards.length)
     
     if(cards.some(x => x.level > 3))
-        return ctx.reply(user, `you cannot liquify cards higher than 3 ${ctx.symbols.star}`, 'red')
+        return ctx.reply(user, `you cannot liquefy cards higher than 3 ${ctx.symbols.star}`, 'red')
 
     let vials = 0
     const resp = cards.map(card => {
@@ -299,7 +299,7 @@ cmd(['liq', 'preview'], ['liquify', 'preview'], ['liquefy', 'preview'], withInte
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(resp.map(x => x.cardname), 10),
         embed: {
-            author: { name: `Liquify preview (total ${numFmt(vials)} ${ctx.symbols.vial})` },
+            author: { name: `Liquefy preview (total ${numFmt(vials)} ${ctx.symbols.vial})` },
             description: '',
             color: colors.blue,
         }

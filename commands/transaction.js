@@ -22,15 +22,15 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
-cmd(['trans', 'confirm'], 'confirm', 'cfm', 'accept', ['transaction', 'confirm'], withInteraction((ctx, user, args) => {
+cmd(['transaction', 'confirm'], withInteraction((ctx, user, args) => {
     confirm_trs(ctx, user, args.transID, false)
 }))
 
-cmd(['trans', 'decline'], 'decline', 'dcl', 'reject', ['transaction', 'decline'], withInteraction((ctx, user, args) => {
+cmd(['transaction', 'decline'], withInteraction((ctx, user, args) => {
     decline_trs(ctx, user, args.transID, false)
 }))
 
-cmd('trans', ['transaction', 'all'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'all'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({ 
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }] 
     }).sort({ time: -1 })
@@ -51,7 +51,7 @@ cmd('trans', ['transaction', 'all'], withInteraction(withGlobalCards(async (ctx,
     })
 })))
 
-cmd(['trans', 'pending'], 'pending', ['transaction', 'pending'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'pending'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await getPending(ctx, user)
 
     if(parsedargs.cardQuery)
@@ -70,7 +70,7 @@ cmd(['trans', 'pending'], 'pending', ['transaction', 'pending'], withInteraction
     })
 })))
 
-cmd(['trans', 'gets'], 'gets', ['transaction', 'received'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'received'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         to_id: user.discord_id
     }).sort({ time: -1 })
@@ -91,7 +91,7 @@ cmd(['trans', 'gets'], 'gets', ['transaction', 'received'], withInteraction(with
     })
 })))
 
-cmd(['trans', 'sends'], 'sends', ['transaction', 'sent'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'sent'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         from_id: user.discord_id
     }).sort({ time: -1 })
@@ -112,7 +112,7 @@ cmd(['trans', 'sends'], 'sends', ['transaction', 'sent'], withInteraction(withGl
     })
 })))
 
-cmd(['trans', 'auction'], ['trans', 'auc'], ['transaction', 'auction', 'all'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'auction', 'all'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
         status: 'auction'
@@ -136,7 +136,7 @@ cmd(['trans', 'auction'], ['trans', 'auc'], ['transaction', 'auction', 'all'], w
     })
 })))
 
-cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], ['transaction', 'auction', 'received'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'auction', 'received'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         to_id: user.discord_id ,
         status: 'auction'
@@ -161,7 +161,7 @@ cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], ['transaction', 'auc
     })
 })))
 
-cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], ['transaction', 'auction', 'sent'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'auction', 'sent'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         from_id: user.discord_id,
         status: 'auction'
@@ -187,7 +187,7 @@ cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], ['transaction', 'a
 })))
 
 
-cmd(['trans', 'info'], ['transaction', 'info'], withInteraction(async (ctx, user, args) => {
+cmd(['transaction', 'info'], withInteraction(async (ctx, user, args) => {
     const trs = await Transaction.findOne({ id: args.transID })
 
     if(!trs)

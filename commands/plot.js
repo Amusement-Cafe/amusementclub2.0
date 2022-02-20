@@ -22,7 +22,7 @@ const {
 } = require("../modules/interactions")
 
 
-cmd(['plot'], ['plots'], ['plot', 'list'], withInteraction(async (ctx, user) => {
+cmd(['plot', 'list'], withInteraction(async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
         return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
@@ -46,7 +46,7 @@ cmd(['plot'], ['plots'], ['plot', 'list'], withInteraction(async (ctx, user) => 
     })
 }))
 
-cmd(['plot', 'global'], ['plots', 'global'], ['plot', 'list', 'global'], withInteraction(async (ctx, user) => {
+cmd(['plot', 'list', 'global'], withInteraction(async (ctx, user) => {
     const lots = await getUserPlots(ctx, true)
     lots.sort((a, b) => a.guild_id - b.guild_id)
     let pages = []
@@ -183,7 +183,7 @@ cmd(['plot', 'upgrade'], withInteraction(async (ctx, user, args) => {
     })
 }))
 
-cmd(['plot', 'info'], ['plot', 'status'], withInteraction(async (ctx, user, args) => {
+cmd(['plot', 'info'], withInteraction(async (ctx, user, args) => {
     let plot = await getUserPlots(ctx, false)
     let plotLength = plot.length
 
@@ -236,7 +236,7 @@ cmd(['plot', 'info'], ['plot', 'status'], withInteraction(async (ctx, user, args
     return ctx.send(ctx.interaction, embed, user.discord_id)
 }))
 
-cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], withInteraction(async (ctx, user, args) => {
+cmd(['plot', 'info', 'global'], withInteraction(async (ctx, user, args) => {
     let plot = await getUserPlots(ctx, true)
     let plotLength = plot.length
 
@@ -288,7 +288,7 @@ cmd(['plot', 'info', 'global'], ['plot', 'status', 'global'], withInteraction(as
     return ctx.send(ctx.interaction, embed, user.discord_id)
 }))
 
-cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'claim'], withInteraction(async (ctx, user) => {
+cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
     const past = asdate.subtract(new Date(), 1, "hours")
     let plots = await getUserPlots(ctx)
 
@@ -315,7 +315,7 @@ cmd(['plot', 'collect'], ['plots', 'collect'], ['plot', 'claim'], ['plots', 'cla
             You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
 }))
 
-cmd(['plot', 'demolish'], ['plot', 'delete'], ['plot', 'remove'], ['plot', 'destroy'], withInteraction(async (ctx, user, args) => {
+cmd(['plot', 'demolish'], withInteraction(async (ctx, user, args) => {
     let plots = await getUserPlots(ctx, false)
     let plotLength = plots.length
 
@@ -360,7 +360,7 @@ cmd(['plot', 'demolish'], ['plot', 'delete'], ['plot', 'remove'], ['plot', 'dest
     }
 }))
 
-cmd(['plot', 'demolish', 'global'], ['plot', 'delete', 'global'], ['plot', 'remove', 'global'], ['plot', 'destroy', 'global'], withInteraction(async (ctx, user, args) => {
+cmd(['plot', 'demolish', 'global'], withInteraction(async (ctx, user, args) => {
     let plots = await getUserPlots(ctx, true)
     let plotLength = plots.length
 

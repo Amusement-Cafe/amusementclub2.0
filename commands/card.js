@@ -69,7 +69,7 @@ const {
 } = require("../modules/interactions")
 
 
-cmd('claim', 'cl', ['claim', 'cards'], withInteraction(async (ctx, user, args) => {
+cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     const cards = []
     const now = new Date()
 
@@ -250,7 +250,7 @@ cmd('claim', 'cl', ['claim', 'cards'], withInteraction(async (ctx, user, args) =
     }, false)
 }))
 
-cmd(['claim', 'history'], ['cl', 'history'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['claim', 'history'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const claimHistory = await Claim.find(
         { user: user.discord_id }, 
         { cards: 1, date: 1, id: 1 }, 
@@ -278,7 +278,7 @@ cmd(['claim', 'history'], ['cl', 'history'], withInteraction(withGlobalCards(asy
     })
 }))).access('dm')
 
-cmd(['claim', 'info'], ['cl', 'info'], withInteraction(async (ctx, user, args) => {
+cmd(['claim', 'info'], withInteraction(async (ctx, user, args) => {
     const claim = await Claim.findOne({ id: args.claimID, user: user.discord_id })
 
     if(!claim)
@@ -310,7 +310,7 @@ cmd(['claim', 'info'], ['cl', 'info'], withInteraction(async (ctx, user, args) =
     }, user.discord_id)
 }))
 
-cmd('sum', 'summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd('summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     const card = parsedargs.isEmpty()? _.sample(cards) : bestMatch(cards)
     user.lastcard = card.id
     await user.save()
@@ -331,8 +331,7 @@ cmd('sum', 'summon', withInteraction(withCards(async (ctx, user, cards, parsedar
     })
 }))).access('dm')
 
-cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list', 'global'],
-    withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['cards', 'global'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.excluded)
 
     const evalTime = getQueueTime()
@@ -352,7 +351,7 @@ cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list'
     })
 }))).access('dm')
 
-cmd('sell', ['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
@@ -387,7 +386,7 @@ cmd('sell', ['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, 
     })
 })))
 
-cmd(['sell', 'all'], ['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
@@ -483,7 +482,7 @@ cmd(['sell', 'preview'], withInteraction(withCards(async (ctx, user, cards, pars
 
 })))
 
-cmd('eval', ['eval', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['eval', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'eval')
 
@@ -494,7 +493,7 @@ cmd('eval', ['eval', 'one'], withInteraction(withGlobalCards(async (ctx, user, c
         `card ${formatName(card)} is worth: **${numFmt(price)}** ${ctx.symbols.tomato} ${card.level < 4? `or **${numFmt(vials)}** ${ctx.symbols.vial}` : ``}`)
 }))).access('dm')
 
-cmd(['eval', 'all'], ['eval', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['eval', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
 
     let price = 0
     let vials = 0
@@ -524,7 +523,7 @@ cmd(['eval', 'all'], ['eval', 'many'], withInteraction(withCards(async (ctx, use
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))).access('dm')
 
-cmd(['eval', 'many', 'global'], ['eval', 'global'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['eval', 'many', 'global'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
 
     let price = 0
     let vials = 0
@@ -554,7 +553,7 @@ cmd(['eval', 'many', 'global'], ['eval', 'global'], withInteraction(withGlobalCa
         ${vials > 0? `or **${numFmt(vials)}** ${ctx.symbols.vial} (for less than 4 stars)` : ``}`)
 }))).access('dm')
 
-cmd('fav', ['fav', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['fav', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'fav')
 
@@ -571,7 +570,7 @@ cmd('fav', ['fav', 'one'], withInteraction(withCards(async (ctx, user, cards, pa
     return ctx.reply(user, `marked ${formatName(card)} as favourite`)
 }))).access('dm')
 
-cmd(['fav', 'all'], ['fav', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['fav', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => !x.fav)
 
     if(cards.length === 0)
@@ -590,7 +589,7 @@ cmd(['fav', 'all'], ['fav', 'many'], withInteraction(withCards(async (ctx, user,
     })
 }))).access('dm')
 
-cmd('unfav', ['fav', 'remove'], ['fav', 'remove', 'one'], ['unfav', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['fav', 'remove', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'fav')
 
@@ -607,7 +606,7 @@ cmd('unfav', ['fav', 'remove'], ['fav', 'remove', 'one'], ['unfav', 'one'], with
     return ctx.reply(user, `removed ${formatName(card)} from favourites`)
 }))).access('dm')
 
-cmd(['unfav', 'all'], ['fav', 'remove', 'all'], ['fav', 'remove', 'many'], ['unfav', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['fav', 'remove', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => x.fav)
 
     if(cards.length === 0)
@@ -625,7 +624,7 @@ cmd(['unfav', 'all'], ['fav', 'remove', 'all'], ['fav', 'remove', 'many'], ['unf
     })
 }))).access('dm')
 
-cmd('boost', 'boosts', ['boost', 'list'], withInteraction((ctx, user) => {
+cmd(['boost', 'list'], withInteraction((ctx, user) => {
     const now = new Date()
     const boosts = ctx.boosts
         .filter(x => x.starts < now && x.expires > now)
@@ -674,7 +673,7 @@ cmd(['boost', 'info'], withInteraction((ctx, user, args) => {
     })
 }))
 
-cmd('rate', ['rate', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['rate', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'rate')
 
@@ -700,7 +699,7 @@ cmd('rate', ['rate', 'one'], withInteraction(withCards(async (ctx, user, cards, 
     return ctx.reply(user, `set rating **${rating}** for ${formatName(card)}`)
 }))).access('dm')
 
-cmd(['rate', 'remove', 'one'], ['unrate'], ['unrate', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['rate', 'remove', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'rate')
 
@@ -728,7 +727,7 @@ cmd(['rate', 'remove', 'one'], ['unrate'], ['unrate', 'one'], withInteraction(wi
     return ctx.reply(user, `removed rating for ${formatName(card)}`)
 }))).access('dm')
 
-cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let targetUser
     if(parsedargs.ids[0]) {
         targetUser = await fetchOnly(parsedargs.ids[0])
@@ -761,7 +760,7 @@ cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], 
     })
 }))).access('dm')
 
-cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], ['wish', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
+cmd(['wish', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -787,7 +786,7 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], ['wish', 'one'
     return ctx.reply(user, `added ${formatName(card)} to the wishlist ${userHasCard? '(you own this card)' : ''}`)
 }))).access('dm')
 
-cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], ['wish', 'many'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'many'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -816,7 +815,7 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], ['wish', 'many'], withIn
     })
 }))).access('dm')
 
-cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], ['wish', 'remove', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'remove', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'wishlist')
 
@@ -840,7 +839,7 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], ['wish', 'remove
     return ctx.reply(user, `removed ${formatName(card)} from your wishlist`)
 }))).access('dm')
 
-cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'all'], ['wish', 'remove', 'many'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['wish', 'remove', 'many'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     cards = cards.filter(x => user.wishlist.some(y => y === x.id))
 
     if(user.wishlist.length === 0) {

@@ -33,7 +33,7 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
-cmd('auc', 'auction', 'auctions', ['auction', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auction', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const req = {finished: false}
 
@@ -74,7 +74,7 @@ cmd('auc', 'auction', 'auctions', ['auction', 'list'], withInteraction(withGloba
     })
 }))).access('dm')
 
-cmd(['auc', 'info'], ['auction', 'info'], withInteraction(async (ctx, user, args) => {
+cmd(['auction', 'info'], withInteraction(async (ctx, user, args) => {
     const auc = await Auction.findOne({ id: args.aucID })
 
     if(!auc)
@@ -92,7 +92,7 @@ cmd(['auc', 'info'], ['auction', 'info'], withInteraction(async (ctx, user, args
     }, user.discord_id)
 })).access('dm')
 
-cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], ['auction', 'preview'], withInteraction(withGlobalCards(async (ctx, user, cards, args) => {
+cmd(['auction', 'preview'], withInteraction(withGlobalCards(async (ctx, user, cards, args) => {
     const now = new Date();
     const req = {finished: false}
 
@@ -152,7 +152,7 @@ cmd(['auc', 'info', 'all'], ['auction', 'info', 'all'], ['auction', 'preview'], 
     })
 }))).access('dm')
 
-cmd(['auc', 'sell'], ['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if (ctx.settings.aucLock)
         return ctx.reply(user, `selling on auction is currently disabled by the admins.\nFor more info you may inquire in the [Support Server](${ctx.invite}).`, 'red')
 
@@ -172,7 +172,6 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withInteraction(withCards(async (ctx, 
         price *= ceval
 
     price = Math.round(price)
-    //const fee = Math.round(auchouse.level > 1? price * .05 : price * .1)
     const fee = Math.round(price * .1)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
@@ -242,7 +241,7 @@ cmd(['auc', 'sell'], ['auction', 'sell'], withInteraction(withCards(async (ctx, 
     })
 })))
 
-cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', withInteraction(async (ctx, user, args) => {
+cmd(['auction', 'bid'], withInteraction(async (ctx, user, args) => {
     if(user.ban && user.ban.embargo)
         return ctx.reply(user, `you are not allowed to list cards at auction.
                                 Your dealings were found to be in violation of our community rules.
@@ -291,7 +290,7 @@ cmd(['auc', 'bid'], ['auction', 'bid'], 'bid', withInteraction(async (ctx, user,
 
 }, true)).access('dm')
 
-cmd(['auc', 'cancel'], ['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
+cmd(['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
     let auc = await Auction.findOne({ id: args.aucID })
 
     if(!auc)
