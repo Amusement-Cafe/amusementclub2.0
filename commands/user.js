@@ -325,7 +325,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
     const stamp = user.joined || user._id.getTimestamp()
     const userCards = await getUserCards(ctx, user)
     const cards = mapUserCards(ctx, userCards)
-    const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
+    const joinTime = Math.floor(stamp / 1000)
     let price = 0
     let vials = 0
     cards.map(card => {
@@ -352,7 +352,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
         resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
     }
 
-    resp.push(`In game since: **<t:${stamp / 1000}:D>** (<t:${stamp / 1000}:R>)`)
+    resp.push(`In game since: **<t:${joinTime}:D>** (<t:${joinTime}:R>)`)
 
     if(completedSum > 0) {
         resp.push(`Completed collections: **${numFmt(user.completedcols.length)}**`)
@@ -559,15 +559,18 @@ cmd('stats', withInteraction(async (ctx, user) => {
 cmd('achievements', withInteraction(async (ctx, user, args) => {
     let list = user.achievements.map(x => {
         const item = ctx.achievements.find(y => y.id === x)
-        return `**${item.name}** • \`${item.desc}\``
+        return `**${item.name}** • \`${item.desc}\`${item.hidden? ` • *Hidden*`: ''}`
     })
 
     const miss = args.missing
+    let missDiff
 
-    if (miss)
-        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y)).map(z => `**${z.name}** • \`${z.desc}\``)
+    if (miss) {
+        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y) && !x.hidden).map(z => `**${z.name}** • \`${z.desc}\``)
+        missDiff = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y) && x.hidden).length
+    }
 
-    const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length})` }}
+    const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length}${miss? ` + ${missDiff} Hidden`: ''})` }}
 
     if (!miss)
         embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
