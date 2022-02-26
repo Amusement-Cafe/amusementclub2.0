@@ -159,7 +159,7 @@ const confirm_trs = async (ctx, user, trs_id, edit = true) => {
     return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 }
 
-const decline_trs = async (ctx, user, trs_id, edit) => {
+const decline_trs = async (ctx, user, trs_id, edit = true) => {
     if(typeof user === 'string')
         user = await User.findOne({ discord_id: user })
 
