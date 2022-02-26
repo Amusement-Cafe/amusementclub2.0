@@ -2,7 +2,7 @@ const { rct }   = require('./cmd')
 const colors    = require('./colors')
 const asdate    = require('add-subtract-date')
 
-let paginations = [], confirmations = []
+let paginations = [], confirmations = [], confirmPaginations = []
 
 const defaults = {
     expires: 600,
@@ -123,7 +123,10 @@ const addPagination = async (ctx, params) => {
         interMsg = await ctx.bot.createMessage(ch.id, {embed: obj.embed, components: obj.components})
         await ctx.interaction.createMessage({embed: {color: colors.green, description: 'A DM has been sent to you'}})
     } else {
-        interMsg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
+        if (params.edit)
+            interMsg = await ctx.interaction.editOriginalMessage({ embed: obj.embed, components: obj.components })
+        else
+            interMsg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
     }
     obj.msg = interMsg.id
     obj.channel = interMsg.channel.id
@@ -170,12 +173,83 @@ const addConfirmation = async (ctx, params) => {
     const msg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
     obj.msg = msg.id
     obj.channel = msg.channel.id
-    obj.channelType = msg.channel.type
+}
+
+const addConfirmPagination = async (ctx, params) => {
+    const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
+    const oldpagination = confirmPaginations.filter(x => x.userID === userID)[0]
+    try {
+        if(confirmPaginations && oldpagination.channel && oldpagination.msg) {
+            await ctx.interaction.editMessage(oldpagination.msg, {components: []})
+        }
+    } catch(e) {}
+
+    confirmPaginations = confirmPaginations.filter(x => x.userID != userID)
+
+    const pagenum = 0
+    const pages = params.pages || defaultpgn.pages
+    const obj = Object.assign({
+        pagenum, userID,
+        perms: { confirm: [userID], decline: [userID], switch: [userID]},
+        embed: Object.assign({}, defaults.pgnEmbed),
+        expires: asdate.add(new Date(), defaults.expires, 'seconds'),
+        components: [{ type: 1, components: []}],
+        interaction: ctx.interaction,
+        onConfirm: () => sendConfirm(ctx.interaction),
+        onDecline: () => sendDecline(ctx.interaction),
+        onTimeout: () => sendTimeout(ctx.interaction),
+        onError: () => { },
+    }, defaultpgn, params)
+
+    obj.embed.color = obj.embed.color || colors.blue
+    obj.embed.footer = obj.embed.footer || { text: `Page 1/${pages.length}` }
+
+    if(obj.check && await obj.check())
+        return await obj.onError(userID)
+
+    if(params.force)
+        return await obj.onConfirm(userID)
+
+    obj.switchPage(obj)
+    confirmPaginations.push(obj)
+
+    try {
+        if(obj.pages.length > 1) {
+            if(obj.buttons.includes('first')) obj.components[0].components.push(buttons.first)
+            if(obj.buttons.includes('back')) obj.components[0].components.push(buttons.back)
+            if(obj.buttons.includes('forward')) obj.components[0].components.push(buttons.forward)
+            if(obj.buttons.includes('last')) obj.components[0].components.push(buttons.last)
+            if(obj.buttons.includes('close')) obj.components[0].components.push(buttons.close)
+            if (obj.buttons.length > 5) {
+                obj.components.push({ type: 1, components: []})
+                if(obj.buttons.includes('confirm')) obj.components[1].components.push(buttons.confirm)
+                if(obj.buttons.includes('decline')) obj.components[1].components.push(buttons.decline)
+            } else {
+                if(obj.buttons.includes('confirm')) obj.components[0].components.push(buttons.confirm)
+                if(obj.buttons.includes('decline')) obj.components[0].components.push(buttons.decline)
+            }
+
+
+        }
+    } catch(e) {
+        confirmPaginations = confirmPaginations.filter(x => x.userID != userID)
+    }
+
+    let interMsg
+
+    if (params.edit)
+        interMsg = await ctx.interaction.editOriginalMessage({ embed: obj.embed, components: obj.components })
+    else
+        interMsg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
+
+    obj.msg = interMsg.id
+    obj.channel = interMsg.channel.id
 }
 
 const doSwitch =  async (ctx, newpage) => {
     const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
-    const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(userID))[0]
+    const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(userID))[0] ||
+        confirmPaginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.switch.includes(userID))[0]
     if(!data) return
 
     const max = data.pages.length - 1
@@ -197,12 +271,12 @@ const doResolve = async (ctx, reaction) => {
     let data
     const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
     if(reaction === chars.confirm)
-        data = confirmations.filter(x => x.msg === ctx.interaction.message.id
-            && x.perms.confirm.includes(userID))[0]
+        data = confirmations.filter(x => x.msg === ctx.interaction.message.id && x.perms.confirm.includes(userID))[0] ||
+            confirmPaginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.confirm.includes(userID))[0]
 
     if(reaction === chars.decline)
-        data = confirmations.filter(x => x.msg === ctx.interaction.message.id
-            && x.perms.decline.includes(userID))[0]
+        data = confirmations.filter(x => x.msg === ctx.interaction.message.id && x.perms.decline.includes(userID))[0] ||
+            confirmPaginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.decline.includes(userID))[0]
 
     if(!data) return
 
@@ -274,6 +348,14 @@ const timeoutTick = () => {
         } catch (e) {}
     })
     confirmations = confirmations.filter(x => x.expires >= now)
+
+    confirmPaginations.filter(x => x.expires < now).map(async y => {
+        try {
+            await y.interaction.editOriginalMessage({embed: y.embed, components: []})
+            await y.onTimeout()
+        } catch (e) {}
+    })
+    confirmPaginations = confirmPaginations.filter(x => x.expires >= now)
 }
 
 rct(chars.first,   (ctx) => doSwitch(ctx,cur => 0))
@@ -289,6 +371,7 @@ rct(chars.close,   (ctx) => remove(ctx))
 module.exports = {
     addPagination,
     addConfirmation,
+    addConfirmPagination,
     buttons,
     chars,
     getPages,

@@ -153,6 +153,12 @@ module.exports.create = async ({
             _.remove(userq, (x) => x.id === user.discord_id)
     }
 
+    const sendCfmPgn = async (ctx, user, cfmPgnObject, userqRemove = true) => {
+        await pgn.addConfirmPagination(ctx, cfmPgnObject)
+        if (userqRemove)
+            _.remove(userq, (x) => x.id === user.discord_id)
+    }
+
     const filter = new Filter()
     filter.addWords(...data.bannedwords)
 
@@ -183,6 +189,7 @@ module.exports.create = async ({
         send, /* a sending function to send stuff to a specific channel */
         sendPgn, /* a sending function to send pagination messages and remove user from cooldown*/
         sendCfm, /* a sending function to send confirmation messages and remove user from cooldown*/
+        sendCfmPgn, /* a sending function to send a combination confirmation and pagination message and remove user from cooldown*/
         cards: data.cards, /* data with cards */
         collections: data.collections, /* data with collections */
         help: require('./staticdata/help'),
@@ -328,13 +335,18 @@ module.exports.create = async ({
                 return
 
             const interactionUser = interaction.user || interaction.member.user
-            if (interactionUser.bot || userq.some(x => x.id === interactionUser.id))
+            if (interactionUser.bot)
                 return
 
-            const curguild = await guild.fetchGuildById(interaction.guildID)
-
             const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
+            let botUser = await user.fetchOnly(interactionUser.id)
 
+            if (userq.some(x => x.id === interactionUser.id)) {
+                await interaction.acknowledge(64)
+                return reply(botUser, 'you are currently on a command cooldown. Please wait a moment and try your command again!', 'red')
+            }
+
+            const curguild = await guild.fetchGuildById(interaction.guildID)
 
             let base = [interaction.data.name]
             let options = []
@@ -393,6 +405,20 @@ module.exports.create = async ({
             usr.username = usr.username.replace(/\*/gi, '')
             const cntnt = msg.map(x => x.trim()).join(' ')
             let args = cntnt.split(/ +/)
+            userq.push({id: interactionUser.id, expires: asdate.add(new Date(), 3, 'seconds')})
+
+            if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
+                return reply(usr, ctx.settings.wipMsg, 'yellow')
+            }
+
+            if(usr.ban.full) {
+                return reply(usr, `this account was banned permanently.
+                    For more information please visit [bot discord](${ctx.cafe})`, 'red')
+            }
+
+            usr.exp = Math.min(usr.exp, 10**7)
+            usr.vials = Math.min(usr.vials, 10**6)
+
             console.log(`[${usr.username}]: ${cntnt}`)
             args.filter(x => x.length === 2 && x[0] === '-').map(x => {
                 isolatedCtx.globals[globalArgsMap[x[1]]] = true
@@ -489,7 +515,7 @@ module.exports.create = async ({
             usr.username = usr.username.replace(/\*/gi, '')
             return bot.createMessage(msg.channel.id, {embed: toObj(usr, `all commands have been moved to slash commands as [verified bots are losing their access to see messages](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-for-Verified-Bots) soon.
             Check out discord's \`/\` menu to find our commands!
-            Your new command should look like \`/${args[0]}\``, 'red')})
+            Your new command should look something like \`/${args[0]}\``, 'red')})
             /* add user to cooldown q */
             userq.push({id: msg.author.id, expires: asdate.add(new Date(), 3, 'seconds')});
 

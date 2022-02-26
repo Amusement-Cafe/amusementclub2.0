@@ -102,11 +102,11 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
             You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}`, 'red')
 
-    if(!promo) {
+    if(!promo && args.boostID) {
         boost = curboosts.find(x => x.id === args.boostID.toLowerCase())
     }
 
-    if(!promo && !any && !boost && !args.count) {
+    if(!promo && !any && !boost && !amount) {
         return ctx.reply(user, `unknown claim argument \`${args.boostID}\`!
             Please specify a number, boost ID, 'promo' (if there are promotions running) or 'any' (if current server is locked).
             For more information type \`${ctx.prefix}help claim\`
@@ -380,8 +380,8 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
         force: trs.to === 'bot'? ctx.globals.force : false,
         question,
         perms,
-        onConfirm: (x) => confirm_trs(ctx, x, trs.id),
-        onDecline: (x) => decline_trs(ctx, x, trs.id),
+        onConfirm: (x) => confirm_trs(ctx, x, trs.id, true),
+        onDecline: (x) => decline_trs(ctx, x, trs.id, true),
         onTimeout: (x) => ctx.pgn.sendTimeout(ctx.interaction, `**${trs.from}** tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
     })
 })))
@@ -399,16 +399,18 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
         return ctx.reply(user, err, 'red')
     }
 
-    const perms = { confirm: [id], decline: [user.discord_id, id] }
+    const perms = { confirm: [id], decline: [user.discord_id, id], switch: [user.discord_id, id] }
 
     let price = 0
-    cards.forEach(card => {
+    const cardList = cards.map(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
         if(eval >= 0) {
             price += Math.round(eval)
         } else {
             price = NaN
         }
+        card.fav = false
+        return formatName(card)
     })
 
     if(isNaN(price)) {
@@ -427,14 +429,26 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
         perms.confirm.push(user.discord_id)
     }
 
-    return ctx.sendCfm(ctx, user, {
-        embed: { footer: { text: `ID: \`${trs.id}\`` } },
+    const embed = {
+        title: question,
+        color: colors.yellow
+    }
+
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cardList, 10),
+        embed: embed,
         force: ctx.globals.force,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
         question,
         perms,
-        onConfirm: (x) => confirm_trs(ctx, x, trs.id),
-        onDecline: (x) => decline_trs(ctx, x, trs.id),
-        onTimeout: (x) => ctx.pgn.sendTimeout(ctx.interaction, `**${trs.from}** tried to sell **${cards.length}** cards to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.description = data.pages[data.pagenum]
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} || Transaction ID: ${trs.id}`}
+        },
+        onConfirm: (x) => confirm_trs(ctx, x, trs.id, true),
+        onDecline: (x) => decline_trs(ctx, x, trs.id, true),
+        onTimeout: (x) => ctx.reply(user, `you tried to sell **${cards.length}** cards to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``, 'grey', true)
     })
 })))
 
