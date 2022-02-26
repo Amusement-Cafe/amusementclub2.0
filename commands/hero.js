@@ -330,7 +330,7 @@ cmd(['hero', 'submit'], withInteraction(async (ctx, user, args) => {
     if(user.exp < price)
         return ctx.reply(user, `you have to have at least **${numFmt(price)}** ${ctx.symbols.tomato} to submit a hero`, 'red')
 
-    const charID = aniLink.value.replace('https://', '').split('/')[2]
+    const charID = aniLink.replace('https://', '').split('/')[2]
     if(!charID)
         return ctx.reply(user, `seems like this URL is invalid.
             Please specify Anilist character URL`, 'red')

@@ -7,7 +7,7 @@ const withInteraction = (callback, ephemeral = false) => async (ctx, user, args)
     else
         await ctx.interaction.acknowledge()
 
-    args = await parseInteractionOptions(ctx)
+    args = await parseInteractionOptions(ctx, user)
     return callback(ctx, user, args)
 }
 

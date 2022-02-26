@@ -216,7 +216,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
             var auc = await new_auc(ctx, user, card, price, fee, time)
 
             if(!auc) {
-                return ctx.reply(user, `failed to create auction. Card might be missing or there was an internal server error.`, 'red')
+                return ctx.reply(user, `failed to create auction. Card might be missing or there was an internal server error.`, 'red', true)
             }
 
             ctx.mixpanel.track(
@@ -230,7 +230,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
             })
 
             ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
-                Auction ID: \`${auc.id}\``)
+                Auction ID: \`${auc.id}\``, 'green', true)
             const wishes = await User.find({heroslots: "festivewish", wishlist: card.id})
             wishes.map(async (x) => {
                 try {
@@ -302,13 +302,13 @@ cmd(['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
         auc = await Auction.findOne({ id: args.aucID })
 
         if(auc.author != user.discord_id)
-            return ctx.reply(user, `you don't have rights to cancel this auction`, 'red')
+            return ctx.reply(user, `you don't have rights to cancel this auction`, 'red', true)
 
         if(auc.lastbidder)
-            return ctx.reply(user, `you cannot cancel this auction. A person has already bid on it`, 'red')
+            return ctx.reply(user, `you cannot cancel this auction. A person has already bid on it`, 'red', true)
 
         if(auc.expires < asdate.add(new Date(), 1, 'hour'))
-            return ctx.reply(user, `you cannot cancel auction that expires in less than one hour`, 'red')
+            return ctx.reply(user, `you cannot cancel auction that expires in less than one hour`, 'red', true)
     }
 
     const question = `Do you want to cancel auction \`${auc.id}\` for ${formatName(card)}?`
@@ -322,7 +322,7 @@ cmd(['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
             auc.cancelled = true
             await auc.save()
 
-            return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`)
+            return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`, 'green', true)
         }
     })
 })).access('dm')
