@@ -41,7 +41,7 @@ const withUserItems = (callback) => (ctx, user, args) => {
 
     let items = mapUserInventory(ctx, user)
     let index
-    if(!isNaN(parseInt(args.invItem))) {
+    if(!isNaN(args.invItem)) {
         index = parseInt(args.invItem) - 1
         items = [items[index]]
     } else {
@@ -156,7 +156,8 @@ const uses = {
                 color: colors.green,
                 description: resp,
                 image: { url: '' }
-            }
+            },
+            edit: true
         })
     },
 
