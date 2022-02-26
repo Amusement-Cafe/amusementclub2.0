@@ -202,7 +202,9 @@
                     {
                         "name": "count",
                         "description": "Put an amount to claim more than 1 card at a time!",
-                        "type": 3,
+                        "type": 4,
+                        "min_value": 1,
+                        "max_value": 10,
                         "required": false
                     },
                     {
