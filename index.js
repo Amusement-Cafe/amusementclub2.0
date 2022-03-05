@@ -426,7 +426,6 @@ module.exports.create = async ({
             if (isolatedCtx.discord_guild)
                 isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
             await trigger('cmd', isolatedCtx, usr, args, prefix)
-            await check_all(isolatedCtx, usr, args[0], interaction.channel.id)
         }
 
         //Buttons
