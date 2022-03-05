@@ -13,6 +13,12 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
+const {
+    getStats,
+    getStaticStats,
+} = require("../modules/userstats")
+
+
 cmd(['store', 'view'], withInteraction(async (ctx, user, args) => {
     let cat = args.store || null
     const cats = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type))
@@ -56,8 +62,9 @@ cmd(['store', 'info'], withInteraction(withItem(async (ctx, user, item, args) =>
 })))
 
 cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => {
+    let stats = await getStaticStats(ctx, user, user.lastdaily)
     const catNum = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type)).indexOf(item.type) + 1
-    if (catNum == 3 && user.dailystats.store3 >= 3)
+    if (catNum == 3 && stats.store3 >= 3)
         return ctx.reply(user, `you have run out of available purchases from this store. Please try again after your next daily!`, 'red')
 
     let symbol = ctx.symbols[ctx.items.filter(x => x.type === item.type)[0].currency]
@@ -70,9 +77,20 @@ cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => 
         force: ctx.globals.force,
         onConfirm: async (x) => {
             buyItem(ctx, user, item)
-            user.dailystats.store3 += 1
-            symbol === ctx.symbols.lemon? user.lemons -= item.price: user.exp -= item.price
+            let stats = await getStats(ctx, user, user.lastdaily)
+            stats.store++
+            stats[`store${catNum}`]++
+
+            if (symbol === ctx.symbols.lemon) {
+                user.lemons -= item.price
+                stats.lemonout += item.price
+            } else {
+                user.exp -= item.price
+                stats.tomatoout += item.price
+            }
+
             await user.save()
+            await stats.save()
 
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
                 The item has been added to your inventory. See \`${ctx.prefix}inv info ${item.id}\` for details

@@ -25,6 +25,11 @@ const {
 } = require('../modules/card')
 
 const {
+    getStats,
+    saveAndCheck,
+} = require("../modules/userstats");
+
+const {
     fetchOnly, 
     findUserCards,
 } = require('../modules/user')
@@ -237,6 +242,9 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
                     await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`)
                 } catch (e) {}
             })
+            let stats = await getStats(ctx, user, user.lastdaily)
+            stats.aucsell += 1
+            await saveAndCheck(ctx, user, stats)
         },
     })
 })))
@@ -286,6 +294,9 @@ cmd(['auction', 'bid'], withInteraction(async (ctx, user, args) => {
         await bid_auc(ctx, user, auc, bid, true)
     } else {
         await bid_auc(ctx, user, auc, bid)
+        let stats = await getStats(ctx, user, user.lastdaily)
+        stats.aucbid += 1
+        await saveAndCheck(ctx, user, stats)
     }
 
 }, true)).access('dm')
@@ -321,6 +332,9 @@ cmd(['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
             auc.expires = new Date(0)
             auc.cancelled = true
             await auc.save()
+            let stats = await getStats(ctx, user, user.lastdaily)
+            stats.aucsell -= 1
+            await saveAndCheck(ctx, user, stats)
 
             return ctx.reply(user, `auction \`${auc.id}\` was marked for expiration. You will get your card back soon`, 'green', true)
         }

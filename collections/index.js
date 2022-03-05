@@ -12,4 +12,5 @@ module.exports = {
     AuditTags: require('./auditTag'),
     Plots: require('./plot'),
     UserCard: require('./userCard'),
+    UserStats: require('./userstats')
 }

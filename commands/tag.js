@@ -32,6 +32,11 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
+const {
+    getStats,
+    saveAndCheck,
+} = require("../modules/userstats")
+
 cmd(['tag', 'info'], withInteraction(withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
 
@@ -94,7 +99,10 @@ cmd(['tag', 'one'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, 
             tag.downvotes = tag.downvotes.filter(x => x != user.discord_id)
             tag.upvotes.push(user.discord_id)
             await tag.save()
-            user = await updateUser(user, {$inc: {'dailystats.tags': 1}})
+
+            let stats = await getStats(ctx, user, user.lastdaily)
+            stats.tags += 1
+            await saveAndCheck(ctx, user, stats)
 
             ctx.mixpanel.track(
                 "Tag Create", { 
@@ -145,7 +153,10 @@ cmd(['tag', 'down'], withInteraction(withTag(async (ctx, user, card, tag, tgTag,
                 tag.upvotes = tag.upvotes.filter(x => x != user.discord_id)
                 await tag.save()
             }
-            user = await updateUser(user, {$inc: {'dailystats.tags': (user.dailystats.tags <= 0? 0 : -1)}})
+
+            let stats = await getStats(ctx, user, user.lastdaily)
+            stats.tags <= 0? stats.tags = 0: stats.tags -= 1
+            await saveAndCheck(ctx, user, stats)
 
             return ctx.reply(user, `${remove? 'removed' : 'downvoted'} tag **#${tgTag}** for ${formatName(card)}`, 'green', true)
         }

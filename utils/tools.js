@@ -4,7 +4,7 @@ const cap = (str) => {
 
 const claimCost = (user, tax, amount, totalClaims) => {
     let total = 0
-    let claims = totalClaims || user.dailystats.claims || 0
+    let claims = totalClaims || 0
     for (let i = 0; i < amount; i++) {
         claims++
         total += claims * 50
@@ -15,7 +15,7 @@ const claimCost = (user, tax, amount, totalClaims) => {
 
 const promoClaimCost = (user, amount, totalClaims) => {
     let total = 0
-    let claims = totalClaims || user.dailystats.promoclaims || 0
+    let claims = totalClaims || 0
     for (let i = 0; i < amount; i++) {
         claims++
         total += claims * 50

@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const { byAlias, completed } = require('../modules/collection')
 const { addUserCard, formatName } = require('../modules/card')
+const { getStats } = require("../modules/userstats");
 
 module.exports = [
     {
@@ -63,10 +64,13 @@ module.exports = [
             if(!quest)
                 return { msg: `you don't have any tier 1 quest to complete`, used: false }
 
-            quest.resolve(ctx, user)
+            let stats = await getStats(ctx, user, user.lastdaily)
+            quest.resolve(ctx, user, stats)
             user.dailyquests = user.dailyquests.filter(y => y != quest.id)
             user.markModified('dailyquests')
+            stats.t1quests += 1
             await user.save()
+            await stats.save()
 
             return { msg: `completed **${quest.name}**. You got ${quest.reward(ctx)}`, used: true }
         }
@@ -153,14 +157,14 @@ module.exports = [
         passive: false,
         cooldown: 15,
         use: async (ctx, user) => {
-            let validUse = user.dailystats.claims > 4
+            let stats = await getStats(ctx, user, user.lastdaily)
 
-            if (!validUse)
+            if (stats.claims < 5)
                 return { msg: `you can only use Claim Recall when you have claimed more than 4 cards!`, used: false }
 
-            user.dailystats.claims -= 4
-
-            return { msg: `claim cost has been reset to **${user.dailystats.claims * 50}**`, used: true }
+            stats.claims -= 4
+            await stats.save()
+            return { msg: `claim cost has been reset to **${stats.claims * 50}**`, used: true }
         }
     }, {
         id: 'memoryxmas',

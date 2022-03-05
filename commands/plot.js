@@ -6,7 +6,6 @@ const dateFormat    = require(`dateformat`)
 const asdate        = require('add-subtract-date')
 const mstotime      = require('pretty-ms')
 
-
 const {
     numFmt,
     XPtoLEVEL,
@@ -21,6 +20,9 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
+const {
+    getStats,
+} = require("../modules/userstats")
 
 cmd(['plot', 'list'], withInteraction(async (ctx, user) => {
     const lots = await getUserPlots(ctx)
@@ -101,15 +103,18 @@ cmd(['plot', 'buy'], withInteraction(async (ctx, user) => {
         force: ctx.globals.force,
         check,
         onConfirm: async () => {
+            let stats = await getStats(ctx, user, user.lastdaily)
             let newLot = new Plots
             newLot.user_id = ctx.interaction.member.id
             newLot.guild_id = ctx.guild.id
             newLot.guild_name = ctx.discord_guild.name
             await newLot.save()
             user.lemons -= cost
+            stats.lemonout += cost
             await user.save()
             ctx.guild.lemons += cost
             await ctx.guild.save()
+            await stats.save()
 
             let affordablePlots = 1
             while(25 * (2 ** (userGlobalPlots.length + affordablePlots)) < user.lemons)
@@ -159,12 +164,15 @@ cmd(['plot', 'upgrade'], withInteraction(async (ctx, user, args) => {
         question,
         force: ctx.globals.force,
         onConfirm: async (x) => {
+            let stats = await getStats(ctx, user, user.lastdaily)
             const xp = Math.floor(level.price * .04)
             plot.building.level++
             user.lemons -= level.price
             user.xp += xp
+            stats.lemonout += level.price
             await user.save()
             await plot.save()
+            await stats.save()
 
             ctx.mixpanel.track(
                 "Building Upgrade", {
@@ -291,6 +299,7 @@ cmd(['plot', 'info', 'global'], withInteraction(async (ctx, user, args) => {
 cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
     const past = asdate.subtract(new Date(), 1, "hours")
     let plots = await getUserPlots(ctx)
+    let stats = await getStats(ctx, user, user.lastdaily)
 
     if (plots.length === 0)
         return ctx.reply(user, `you don't have any plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
@@ -310,7 +319,9 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
         await y.save()
     })
     user.lemons += collection
+    stats.lemonin += collection
     await user.save()
+    await stats.save()
     return ctx.reply(user, `you have successfully collected **${numFmt(collection)}** ${ctx.symbols.lemon} from this guild! 
             You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
 }))

@@ -76,35 +76,42 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
-cmd('balance', withInteraction((ctx, user) => {
+const {
+    getStats,
+    getStaticStats,
+    saveAndCheck,
+} = require("../modules/userstats")
+
+cmd('balance', withInteraction( async (ctx, user) => {
     let max = 1
+    let stats = await getStats(ctx, user, user.lastdaily)
     const now = new Date()
     const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
     if(ctx.guild) {
-        while(claimCost(user, ctx.guild.tax, max) < user.exp)
+        while(claimCost(user, ctx.guild.tax, max, stats.claims) < user.exp)
             max++
     } else {
-        while(claimCost(user, 0, max) < user.exp)
+        while(claimCost(user, 0, max, stats.claims) < user.exp)
             max++
     }
 
     const embed = {
         color: colors.green,
         description: `you have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato}, **${numFmt(Math.round(user.vials))}** ${ctx.symbols.vial} and **${numFmt(Math.round(user.lemons))}** ${ctx.symbols.lemon}
-            Your next claim will cost **${numFmt(claimCost(user, 0, 1))}** ${ctx.symbols.tomato}
-            ${ctx.guild? `Next claim in current guild: **${numFmt(claimCost(user, ctx.guild.tax, 1))}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
+            Your next claim will cost **${numFmt(claimCost(user, 0, 1, stats.claims))}** ${ctx.symbols.tomato}
+            ${ctx.guild? `Next claim in current guild: **${numFmt(claimCost(user, ctx.guild.tax, 1, stats.claims))}** ${ctx.symbols.tomato} (+${ctx.guild.tax * 100}% claim tax)`:''}
             You can claim **${numFmt(max - 1)} cards** ${ctx.guild? `in current guild `:''}with your balance`
     }
 
     if(promo) {
         max = 1
-        while(promoClaimCost(user, max) < user.promoexp)
+        while(promoClaimCost(user, max, stats.promoclaims) < user.promoexp)
             max++
 
         embed.fields = [{
             name: `Promo balance`,
             value: `You have **${numFmt(Math.round(user.promoexp))}** ${promo.currency}
-                Your next claim will cost **${numFmt(promoClaimCost(user, 1))}** ${promo.currency}
+                Your next claim will cost **${numFmt(promoClaimCost(user, 1, stats.promoclaims))}** ${promo.currency}
                 You can claim **${numFmt(max - 1)} ${promo.name} cards** with your balance`
         }]
     }
@@ -170,6 +177,8 @@ cmd('daily', withInteraction(async (ctx, user) => {
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
+        let stats = await getStats(ctx, user)
+        stats.daily = now
 
         if(check_effect(ctx, user, 'cakeday')) {
             amount += 100 * (user.dailystats.claims || 0)
@@ -177,14 +186,15 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
         if (promo) {
             user.promoexp += promoAmount
+            stats.promoin += promoAmount
         }
 
         user.lastdaily = now
-        user.dailystats = {}
         user.exp += amount
         user.xp += 10
         user.dailyquests = []
-        user.markModified('dailystats')
+        stats.tomatoin += amount
+
 
         quests.push(getQuest(ctx, user, 1))
         user.dailyquests.push(quests[0].id)
@@ -251,6 +261,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
         user.dailynotified = false
         await user.save()
+        await saveAndCheck(ctx, user, stats)
         await plotPayout(ctx, 'gbank', 1, 5)
 
         ctx.mixpanel.track(
@@ -544,15 +555,13 @@ cmd(['quest', 'info'], withInteraction(async (ctx, user, args) => {
 }))
 
 cmd('stats', withInteraction(async (ctx, user) => {
-    const keys = Object.keys(user.dailystats).filter(x => user.dailystats[x] > 0 && user.dailystats[x] !== true)
-
-    if(keys.length === 0)
-        return ctx.reply(user, `no statistics to display today`)
-
+    const stats = await getStaticStats(ctx, user, user.lastdaily)
+    const keys = _.keys(stats).filter(x => stats[x] !== 0)
+    _.pull(keys, '_id', 'daily', 'discord_id', 'username', '__v')
     return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your daily stats:` },
-        description: keys.map(x => `${cap(x)}: **${user.dailystats[x]}**`).join('\n')
+        description: keys.map(x => `${cap(x)}: **${stats[x]}**`).join('\n')
     }, user.discord_id)
 }))
 
