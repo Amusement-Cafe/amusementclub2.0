@@ -101,7 +101,7 @@ const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id }).l
 
 const findUserCards = (ctx, user, cardIds) => UserCard.find({ userid: user.discord_id, cardid: { $in: cardIds } }).lean()
 
-const countUserCards = (ctx, user, cardIds) => UserCard.count({ userid: user.discord_id, cardid: { $in: cardIds } }).lean()
+const countUserCards = (ctx, user, cardIds) => UserCard.countDocuments({ userid: user.discord_id, cardid: { $in: cardIds } }).lean()
 
 const addUserCards = async (ctx, user, cardIds) => {
     const updates = cardIds.map(x => ({
