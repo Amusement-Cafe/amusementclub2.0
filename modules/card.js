@@ -290,10 +290,12 @@ const withCards = (callback) => async (ctx, user, args) => {
  */
 const withGlobalCards = (callback) => async(ctx, user, args) => {
     let allcards
-    if(args.userQuery)
-        allcards = mapUserCards(ctx, user)
-    else 
+    if(args.userQuery){
+        const userCards = await getUserCards(ctx, user)
+        allcards = mapUserCards(ctx, userCards)
+    } else {
         allcards = ctx.cards.slice()
+    }
 
     let cards = filter(allcards, args)
     if(args.tags.length > 0) {
