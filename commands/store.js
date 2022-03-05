@@ -94,7 +94,7 @@ cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => 
 
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
                 The item has been added to your inventory. See \`${ctx.prefix}inv info ${item.id}\` for details
-                ${catNum == 3? `You have **${3-user.dailystats.store3}** purchase(s) left for this store today!`: ''}`, 'green', true)
+                ${catNum == 3? `You have **${3-stats.store3}** purchase(s) left for this store today!`: ''}`, 'green', true)
         }
     })
 })))
