@@ -46,6 +46,11 @@ const {
     plotPayout,
 } = require('./plot')
 
+const {
+    getStats,
+    saveAndCheck,
+} = require("./userstats");
+
 const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolve, reject) => {
     const target = await fetchOnly(user.discord_id)
     const targetCard = await findUserCards(ctx, target, [card.id])
@@ -118,8 +123,6 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
 
     auc.highbid = bid
 
-    user.dailystats.bids = user.dailystats.bids + 1 || 1
-    user.markModified('dailystats')
     await user.save()
     await auc.save()
 
@@ -178,9 +181,17 @@ const finish_aucs = async (ctx, now) => {
     const findSell = await AuditAucSell.findOne({ user: author.discord_id})
 
     if(lastBidder) {
+        let authorStats = await getStats(ctx, author, author.lastdaily)
+        let winnerStats = await getStats(ctx, lastBidder, lastBidder.lastdaily)
         const tback = check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
         lastBidder.exp += (auc.highbid - auc.price) + tback
+        winnerStats.tomatoout += (auc.highbid - auc.price) + tback
+        winnerStats.aucwin += 1
+
         author.exp += auc.price
+        authorStats.tomatoin += auc.price
+        await authorStats.save()
+        await winnerStats.save()
 
         await Promise.all([
             addUserCards(ctx, lastBidder, [auc.card]),

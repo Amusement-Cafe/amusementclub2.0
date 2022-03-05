@@ -38,6 +38,12 @@ const {
     plotPayout,
 } = require('../modules/plot')
 
+const {
+    getStats,
+    saveAndCheck,
+    getStaticStats,
+} = require("../modules/userstats");
+
 cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
     if(!parsedargs[0] || parsedargs[0].isEmpty())
         return ctx.qhelp(ctx, user, 'forge')
@@ -99,6 +105,13 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 user.vials += vialres
                 user.exp -= cost
 
+                let stats = await getStats(ctx, user, user.lastdaily)
+                stats.forge += 1
+                stats[`forge${card1.level}`] += 1
+                stats.tomatoout += cost
+                stats.vialin += vialres
+
+
                 if(!newcard)
                     return ctx.reply(user, `an error occured, please try again`, 'red')
 
@@ -110,10 +123,9 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
 
                 await addUserCards(ctx, user, [newcard.id])
                 user.lastcard = newcard.id
-                user.dailystats[`forge${newcard.level}`] = user.dailystats[`forge${newcard.level}`] + 1 || 1
-                user.markModified('dailystats')
                 await completed(ctx, user, newcard)
                 await user.save()
+                await saveAndCheck(ctx, user, stats)
 
                 await plotPayout(ctx, 'smithhub', 1, 10)
 
@@ -163,12 +175,16 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
         onConfirm: async (x) => { 
             try {
+                let stats = await getStats(ctx, user, user.lastdaily)
+                stats.liquefy += 1
+                stats[`liquefy${card.level}`] += 1
+                stats.vialin += vials
                 user.vials += vials
-                user.dailystats.liquify = user.dailystats.liquify + 1 || 1
-                user.dailystats[`liquify${card.level}`] += 1
+
                 await removeUserCards(ctx, user, [card.id])
                 await completed(ctx, user, card)
                 await user.save()
+                await saveAndCheck(ctx, user, stats)
 
                 await plotPayout(ctx, 'smithhub', 2, 15)
 
@@ -229,14 +245,17 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
             try {
                 const cardCount = cards.length
                 const lemons = 15 * cardCount
+                let stats = await getStats(ctx, user, user.lastdaily)
 
                 user.vials += vials
-                user.dailystats.liquify += cardCount
+                stats.liquefy += cardCount
+                stats.vialin += vials
 
                 cards.map(c => {
-                    user.dailystats[`liquify${c.level}`]++
+                    stats[`liquefy${c.level}`]++
                 })
 
+                await saveAndCheck(ctx, user, stats)
                 await removeUserCards(ctx, user, cards.map(x => x.id))
                 await user.save()
                 await plotPayout(ctx, 'smithhub', 2, lemons)
@@ -315,8 +334,9 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
         if (waitMSG)
             await ctx.bot.deleteMessage(waitMSG.channel.id, waitMSG.id, 'removal of time warning')
     }
+    let staticStats = await getStaticStats(ctx, user, user.lastdaily)
 
-    const amount = user.dailystats.draw || 0
+    const amount = staticStats.draw || 0
     const card = bestMatch(cards)
 
     if (!card)
@@ -334,7 +354,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
         return ctx.reply(user, `you cannot draw promo cards`, 'red')
 
     if(card.level > 3)
-        return ctx.reply(user, `you cannot draw card higher than 3 ${ctx.symbols.star}`, 'red')
+        return ctx.reply(user, `you cannot draw cards higher than 3 ${ctx.symbols.star}`, 'red')
 
     if(user.vials < vials)
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
@@ -355,12 +375,15 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
 
             user.lastcard = card.id
             await completed(ctx, user, card)
-            user.dailystats.draw += 1
-            user.dailystats[`draw${card.level}`] += 1
             await user.save()
 
             await plotPayout(ctx, 'smithhub', 3, 20)
 
+            let stats = await getStats(ctx, user, user.lastdaily)
+            stats.draw += 1
+            stats[`draw${card.level}`] += 1
+            stats.vialout += vials
+            await saveAndCheck(ctx, user, stats)
             return ctx.reply(user, {
                 image: { url: card.url },
                 color: colors.blue,

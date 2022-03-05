@@ -60,9 +60,13 @@ const {
 const { 
     getUserCards,
     addUserCards,
-    removeUserCards,
     fetchOnly,
 } = require('../modules/user')
+
+const {
+    getStats,
+    saveAndCheck,
+} = require("../modules/userstats");
 
 const userCard = require('../collections/userCard')
 const card = require('../modules/card')
@@ -82,9 +86,10 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         any = true
     }
 
+    let stats = await getStats(ctx, user, user.lastdaily)
     const amount = args.filter(x => x.length < 3 && !isNaN(x)).map(x => Math.abs(parseInt(x)))[0] || 1
-    const price = promo? promoClaimCost(user, amount) : claimCost(user, ctx.guild.tax, amount)
-    const normalprice = promo? price : claimCost(user, 0, amount)
+    const price = promo? promoClaimCost(user, amount, stats.promoclaims) : claimCost(user, ctx.guild.tax, amount, stats.claims)
+    const normalprice = promo? price : claimCost(user, 0, amount, stats.claims)
     const curboosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
     const activepromo = ctx.promos.find(x => x.starts < now && x.expires > now)
     const userCards = await getUserCards(ctx, user)
@@ -112,7 +117,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     }
 
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
-    const tohruEffect = (!user.dailystats.claims || user.dailystats.claims === 0) && check_effect(ctx, user, 'tohrugift')
+    const tohruEffect = (!stats.totalregclaims || stats.totalregclaims === 0) && check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
@@ -149,25 +154,25 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     if(promo) {
         curr = promo.currency
         user.promoexp -= price
-        user.dailystats.promoclaims = user.dailystats.promoclaims + amount || amount
+        stats.promoout += price
+        stats.promoclaims += amount
 
         while(totalPossible < user.promoexp) { 
-            totalPossible += promoClaimCost(user, max)
-            max++
+            totalPossible += promoClaimCost(user, max, stats.promoclaims)
         }
     } else {
         user.exp -= price
         if (activepromo){
             user.promoexp += extra
+            stats.promoin += extra
         }
-
-        user.dailystats.claims = user.dailystats.claims + amount || amount
-        user.dailystats.totalregclaims += amount
+        stats.claims += amount
+        stats.totalregclaims += amount
+        stats.tomatoout += price
         await plotPayout(ctx, 'gbank', 2, Math.floor(amount * 1.5))
 
         while(totalPossible < user.exp) {
-            totalPossible += claimCost(user, ctx.guild.tax, max)
-            max++
+            totalPossible += claimCost(user, ctx.guild.tax, max, stats.claims)
         }
     }
 
@@ -185,6 +190,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         ctx.guild.balance += Math.round(price - normalprice)
     }
 
+
     addGuildXP(ctx, user, amount)
     await ctx.guild.save()
 
@@ -197,8 +203,8 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     // } else {
     // }
 
-    const curClaimCount = promo? user.dailystats.promoclaims : user.dailystats.claims
-    const nextClaim = promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))
+    const curClaimCount = promo? stats.promoclaims : stats.claims
+    const nextClaim = promo? numFmt(promoClaimCost(user, 1, stats.promoclaims)) : numFmt(claimCost(user, ctx.guild.tax, 1, stats.claims))
     receipt.push(`Claimed **${curClaimCount}** card(s) today | Next claim **${nextClaim}** ${curr}`)
 
     if(activepromo && !promo) {
@@ -235,6 +241,7 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
     await claimInfo.save()
 
     const pages = newCards.concat(oldCards).map(x => x.card.url)
+    await saveAndCheck(ctx, user, stats)
     return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
@@ -700,12 +707,13 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
 
     const card = bestMatch(cards)
     const info = fetchInfo(ctx, card.id)
+    let stats = await getStats(ctx, user, user.lastdaily)
     if(card.rating) {
         const oldrating = card.rating
         info.ratingsum -= oldrating
         info.usercount--
     } else {
-        user.dailystats.rates++
+        stats.rates++
     }
 
     user.cards.find(x => x.id === card.id).rating = rating
@@ -715,6 +723,7 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
     user.markModified('cards')
     await user.save()
     await info.save()
+    await saveAndCheck(ctx, user, stats)
 
     return ctx.reply(user, `set rating **${rating}** for ${formatName(card)}`)
 })).access('dm')
@@ -796,9 +805,12 @@ cmd(['wish'], ['wishlist'], ['wish', 'add'], ['wishlist', 'add'], withGlobalCard
             To remove is use \`${ctx.prefix}wish remove [card]\``, 'red')
     }
 
+    let stats = await getStats(ctx, user, user.lastdaily)
     const userHasCard = user.cards.some(x => x.id === card.id)
     user.wishlist.push(card.id)
+    stats.wish++
     await user.save()
+    await saveAndCheck(ctx, user, stats)
 
     return ctx.reply(user, `added ${formatName(card)} to the wishlist ${userHasCard? '(you own this card)' : ''}`)
 })).access('dm')
@@ -819,10 +831,13 @@ cmd(['wish', 'add', 'all'], ['wishlist', 'add', 'all'], withGlobalCards(async (c
         force: ctx.globals.force,
         question: `**${user.username}**, do you want add **${numFmt(cards.length)}** cards to your wishlist?`,
         onConfirm: async (_x) => {
+            let stats = await getStats(ctx, user, user.lastdaily)
             cards.map(c => {
+                stats.wish++
                 user.wishlist.push(c.id)
             })
             await user.save()
+            await saveAndCheck(ctx, user, stats)
 
             return ctx.reply(user, `added **${numFmt(cards.length)}** cards to your wishlist`)
         }
@@ -845,8 +860,11 @@ cmd(['wish', 'rm'], ['wish', 'remove'], ['wishlist', 'remove'], withGlobalCards(
         return ctx.reply(user, `you don't have ${formatName(card)} in your wishlist`, 'red')
     }
 
+    let stats = await getStats(ctx, user, user.lastdaily)
+    stats.wish--
     user.wishlist = user.wishlist.filter(x => x != card.id)
     await user.save()
+    await stats.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from your wishlist`)
 })).access('dm')
@@ -868,8 +886,11 @@ cmd(['wish', 'rm', 'all'], ['wish', 'remove', 'all'], ['wishlist', 'remove', 'al
         force: ctx.globals.force,
         question: `**${user.username}**, do you want remove **${numFmt(cards.length)}** cards from your wishlist?`,
         onConfirm: async (_x) => {
+            let stats = await getStats(ctx, user, user.lastdaily)
             user.wishlist = user.wishlist.filter(y => !cards.some(c => c.id === y))
+            stats.wish -= cards.length
             await user.save()
+            await stats.save()
 
             return ctx.reply(user, `removed **${numFmt(cards.length)}** cards from your wishlist`)
         }
