@@ -177,11 +177,11 @@ cmd('daily', withInteraction(async (ctx, user) => {
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
+        const oldStats = await getStaticStats(ctx, user, user.lastdaily)
         let stats = await getStats(ctx, user)
         stats.daily = now
-
         if(check_effect(ctx, user, 'cakeday')) {
-            amount += 100 * (user.dailystats.claims || 0)
+            amount += 100 * (oldStats.claims || 0)
         }
 
         if (promo) {
@@ -558,6 +558,9 @@ cmd('stats', withInteraction(async (ctx, user) => {
     const stats = await getStaticStats(ctx, user, user.lastdaily)
     const keys = _.keys(stats).filter(x => stats[x] !== 0)
     _.pull(keys, '_id', 'daily', 'discord_id', 'username', '__v')
+    if (keys.length === 0 || keys.includes('Isnew'))
+        return ctx.reply(user, `there are no statistics to display yet today!`)
+
     return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your daily stats:` },
@@ -583,6 +586,9 @@ cmd('achievements', withInteraction(async (ctx, user, args) => {
 
     if (!miss)
         embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
+
+    if (list.length === 0)
+        return ctx.reply(user, 'there is nothing to display here!', 'red')
 
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(list, 15),
@@ -615,12 +621,13 @@ cmd('vote', withInteraction(async (ctx, user) => {
 cmd('todo', withInteraction(async (ctx, user) => {
     const resp = []
     const plots = await getUserPlots(ctx, true)
+    const stats = await getStaticStats(ctx, user, user.lastdaily)
     const now = new Date()
     const futureDaily = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
     const futureVote = asdate.add(user.lastvote, 12, 'hours')
     const daily = futureDaily < now
     const vote = futureVote < now
-    const claim = user.dailystats.claims === 0
+    const claim = stats.claims === 0
     const quest = user.dailyquests.length > 0
     const plot = plots.some(x=> x.building.stored_lemons > 0)
     

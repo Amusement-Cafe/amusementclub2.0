@@ -2,6 +2,8 @@ const {
     countUserCards, getUserCards, removeUserCards,
 } = require('./user')
 
+const _ = require('lodash')
+
 const byAlias = (ctx, name) => {
     const regex = new RegExp(name, 'gi')
     return ctx.collections.filter(x => x.aliases.some(y => regex.test(y)))
@@ -17,46 +19,55 @@ const bestColMatchMulti = (ctx, name) => {
     return c.sort((a, b) => a.id.length - b.id.length)
 }
 
-/*
-    To utilize this elsewhere, you'll need to pass it the ctx, user, and full card(ctx.cards[card.id]).
-    userCards is mainly a copy/paste of mapUserCards from module Cards, but it would break on require so I stole it since it's only 1 line
- */
-const completed = async (ctx, user, card) => {
-    const legendary = ctx.cards.some(x => x.col === card.col && x.level === 5)
-    const colCards = ctx.cards.filter(x => x.col === card.col && x.level < 5)
-    const preCompleted = user.completedcols.find(x => x.id === card.col)
-    const userCardCount = await countUserCards(ctx, user, colCards.map(x => x.id))
-    let msg
 
-    if (!preCompleted && userCardCount < colCards.length)
-        return
+const completed = async (ctx, user, cardIDs) => {
+    const fullCards = cardIDs.map(x => ctx.cards[x])
+    const uniqueColCards = _.uniqBy(fullCards, 'col')
+    let completedCols = []
+    let lostCompletion = []
+    for (let i = 0; i < uniqueColCards.length; i++) {
+        let card = uniqueColCards[i]
+        const colCards = ctx.cards.filter(y => y.col === card.col && y.level < 5)
+        const preCompleted = user.completedcols.find(y => y.id === card.col)
+        const userCardCount = await countUserCards(ctx, user, colCards.map(y => y.id))
 
-    if (preCompleted && preCompleted.amount) {
-        if (preCompleted.amount !== 0 && !user.cloutedcols.some(x => x.id === card.col))
-            user.cloutedcols.push({id: card.col, amount: preCompleted.amount})
-        preCompleted.amount = 0
-        user.markModified('completedcols')
+        if (!preCompleted && userCardCount < colCards.length)
+            return
+
+        if (preCompleted && preCompleted.amount) {
+            if (preCompleted.amount !== 0 && !user.cloutedcols.some(y => y.id === card.col))
+                user.cloutedcols.push({id: card.col, amount: preCompleted.amount})
+            preCompleted.amount = 0
+            user.markModified('completedcols')
+        }
+
+        if (preCompleted && userCardCount < colCards.length)
+            lostCompletion.push(card.col)
+
+        if (!preCompleted && userCardCount >= colCards.length)
+            completedCols.push(card.col)
     }
 
-
-    if (preCompleted && userCardCount < colCards.length){
-        msg = `you no longer have all of the cards required for full completion of **${card.col}**! This collection has now been removed from your completed list.`
-        user.completedcols = user.completedcols.filter(x => x.id !== card.col)
+    if (completedCols.length !== 0) {
+        completedCols.map(x => user.completedcols.push({id: x}))
+        if(user.prefs.notifications.completed) {
+            try {
+                await ctx.direct(user, `you have just completed \`${completedCols.join(', ')}\`!
+                You can now decide if you want to reset ${completedCols.length > 1? 'these collections for clout stars and legendary cards if they contain them.': 'this collection for a clout star and a legendary card if it contains one!'}
+                One copy of each card below 5 stars will be consumed if the collection has 200 or fewer cards. Otherwise 200 specified cards will be taken based on overall card composition.
+                To reset type:
+                \`/collection reset collection:collectionName\``)
+            } catch (e) {}
+        }
     }
 
-    if (!preCompleted && userCardCount >= colCards.length) {
-        msg = `You have just completed the **${card.col}** collection! 
-        You can now decide if you want to reset the collection for a clout star ${legendary? 'and a legendary ticket to claim a legendary card from this collection!': '.'}
-        One copy of each card below 5 stars will be consumed if the collection has 200 or fewer cards. Otherwise 200 specified cards will be taken based on overall card composition.
-        To reset type:
-        \`->col reset ${card.col}\``
-        user.completedcols.push({id: card.col})
-    }
-
-    if(user.prefs.notifications.completed && msg) {
-        try {
-            await ctx.direct(user, msg)
-        } catch (e) {}
+    if (lostCompletion.length !== 0) {
+        user.completedcols = user.completedcols.filter(x => !lostCompletion.includes(x.id))
+        if(user.prefs.notifications.completed) {
+            try {
+                await ctx.direct(user, `you no longer have all the cards required for a full completion of \`${lostCompletion.join(', ')}\`. ${lostCompletion.length>1? 'These collections have': 'This collection has'} been removed from your completed list.`)
+            } catch (e) {}
+        }
     }
 }
 
@@ -71,7 +82,6 @@ const reset = async (ctx, user, col, amounts) => {
         user.cloutedcols.push({id: col.id, amount: 1})
 
     user.markModified('cloutedcols')
-    let emptyCard
 
     const cardsToRemove = userCards.filter(x => {
         const exists = ctx.cards[x.cardid]
@@ -81,10 +91,6 @@ const reset = async (ctx, user, col, amounts) => {
             const isCol = ctx.cards[x.cardid].col === col.id
             const reducable = amounts[level] > 0
             const singleFav = x.fav && x.amount === 1
-
-            if (x.amount === 1) {
-                emptyCard = x
-            }
 
             if(notLegendary && isCol && reducable && !singleFav) {
                 amounts[level]--
@@ -101,17 +107,16 @@ const reset = async (ctx, user, col, amounts) => {
 
     user.xp += amounts.total
 
-    if(emptyCard)
-        await completed(ctx, user, ctx.cards[emptyCard.cardid])
+    await removeUserCards(ctx, user, cardsToRemove)
+    await completed(ctx, user, cardsToRemove)
 
     if(legendary)
         user.inventory.push({ id: 'legendticket', time: new Date(), col: col.id })
 
-    await removeUserCards(ctx, user, cardsToRemove)
     await user.save()
 
     return ctx.reply(user, `you successfully reset **${col.name}**!
-        ${legendary? `Legendary card ticket was added to your inventory. Use it to draw **${col.id} legendary card**!` : ''}`)
+        ${legendary? `Legendary card ticket was added to your inventory. Use it to draw **${col.id} legendary card**!` : ''}`, 'green', true)
 }
 
 const resetNeeds = async (ctx, user, colCards) => {

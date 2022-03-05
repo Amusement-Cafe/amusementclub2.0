@@ -1,7 +1,8 @@
 const _ = require('lodash')
 const { byAlias, completed } = require('../modules/collection')
-const { addUserCard, formatName } = require('../modules/card')
-const { getStats } = require("../modules/userstats");
+const { formatName } = require('../modules/card')
+const { addUserCards } = require('../modules/user')
+const { getStats } = require("../modules/userstats")
 
 module.exports = [
     {
@@ -116,10 +117,10 @@ module.exports = [
             if(!card)
                 return { msg: `cannot fetch unique card from **${col.name}** collection`, used: false }
 
-            addUserCard(user, card.id)
+            await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
-            await completed(ctx, user, card)
+            await completed(ctx, user, [card.id])
             await user.save()
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
@@ -188,11 +189,11 @@ module.exports = [
                 if (!card)
                     card = oldCard
             }
-            addUserCard(user, card.id)
+            await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
             user.markModified('effectusecount')
-            await completed(ctx, user, card)
+            await completed(ctx, user, [card.id])
             await user.save()
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
@@ -217,11 +218,11 @@ module.exports = [
                 if (!card)
                     card = oldCard
             }
-            addUserCard(user, card.id)
+            await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
             user.markModified('effectusecount')
-            await completed(ctx, user, card)
+            await completed(ctx, user, [card.id])
             await user.save()
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
@@ -249,11 +250,11 @@ module.exports = [
                     card = oldCard
             }
 
-            addUserCard(user, card.id)
+            await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
             user.markModified('effectusecount')
-            await completed(ctx, user, card)
+            await completed(ctx, user, [card.id])
             await user.save()
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
@@ -281,11 +282,11 @@ module.exports = [
                     card = oldCard
             }
 
-            addUserCard(user, card.id)
+            await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
             user.markModified('effectusecount')
-            await completed(ctx, user, card)
+            await completed(ctx, user, [card.id])
             await user.save()
 
 

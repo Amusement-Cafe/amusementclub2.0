@@ -60,7 +60,7 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
     lockFile.lock('auc', {retries: 10}).then(async (release) => {
         await Promise.all([
             removeUserCards(ctx, target, [card.id]),
-            completed(ctx, target, card),
+            completed(ctx, target, [card.id]),
             target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}}),
         ])
 
@@ -219,7 +219,7 @@ const finish_aucs = async (ctx, now) => {
         else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
 
-        await completed(ctx, lastBidder, aucCard)
+        await completed(ctx, lastBidder, [aucCard.id])
         await aucEvalChecks(ctx, auc)
         await from_auc(auc, author, lastBidder)
         await author.save()

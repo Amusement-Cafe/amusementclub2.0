@@ -72,8 +72,9 @@ const {
     saveAndCheck,
 } = require("../modules/userstats")
 
-const userCard = require('../collections/userCard')
-const card = require('../modules/card')
+const {
+    completed,
+} = require("../modules/collection")
 
 cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     const cards = []
@@ -185,6 +186,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     await user.save()
 
     await addUserCards(ctx, user, cards.map(x => x.card.id))
+    await completed(ctx, user, cards.map(x => x.card.id))
 
     if(newCards.length > 0) {
         await bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
@@ -642,7 +644,7 @@ cmd(['fav', 'remove', 'many'], withInteraction(withCards(async (ctx, user, cards
             const cardIds = cards.map(c => c.id)
             await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {fav: false})
 
-            return ctx.reply(user, `removed **${numFmt(cards.length)}** cards from favourites`)
+            return ctx.reply(user, `removed **${numFmt(cards.length)}** cards from favourites`, 'green', true)
         }
     })
 }))).access('dm')
@@ -841,7 +843,7 @@ cmd(['wish', 'many'], withInteraction(withGlobalCards(async (ctx, user, cards, p
             await user.save()
             await saveAndCheck(ctx, user, stats)
 
-            return ctx.reply(user, `added **${numFmt(cards.length)}** cards to your wishlist`)
+            return ctx.reply(user, `added **${numFmt(cards.length)}** cards to your wishlist`, 'green', true)
         }
     })
 }))).access('dm')

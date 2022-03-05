@@ -141,8 +141,9 @@ const uses = {
         const existingCards = await findUserCards(ctx, user, cardIds)
 
         cards.map(x => {
-            const count = existingCards.find(y => y.cardid == x.id)?.amount || 0
-            if (count > 1)
+            const existingCard = existingCards.find(y => y.cardid == x.id)
+            const count = existingCard? existingCard.amount: 0
+            if (count > 0)
                 resp += `**${formatName(x)}** #${count + 1}\n`
             else
                 resp += `**new** **${formatName(x)}**\n`
@@ -217,9 +218,7 @@ const uses = {
                 is_passive: effect.passive,
         })
 
-        item.cards.map(x => {
-            completed(ctx, user, ctx.cards[x])
-        })
+        await completed(ctx, user, item.cards)
 
         await removeUserCards(ctx, user, item.cards)
 
@@ -334,8 +333,8 @@ const checks = {
 
         if(requiredUserCards.find(x => x.fav && x.amount === 1)) {
             const card = requiredUserCards.find(x => x.fav && x.amount === 1)
-            return `the last copy of required card ${formatName(card)} is marked as favourite.
-                    Please, use \`${ctx.prefix}fav remove ${card.name}\` to remove it from favourites first`
+            return `the last copy of required card ${formatName(ctx.cards[card.cardid])} is marked as favourite.
+                    Please, use \`${ctx.prefix}fav remove ${ctx.cards[card.cardid].name}\` to remove it from favourites first`
         }
     }
 }

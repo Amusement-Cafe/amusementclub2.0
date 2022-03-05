@@ -122,15 +122,9 @@ const confirm_trs = async (ctx, user, trs_id, edit = true) => {
         await toStats.save()
 
         fromStats.usersell += transaction.cards.length
-
-        // TODO make this better
-        transaction.cards.map(async (x) => {
-            await completed(ctx, to_user, ctx.cards[x])
-        })
-
-
         await to_user.save()
         await addUserCards(ctx, to_user, transaction.cards)
+        await completed(ctx, to_user, transaction.cards)
 
     } else if(user.discord_id != transaction.from_id) {
         return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red', edit)
@@ -138,15 +132,14 @@ const confirm_trs = async (ctx, user, trs_id, edit = true) => {
         fromStats.botsell += transaction.cards.length
     }
 
-    // TODO make this better
     transaction.cards.map(async (x) => {
-        await completed(ctx, from_user, ctx.cards[x])
         await trans_fraud_check(ctx, from_user, transaction, x)
     })
 
 
     await from_user.save()
     await removeUserCards(ctx, from_user, transaction.cards)
+    await completed(ctx, from_user, transaction.cards)
 
     from_user.exp += transaction.price
     fromStats.tomatoin += transaction.price

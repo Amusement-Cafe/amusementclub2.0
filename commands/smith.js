@@ -122,13 +122,10 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
 
                 removeUserCards(ctx, user, [card1.id, card2.id])
 
-                // Fix this
-                await completed(ctx, user, card1)
-                await completed(ctx, user, card2)
 
                 await addUserCards(ctx, user, [newcard.id])
                 user.lastcard = newcard.id
-                await completed(ctx, user, newcard)
+                await completed(ctx, user, [card1.id, card2.id, newcard.id])
                 await user.save()
                 await saveAndCheck(ctx, user, stats)
 
@@ -187,7 +184,7 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
                 user.vials += vials
 
                 await removeUserCards(ctx, user, [card.id])
-                await completed(ctx, user, card)
+                await completed(ctx, user, [card.id])
                 await user.save()
                 await saveAndCheck(ctx, user, stats)
 
@@ -373,7 +370,7 @@ cmd(['draw'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedarg
             await addUserCards(ctx, user, [card.id])
 
             user.lastcard = card.id
-            await completed(ctx, user, card)
+            await completed(ctx, user, [card.id])
             await user.save()
 
             await plotPayout(ctx, 'smithhub', 3, 20)
