@@ -145,7 +145,7 @@ cmd(['collection', 'reset'], withInteraction(async (ctx, user, args) => {
     const col = _.flattenDeep(args.cols)[0];
 
     if(!col)
-        return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `found 0 collections matching \`${args.colQuery}\``, 'red')
 
 
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
