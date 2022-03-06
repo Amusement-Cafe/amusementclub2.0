@@ -20,7 +20,7 @@ cmd('help', withInteraction(async (ctx, user) => {
     const args = ctx.options.find(x => x.name === 'help_menu')
     if (args)
         sbj = args.value.toLowerCase()
-    const hereOption = ctx.options.find(x => x.name === 'here')
+    const hereOption = ctx.options.find(x => x.name === 'here' && x.value)
     if (hereOption)
         sendHere = true
 
