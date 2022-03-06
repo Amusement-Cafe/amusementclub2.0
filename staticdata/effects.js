@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const { byAlias, completed } = require('../modules/collection')
 const { formatName } = require('../modules/card')
-const { addUserCards } = require('../modules/user')
+const { addUserCards, getUserCards, findUserCards} = require('../modules/user')
 const { getStats } = require("../modules/userstats")
 
 module.exports = [
@@ -174,21 +174,33 @@ module.exports = [
         passive: false,
         cooldown: 120,
         use: async (ctx, user) => {
-            let thisEffect = 'memoryxmas'
-            user.effectusecount[thisEffect] += 1
-            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("christmas") && x.level < 4))
+            user.effectusecount['memoryxmas'] += 1
+            const rng = Math.random() < 1 / ctx.uniqueFrequency
+            const forceChance = user.effectusecount['memoryxmas'] % ctx.uniqueFrequency === 0 && user.effectusecount['memoryxmas'] !== 0
+            const forceSpace = forceChance && !user.effectusecount.xmasspace
+            const baseCards = ctx.cards.filter(x => x.col.startsWith("christmas") && x.level < 4)
+            let card = _.sample(baseCards)
+            let actualMissing = true
 
             if(!card)
                 return { msg: `cannot fetch a card from a Christmas collection currently, try again later`, used: false }
 
-
-            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
-            if (spaceTime) {
+            if (forceSpace || rng) {
                 let oldCard = card
-                card = _.sample(ctx.cards.filter(x => x.col.startsWith("christmas") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
-                if (!card)
+                const userCards = await findUserCards(ctx, user, baseCards.map(x => x.id))
+                card = _.sample(baseCards.filter(x => !userCards.some(y => y.cardid === x.id)))
+                if (!card){
+                    actualMissing = false
                     card = oldCard
+                }
+
+                if (rng)
+                    user.effectusecount.xmasspace = true
             }
+
+            if (forceChance)
+                user.effectusecount.xmasspace = false
+
             await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
@@ -196,7 +208,7 @@ module.exports = [
             await completed(ctx, user, [card.id])
             await user.save()
 
-            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+            return { msg: `you got ${formatName(card)}${(forceSpace || rng) && actualMissing? '.\nThe dice has rolled in your favor, you have gotten a missing card!': ''}`, img: card.url, used: true }
         }
     }, {
         id: 'memoryhall',
@@ -205,19 +217,32 @@ module.exports = [
         passive: false,
         cooldown: 120,
         use: async (ctx, user) => {
-            let thisEffect = 'memoryhall'
-            user.effectusecount[thisEffect] += 1
-            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("halloween")))
+            user.effectusecount['memoryhall'] += 1
+            const rng = Math.random() < 1 / ctx.uniqueFrequency
+            const forceChance = user.effectusecount['memoryhall'] % ctx.uniqueFrequency === 0 && user.effectusecount['memoryhall'] !== 0
+            const forceSpace = forceChance && !user.effectusecount.hallspace
+            const baseCards = ctx.cards.filter(x => x.col.startsWith("halloween") && x.level < 4)
+            let card = _.sample(baseCards)
+            let actualMissing = true
 
             if(!card)
                 return { msg: `cannot fetch a card from a Halloween collection currently, try again later`, used: false }
-            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
-            if (spaceTime) {
+
+            if (forceSpace || rng) {
                 let oldCard = card
-                card = _.sample(ctx.cards.filter(x => x.col.startsWith("halloween") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
-                if (!card)
+                const userCards = await findUserCards(ctx, user, baseCards.map(x => x.id))
+                card = _.sample(baseCards.filter(x => !userCards.some(y => y.cardid === x.id)))
+                if (!card){
+                    actualMissing = false
                     card = oldCard
+                }
+                if (rng)
+                    user.effectusecount.hallspace = true
             }
+
+            if (forceChance)
+                user.effectusecount.hallspace = false
+
             await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
             user.markModified('cards')
@@ -225,7 +250,7 @@ module.exports = [
             await completed(ctx, user, [card.id])
             await user.save()
 
-            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+            return { msg: `you got ${formatName(card)}${(forceSpace || rng) && actualMissing? '.\nThe dice has rolled in your favor, you have gotten a missing card!': ''}`, img: card.url, used: true }
         }
     }, {
         id: 'memorybday',
@@ -234,21 +259,32 @@ module.exports = [
         passive: false,
         cooldown: 120,
         use: async (ctx, user) => {
-            let thisEffect = 'memorybday'
-            user.effectusecount[thisEffect] += 1
-
-            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("birthday")))
+            user.effectusecount['memorybday'] += 1
+            const rng = Math.random() < 1 / ctx.uniqueFrequency
+            const forceChance = user.effectusecount['memorybday'] % ctx.uniqueFrequency === 0 && user.effectusecount['memorybday'] !== 0
+            const forceSpace = forceChance && !user.effectusecount.bdayspace
+            const baseCards = ctx.cards.filter(x => x.col.startsWith("birthday") && x.level < 4)
+            let card = _.sample(baseCards)
+            let actualMissing = true
 
             if(!card)
                 return { msg: `cannot fetch a card from a Birthday collection currently, try again later`, used: false }
 
-            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
-            if (spaceTime) {
+            if (forceSpace || rng) {
                 let oldCard = card
-                card = _.sample(ctx.cards.filter(x => x.col.startsWith("birthday") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
-                if (!card)
+                const userCards = await findUserCards(ctx, user, baseCards.map(x => x.id))
+                card = _.sample(baseCards.filter(x => !userCards.some(y => y.cardid === x.id)))
+                if (!card){
+                    actualMissing = false
                     card = oldCard
+                }
+
+                if (rng)
+                    user.effectusecount.bdayspace = true
             }
+
+            if (forceChance)
+                user.effectusecount.bdayspace = false
 
             await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
@@ -257,7 +293,7 @@ module.exports = [
             await completed(ctx, user, [card.id])
             await user.save()
 
-            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+            return { msg: `you got ${formatName(card)}${(forceSpace || rng) && actualMissing? '.\nThe dice has rolled in your favor, you have gotten a missing card!': ''}`, img: card.url, used: true }
         }
     }, {
         id: 'memoryval',
@@ -266,21 +302,32 @@ module.exports = [
         passive: false,
         cooldown: 120,
         use: async (ctx, user) => {
-            let thisEffect = 'memoryval'
-            user.effectusecount[thisEffect] += 1
-            let card = _.sample(ctx.cards.filter(x => x.col.startsWith("valentine")))
+            user.effectusecount['memoryval'] += 1
+            const rng = Math.random() < 1 / ctx.uniqueFrequency
+            const forceChance = user.effectusecount['memoryval'] % ctx.uniqueFrequency === 0 && user.effectusecount['memoryval'] !== 0
+            const forceSpace = forceChance && !user.effectusecount.valspace
+            const baseCards = ctx.cards.filter(x => x.col.startsWith("valentine") && x.level < 4)
+            let card = _.sample(baseCards)
+            let actualMissing = true
 
             if(!card)
                 return { msg: `cannot fetch a card from a Valentine collection currently, try again later`, used: false }
 
-
-            let spaceTime = user.effectusecount[thisEffect] % ctx.uniqueFrequency === 0 && user.effectusecount[thisEffect] !== 0
-            if (spaceTime) {
+            if (forceSpace || rng) {
                 let oldCard = card
-                card = _.sample(ctx.cards.filter(x => x.col.startsWith("valentine") && x.level < 4 && !user.cards.some(y => y.id === x.id)))
-                if (!card)
+                const userCards = await findUserCards(ctx, user, baseCards.map(x => x.id))
+                card = _.sample(baseCards.filter(x => !userCards.some(y => y.cardid === x.id)))
+                if (!card) {
+                    actualMissing = false
                     card = oldCard
+                }
+
+                if (rng)
+                    user.effectusecount.valspace = true
             }
+
+            if (forceChance)
+                user.effectusecount.valspace = false
 
             await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
@@ -290,7 +337,7 @@ module.exports = [
             await user.save()
 
 
-            return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
+            return { msg: `you got ${formatName(card)}${(forceSpace || rng) && actualMissing? '.\nThe dice has rolled in your favor, you have gotten a missing card!': ''}`, img: card.url, used: true }
         }
     }
 ]

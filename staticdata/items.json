@@ -276,7 +276,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free christmas card",
-        "fulldesc": "When used gives you **Memories of Christmas Cheer** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Christmas Cheer** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12. This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     }, {
@@ -286,7 +286,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free halloween card",
-        "fulldesc": "When used gives you **Memories of Halloween Frights** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Halloween Frights** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12.  This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     }, {
@@ -296,7 +296,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free birthday card",
-        "fulldesc": "When used gives you **Memories of Birthdays Past** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Birthdays Past** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12.  This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     }, {
@@ -306,7 +306,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free valentine card",
-        "fulldesc": "When used gives you **Memories of Valentines Day** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Valentines Day** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12.  This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     },
