@@ -170,18 +170,19 @@ cmd('daily', withInteraction(async (ctx, user) => {
     const future = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
 
     if(future < now) {
+        const oldStats = await getStaticStats(ctx, user, user.lastdaily)
         const quests = []
-        let amount = 500
-        const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
+        let amount = 750
+        const promoAmount = 500 + ((oldStats.promoclaims * 50) || 0)
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
-        const oldStats = await getStaticStats(ctx, user, user.lastdaily)
+        const oldClaims = oldStats.claims || 0
         let stats = await getStats(ctx, user)
         stats.daily = now
         if(check_effect(ctx, user, 'cakeday')) {
-            amount += 100 * (oldStats.claims || 0)
+            amount += 100 * oldClaims
         }
 
         if (promo) {
@@ -587,8 +588,11 @@ cmd('achievements', withInteraction(async (ctx, user, args) => {
     if (!miss)
         embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
 
+    if (list.length === 0 && miss)
+        return ctx.reply(user, `there is nothing to display here! You are missing **${missDiff}** hidden achievements!`, 'red')
+
     if (list.length === 0)
-        return ctx.reply(user, 'there is nothing to display here!', 'red')
+        return ctx.reply(user, `there is nothing to display here!`, 'red')
 
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(list, 15),
