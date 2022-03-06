@@ -46,12 +46,12 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
         await user.save()
         await stats.save()
         await plotPayout(ctx, 'tavern', 1, complete.length * 25)
-        return ctx.send(channelID || ctx.msg.channel.id, {
+        return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
             color: colors.blue,
             author: { name: `New Achievements:` },
             description: rewards.join('\n'),
             footer: {text: `To view your achievements use ${ctx.prefix}ach`}
-        })
+        }})
     }
 }
 
