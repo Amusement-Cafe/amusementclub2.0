@@ -885,6 +885,48 @@
     },
     {
         "type": 1,
+        "name": "leaderboard",
+        "description": "Base command for leaderboards!",
+        "options": [
+            {
+                "name": "tomatoes",
+                "description": "Displays a leaderboard of the top tomato balances in the bot, as well as your position!",
+                "type": 1
+            },
+            {
+                "name": "lemons",
+                "description": "Displays a leaderboard of the top lemon balances in the bot, as well as your position!",
+                "type": 1
+            },
+            {
+                "name": "vials",
+                "description": "Displays a leaderboard of the top vial balances in the bot, as well as your position!",
+                "type": 1
+            },
+            {
+                "name": "cards",
+                "description": "Displays a leaderboard of the top unique card holders!",
+                "type": 1
+            },
+            {
+                "name": "clout",
+                "description": "Displays a leaderboard of the top clout amount in the bot, as well as your position!",
+                "type": 1
+            },
+            {
+                "name": "completed",
+                "description": "Displays a leaderboard of the top completed count in the bot, as well as your position!",
+                "type": 1
+            },
+            {
+                "name": "level",
+                "description": "Displays a leaderboard of the top user levels in the bot, as well as your position!",
+                "type": 1
+            }
+        ]
+    },
+    {
+        "type": 1,
         "name": "license",
         "description": "The license the bot and it's code are under!"
     },
