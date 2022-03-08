@@ -140,11 +140,14 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const userCard = userCards.find(x => x.cardid === card.id)
+        const alreadyClaimed = cards.filter(x => x.userCard === userCard).length
+        const count = userCard? (alreadyClaimed + 1) + userCard.amount: 1
 
         cards.push({ 
-            count: userCard? userCard.amount + 1 : 1, 
+            count,
             boostDrop, 
             card,
+            userCard
         })
     }
     
@@ -220,7 +223,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     let fields = []
     let description = `**${user.username}**, you got:`
     fields.push({name: `New cards`, value: newCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
-    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)} #${x.count}`).join('\n')})
+    fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.userCard? Object.assign({}, ctx.cards[x.userCard.cardid], x.userCard): x.card)} #${x.count}`).join('\n')})
     fields.push({name: `Receipt`, value: receipt.join('\n') })
 
     /*fields.push({name: `External view`, value:
