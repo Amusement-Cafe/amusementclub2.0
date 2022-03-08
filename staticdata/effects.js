@@ -110,9 +110,10 @@ module.exports = [
             if(col.promo)
                 return { msg: `cannot use this effect on promo collections`, used: false }
 
+            const userCards = await getUserCards(ctx, user)
             const card = _.sample(ctx.cards.filter(x => x.col === col.id 
                 && x.level < 4
-                && !user.cards.some(y => y.id === x.id)))
+                && !userCards.some(y => y.cardid === x.id)))
 
             if(!card)
                 return { msg: `cannot fetch unique card from **${col.name}** collection`, used: false }
