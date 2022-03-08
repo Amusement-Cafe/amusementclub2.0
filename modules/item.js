@@ -128,25 +128,32 @@ const uses = {
             item.level = [item.level]
         let cards = []
         let resp = `**${user.username}** you got:\n`
-        
+        const existingCards = await getUserCards(ctx, user)
+
+
         item.level.map(x => {
             let col = item.col && item.col !== 'random'? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo))
-            cards.push(_.sample(ctx.cards.filter(y => y.col === col.id && y.level === x)))
+            const card = _.sample(ctx.cards.filter(y => y.col === col.id && y.level === x))
+            const userCard = existingCards.find(y => y.cardid === card.id)
+            const alreadyClaimed = cards.filter(x => x.userCard === userCard).length
+            const count = userCard? (alreadyClaimed + 1) + userCard.amount: 1
+            cards.push({
+                userCard,
+                card,
+                count
+            })
         })
 
         if(cards.length === 0)
             return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red', true)
 
-        const cardIds = cards.map(x => x.id)
-        const existingCards = await findUserCards(ctx, user, cardIds)
+        const cardIds = cards.map(x => x.card.id)
 
         cards.map(x => {
-            const existingCard = existingCards.find(y => y.cardid == x.id)
-            const count = existingCard? existingCard.amount: 0
-            if (count > 0)
-                resp += `**${formatName(x)}** #${count + 1}\n`
+            if (x.count > 0)
+                resp += `**${formatName(x.userCard? Object.assign({}, ctx.cards[x.userCard.cardid], x.userCard): x.card)}** #${x.count}\n`
             else
-                resp += `**new** **${formatName(x)}**\n`
+                resp += `**new** **${formatName(x.card)}**\n`
         })
         resp += `from using **${item.name}**`
 
@@ -156,7 +163,7 @@ const uses = {
         user.lastcard = cards[0].id
         await user.save()
 
-        const pages = cards.map(x => x.url)
+        const pages = cards.map(x => x.card.url)
         return ctx.sendPgn(ctx, user, {
             pages,
             buttons: ['back', 'forward'],
