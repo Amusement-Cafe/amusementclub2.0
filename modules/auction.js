@@ -126,6 +126,10 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
     await user.save()
     await auc.save()
 
+    let stats = await getStats(ctx, user, user.lastdaily)
+    stats.aucbid += 1
+    await saveAndCheck(ctx, user, stats)
+
     const author = await fetchOnly(auc.author)
 
     if(lastBidder && !add){

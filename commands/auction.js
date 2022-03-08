@@ -294,9 +294,6 @@ cmd(['auction', 'bid'], withInteraction(async (ctx, user, args) => {
         await bid_auc(ctx, user, auc, bid, true)
     } else {
         await bid_auc(ctx, user, auc, bid)
-        let stats = await getStats(ctx, user, user.lastdaily)
-        stats.aucbid += 1
-        await saveAndCheck(ctx, user, stats)
     }
 
 }, true)).access('dm')
