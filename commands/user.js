@@ -165,12 +165,13 @@ cmd(['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items
 
 cmd('daily', withInteraction(async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
+    const oldStats = await getStaticStats(ctx, user, user.lastdaily)
+    const oldClaims = oldStats.claims || 0
 
     const now = new Date()
     const future = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
 
     if(future < now) {
-        const oldStats = await getStaticStats(ctx, user, user.lastdaily)
         const quests = []
         let amount = 750
         const promoAmount = 500 + ((oldStats.promoclaims * 50) || 0)
@@ -178,7 +179,6 @@ cmd('daily', withInteraction(async (ctx, user) => {
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
-        const oldClaims = oldStats.claims || 0
         let stats = await getStats(ctx, user)
         stats.daily = now
         if(check_effect(ctx, user, 'cakeday')) {
