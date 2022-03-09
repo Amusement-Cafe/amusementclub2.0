@@ -40,8 +40,6 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0, guildID, use
         return
 
     relatedPlots.map(async x => {
-        if (ctx.interaction.member.id === x.user_id)
-            return
         const maxCap = await getMaxStorage(ctx, x)
         let payAmount = amount
         if (x.building.level >= requiredLevel && x.building.stored_lemons < maxCap){
