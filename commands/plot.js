@@ -318,6 +318,8 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
         y.building.last_collected = new Date()
         await y.save()
     })
+    if (!collection)
+        return ctx.reply(user, `you have no plots in this guild that with lemons ready for collection!`, 'red')
     user.lemons += collection
     stats.lemonin += collection
     await user.save()
