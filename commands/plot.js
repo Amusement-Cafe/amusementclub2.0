@@ -364,6 +364,9 @@ cmd(['plot', 'demolish'], withInteraction(async (ctx, user, args) => {
         return ctx.sendCfm(ctx, user, {
             question,
             onConfirm: async () => {
+                let stats = await getStats(ctx, user, user.lastdaily)
+                stats.lemonin += refund
+                await stats.save()
                 await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, "building.id": plot.building.id})
                 user.lemons += refund
                 await user.save()
