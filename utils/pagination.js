@@ -220,11 +220,14 @@ const addConfirmPagination = async (ctx, params) => {
             if(obj.buttons.includes('forward')) obj.components[0].components.push(buttons.forward)
             if(obj.buttons.includes('last')) obj.components[0].components.push(buttons.last)
             if(obj.buttons.includes('close')) obj.components[0].components.push(buttons.close)
-        }
-        if (obj.buttons.length > 5) {
-            obj.components.push({ type: 1, components: []})
-            obj.components[1].components.push(buttons.confirm)
-            obj.components[1].components.push(buttons.decline)
+            if (obj.buttons.length > 5) {
+                obj.components.push({ type: 1, components: []})
+                obj.components[1].components.push(buttons.confirm)
+                obj.components[1].components.push(buttons.decline)
+            } else {
+                obj.components[0].components.push(buttons.confirm)
+                obj.components[0].components.push(buttons.decline)
+            }
         } else {
             obj.components[0].components.push(buttons.confirm)
             obj.components[0].components.push(buttons.decline)
