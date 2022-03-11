@@ -70,7 +70,7 @@ cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => 
     let symbol = ctx.symbols[ctx.items.filter(x => x.type === item.type)[0].currency]
     let balance = symbol === ctx.symbols.lemon? user.lemons: user.exp
     if(balance < item.price)
-        return ctx.reply(user, `you have to have at least **${item.price}** ${symbol} to buy this item`, 'red')
+        return ctx.reply(user, `you have to have at least **${numFmt(item.price)}** ${symbol} to buy this item`, 'red')
 
     return ctx.sendCfm(ctx, user, {
         question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${symbol}?`,
