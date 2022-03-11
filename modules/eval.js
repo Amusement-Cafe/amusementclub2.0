@@ -126,6 +126,9 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     let price =  Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
         * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
 
+    if (card.level === 5)
+        price = legendaryBaseEval(ctx, card)
+
     if (info.aucevalinfo.evalprices.length >= ctx.eval.aucEval.minSamples) {
 
         let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
@@ -138,6 +141,19 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     }
 
     return price === Infinity? 0 : price
+}
+
+const legendaryBaseEval = (ctx, card) => {
+    const colCards = ctx.cards.filter(x => card.col === x.col && x.level !== 5)
+    const division = colCards.length >= 200? colCards.length / 200: 1
+    const stars = [
+        colCards.filter(x => x.level === 4).map(y => evalCardFast(ctx, y)),
+        colCards.filter(x => x.level === 3).map(y => evalCardFast(ctx, y)),
+        colCards.filter(x => x.level === 2).map(y => evalCardFast(ctx, y)),
+        colCards.filter(x => x.level === 1).map(y => evalCardFast(ctx, y))
+    ]
+    const sum = stars.map(x => x.length? x.reduce((a, b) => a + b) / division: 0).reduce((y, z) => y + z)
+    return Math.round(sum * 0.4)
 }
 
 const evalAucOutlierCheck = (ctx, number, index, info) => {
