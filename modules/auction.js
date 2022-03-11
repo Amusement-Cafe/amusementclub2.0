@@ -187,7 +187,7 @@ const finish_aucs = async (ctx, now) => {
     if(lastBidder) {
         let authorStats = await getStats(ctx, author, author.lastdaily)
         let winnerStats = await getStats(ctx, lastBidder, lastBidder.lastdaily)
-        const tback = check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
+        const tback = await check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
         lastBidder.exp += (auc.highbid - auc.price) + tback
         winnerStats.tomatoout += (auc.highbid - auc.price) + tback
         winnerStats.aucwin += 1

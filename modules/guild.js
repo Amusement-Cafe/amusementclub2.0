@@ -39,8 +39,13 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
 
         await guild.save()
-        await ctx.reply(user, `new guild added. This channel was marked as bot and report channel.
-            Type \`->help guild -here\` to see more about guild setup`)
+        await ctx.bot.createMessage(ctx.interaction.channel.id, {
+            embed: {
+                description: `**${user.username}**, new guild added. This channel was marked as bot and report channel.
+            Type \`/help help_menu:guild here:true\` to see more about guild setup`,
+                color: color.green
+            }
+        })
     }
 
     if(!fromcache)
@@ -71,7 +76,7 @@ const fetchGuildById = async (guildId) => {
     return guild
 }
 
-const addGuildXP = (ctx, user, xp) => {
+const addGuildXP = async (ctx, user, xp) => {
     let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     
     if(!guildUser) {
@@ -86,7 +91,7 @@ const addGuildXP = (ctx, user, xp) => {
     }
 
     ctx.guild.xp += xp * .05
-    guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
+    guildUser.xp += xp + (await check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
     if(rank > guildUser.rank) {

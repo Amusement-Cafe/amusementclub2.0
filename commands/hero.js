@@ -4,6 +4,8 @@ const msToTime      = require('pretty-ms')
 const anilist       = require('anilist-node')
 const colors        = require('../utils/colors')
 const Guild         = require('../collections/guild')
+const UserSlot      = require('../collections/userSlot')
+
 
 const {
     fetchOnly,
@@ -50,10 +52,11 @@ cmd(['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects,
         return ctx.reply(user, `you don't have a hero yet. To get one use \`->hero get [hero name]\``, 'red')
 
     const embed = await getInfo(ctx, user, user.hero)
-    embed.fields = [
-        { name: `Effect Card slot 1`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty' },
-        { name: `Effect Card slot 2`, value: formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty' },
-    ]
+    const slots = await UserSlot.find({discord_id: user.discord_id}).lean()
+    embed.fields = slots.map((x, i) => {
+        return {name: `Effect Card Slot ${i + 1}`, value: formatUserEffect(ctx, user, effects.find(y => y.id === x.effect_name)) || 'Empty'}
+    })
+
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
 }))).access('dm')
@@ -185,28 +188,30 @@ cmd(['hero', 'slots'], ['effect', 'list', 'passives'], withInteraction(withUserE
     const pages = ctx.pgn.getPages(effects.filter(x => x.passive)
         .map((x, i) => `${i + 1}. ${formatUserEffect(ctx, user, x)}`), 5).filter(y => y)
 
-
     if(pages.length === 0)
         pages.push(`You don't have any passive Effect Cards`)
+
+    const embed = {
+        description: `**${hero.name}** card slots:
+                (\`->hero equip [slot] [passive]\` to equip passive Effect Card)`,
+        color: colors.blue,
+    }
+
+    const slots = await UserSlot.find({discord_id: user.discord_id}).lean()
+    embed.fields = slots.map((x, i) => {
+        return {name: `Slot ${i + 1}`, value: `[${x.cooldown > now? msToTime(x.cooldown - now, {compact:true}) : '--' }] ${
+            formatUserEffect(ctx, user, effects.find(y => y.id === x.effect_name)) || 'Empty'}`}
+    })
+
+    embed.fields.push({name: `All passives`, value: '' })
+
+    const start = embed.fields.length - 1
 
     return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
-        switchPage: (data) => data.embed.fields[2].value = data.pages[data.pagenum],
-        embed: {
-            description: `**${hero.name}** card slots:
-                (\`->hero equip [slot] [passive]\` to equip passive Effect Card)`,
-            color: colors.blue,
-            fields: [
-                { name: `Slot 1`, value: `[${user.herocooldown[0] > now? msToTime(user.herocooldown[0] - now, {compact:true}) : '--' }] ${
-                    formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[0])) || 'Empty'
-                }`},
-                { name: `Slot 2`, value: `[${user.herocooldown[1] > now? msToTime(user.herocooldown[1] - now, {compact:true}) : '--' }] ${
-                    formatUserEffect(ctx, user, effects.find(x => x.id === user.heroslots[1])) || 'Empty'
-                }`},
-                { name: `All passives`, value: '' }
-            ]
-        }
+        switchPage: (data) => data.embed.fields[start].value = data.pages[data.pagenum],
+        embed
     })
 }))).access('dm')
 
@@ -233,7 +238,7 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
         return ctx.reply(user, res.msg, 'red')
 
     const count = user.effects.length
-    const cooldown = check_effect(ctx, user, 'spellcard')? Math.round(effect.cooldown * .6) : effect.cooldown
+    const cooldown = await check_effect(ctx, user, 'spellcard')? Math.round(effect.cooldown * .6) : effect.cooldown
     userEffect.uses--
     userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
     user.effects = user.effects.filter(x => x.uses === undefined || x.uses > 0)
@@ -263,8 +268,9 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
     const passives = effects.filter(x => x.passive)
 
     // let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
+    const slots = await UserSlot.find({discord_id: user.discord_id})
     const slotNum = args.slot
-    if(!slotNum || slotNum < 1 || slotNum > 2)
+    if(!slotNum || slotNum < 1 || slotNum > slots.length)
         return ctx.reply(user, `please specify valid slot number`, 'red')
 
     // args = args.filter(x => x != slotNum)
@@ -277,6 +283,7 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
         const reg = new RegExp(args.effect, 'gi')
         effect = passives.find(x => reg.test(x.id))
     }
+    const chosenSlot = slots[slotNum - 1]
 
     if(!effect)
         return ctx.reply(user, `effect with ID \`${args.effect}\` was not found or it is not a passive`, 'red')
@@ -284,29 +291,28 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
     if(effect.expires && effect.expires < now)
         return ctx.reply(user, `passive **${effect.name}** has expired. Please purchase a new recipe and use it to make a new effect`, 'red')
 
-    if(user.heroslots.includes(effect.id))
+    if(chosenSlot.effect_name === effect.id)
         return ctx.reply(user, `passive **${effect.name}** is already equipped`, 'red')
     
-    if(user.herocooldown[slotNum - 1] && user.herocooldown[slotNum - 1] > now)
-        return ctx.reply(user, `you can use this slot in **${msToTime(user.herocooldown[slotNum - 1] - now)}**`, 'red')
+    if(chosenSlot.cooldown && chosenSlot.cooldown > now)
+        return ctx.reply(user, `you can use this slot in **${msToTime(chosenSlot.cooldown - now)}**`, 'red')
 
     const equip = async () => {
         if(!effect.expires) {
             const ueffect = user.effects.findIndex(x => x.id === effect.id)
             user.effects[ueffect].expires = asdate.add(new Date(), effect.lasts, 'days')
+            chosenSlot.expires = asdate.add(new Date(), effect.lasts, 'days')
             user.markModified('effects')
         }
-        
-        user.heroslots[slotNum - 1] = effect.id
-        user.herocooldown[slotNum - 1] = asdate.add(new Date(), 1, 'day')
-        user.markModified('heroslots')
-        user.markModified('herocooldown')
-        
-        await user.save()
+
+        chosenSlot.effect_name = effect.id
+        chosenSlot.cooldown = asdate.add(new Date(), 1, 'day')
+
+        await chosenSlot.save()
         return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`, 'green', true)
     }
 
-    const oldEffect = passives.find(x => x.id === user.heroslots[slotNum - 1])
+    const oldEffect = passives.find(x => x.id === chosenSlot.effect_name)
     if(oldEffect && oldEffect.expires > now) {
         return ctx.sendCfm(ctx, user, {
             force: ctx.globals.force,

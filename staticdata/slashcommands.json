@@ -1236,6 +1236,12 @@
                         "description": "The user ID or mention of the user you want to sell to",
                         "type": 6,
                         "required": false
+                    },
+                    {
+                        "name": "missing",
+                        "description": "Sell only a card the other user is missing",
+                        "type": 5,
+                        "required": false
                     }
                 ]
             },
@@ -1254,6 +1260,12 @@
                         "name": "user_id",
                         "description": "The user ID or mention of the user you want to sell to",
                         "type": 6,
+                        "required": false
+                    },
+                    {
+                        "name": "missing",
+                        "description": "Sell only cards the other user is missing",
+                        "type": 5,
                         "required": false
                     }
                 ]

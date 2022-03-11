@@ -83,7 +83,7 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
     const eval1 = await evalCard(ctx, card1)
     const eval2 = await evalCard(ctx, card2)
     const vialavg = (await getVialCost(ctx, card1, eval1) + await getVialCost(ctx, card2, eval2)) * .5
-    const cost = Math.round(((eval1 + eval2) * .25) * (check_effect(ctx, user, 'cherrybloss')? .5 : 1))
+    const cost = Math.round(((eval1 + eval2) * .25) * (await check_effect(ctx, user, 'cherrybloss')? .5 : 1))
     const vialres = Math.round((vialavg === Infinity? 0 : vialavg) * .5)
 
     if(user.exp < cost)
@@ -161,7 +161,7 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
     if(card.level > 3)
         return ctx.reply(user, `you cannot liquefy card higher than 3 ${ctx.symbols.star}`, 'red')
 
-    if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+    if(card.level < 3 && await check_effect(ctx, user, 'holygrail'))
         vials += vials * .25
 
     if(card.fav && card.amount === 1)
@@ -215,13 +215,14 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
             Please, use \`${ctx.prefix}liq all !fav\` to include only non-favourite cards.`, 'yellow')
 
     let vials = 0
+    const hasGrail = await check_effect(ctx, user, 'holygrail')
     cards.forEach(card => {
         let cost = getVialCostFast(ctx, card)
         if(cost >= 0) {
             if(cost === Infinity)
                 cost = 5
 
-            if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+            if(card.level < 3 && hasGrail)
                 cost += cost * .25
 
             cost = Math.round(cost * .25)
@@ -283,13 +284,14 @@ cmd(['liquefy', 'preview'], withInteraction(withCards(async (ctx, user, cards, p
         return ctx.reply(user, `you cannot liquefy cards higher than 3 ${ctx.symbols.star}`, 'red')
 
     let vials = 0
+    const hasGrail = await check_effect(ctx, user, 'holygrail')
     const resp = cards.map(card => {
         let cost = getVialCostFast(ctx, card)
         if(cost >= 0) {
             if(cost === Infinity)
                 cost = 5
 
-            if(card.level < 3 && check_effect(ctx, user, 'holygrail'))
+            if(card.level < 3 && hasGrail)
                 cost += cost * .25
 
             cost = Math.round(cost * .25)

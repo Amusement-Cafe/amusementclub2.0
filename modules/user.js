@@ -1,5 +1,6 @@
 const User      = require('../collections/user')
 const UserCard  = require('../collections/userCard')
+const UserSlot  = require('../collections/userSlot')
 const _         = require('lodash')
 const asdate    = require('add-subtract-date')
 const colors    = require('../utils/colors')
@@ -23,6 +24,12 @@ const fetchOrCreate = async (ctx, userid, username) => {
 
         /* save, and send welcome msg */
         await user.save()
+
+        for (let i = 0; i < 2; i++) {
+            const heroSlot = new UserSlot()
+            heroSlot.discord_id = user.discord_id
+            await heroSlot.save()
+        }
 
         await ctx.bot.createMessage(ctx.interaction.channel.id, {
             embed: {

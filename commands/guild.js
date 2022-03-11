@@ -134,7 +134,7 @@ cmd(['guild', 'donate'], withInteraction(async (ctx, user, args) => {
             user.exp -= amount
             user.xp += xp
             ctx.guild.balance += amount
-            addGuildXP(ctx, user, xp)
+            await addGuildXP(ctx, user, xp)
 
             await user.save()
             await ctx.guild.save()

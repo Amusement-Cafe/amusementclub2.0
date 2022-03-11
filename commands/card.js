@@ -122,7 +122,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     }
 
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
-    const tohruEffect = (!stats.totalregclaims || stats.totalregclaims === 0) && check_effect(ctx, user, 'tohrugift')
+    const tohruEffect = (!stats.totalregclaims || stats.totalregclaims === 0) && await check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
         const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
@@ -200,7 +200,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     }
 
 
-    addGuildXP(ctx, user, amount)
+    await addGuildXP(ctx, user, amount)
     await ctx.guild.save()
 
     const receipt = []
@@ -371,12 +371,20 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
-    const err = await validate_trs(ctx, user, cards, id, targetuser)
-    if(err) {
-        return ctx.reply(user, err, 'red')
+
+    if (targetuser && parsedargs.missing) {
+        const otherCards = await getUserCards(ctx, targetuser)
+        const otherIDs = otherCards.map(x => x.cardid)
+        cards = cards.filter(x => otherIDs.indexOf(x.cardid) === -1)
+            .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
+            .sort(parsedargs.sort)
     }
 
     const card = bestMatch(cards)
+    const err = await validate_trs(ctx, user, [card], id, targetuser)
+    if(err) {
+        return ctx.reply(user, err, 'red')
+    }
     const perms = { confirm: [id], decline: [user.discord_id, id] }
     const price = await evalCard(ctx, card, targetuser? 1 : .4)
     const trs = await new_trs(ctx, user, [card], price, targetuser? targetuser.discord_id : null)
@@ -406,6 +414,14 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
+
+    if (targetuser && parsedargs.missing) {
+        const otherCards = await getUserCards(ctx, targetuser)
+        const otherIDs = otherCards.map(x => x.cardid)
+        cards = cards.filter(x => otherIDs.indexOf(x.cardid) === -1)
+            .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
+            .sort(parsedargs.sort)
+    }
 
     let err = await validate_trs(ctx, user, cards, id, targetuser)
     if(err) {

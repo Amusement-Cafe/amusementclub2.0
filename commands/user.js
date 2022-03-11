@@ -146,7 +146,7 @@ cmd(['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items,
     return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
-        onConfirm: (x) => useItem(ctx, user, item, index, true)
+        onConfirm: (x) => useItem(ctx, user, item, index, args)
     })
 })))
 
@@ -169,7 +169,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
     const oldClaims = oldStats.claims || 0
 
     const now = new Date()
-    const future = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const future = asdate.add(user.lastdaily, await check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
 
     if(future < now) {
         const quests = []
@@ -181,7 +181,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
         const userLevel = XPtoLEVEL(user.xp)
         let stats = await getStats(ctx, user)
         stats.daily = now
-        if(check_effect(ctx, user, 'cakeday')) {
+        if(await check_effect(ctx, user, 'cakeday')) {
             amount += 100 * oldClaims
         }
 
@@ -205,7 +205,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
         user.markModified('dailyquests')
 
-        addGuildXP(ctx, user, 10)
+        await addGuildXP(ctx, user, 10)
         ctx.guild.balance += userLevel
         await ctx.guild.save()
 
@@ -627,7 +627,7 @@ cmd('todo', withInteraction(async (ctx, user) => {
     const plots = await getUserPlots(ctx, true)
     const stats = await getStaticStats(ctx, user, user.lastdaily)
     const now = new Date()
-    const futureDaily = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const futureDaily = asdate.add(user.lastdaily, await check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
     const futureVote = asdate.add(user.lastvote, 12, 'hours')
     const daily = futureDaily < now
     const vote = futureVote < now
