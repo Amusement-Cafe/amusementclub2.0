@@ -195,7 +195,10 @@ const ch_map = {
 const formatGuildTrsList = (ctx, user, gtrans) => {
     let resp = ""
     const timediff = msToTime(new Date() - gtrans.time, {compact: true})
-    resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${gtrans.cards.length} card(s) **${gtrans.from}** \`->\` **${gtrans.to}**`
+    if (gtrans.cards.length === 1)
+        resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${formatName(ctx.cards[gtrans.cards[0]])} **${gtrans.from}** \`->\` **${gtrans.to}**`
+    else
+        resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${gtrans.cards.length} card(s) **${gtrans.from}** \`->\` **${gtrans.to}**`
     return resp;
 }
 

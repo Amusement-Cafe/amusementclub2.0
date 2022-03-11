@@ -13,7 +13,9 @@ const {
 
 const {
     getUserPlots,
+    getLemonCap,
     getMaxStorage,
+    plotCost,
 }   = require('../modules/plot')
 
 const {
@@ -75,19 +77,22 @@ cmd(['plot', 'list', 'global'], withInteraction(async (ctx, user) => {
 
 cmd(['plot', 'buy'], withInteraction(async (ctx, user) => {
     const maxGuildAmount = Math.round(XPtoLEVEL(ctx.guild.xp) / 8) + 1
-    const maxUserAmount = Math.round(XPtoLEVEL(user.xp) / 20)
+    const maxUserAmount = Math.floor(XPtoLEVEL(user.xp) / 20) === 0? 0 : Math.floor((XPtoLEVEL(user.xp) - 20) / 10) + 1
     const userGlobalPlots = await getUserPlots(ctx, true)
     const userGuildPlots = userGlobalPlots.filter(x => x.guild_id === ctx.guild.id)
-    const cost = 25 * (2 ** userGlobalPlots.length)
+    const cost = await plotCost(ctx)
     const buildingCount = ctx.items.filter(x => x.type === 'blueprint').length
 
     const check = async () => {
+
+        if (maxUserAmount === 0)
+            return ctx.reply(user, `you can start using plots once you reach level **20**!\nGain levels by playing the bot normally and use \`${ctx.prefix}profile\` to see what level you are!`, 'red')
 
         if (userGuildPlots.length >= maxGuildAmount)
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
 
         if (userGlobalPlots.length >= maxUserAmount)
-            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!\nA new plot is unlocked every **20** levels.`, 'red')
+            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!\nA new plot is unlocked every **10** levels after you reach level 20.`, 'red')
 
         if (user.lemons < cost)
             return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
@@ -165,10 +170,8 @@ cmd(['plot', 'upgrade'], withInteraction(async (ctx, user, args) => {
         force: ctx.globals.force,
         onConfirm: async (x) => {
             let stats = await getStats(ctx, user, user.lastdaily)
-            const xp = Math.floor(level.price * .04)
             plot.building.level++
             user.lemons -= level.price
-            user.xp += xp
             stats.lemonout += level.price
             await user.save()
             await plot.save()
@@ -184,8 +187,7 @@ cmd(['plot', 'upgrade'], withInteraction(async (ctx, user, args) => {
                 })
 
             return ctx.reply(user, `you successfully upgraded **${item.name}** to level **${plot.building.level}**!
-                This building now *${level.desc.toLowerCase()}*
-                You have been awarded **${Math.floor(xp)} xp** towards your player level`, 'green', true)
+                This building now *${level.desc.toLowerCase()}*`, 'green', true)
 
         },
     })
@@ -235,6 +237,7 @@ cmd(['plot', 'info'], withInteraction(async (ctx, user, args) => {
     let level = item.levels.map((x, i) => ({
         name: `Level ${i + 1}`,
         value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))
     level[plot.building.level - 1].name += ` (Current Level)`
@@ -287,6 +290,7 @@ cmd(['plot', 'info', 'global'], withInteraction(async (ctx, user, args) => {
     let level = item.levels.map((x, i) => ({
         name: `Level ${i + 1}`,
         value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
     }))
     level[plot.building.level - 1].name += ` (Current Level)`
@@ -300,6 +304,7 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
     const past = asdate.subtract(new Date(), 1, "hours")
     let plots = await getUserPlots(ctx)
     let stats = await getStats(ctx, user, user.lastdaily)
+    let cap = await getLemonCap(ctx)
 
     if (plots.length === 0)
         return ctx.reply(user, `you don't have any plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
@@ -311,9 +316,30 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
         return ctx.reply(user, `you have no plots in this guild that are ready for collection!\nYou can next collect from plots here in **${mstotime(lastCollected - past)}**.`, 'red')
 
     let collection = 0
+
     plots.map(async y => {
         if (y.building.stored_lemons > 0)
             collection += y.building.stored_lemons
+    })
+    let forfeit = (collection + user.lemons) - cap
+
+    if (collection + user.lemons > cap)
+        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+            question: `You are about to collect **${numFmt(collection)}** ${ctx.symbols.lemon} which brings you above your lemon limit of **${numFmt(cap)}**! Collecting now will forfeit **${numFmt(forfeit)}** ${ctx.symbols.lemon}
+            Do you want to continue?`,
+            onConfirm: async () => {
+                plots.map(async y => {
+                    y.building.stored_lemons = 0
+                    y.building.last_collected = new Date()
+                    await y.save()
+                })
+                user.lemons = cap
+                await user.save()
+                return ctx.reply(user, `you have successfully collected **${numFmt(collection - forfeit)}** ${ctx.symbols.lemon} from this guild, forfeiting **${numFmt(forfeit)}**! 
+                You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
+            }
+        })
+    plots.map(async y => {
         y.building.stored_lemons = 0
         y.building.last_collected = new Date()
         await y.save()

@@ -16,6 +16,7 @@ const {
     numFmt,
     findCardsFast,
     formatDateTimeRelative,
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
@@ -25,6 +26,7 @@ const {
     evalCardFast,
     bulkIncrementUserCount,
     getVialCostFast,
+    pushUserCountUpdate,
 } = require('../modules/eval')
 
 const {
@@ -103,12 +105,15 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
 
     if(!promo && price > user.exp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}`, 'red')
+        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+            You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}
+            ${user.dailyquests.length > 0? `Complete your \`${ctx.prefix}quests\` to get more ${ctx.symbols.tomato}` : ''}
+            Use \`${ctx.prefix}daily\` to reset your claim price and get extra ${ctx.symbols.tomato}`, 'red')
 
     if(promo && price > user.promoexp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}`, 'red')
+        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+            You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}
+            Claim regular cards using \`${ctx.prefix}claim\` or run \`${ctx.prefix}daily\` when it is ready to obtain more ${promo.currency}`, 'red')
 
     if(!promo && args.boostID) {
         boost = curboosts.find(x => x.id === args.boostID.toLowerCase())
@@ -224,8 +229,21 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     let description = `**${user.username}**, you got:`
     fields.push({name: `New cards`, value: newCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.card)}`).join('\n')})
     fields.push({name: `Duplicates`, value: oldCards.map(x => `${x.boostDrop? '`🅱` ' : ''}${formatName(x.userCard? Object.assign({}, ctx.cards[x.userCard.cardid], x.userCard): x.card)} #${x.count}`).join('\n')})
-    fields.push({name: `Receipt`, value: receipt.join('\n') })
+    // fields.push({name: `Receipt`, value: receipt.join('\n') })
+    fields.push({name: `Receipt`, value: `You spent **${numFmt(price)}** ${curr} in total
+        You have **${numFmt(Math.round(promo? user.promoexp : user.exp))}** ${curr} left
+        You can claim **${max - 1}** more cards
+        Your next claim will cost **${promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))}** ${curr}
+        ${activepromo && !promo? `You got **${numFmt(extra)}** ${activepromo.currency}
+        You now have **${numFmt(user.promoexp)}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
 
+    if (amount > 1 && XPtoLEVEL(user.xp) < 15) {
+        fields.push({name: `View your cards`, value:
+            `Use \`${ctx.prefix}sum [card name]\` to view the card
+            (e.g. \`${ctx.prefix}sum ${cards[0].card.name}\`)
+            Use \`${ctx.prefix}card info [card name]\` to view the card tags and metadata
+            (e.g. \`${ctx.prefix}card info ${cards[0].card.name}\`)`})
+    }
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
@@ -329,6 +347,9 @@ cmd('summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => 
     user.lastcard = card.id
     await user.save()
 
+    let warn = `> This is a random card **that you own**.\nFor more info type \`${ctx.prefix}help summon\``
+    let lvl = XPtoLEVEL(user.xp)
+
     if(card.imgur) {
         await ctx.reply(user, {
             color: colors.blue,
@@ -341,7 +362,7 @@ cmd('summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => 
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,
-        description: `summons **${formatName(card)}**!`
+        description: `summons **${formatName(card)}**!\n${parsedargs.isEmpty() && lvl < 25? warn : ''}`
     })
 }))).access('dm')
 
@@ -434,10 +455,11 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
     let price = 0
     const cardList = cards.map(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval)
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
         card.fav = false
         return formatName(card)
@@ -495,10 +517,11 @@ cmd(['sell', 'preview'], withInteraction(withCards(async (ctx, user, cards, pars
     let price = 0
     const resp = cards.map(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval)
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
 
         return {
@@ -543,10 +566,11 @@ cmd(['eval', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
     let vials = 0
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval) * card.amount
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
         if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount

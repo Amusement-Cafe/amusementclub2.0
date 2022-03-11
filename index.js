@@ -39,7 +39,7 @@ module.exports.create = async ({
         baseurl, shorturl, auditc, debug, 
         maintenance, invite, data, dbl, 
         analytics, evalc, uniqueFrequency,
-        metac, auctionLock
+        metac, auctionLock, guildLogChannel,
     }) => {
 
     const emitter = new Emitter()
@@ -275,7 +275,7 @@ module.exports.create = async ({
         const auctionTick   =   setInterval(tick.bind({}, ctx), 5000)
         const guildTick     =   setInterval(gtick.bind({}, ctx), 10000)
         const userQueueTick =   setInterval(qtick.bind({}, ctx), 1000)
-        const heroTick      =   setInterval(htick.bind({}, ctx), 60000 * 2)
+        const heroTick      =   setInterval(htick.bind({}, ctx), 60000 * 5)
         const auditTick     =   setInterval(atick.bind({}, ctx), 600000)
         const evalTick      =   setInterval(etick.bind({}, ctx), eval.queueTick)
         const notifyTick    =   setInterval(notifytick.bind({}, ctx), 6000)
@@ -447,6 +447,23 @@ module.exports.create = async ({
             await interaction.acknowledge()
             await trigger('rct', isoCtx, null, [interaction.data.custom_id])
         }
+    })
+
+    bot.on('guildCreate', async (guild) => {
+        if (guildLogChannel)
+            await send(guildLogChannel, {
+                description:`Invited to a new guild!\nGuild Name: **${guild.name}**\nGuild ID: \`${guild.id}\``,
+                color: colors.green,
+                thumbnail: {url: guild.iconURL}
+            })
+    })
+
+    bot.on('guildDelete', async (guild) => {
+        if (guildLogChannel)
+            await send(guildLogChannel, {
+                description:`Kicked from guild!\nGuild Name: **${guild.name? guild.name: 'Uncached Guild'}**\nGuild ID: \`${guild.id}\``,
+                color: colors.red
+            })
     })
 
     bot.on('messageCreate', async (msg) => {

@@ -178,7 +178,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
 
         if (auc.price > eval * 1.5)
-            float = eval * ctx.eval.aucEval.aucFailMultiplier
+            float = eval
 
         info.aucevalinfo.newaucprices.push(Math.floor(float))
     } else {

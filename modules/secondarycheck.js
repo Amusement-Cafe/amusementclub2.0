@@ -2,6 +2,7 @@ const colors    = require('../utils/colors')
 const User      = require('../collections/user')
 const {
     plotPayout,
+    getLemonCap,
 }   = require('./plot')
 
 const check_achievements = async (ctx, user, action, channelID, stats) => {
@@ -13,6 +14,9 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
         complete = complete.shift()
         const reward = complete.resolve(ctx, user, stats)
         user.achievements.push(complete.id)
+        const cap = await getLemonCap(ctx, user)
+        if (user.lemons > cap)
+            user.lemons = cap
         await user.save()
         await stats.save()
 
@@ -78,6 +82,11 @@ const check_daily = async (ctx, user, action, channelID, stats) => {
         return
 
     await stats.save()
+    const cap = await getLemonCap(ctx, user)
+
+    if (user.lemons > cap)
+        user.lemons = cap
+
     await user.save()
     let guildID
     if (channelID)

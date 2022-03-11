@@ -41,8 +41,11 @@ const mapUserInventory = (ctx, user) => {
  * @return {Promise}
  */
 const withUserItems = (callback) => (ctx, user, args) => {
-    if (user.inventory.length == 0)
-        return ctx.reply(user, 'your inventory is empty', 'red')
+    if (user.inventory.length == 0) 
+        return ctx.reply(user, `your inventory is empty.
+        You can obtain inventory items in the \`${ctx.prefix}store\`.
+        If you are looking for your cards, use \`${ctx.prefix}cards\` instead.
+        For more information see \`${ctx.prefix}help inventory\``, 'red')
 
     let items = mapUserInventory(ctx, user)
     let index
@@ -160,6 +163,9 @@ const uses = {
         await addUserCards(ctx, user, cardIds)
 
         pullInventoryItem(user, item.id, index)
+        await user.save()
+
+        user.markModified('cards')
         user.lastcard = cards[0].id
         await user.save()
 
@@ -254,6 +260,7 @@ const infos = {
         item.levels.map((x, i) => (embed.fields.push({
             name: `Level ${i + 1}`,
             value: `Price: **${x.price}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
         })))
         return embed

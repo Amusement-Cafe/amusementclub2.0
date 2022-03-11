@@ -114,9 +114,11 @@ cmd('license', withInteraction(async (ctx, user) => {
 const getHelpEmbed = (ctx, o, prefix) => {
 
     const footerText = `Amusement Club Bort | xQAxThF | v${pjson.version} | by noxc#4905 and Mj11jM#1111`
+    const docLink = o.docs? `\n[View this help in docs ↗️](https://docs.amusement.cafe/${o.docs})` : ''
     const embed = {
         title: o.title, 
-        description: o.description.replace(/->/g, prefix), fields: [],
+        description: o.description.replace(/->/g, prefix) + docLink,
+        fields: [],
         footer: { text: footerText },
         color: colors['green']
     }
