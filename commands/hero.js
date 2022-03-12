@@ -301,7 +301,6 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
         if(!effect.expires) {
             const ueffect = user.effects.findIndex(x => x.id === effect.id)
             user.effects[ueffect].expires = asdate.add(new Date(), effect.lasts, 'days')
-            chosenSlot.expires = asdate.add(new Date(), effect.lasts, 'days')
             user.markModified('effects')
         }
 
@@ -309,6 +308,7 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
         chosenSlot.cooldown = asdate.add(new Date(), 1, 'day')
 
         await chosenSlot.save()
+        await user.save()
         return ctx.reply(user, `successfully equipped **${effect.name}** to slot **#${slotNum}**. Effect is now active`, 'green', true)
     }
 
