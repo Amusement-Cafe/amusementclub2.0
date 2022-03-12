@@ -170,9 +170,9 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         stats.promoout += price
         stats.promoclaims += amount
 
-        while(totalPossible < user.promoexp) { 
-            totalPossible += promoClaimCost(user, max, stats.promoclaims)
-        }
+        while(promoClaimCost(user, max, stats.promoclaims) < user.promoexp)
+            max++
+
     } else {
         user.exp -= price
         if (activepromo){
@@ -184,9 +184,8 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         stats.tomatoout += price
         await plotPayout(ctx, 'gbank', 2, Math.floor(amount * 1.5))
 
-        while(totalPossible < user.exp) {
-            totalPossible += claimCost(user, ctx.guild.tax, max, stats.claims)
-        }
+        while(claimCost(user, ctx.guild.tax, max, stats.claims) < user.exp)
+            max++
     }
 
     user.lastcard = cards[0].card.id
@@ -233,7 +232,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     fields.push({name: `Receipt`, value: `You spent **${numFmt(price)}** ${curr} in total
         You have **${numFmt(Math.round(promo? user.promoexp : user.exp))}** ${curr} left
         You can claim **${max - 1}** more cards
-        Your next claim will cost **${promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))}** ${curr}
+        Your next claim will cost **${promo? numFmt(promoClaimCost(user, 1, stats.promoclaims)) : numFmt(claimCost(user, ctx.guild.tax, 1, stats.claims))}** ${curr}
         ${activepromo && !promo? `You got **${numFmt(extra)}** ${activepromo.currency}
         You now have **${numFmt(user.promoexp)}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
 
@@ -556,8 +555,10 @@ cmd(['eval', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, pa
     const card = bestMatch(cards)
     const price = await evalCard(ctx, card)
     const vials = await getVialCost(ctx, card, price)
-    return ctx.reply(user, 
-        `card ${formatName(card)} is worth: **${numFmt(price)}** ${ctx.symbols.tomato} ${card.level < 4? `or **${numFmt(vials)}** ${ctx.symbols.vial}` : ``}`)
+    const cardInfo = await fetchInfo(ctx, card.id)
+    return ctx.reply(user,
+        `card ${formatName(card)} is worth: **${numFmt(price)}** ${ctx.symbols.tomato} ${card.level < 4? `or **${numFmt(vials)}** ${ctx.symbols.vial}` : ``}
+        ${cardInfo.aucevalinfo.evalprices.length > ctx.eval.aucEval.minSamples? `**This eval is taken as an average of auction prices!**`: ''}`)
 }))).access('dm')
 
 cmd(['eval', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
