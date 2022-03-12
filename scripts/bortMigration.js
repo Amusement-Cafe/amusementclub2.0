@@ -33,12 +33,13 @@ const bortTransfer = async () => {
         for (let i = 0; i < 2; i++) {
             const heroSlot = {}
             heroSlot.discord_id = u.discord_id
+            heroSlot.hero_id = null
+            heroSlot.effect_name = null
             if(u.hero)
                 heroSlot.hero_id = u.hero
             if(u.heroslots[i]) {
                 const userEffect = u.effects.find(x => x.id === u.heroslots[i])
                 heroSlot.effect_name = userEffect.id
-                heroSlot.expires = userEffect.expires
             }
             if(u.herocooldown[i])
                 heroSlot.cooldown = u.herocooldown[i]
@@ -73,6 +74,8 @@ const bortTransfer = async () => {
         newStats.rates = oldStats.rates
         newStats.store3 = oldStats.store3
         await newStats.save()
+        u.cards = []
+        await u.save()
         console.log(`Finished processing entry #${count}.`)
         count++
     }
