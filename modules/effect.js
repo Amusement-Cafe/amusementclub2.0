@@ -8,11 +8,12 @@ const check_effect = async (ctx, user, id) => {
     const effect = ctx.effects.find(x => x.id === id)
     const userEffect = user.effects.find(x => x.id === id)
     const inSlot = await UserSlot.findOne({discord_id: user.discord_id, effect_name: id})
-    if(inSlot && inSlot.expires && inSlot.expires < new Date()) {
-        inSlot.effect_name = null
-        inSlot.expires = null
-        inSlot.cooldown = null
-        await inSlot.save()
+    if(userEffect && userEffect.expires && userEffect.expires < new Date()) {
+        if (inSlot) {
+            inSlot.effect_name = null
+            inSlot.cooldown = null
+            await inSlot.save()
+        }
         user.effects = user.effects.filter(x => x.id != id)
         user.markModified('effects')
         return false
@@ -30,7 +31,6 @@ const formatUserEffect = (ctx, user, x) => {
 }
 
 const mapUserEffects = (ctx, user) => {
-    user.effects.map(x => check_effect(ctx, user, x.id))
     return user.effects.map(x => Object.assign({},
         ctx.items.find(y => y.effectid === x.id),
         ctx.effects.find(y => y.id === x.id),
@@ -44,6 +44,8 @@ const withUserEffects = (callback) => async (ctx, user, args) => {
             If you cannot find a hero that you want, submit one using \`->hero submit [anilist link](https://anilist.co/)\`
             For more information type \`->help hero -here\``, 'red')
 
+    await Promise.all(user.effects.map(async x => await check_effect(ctx, user, x.id)))
+    await user.save()
     const map = await mapUserEffects(ctx, user)
     return callback(ctx, user, map, args)
 }
