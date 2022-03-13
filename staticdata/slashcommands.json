@@ -723,11 +723,6 @@
                 "name": "help_menu",
                 "description": "Specify the help page you want to display or leave blank to see all options",
                 "type": 3
-            },
-            {
-                "name": "here",
-                "description": "Whether the bot will post the help in current channel or in DM",
-                "type": 5
             }
         ]
     },
