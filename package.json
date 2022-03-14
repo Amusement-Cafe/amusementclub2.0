@@ -1,6 +1,6 @@
 {
   "name": "amusementclub2.0",
-  "version": "0.2.3",
+  "version": "2.0",
   "description": "Next version of Amusement Club discord gacha",
   "main": "index.js",
   "scripts": {
