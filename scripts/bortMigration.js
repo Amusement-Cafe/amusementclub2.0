@@ -35,6 +35,7 @@ const bortTransfer = async () => {
             heroSlot.discord_id = u.discord_id
             heroSlot.hero_id = null
             heroSlot.effect_name = null
+            heroSlot.is_active = true
             if(u.hero)
                 heroSlot.hero_id = u.hero
             if(u.heroslots[i]) {
