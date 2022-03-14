@@ -18,11 +18,12 @@ const queueTick = 200
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 const evalQueue = []
 
-let userCount, userCountUpdated, evalPromise
+let userCount, userCountUpdated, evalPromise, activeList
 
 const evalCard = async (ctx, card, modifier = 1) => {
     if((!userCount && Date.now() - userCountUpdated > userCountTTL) || !userCountUpdated) {
-        userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
+        activeList = (await User.find({ lastdaily: { $gt: evalLastDaily }}, {discord_id: 1}).lean()).map(x => x.discord_id)
+        userCount = activeList.length
         userCountUpdated = Date.now()
     }
     
@@ -42,9 +43,7 @@ const evalCardFast = (ctx, card) => {
 }
 
 const updateCardUserCount = async (ctx, card, count) => {
-    // TODO consider only active users
-    const ownercount = count || (await UserCard.countDocuments({ cardid: card.id }))
-
+    const ownercount = count || (await UserCard.countDocuments({ userid: {$in: activeList}, cardid: card.id }))
     const info = fetchInfo(ctx, card.id)
     const cachedCard = ctx.cards.find(x => x.id === card.id)
     info.id = card.id
