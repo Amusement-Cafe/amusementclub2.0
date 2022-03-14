@@ -7,7 +7,7 @@
     "daily": 72000000,
     "debug": true,
     "invite": "",
-    "maintenance": false,
+    "maintenance": true,
     "auctionLock": false,
     "uniqueFrequency": 10,
     "guildLogChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
