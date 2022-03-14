@@ -507,10 +507,19 @@ cmd(['sell', 'preview'], withInteraction(withCards(async (ctx, user, cards, pars
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'sell')
 
-    cards.splice(100, cards.length)
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
+
+    if (targetuser && parsedargs.missing) {
+        const otherCards = await getUserCards(ctx, targetuser)
+        const otherIDs = otherCards.map(x => x.cardid)
+        cards = cards.filter(x => otherIDs.indexOf(x.cardid) === -1)
+            .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
+            .sort(parsedargs.sort)
+    }
+
+    cards.splice(100, cards.length)
 
 
     let price = 0
