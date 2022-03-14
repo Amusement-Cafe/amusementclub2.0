@@ -399,5 +399,36 @@
         "fulldesc": "When used gives you 3 random 3 star cards from randomly chosen collections",
         "level": [3, 3, 3],
         "col": "random"
-    }
+    },
+
+
+    {
+    "id": "slotupgrade",
+    "name": "Effect Slot Upgrade",
+    "price": 100,
+    "type": "bonus",
+    "currency": "lemon",
+    "desc": "READ INFO BEFORE BUYING",
+    "typedesc": "Welcome to the bonus store! This store will hold items purchasable with lemons that don't quite fit into any other category. Be it upgrades or misc items, you can find them here!",
+    "fulldesc": "This item, when used, increases the amount of passive effect slots you have for 30 days. The ability to use one is unlocked every 100 levels.\nCheck your level with `/profile`",
+    "level": 100
+    }, {
+    "id": "effectincrease",
+    "name": "Effect Use Increase",
+    "price": 100,
+    "type": "bonus",
+    "currency": "lemon",
+    "desc": "adds time/uses to an effect",
+    "fulldesc": "Each use of this item with a valid effect will increase it's use by 1 or expiry by 1 day.",
+    "level": 100
+    }, {
+    "id": "legendswapper",
+    "name": "Legendary Card Swapper",
+    "price": 100,
+    "type": "bonus",
+    "currency": "lemon",
+    "desc": "swaps a legendary card",
+    "fulldesc": "When used on a legendary card, swaps it for another random legendary in the same collection.",
+    "level": 100
+}
 ]

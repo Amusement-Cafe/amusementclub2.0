@@ -138,7 +138,7 @@ cmd(['inventory', 'list'], withInteraction(withUserItems((ctx, user, items, args
 
 cmd(['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
-    const itemCheck = await checkItem(ctx, user, item)
+    const itemCheck = await checkItem(ctx, user, item, args)
 
     if(itemCheck)
         return ctx.reply(user, itemCheck, 'red')
@@ -169,7 +169,8 @@ cmd('daily', withInteraction(async (ctx, user) => {
     const oldClaims = oldStats.claims || 0
 
     const now = new Date()
-    const future = asdate.add(user.lastdaily, await check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const hasJeanne = await check_effect(ctx, user, 'rulerjeanne')
+    const future = asdate.add(user.lastdaily, hasJeanne? 17 : 20, 'hours')
 
     if(future < now) {
         const quests = []

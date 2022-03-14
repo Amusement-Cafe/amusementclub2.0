@@ -10,6 +10,7 @@ const {
     XPtoLEVEL,
     numFmt,
 }   = require('../utils/tools')
+const {UserSlot} = require("../collections");
 
 let hcache = []
 
@@ -274,6 +275,16 @@ const getGuildScore = async (ctx, guild, heroID) => {
 
 const guildUserScore = (guildUser) => Math.sqrt(m_guild.rankXP[guildUser.rank - 1] + guildUser.xp || 1)
 
+const checkSlots = async (ctx, now) => {
+    const expiredSlot = await UserSlot.findOne({is_active: true, slot_expires: {$ne: null, $lt: now}})
+    if (!expiredSlot) return
+
+    expiredSlot.effect_name = ''
+    expiredSlot.is_active = false
+    expiredSlot.cooldown = null
+    await expiredSlot.save()
+}
+
 module.exports = Object.assign(module.exports, {
     new_hero,
     get_hero,
@@ -283,5 +294,6 @@ module.exports = Object.assign(module.exports, {
     getInfo,
     checkGuildLoyalty,
     getGuildScore,
-    reloadCache
+    reloadCache,
+    checkSlots,
 })

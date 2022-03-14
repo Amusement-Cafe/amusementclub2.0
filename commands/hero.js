@@ -135,15 +135,13 @@ cmd(['hero', 'list'], withInteraction(withHeroes(async (ctx, user, heroes) => {
 }))).access('dm')
 
 cmd(['effect', 'info'], withInteraction(async (ctx, user, args) => {
-    if(!args.effect)
-        return ctx.qhelp(ctx, user, 'effect')
-
     const reg = new RegExp(args.effect, 'gi')
-    let item = ctx.items.find(x => reg.test(x.id))
+    let effect = ctx.effects.find(x => reg.test(x.id))
 
-    if(!item)
-        return ctx.reply(user, `item with ID \`${args.effect}\` not found`, 'red')
+    if(!effect)
+        return ctx.reply(user, `effect with ID \`${args.effect}\` not found`, 'red')
 
+    const item = ctx.items.find(x => x.id === effect.id)
     const embed = await itemInfo(ctx, user, item)
     embed.author = { name: item.name }
     embed.description = embed.fields[0].value
@@ -197,9 +195,9 @@ cmd(['hero', 'slots'], ['effect', 'list', 'passives'], withInteraction(withUserE
         color: colors.blue,
     }
 
-    const slots = await UserSlot.find({discord_id: user.discord_id}).lean()
+    const slots = await UserSlot.find({discord_id: user.discord_id, is_active: true}).lean()
     embed.fields = slots.map((x, i) => {
-        return {name: `Slot ${i + 1}`, value: `[${x.cooldown > now? msToTime(x.cooldown - now, {compact:true}) : '--' }] ${
+        return {name: `Slot ${i + 1}${x.slot_expires? ` [${msToTime(x.slot_expires - now, {compact:true})}]`: ''}`, value: `[${x.cooldown > now? msToTime(x.cooldown - now, {compact:true}) : '--' }] ${
             formatUserEffect(ctx, user, effects.find(y => y.id === x.effect_name)) || 'Empty'}`}
     })
 
@@ -268,7 +266,7 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
     const passives = effects.filter(x => x.passive)
 
     // let intArgs = args.filter(x => !isNaN(x)).map(x => parseInt(x))
-    const slots = await UserSlot.find({discord_id: user.discord_id})
+    const slots = await UserSlot.find({discord_id: user.discord_id, is_active: true})
     const slotNum = args.slot
     if(!slotNum || slotNum < 1 || slotNum > slots.length)
         return ctx.reply(user, `please specify valid slot number`, 'red')

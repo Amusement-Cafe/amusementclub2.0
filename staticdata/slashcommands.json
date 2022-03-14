@@ -868,6 +868,18 @@
                         "description": "The number position or name of the item you want to use",
                         "type": 3,
                         "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to filter for",
+                        "type": 3,
+                        "required": false
+                    },
+                    {
+                        "name": "effect_name",
+                        "description": "The name of the effect if the item requires it",
+                        "type": 3,
+                        "required": false
                     }
                 ]
             }
@@ -1280,6 +1292,12 @@
                         "name": "user_id",
                         "description": "The user ID or mention of the user you want to sell to",
                         "type": 6,
+                        "required": false
+                    },
+                    {
+                        "name": "missing",
+                        "description": "Sell only a card the other user is missing",
+                        "type": 5,
                         "required": false
                     }
                 ]
