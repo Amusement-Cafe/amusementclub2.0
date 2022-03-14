@@ -127,7 +127,7 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
         * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
 
     if (card.level === 5)
-        price = legendaryBaseEval(ctx, card)
+        price = Math.round(legendaryBaseEval(ctx, card) * modifier)
 
     if (info.aucevalinfo.evalprices.length >= ctx.eval.aucEval.minSamples) {
 
