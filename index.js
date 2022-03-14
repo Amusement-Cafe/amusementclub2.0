@@ -40,6 +40,7 @@ module.exports.create = async ({
         maintenance, invite, data, dbl, 
         analytics, evalc, uniqueFrequency,
         metac, auctionLock, guildLogChannel,
+        adminGuildID
     }) => {
 
     const emitter = new Emitter()
@@ -199,6 +200,7 @@ module.exports.create = async ({
         quests: require('./staticdata/quests'),
         effects: require('./staticdata/effects'),
         slashCmd: require('./staticdata/slashcommands'),
+        adminCmd: require('./staticdata/adminslashcommands'),
         promos: data.promos,
         boosts: data.boosts,
         cardInfos,
@@ -252,6 +254,7 @@ module.exports.create = async ({
     const htick = (ctx) => {
         const now = new Date()
         hero.check_heroes(ctx, now)
+        hero.checkSlots(ctx, now)
     }
 
     /* service tick for audit and transaction cleaning */
@@ -323,6 +326,9 @@ module.exports.create = async ({
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
         ctx.settings.wip = false
+        // const guildCommands = await bot.getGuildCommands(adminGuildID)
+        // if (guildCommands.length !== ctx.adminCmd.length)
+        //     await bot.bulkEditGuildCommands(adminGuildID, ctx.adminCmd)
         const globalCommands = await bot.getCommands()
         if (globalCommands.length !== ctx.slashCmd.length)
             await bot.bulkEditCommands(ctx.slashCmd)
@@ -331,101 +337,114 @@ module.exports.create = async ({
     bot.on('interactionCreate', async (interaction) => {
         //Slash Commands
         if (interaction instanceof Eris.CommandInteraction) {
-            if (interaction.applicationID !== bot.application.id)
-                return
+            try {
+                if (interaction.applicationID !== bot.application.id)
+                    return
 
-            const interactionUser = interaction.user || interaction.member.user
-            if (interactionUser.bot)
-                return
+                const interactionUser = interaction.user || interaction.member.user
+                if (interactionUser.bot)
+                    return
 
-            const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
-            let botUser = await user.fetchOnly(interactionUser.id)
+                const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
+                let botUser = await user.fetchOnly(interactionUser.id)
 
-            if (userq.some(x => x.id === interactionUser.id)) {
-                await interaction.acknowledge(64)
-                return reply(botUser, 'you are currently on a command cooldown. Please wait a moment and try your command again!', 'red')
-            }
+                if (userq.some(x => x.id === interactionUser.id)) {
+                    await interaction.acknowledge(64)
+                    return reply(botUser, 'you are currently on a command cooldown. Please wait a moment and try your command again!', 'red')
+                }
 
-            const curguild = await guild.fetchGuildById(interaction.guildID)
+                const curguild = await guild.fetchGuildById(interaction.guildID)
 
-            let base = [interaction.data.name]
-            let options = []
+                let base = [interaction.data.name]
+                let options = []
 
-            let cursor = interaction.data
-            while (cursor.hasOwnProperty('options')) {
-                cursor = cursor.options
-                cursor.map(x => {
-                    if (x.type === 1 || x.type === 2) {
-                        base.push(x.name)
-                        cursor = x
-                    } else if (x.name === 'global' && x.value) {
-                        base.push(x.name)
-                    } else {
-                        options.push(x)
-                    }
+                let cursor = interaction.data
+                while (cursor.hasOwnProperty('options')) {
+                    cursor = cursor.options
+                    cursor.map(x => {
+                        if (x.type === 1 || x.type === 2) {
+                            base.push(x.name)
+                            cursor = x
+                        } else if (x.name === 'global' && x.value) {
+                            base.push(x.name)
+                        } else {
+                            options.push(x)
+                        }
+                    })
+                }
+
+                const setbotmsg = 'guild set bot'
+                const setreportmsg = 'guild set report'
+
+                if (curguild
+                    && !base.join(' ').includes(setbotmsg)
+                    && !base.join(' ').includes(setreportmsg)
+                    && !base.join(' ').includes('summon')
+                    && !base.join(' ').includes('pat')
+                    && !curguild.botchannels.some(x => x === interaction.channel.id)) {
+
+                    await interaction.acknowledge(64)
+
+
+                    return interaction.createMessage({
+                        embed: {
+                            description: `**${interactionUser.username}**, bot commands are only available in these channels: 
+                            ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
+                            \nGuild owner or administrator can add a bot channel by typing \`/${setbotmsg}\` in the target channel.`,
+                            color: colors.red
+                        }
+                    })
+
+                }
+
+                let capitalMsg = base
+                let msg = base.map(x => x.toLowerCase())
+                const isolatedCtx = Object.assign({}, ctx, {
+                    msg, /* current icoming msg object */
+                    capitalMsg,
+                    reply, /* quick reply function to the channel */
+                    globals: {}, /* global parameters */
+                    discord_guild: interaction.member ? interaction.member.guild : null,  /* current discord guild */
+                    prefix: '/', /* current prefix */
+                    interaction: interaction,
+                    options
                 })
+
+                let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.username)
+                usr.username = usr.username.replace(/\*/gi, '')
+                const cntnt = msg.map(x => x.trim()).join(' ')
+                let args = cntnt.split(/ +/)
+                userq.push({id: interactionUser.id, expires: asdate.add(new Date(), 3, 'seconds')})
+
+                if (ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
+                    return reply(usr, ctx.settings.wipMsg, 'yellow')
+                }
+
+                if (usr.ban.full) {
+                    return reply(usr, `this account was banned permanently.
+                        For more information please visit [bot discord](${ctx.cafe})`, 'red')
+                }
+
+                usr.exp = Math.min(usr.exp, 10 ** 7)
+                usr.vials = Math.min(usr.vials, 10 ** 6)
+
+                console.log(`[${usr.username}]: ${cntnt}`)
+                if (isolatedCtx.discord_guild)
+                    isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
+
+                ctx.mixpanel.track('Command', {
+                    distinct_id: usr.discord_id,
+                    command: args,
+                    guild: isolatedCtx.guild ? isolatedCtx.guild.id : 'direct',
+                })
+
+                await trigger('cmd', isolatedCtx, usr, args, prefix)
+            } catch (e) {
+                if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
+                    return
+
+                emitter.emit('error', e)
             }
-
-            const setbotmsg = 'guild set bot'
-            const setreportmsg = 'guild set report'
-
-            if(curguild
-                && !base.join(' ').includes(setbotmsg)
-                && !base.join(' ').includes(setreportmsg)
-                && !base.join(' ').includes('summon')
-                && !base.join(' ').includes('pat')
-                && !curguild.botchannels.some(x => x === interaction.channel.id)) {
-
-                await interaction.acknowledge(64)
-
-
-                return interaction.createMessage({embed: {
-                        description: `**${interactionUser.username}**, bot commands are only available in these channels: 
-                        ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
-                        \nGuild owner or administrator can add a bot channel by typing \`/${setbotmsg}\` in the target channel.`,
-                        color: colors.red
-                    }})
-
-            }
-
-            let capitalMsg = base
-            let msg = base.map(x=>x.toLowerCase())
-            const isolatedCtx = Object.assign({}, ctx, {
-                msg, /* current icoming msg object */
-                capitalMsg,
-                reply, /* quick reply function to the channel */
-                globals: {}, /* global parameters */
-                discord_guild: interaction.member? interaction.member.guild: null,  /* current discord guild */
-                prefix: '/', /* current prefix */
-                interaction: interaction,
-                options
-            })
-
-            let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.username)
-            usr.username = usr.username.replace(/\*/gi, '')
-            const cntnt = msg.map(x => x.trim()).join(' ')
-            let args = cntnt.split(/ +/)
-            userq.push({id: interactionUser.id, expires: asdate.add(new Date(), 3, 'seconds')})
-
-            if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
-                return reply(usr, ctx.settings.wipMsg, 'yellow')
-            }
-
-            if(usr.ban.full) {
-                return reply(usr, `this account was banned permanently.
-                    For more information please visit [bot discord](${ctx.cafe})`, 'red')
-            }
-
-            usr.exp = Math.min(usr.exp, 10**7)
-            usr.vials = Math.min(usr.vials, 10**6)
-
-            console.log(`[${usr.username}]: ${cntnt}`)
-            args.filter(x => x.length === 2 && x[0] === '-').map(x => {
-                isolatedCtx.globals[globalArgsMap[x[1]]] = true
-            })
-            if (isolatedCtx.discord_guild)
-                isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
-            await trigger('cmd', isolatedCtx, usr, args, prefix)
         }
 
         //Buttons
@@ -532,46 +551,8 @@ module.exports.create = async ({
             return bot.createMessage(msg.channel.id, {embed: toObj(usr, `all commands have been moved to slash commands as [verified bots are losing their access to see messages](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-for-Verified-Bots) soon.
             Check out discord's \`/\` menu to find our commands!
             Your new command should look something like \`/${args[0]}\``, 'red')})
-            /* add user to cooldown q */
-            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 3, 'seconds')});
 
 
-
-            const action = args[0]
-            if(ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
-                return reply(usr, ctx.settings.wipMsg, 'yellow')
-            }
-
-            if(usr.ban.full) {
-                return reply(usr, `this account was banned permanently.
-                    For more information please visit [bot discord](${ctx.cafe})`, 'red')
-            }
-
-            isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, msg.channel.guild)
-            isolatedCtx.action = action
-            
-            if(isolatedCtx.guild)
-                isolatedCtx.guild.lastcmdchannel = msg.channel.id
-            
-            args.filter(x => x.length === 2 && x[0] === '-').map(x => {
-                isolatedCtx.globals[globalArgsMap[x[1]]] = true
-            })
-            args = args.filter(x => !(x.length === 2 && x[0] === '-' && globalArgsMap.hasOwnProperty(x[1])))
-            usr.exp = Math.min(usr.exp, 10**7)
-            usr.vials = Math.min(usr.vials, 10**6)
-
-            console.log(`[${usr.username}]: ${msg.content}`)
-
-            ctx.mixpanel.track('Command', {
-                distinct_id: usr.discord_id,
-                command: action,
-                args: args.slice(1).join(' '),
-                guild: isolatedCtx.guild? isolatedCtx.guild.id : 'direct',
-            })
-
-            await trigger('cmd', isolatedCtx, usr, args, prefix)
-            usr.unmarkModified('dailystats')
-            // await check_all(isolatedCtx, usr, action)
             
         } catch (e) {
             if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')

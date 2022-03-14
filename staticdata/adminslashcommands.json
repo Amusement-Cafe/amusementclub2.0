@@ -1,0 +1,307 @@
+[
+    {
+        "type": 1,
+        "name": "sudo",
+        "description": "Top Level Admin Commands",
+        "options": [
+            {
+                "name": "add",
+                "description": "top level add",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "tomatoes",
+                        "description": "Add tomatoes to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "vials",
+                        "description": "Add vials to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "lemons",
+                        "description": "Add lemons to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "card",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to add a card to",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to add",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "cards",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to add cards to",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query of the cards you want to add",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "role",
+                        "description": "Add a role to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get roles added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "role",
+                                "description": "The role to add to the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "top level remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "card",
+                        "description": "Remove a card from a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to remove a card from",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "role",
+                        "description": "Add a role to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get roles added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "role",
+                                "description": "The role to add to the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "eval",
+                "description": "top level eval",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "balance",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "guild",
+                "description": "top level guild",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "balance",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "lead",
+                "description": "top level lead",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "balance",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "reset",
+                "description": "top level reset",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "daily",
+                        "description": "Remove a rating from a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "embargo",
+                "description": "Remove a rating from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "wip",
+                "description": "Remove a rating from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "announce",
+                "description": "Remove a rating from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "auclock",
+                "description": "Remove a rating from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    }
+]

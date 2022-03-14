@@ -10,7 +10,8 @@
     "maintenance": false,
     "auctionLock": false,
     "uniqueFrequency": 10,
-    "guildLogChannel": "",
+    "guildLogChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+    "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE",
     "auditc": {
         "channel": ["DISCORD_VALID_CHANNEL_ID_GOES_HERE", "CAN TAKE MULTIPLE"],
         "taglogchannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
