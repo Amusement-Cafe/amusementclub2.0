@@ -26,6 +26,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'auction_id': interactionArgs.aucID = x.value; break;
             case 'bid': interactionArgs.bid = x.value; break;
             case 'boost_id': interactionArgs.boostID = x.value; break;
+            case 'card_id': interactionArgs.cardID = x.value; break;
             case 'card_query': interactionArgs.cardQuery = x.value; break;
             case 'card_query_1': cardArgs1 = parseArgs(ctx, user, x); interactionArgs.cardQuery1 = x.value; break;
             case 'card_query_2': cardArgs2 = parseArgs(ctx, user, x); interactionArgs.cardQuery2 = x.value; break;
@@ -40,19 +41,24 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'hero': interactionArgs.hero = x.value; break;
             case 'inventory_item': interactionArgs.invItem = x.value; break;
             case 'item_id': interactionArgs.itemID = x.value; break;
+            case 'lift': interactionArgs.lift = x.value; break;
             case 'me': interactionArgs.me = x.value; break;
+            case 'message': interactionArgs.message = x.value; break;
             case 'notification_option': interactionArgs.option = x.value; break;
             case 'plot_number': interactionArgs.plot = x.value; break;
             case 'price': interactionArgs.price = x.value; break;
             case 'promo': interactionArgs.promo = x.value; break;
             case 'quest_number': interactionArgs.questNum = x.value; break;
             case 'rating': interactionArgs.rating = x.value; break;
+            case 'role': interactionArgs.role = x.value; break;
             case 'slot_number': interactionArgs.slot = x.value; break;
             case 'store_number': interactionArgs.store = x.value; break;
             case 'tax_percentage': interactionArgs.tax = x.value; break;
             case 'time_length': interactionArgs.timeLength = x.value; break;
+            case 'title': interactionArgs.title = x.value; break;
             case 'transaction_id': interactionArgs.transID = x.value; break;
             case 'unlocked': interactionArgs.any = x.value; break;
+            case 'user_ids': interactionArgs.users = x.value; break;
         }
     })
     return Object.assign({}, interactionArgs, cardArgs, {cardArgs1: cardArgs1, cardArgs2: cardArgs2})

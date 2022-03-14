@@ -68,7 +68,7 @@
                     },
                     {
                         "name": "card",
-                        "description": "Remove a rating from a card",
+                        "description": "Add a card to a user",
                         "type": 1,
                         "options": [
                             {
@@ -87,7 +87,7 @@
                     },
                     {
                         "name": "cards",
-                        "description": "Remove a rating from a card",
+                        "description": "Add multiple cards to a user",
                         "type": 1,
                         "options": [
                             {
@@ -151,18 +151,18 @@
                     },
                     {
                         "name": "role",
-                        "description": "Add a role to a user",
+                        "description": "Remove a role from a user",
                         "type": 1,
                         "options": [
                             {
                                 "name": "user_ids",
-                                "description": "All the user IDs to get roles added to, separated by a space",
+                                "description": "All the user IDs to get roles removed from, separated by a space",
                                 "type": 3,
                                 "required": true
                             },
                             {
                                 "name": "role",
-                                "description": "The role to add to the users",
+                                "description": "The role to remove from the users",
                                 "type": 3,
                                 "required": true
                             }
@@ -176,14 +176,40 @@
                 "type": 2,
                 "options": [
                     {
-                        "name": "balance",
-                        "description": "Remove a rating from a card",
+                        "name": "info",
+                        "description": "View admin stats on card eval",
                         "type": 1,
                         "options": [
                             {
                                 "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "description": "The card query or card name of the card you want to view eval info on",
                                 "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "force",
+                        "description": "Force waiting evals into live evals",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to force eval on",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "reset",
+                        "description": "Reset current auction eval for a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_id",
+                                "description": "The card id of the card you want to reset eval for",
+                                "type": 4,
                                 "required": true
                             }
                         ]
@@ -196,17 +222,29 @@
                 "type": 2,
                 "options": [
                     {
-                        "name": "balance",
-                        "description": "Remove a rating from a card",
+                        "name": "lock",
+                        "description": "Sudo lock a guild",
                         "type": 1,
                         "options": [
                             {
-                                "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "name": "collection",
+                                "description": "The collection to lock to",
                                 "type": 3,
                                 "required": true
                             }
                         ]
+                    },
+                    {
+                        "name": "unlock",
+                        "description": "Sudo unlock a guild",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "herocheck",
+                        "description": "Force a herocheck in current guild",
+                        "type": 1,
+                        "options": []
                     }
                 ]
             },
@@ -216,17 +254,46 @@
                 "type": 2,
                 "options": [
                     {
-                        "name": "balance",
-                        "description": "Remove a rating from a card",
+                        "name": "tomatoes",
+                        "description": "Display the admin leaderboard for tomatoes",
                         "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove a rating for",
-                                "type": 3,
-                                "required": true
-                            }
-                        ]
+                        "options": []
+                    },
+                    {
+                        "name": "vials",
+                        "description": "Display the admin leaderboard for vials",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "lemons",
+                        "description": "Display the admin leaderboard for lemons",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "cards",
+                        "description": "Display the admin leaderboard for unique cards",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "completed",
+                        "description": "Display the admin leaderboard for completion count",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "clout",
+                        "description": "Display the admin leaderboard for clout total",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "level",
+                        "description": "Display the admin leaderboard for user level",
+                        "type": 1,
+                        "options": []
                     }
                 ]
             },
@@ -237,12 +304,12 @@
                 "options": [
                     {
                         "name": "daily",
-                        "description": "Remove a rating from a card",
+                        "description": "Reset a users daily",
                         "type": 1,
                         "options": [
                             {
-                                "name": "card_query",
-                                "description": "The card query or card name of the card you want to remove a rating for",
+                                "name": "user_ids",
+                                "description": "The user IDs of the users to reset daily",
                                 "type": 3,
                                 "required": true
                             }
@@ -256,34 +323,46 @@
                 "type": 1,
                 "options": [
                     {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "name": "user_ids",
+                        "description": "The user IDs of the users to embargo, separated by a space",
                         "type": 3,
                         "required": true
+                    },
+                    {
+                        "name": "lift",
+                        "description": "Whether to lift an embargo or not",
+                        "type": 5,
+                        "required": false
                     }
                 ]
             },
             {
                 "name": "wip",
-                "description": "Remove a rating from a card",
+                "description": "Enable Maintenance Mode",
                 "type": 1,
                 "options": [
                     {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "name": "message",
+                        "description": "The message to display to a user attempting commands while under maintenance",
                         "type": 3,
-                        "required": true
+                        "required": false
                     }
                 ]
             },
             {
                 "name": "announce",
-                "description": "Remove a rating from a card",
+                "description": "Send a bot announcement",
                 "type": 1,
                 "options": [
                     {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "name": "title",
+                        "description": "The title of the announcement",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "message",
+                        "description": "The body of the announcement",
                         "type": 3,
                         "required": true
                     }
@@ -291,16 +370,54 @@
             },
             {
                 "name": "auclock",
-                "description": "Remove a rating from a card",
+                "description": "Lockout the ability to auction cards",
+                "type": 1,
+                "options": []
+            },
+            {
+                "name": "inrole",
+                "description": "Find users in a specific role",
                 "type": 1,
                 "options": [
                     {
-                        "name": "card_query",
-                        "description": "The card query or card name of the card you want to remove a rating for",
+                        "name": "role",
+                        "description": "The role to add to the users",
                         "type": 3,
                         "required": true
                     }
                 ]
+            },
+            {
+                "name": "stress",
+                "description": "Spam test messages according to amount",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "amount",
+                        "description": "The amount of times to stress",
+                        "type": 4,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "summon",
+                "description": "Summon any card in the bot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to add",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "crash",
+                "description": "Crash the bot",
+                "type": 1,
+                "options": []
             }
         ]
     }

@@ -76,7 +76,7 @@ const updateUser = (user, query) => {
 }
 
 const onUsersFromArgs = async (args, callback) => {
-    const pa = getAllUserIDs(args)
+    const pa = getAllUserIDs(args.users.split(' '))
 
     if(pa.ids.length === 0)
         throw new Error(`please specify at least one user ID`)

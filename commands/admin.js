@@ -1,6 +1,7 @@
 const {pcmd}        = require('../utils/cmd')
 const Announcement  = require('../collections/announcement')
 const Users         = require('../collections/user')
+const _             = require('lodash')
 
 const {
     getHelpEmbed,
@@ -56,16 +57,13 @@ pcmd(['admin'], ['sudo', 'help'], withInteraction(async (ctx, user, ...args) => 
     return ctx.sendPgn(ctx, user, curpgn)
 }))
 
-pcmd(['admin'], ['sudo', 'add', 'role'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'add', 'role'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
-        const role = newargs[0]
+        const role = args.role
         if(!target.roles)
             target.roles = []
-
-        if(!role)
-            return ctx.reply(user, `this command requires role`, 'red')
 
         if(target.roles.find(x => x === role))
             rpl.push(`\`❌\` **${target.username}** (${target.discord_id}) already has role '${role}'`)
@@ -79,14 +77,11 @@ pcmd(['admin'], ['sudo', 'add', 'role'], withInteraction(async (ctx, user, ...ar
     return ctx.reply(user, rpl.join('\n'))
 }))
 
-pcmd(['admin'], ['sudo', 'remove', 'role'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'remove', 'role'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
-        const role = newargs[0]
-
-        if(!role)
-            return ctx.reply(user, `this command requires role`, 'red')
+        const role = args.role
 
         if(!target.roles || !target.roles.find(x => x === role))
             rpl.push(`\`❌\` **${target.username}** (${target.discord_id}) doesn't have role role '${role}'`)
@@ -100,7 +95,7 @@ pcmd(['admin'], ['sudo', 'remove', 'role'], withInteraction(async (ctx, user, ..
     return ctx.reply(user, rpl.join('\n'))
 }))
 
-pcmd(['admin'], ['sudo', 'in', 'role'], ['sudo', 'inrole'], ['sudo', 'has', 'role'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'inrole'], withInteraction(async (ctx, user, args) => {
     const inRole = await Users.find({roles: {$ne: [], $in: args}}).sort('username')
     if (inRole.length === 0)
         return ctx.reply(user, `no users found in role(s) **${args.join(' or ')}**`, 'red')
@@ -119,11 +114,11 @@ pcmd(['admin'], ['sudo', 'in', 'role'], ['sudo', 'inrole'], ['sudo', 'has', 'rol
     })
 }))
 
-pcmd(['admin', 'mod'],['sudo', 'add', 'tomatoes'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'],['sudo', 'add', 'tomatoes'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
-        const amount = parseInt(newargs[0])
+        const amount = args.amount
 
         if(!amount)
             throw new Error(`this command requires award amount`)
@@ -136,11 +131,11 @@ pcmd(['admin', 'mod'],['sudo', 'add', 'tomatoes'], withInteraction(async (ctx, u
     return ctx.reply(user, rpl.join('\n'))
 }))
 
-pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
-        const amount = parseInt(newargs[0])
+        const amount = args.amount
 
         if(!amount)
             throw new Error(`this command requires award amount`)
@@ -153,11 +148,11 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'vials'], withInteraction(async (ctx, use
     return ctx.reply(user, rpl.join('\n'))
 }))
 
-pcmd(['admin', 'mod'], ['sudo', 'add', 'lemons'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'], ['sudo', 'add', 'lemons'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
-        const amount = parseInt(newargs[0])
+        const amount = args.amount
 
         if(!amount)
             throw new Error(`this command requires award amount`)
@@ -174,7 +169,7 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withInteraction(withGlobalCards(
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
 
-    var target = await fetchOnly(parsedargs.ids[0]).lean()
+    const target = await fetchOnly(parsedargs.ids[0]).lean()
 
     if(!target)
         throw new Error(`cannot find user with that ID`)
@@ -189,7 +184,7 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'cards'], withInteraction(withGlobalCards
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
 
-    var target = await fetchOnly(parsedargs.ids[0]).lean()
+    const target = await fetchOnly(parsedargs.ids[0]).lean()
 
     if(!target)
         throw new Error(`cannot find user with that ID`)
@@ -203,32 +198,30 @@ pcmd(['admin', 'mod'], ['sudo', 'remove', 'card'], withInteraction(withGlobalCar
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
 
-    var target = await fetchOnly(parsedargs.ids[0])
+    const target = await fetchOnly(parsedargs.ids[0])
 
     if(!target)
         throw new Error(`cannot find user with that ID`)
 
     const card = bestMatch(cards)
-    removeUserCards(ctx, target, [card.id])
+    await removeUserCards(ctx, target, [card.id])
     await target.save()
 
     return ctx.reply(user, `removed ${formatName(card)} from **${target.username}**`)
 })))
 
-pcmd(['admin'], ['sudo', 'stress'], withInteraction(async (ctx, user, ...args) => {
-    if(isNaN(args[0]))
-        throw new Error(`please specify amount`)
+pcmd(['admin'], ['sudo', 'stress'], withInteraction(async (ctx, user, args) => {
 
-    for(i=0; i<parseInt(args[0]); i++) {
+    for(let i=0; i < args.amount; i++) {
         ctx.reply(user, `test message #${i}`)
     }
 }))
 
-pcmd(['admin'], ['sudo', 'guild', 'lock'], withInteraction(async (ctx, user, arg1) => {
-    const col = byAlias(ctx, arg1)[0]
+pcmd(['admin'], ['sudo', 'guild', 'lock'], withInteraction(async (ctx, user, args) => {
+    if (args.cols.length === 0)
+        return ctx.reply(user, `collection \`${args.colQuery}\` not found`, 'red')
 
-    if(!col)
-        throw new Error(`collection '${arg1}' not found`)
+    const col = _.flattenDeep(args.cols)[0]
 
     ctx.guild.overridelock = col.id
     await ctx.guild.save()
@@ -243,7 +236,7 @@ pcmd(['admin'], ['sudo', 'guild', 'unlock'], withInteraction(async (ctx, user) =
     return ctx.reply(user, `guild override lock was removed. Guild locks (if any) will remain active`)
 }))
 
-pcmd(['admin'], ['sudo', 'daily', 'reset'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'reset', 'daily'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
     await onUsersFromArgs(args, async (target, newargs) => {
@@ -260,7 +253,7 @@ pcmd(['admin'], ['sudo', 'guild', 'herocheck'], withInteraction(async (ctx, user
     return ctx.reply(user, `current guild hero check done`)
 }))
 
-pcmd(['admin'], ['sudo', 'hero', 'score'], withInteraction(async (ctx, user, arg) => {
+pcmd(['admin'], ['sudo', 'hero', 'score'], withInteraction(async (ctx, user, args) => {
     const hero = await get_hero(ctx, arg)
     if(!hero)
         return ctx.reply(user, `cannot find hero with ID '${arg}'`, 'red')
@@ -279,8 +272,8 @@ pcmd(['admin', 'mod'], ['sudo', 'summon'], withInteraction(withGlobalCards(async
     })
 })))
 
-pcmd(['admin', 'mod'], ['sudo', 'eval', 'reset'], withInteraction(async (ctx, user, arg) => {
-    const info = fetchInfo(ctx, arg)
+pcmd(['admin', 'mod'], ['sudo', 'eval', 'reset'], withInteraction(async (ctx, user, args) => {
+    const info = fetchInfo(ctx, args.cardID)
     if (!info)
         return ctx.reply(user, 'card not found!', 'red')
     info.aucevalinfo.newaucprices = []
@@ -288,8 +281,8 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'reset'], withInteraction(async (ctx, us
     info.aucevalinfo.auccount = 0
     info.aucevalinfo.lasttoldeval = -1
     await info.save()
-    await evalCard(ctx, ctx.cards[arg])
-    return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[arg])}!`)
+    await evalCard(ctx, ctx.cards[args.cardID])
+    return ctx.reply(user, `successfully reset auction based eval for card ${formatName(ctx.cards[args.cardID])}!`)
 }))
 
 pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
@@ -355,7 +348,7 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withInteraction(withGlobalCard
             info.aucevalinfo.newaucprices.map(x => info.aucevalinfo.evalprices.push(x))
             info.aucevalinfo.newaucprices = []
             await info.save()
-            return ctx.reply(user, `all awaiting auction prices are now set for eval!`)
+            return ctx.reply(user, `all awaiting auction prices are now set for eval!`, 'green', true)
         }
     })
 })))
@@ -364,11 +357,10 @@ pcmd(['admin'], ['sudo', 'crash'], withInteraction((ctx) => {
     throw `This is a test exception`
 }))
 
-pcmd(['admin'], ['sudo', 'embargo'], withInteraction(async (ctx, user, ...args) => {
-    let lift
+pcmd(['admin'], ['sudo', 'embargo'], withInteraction(async (ctx, user, args) => {
+    const lift = args.lift
     const rpl = ['']
     await onUsersFromArgs(args, async (target, newargs) => {
-        newargs[0] == 'lift'? lift = true: lift = false
         if(lift) {
             target.ban.embargo = false
             rpl.push(`${target.username} has been lifted`)
@@ -388,8 +380,8 @@ pcmd(['admin'], ['sudo', 'embargo'], withInteraction(async (ctx, user, ...args) 
     return ctx.reply(user, rpl.join('\n'))
 }))
 
-pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], withInteraction(async (ctx, user, ...args) => {
-    ctx.settings.wipMsg = args.length > 0? ctx.capitalMsg.join(' '): 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
+pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], withInteraction(async (ctx, user, args) => {
+    ctx.settings.wipMsg = args.message? args.message: 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
     ctx.settings.wip = !ctx.settings.wip
 
     if (!ctx.settings.wip)
@@ -405,34 +397,26 @@ pcmd(['admin'], ['sudo', 'lock', 'auc'], ['sudo', 'lock', 'aucs'], withInteracti
     return ctx.reply(user, `auction lock has been **${ctx.settings.aucLock? `ENABLED` : `DISABLED`}**`)
 }))
 
-pcmd(['admin'], ['sudo', 'announce'], withInteraction(async (ctx, user, ...args) => {
-    const split = ctx.capitalMsg.join(' ').split(',')
-    const title = split.shift()
-    const body = split.join()
-
-    if(!title || !body) {
-        return ctx.reply(`required format: \`->sudo announce title text, body text\``, '')
-    }
-
+pcmd(['admin'], ['sudo', 'announce'], withInteraction(async (ctx, user, args) => {
+    const title = args.title
     const announcement = new Announcement()
     announcement.date = new Date()
     announcement.title = title
-    announcement.body = body
+    announcement.body = args.message
     await announcement.save()
 
     return ctx.reply(user, {
         title,
         author: { name: `New announcement set` },
-        description: body,
+        description: args.message,
         footer: { text: `Date: ${announcement.date}` },
     })
 }))
 
-pcmd(['admin'], ['sudo', 'top', 'lemons'], withInteraction(async (ctx, user) => {
-    let allUsersWithLemons = await Users.find(
+pcmd(['admin'], ['sudo', 'lead', 'lemons'], withInteraction(async (ctx, user) => {
+    let allUsersWithLemons = (await Users.find(
         { lemons: {$gt: 0} }, 
-        { username: 1, discord_id: 1, lemons: 1 }, 
-        { sort: {lemons: -1} }).lean()
+        { username: 1, discord_id: 1, lemons: 1 }).lean()).sort((a, b) =>  b.lemons - a.lemons).slice(0, 200)
 
     let pages = []
     allUsersWithLemons.map((x, i) => {
@@ -448,11 +432,11 @@ pcmd(['admin'], ['sudo', 'top', 'lemons'], withInteraction(async (ctx, user) => 
     })
 }))
 
-pcmd(['admin'], ['sudo', 'top', 'tomatoes'], withInteraction(async (ctx, user) => {
-    const allUsersWithTomatoes = await Users.find(
+pcmd(['admin'], ['sudo', 'lead', 'tomatoes'], withInteraction(async (ctx, user) => {
+    const allUsersWithTomatoes = (await Users.find(
         { exp: {$gte: 1} }, 
         { username: 1, discord_id: 1, exp: 1 }, 
-        { sort: {exp: -1} }).lean()
+        { sort: {exp: -1} }).lean()).sort((a, b) => b.exp - a.exp).slice(0, 200)
 
     let pages = []
     allUsersWithTomatoes.map((x, i) => {
@@ -468,11 +452,10 @@ pcmd(['admin'], ['sudo', 'top', 'tomatoes'], withInteraction(async (ctx, user) =
     })
 }))
 
-pcmd(['admin'], ['sudo', 'top', 'vials'], withInteraction(async (ctx, user) => {
-    let allUsersWithVials = await Users.find(
-        { vials: {$gt: 0} }, 
-        { username: 1, discord_id: 1, vials: 1 }, 
-        { sort: {vials: -1} }).lean()
+pcmd(['admin'], ['sudo', 'lead', 'vials'], withInteraction(async (ctx, user) => {
+    let allUsersWithVials = (await Users.find(
+        { vials: {$gt: 0} },
+        { username: 1, discord_id: 1, vials: 1 },).lean()).sort((a, b) => b.vials - a.vials).slice(0, 200)
 
     let pages = []
     allUsersWithVials.map((x, i) => {
@@ -488,10 +471,11 @@ pcmd(['admin'], ['sudo', 'top', 'vials'], withInteraction(async (ctx, user) => {
     })
 }))
 
-pcmd(['admin'], ['sudo', 'top', 'clout'], withInteraction(async (ctx, user) => {
-    let allUsersWithClout = await Users.find(
+pcmd(['admin'], ['sudo', 'lead', 'clout'], withInteraction(async (ctx, user) => {
+    let allUsersWithClout = (await Users.find(
         { cloutedcols: {$exists: true, $ne: []} },
-        { username: 1, discord_id: 1, cloutedcols: 1 }).lean()
+        { username: 1, discord_id: 1, cloutedcols: 1 }).lean())
+        .sort((a, b) => b.cloutedcols.length - a.cloutedcols.length).slice(0, 200)
 
     let pages = []
     let cloutUsers = []
