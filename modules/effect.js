@@ -19,7 +19,7 @@ const check_effect = async (ctx, user, id) => {
         return false
     }
 
-    return effect && user.heroslots.some(x => x === id) && userEffect.expires
+    return effect && inSlot && userEffect.expires
 }
 
 const formatUserEffect = (ctx, user, x) => {
