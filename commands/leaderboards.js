@@ -2,7 +2,7 @@ const {cmd}         = require('../utils/cmd')
 const colors        = require('../utils/colors')
 const AsciiTable    = require('ascii-table')
 const Users         = require('../collections/user')
-const UserCard     = require('../collections/userCard')
+const UserCard      = require('../collections/userCard')
 
 const {
     withInteraction,
