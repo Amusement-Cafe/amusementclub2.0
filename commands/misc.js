@@ -27,7 +27,7 @@ cmd('help', withInteraction(async (ctx, user) => {
 
 cmd('rules', withInteraction(async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
-    return ctx.sendPgn(ctx, user, getHelpEmbed(ctx, help, `->`))
+    return ctx.interaction.createMessage(getHelpEmbed(ctx, help))
 })).access('dm')
 
 cmd('announcement', withInteraction(async (ctx, user) => {
@@ -63,7 +63,7 @@ cmd('pat', withInteraction(async (ctx, user, args) => {
 cmd('invite', withInteraction(async (ctx, user) => {
     const embed = { 
         title: `Invite Amusement Club`,
-        description: `Please, read terms and conditions of using bot on your server by typing \`->help invite\` 
+        description: `Please, read terms and conditions of using bot on your server by viewing [our site](https://docs.amusement.cafe/)
             After that [click here](${ctx.invite}) to invite the bot.`,
         color: colors.green
     }
