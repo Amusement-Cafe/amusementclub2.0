@@ -8,6 +8,7 @@ const asdate            = require('add-subtract-date')
 const {
     Auction,
     User,
+    UserSlot,
 } = require('../collections')
 
 const {
@@ -204,7 +205,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
 
         if(usercard.fav && usercard.amount === 1)
             return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
-                Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+                Please, use \`/fav remove one\` to remove it from favourites first`, 'yellow')
     }
 
     const question = `Do you want to sell ${formatName(card)} on auction for ${numFmt(price)} ${ctx.symbols.tomato}? 
@@ -218,7 +219,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
         question,
         check,
         onConfirm: async () => { 
-            var auc = await new_auc(ctx, user, card, price, fee, time)
+            const auc = await new_auc(ctx, user, card, price, fee, time)
 
             if(!auc) {
                 return ctx.reply(user, `failed to create auction. Card might be missing or there was an internal server error.`, 'red', true)
@@ -236,7 +237,8 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
 
             ctx.reply(user, `you put ${formatName(card)} on auction for **${numFmt(price)}** ${ctx.symbols.tomato}
                 Auction ID: \`${auc.id}\``, 'green', true)
-            const wishes = await User.find({heroslots: "festivewish", wishlist: card.id})
+            const festive = (await UserSlot.find({effect_name: 'festivewish'}).lean()).map(x => x.discord_id)
+            const wishes = await User.find({discord_id: {$in: festive}, wishlist: card.id})
             wishes.map(async (x) => {
                 try {
                     await ctx.direct(x, `an auction for the card ${formatName(card)} on your wishlist has gone up on auction at \`${auc.id}\` for **${numFmt(price)}**${ctx.symbols.tomato}!`)
