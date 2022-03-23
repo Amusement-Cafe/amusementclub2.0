@@ -39,19 +39,20 @@ const fetchOrCreate = async (ctx, userid, username) => {
             fields:[
                 {
                     name: `What should you do?`,
-                    value: `Claim your first batch of cards using \`${ctx.prefix}claim 4\`. It is recommended to claim 4-6 cards per day.
-                        Use \`${ctx.prefix}daily\` to reset your claim price. Now you can \`${ctx.prefix}claim\` more cards!
+                    value: `Claim your first batch of cards using \`${ctx.prefix}claim cards count:4\`. It is recommended to claim 4-6 cards per day.
+                        Use \`${ctx.prefix}daily\` to reset your claim price. Now you can \`${ctx.prefix}claim cards\` more cards!
                         Check out your \`${ctx.prefix}quests\` that you get every time you claim daily.`
                 },
                 {
                     name: `Moving forward`,
                     value: `View cards you claimed with \`${ctx.prefix}cards\`. You can \`${ctx.prefix}summon\` **any card that you own**.
-                        Don't forget to \`${ctx.prefix}fav\` your favourites!
+                        Don't forget to \`${ctx.prefix}fav one\` your favourites!
                         Once you get enough ${ctx.symbols.tomato} or ${ctx.symbols.lemon} check out \`${ctx.prefix}store\` and try buildings and effects.`
                 },
                 {
                     name: `More information`,
-                    value: `Use \`${ctx.prefix}help\` to get help about any command. For example, \`${ctx.prefix}help forge\` will give you all information about forge.
+                    value: `Use \`${ctx.prefix}help\` to get help about any command. For example, \`${ctx.prefix}help help_menu:forge\` will give you all information about forge.
+                        **Help has been deprecated as of 04/22. Use the [online documentation](https://docs.amusement.cafe/) for all help**
                         Also check out our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play) and [online documentation](https://docs.amusement.cafe/).
                         Join the [support server](${ctx.cafe}) to ask any questions.`
                 }

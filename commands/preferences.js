@@ -23,7 +23,7 @@ cmd(['preferences', 'show', 'all'], withInteraction((ctx, user) => {
     return ctx.reply(user, {
         title: `My Preferences`,
         color: colors.deepgreen,
-        description: `available preferences (use \`${ctx.prefix}prefs [id]\`):\n${cats.join('\n')}`,
+        description: `available preferences (use \`${ctx.prefix}preferences show\`):\n${cats.join('\n')}`,
     })
 })).access('dm')
 
@@ -39,7 +39,7 @@ cmd(['preferences', 'show', 'notify'], withInteraction((ctx, user) => {
         title: `Notification Preferences`,
         color: colors.deepgreen,
         description: `Get a DM notification when:\n${fields.join('\n')}\n\n
-            Use \`${ctx.prefix}prefs set notify [id] [true/false]\``,
+            Use \`${ctx.prefix}preferences set notify\``,
     })
 })).access('dm')
 

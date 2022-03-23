@@ -166,7 +166,7 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
 
     if(card.fav && card.amount === 1)
         return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
-            Please, use \`${ctx.prefix}fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
+            Please, use \`${ctx.prefix}fav remove one\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquefy ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
         ${card.amount === 1? 'This is the last copy that you have' : `You will have **${card.amount - 1}** card(s) left`}`
@@ -212,7 +212,7 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
     
     if(cards.some(x => x.fav && x.amount === 1))
         return ctx.reply(user, `you are about to liquefy the last copy of your favourite card. 
-            Please, use \`${ctx.prefix}liq all !fav\` to include only non-favourite cards.`, 'yellow')
+            Please, use \`${ctx.prefix}liquefy many card_query:!fav\` to include only non-favourite cards.`, 'yellow')
 
     let vials = 0
     const hasGrail = await check_effect(ctx, user, 'holygrail')
@@ -239,7 +239,7 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
     }
 
     const question = `Do you want to liquefy **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
-        To view cards that are going to be liquefied, use \`${ctx.prefix}liq preview [query]\``
+        To view cards that are going to be liquefied, use \`${ctx.prefix}liquefy preview\``
 
     return ctx.sendCfm(ctx, user, {
         question,
@@ -357,7 +357,7 @@ cmd(['draw'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedarg
     if(user.vials < vials)
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
             You need **${numFmt(vials)}** ${ctx.symbols.vial} (+**${numFmt(extra)}**) but you have **${numFmt(user.vials)}** ${ctx.symbols.vial}
-            Liquefy some cards with \`${ctx.prefix}liq\` to get vials!`, 'red')
+            Liquefy some cards with \`${ctx.prefix}liquefy\` to get vials!`, 'red')
 
     let question = `Do you want to draw ${formatName(card)} using **${numFmt(vials)}** ${ctx.symbols.vial}?`
     if(amount > 0) {

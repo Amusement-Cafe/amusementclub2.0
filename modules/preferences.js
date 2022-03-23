@@ -51,7 +51,7 @@ const checkDaily = async (ctx) => {
 
     if (!userToDaily) return
 
-    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim your daily bonus now with \`->daily\`!`)
+    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim your daily bonus now with \`/daily\`!`)
     userToDaily.dailynotified = true
     await userToDaily.save()
 }
@@ -71,7 +71,7 @@ const checkVote = async (ctx) => {
     if(!userToVote) return
 
     await sendNotification(ctx, userToVote, `Time to vote!`, `get rewards by voting for the Amusement Club.
-        Use \`->vote\` to get a list of sites where you can vote!`)
+        Use \`/vote\` to get a list of sites where you can vote!`)
 
     userToVote.votenotified = true
     await userToVote.save()

@@ -49,7 +49,7 @@ cmd(['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects,
     await user.save()
     effects = effects.filter(x => !x.expires || x.expires > now)
     if(!user.hero)
-        return ctx.reply(user, `you don't have a hero yet. To get one use \`->hero get [hero name]\``, 'red')
+        return ctx.reply(user, `you don't have a hero yet. To get one use \`/hero get\``, 'red')
 
     const embed = await getInfo(ctx, user, user.hero)
     const slots = await UserSlot.find({discord_id: user.discord_id}).lean()
@@ -155,7 +155,7 @@ cmd(['effect', 'info'], withInteraction(async (ctx, user, args) => {
 cmd(['effect', 'list', 'actives'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
 
     if(!effects.some(x => !x.passive))
-        return ctx.reply(user, `you don't have any usable effects. To view passives use \`->hero slots\``, 'red')
+        return ctx.reply(user, `you don't have any usable effects. To view passives use \`/effect list passives\``, 'red')
 
     const pages = ctx.pgn.getPages(effects.filter(x => x.uses)
         .sort((a, b) => a.cooldownends - b.cooldownends)
@@ -170,8 +170,8 @@ cmd(['effect', 'list', 'actives'], withInteraction(withUserEffects(async (ctx, u
         switchPage: (data) => data.embed.fields[0] = { name: `Usable Effect Cards`, value: data.pages[data.pagenum] },
         embed: {
             author: { name: `${user.username}, your Effect Cards` },
-            description: `To use an effect: \`->hero use [effect id]\`
-                To view your passives: \`->hero slots\``,
+            description: `To use an effect: \`/effect use effect_name:effect\`
+                To view your passives: \`/effect list passives\``,
             fields: [],
             color: colors.blue
         }
@@ -191,7 +191,7 @@ cmd(['hero', 'slots'], ['effect', 'list', 'passives'], withInteraction(withUserE
 
     const embed = {
         description: `**${hero.name}** card slots:
-                (\`->hero equip [slot] [passive]\` to equip passive Effect Card)`,
+                (\`/hero equip\` to equip passive Effect Card)`,
         color: colors.blue,
     }
 
@@ -341,7 +341,7 @@ cmd(['hero', 'submit'], withInteraction(async (ctx, user, args) => {
 
     const dbchar = await get_hero(ctx, charID)
     if(dbchar && dbchar.active)
-        return ctx.reply(user, `hero **${dbchar.name}** already exists. You can pick them from \`->hero list\``)
+        return ctx.reply(user, `hero **${dbchar.name}** already exists. You can pick them from \`/hero list\``)
 
     if(dbchar && !dbchar.active)
         return ctx.reply(user, `hero **${dbchar.name}** is already pending for approval`, 'yellow')

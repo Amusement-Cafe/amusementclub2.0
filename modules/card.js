@@ -253,7 +253,7 @@ const withCards = (callback) => async (ctx, user, args) => {
     const userCards = await getUserCards(ctx, user)
 
     if(userCards.length == 0)
-        return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim\``, 'red')
+        return ctx.reply(user, `you don't have any cards. Get some using \`${ctx.prefix}claim cards\``, 'red')
 
     const map = mapUserCards(ctx, userCards)
     let cards = filter(map, args)

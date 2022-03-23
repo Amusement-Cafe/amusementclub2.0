@@ -29,7 +29,7 @@ cmd(['store', 'view'], withInteraction(async (ctx, user, args) => {
             title: `Welcome to the store!`,
             color: colors.deepgreen,
             description: `please select one of the categories and type 
-                \`${ctx.prefix}store [category]\` to view the items\n
+                \`${ctx.prefix}store view store_number:#\` to view the items\n
                 ${cats.map((x, i) => `${i + 1}. ${x}`).join('\n')}`
             })
 
@@ -40,9 +40,9 @@ cmd(['store', 'view'], withInteraction(async (ctx, user, args) => {
         description: items[0].typedesc,
         fields: [{
             name: `Usage`,
-            value: `To view the item details use \`${ctx.prefix}store info [item id]\`
-                To buy the item use \`${ctx.prefix}store buy [item id]\`
-                To use the item use \`${ctx.prefix}inv use [item id]\``
+            value: `To view the item details use \`${ctx.prefix}store info item_id\`
+                To buy the item use \`${ctx.prefix}store buy item_id\`
+                To use the item use \`${ctx.prefix}inventory use\``
         }]}
 
     const pages = ctx.pgn.getPages(items.map((x, i) => `${i + 1}. [${numFmt(x.price)} ${ctx.symbols[items[0].currency]}] \`${x.id}\` **${x.name}** (${x.desc})`), 5)
@@ -93,7 +93,7 @@ cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => 
             await stats.save()
 
             return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
-                The item has been added to your inventory. See \`${ctx.prefix}inv info ${item.id}\` for details
+                The item has been added to your inventory. See \`${ctx.prefix}inventory info ${item.id}\` for details
                 ${catNum == 3? `You have **${3-stats.store3}** purchase(s) left for this store today!`: ''}`, 'green', true)
         }
     })

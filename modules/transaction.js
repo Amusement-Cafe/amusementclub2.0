@@ -221,22 +221,22 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
     if(!targetuser && pendingto.length > 0)
         return `you already have pending transaction to **BOT**. 
             First resolve transaction \`${pending[0].id}\`
-            Type \`->trans info ${pending[0].id}\` to see more information
-            \`->confirm ${pending[0].id}\` to confirm
-            \`->decline ${pending[0].id}\` to decline`
+            Type \`/transaction info transaction_id:${pending[0].id}\` to see more information
+            \`/transaction confirm transaction_id:${pending[0].id}\` to confirm
+            \`/transaction decline transaction_id:${pending[0].id}\` to decline`
 
     else if(pendingto.length >= 5)
         return `you already have pending transactions to **${pendingto[0].to}**. 
             You can have up to **5** pending transactions to the same user.
-            Type \`->pending\` to see them
-            \`->decline [id]\` to decline`
+            Type \`/transaction pending\` to see them
+            \`/transaction decline transaction_id:id\` to decline`
 
     let lastFav = false
     let listedFavs = 0
     let lastMsg = 'you are about to put up the last copy of your favorite card(s) for sale.\n'
     cards.map((x, i) => {
         if (x.amount === 1 && x.fav && listedFavs < 10) {
-            lastMsg += `Use \`${ctx.prefix}fav remove ${x.name}\` to remove it from favorites first.\n`
+            lastMsg += `Use \`${ctx.prefix}fav remove one card_query:${x.name}\` to remove it from favorites first.\n`
             lastFav = true
             listedFavs++
         }
@@ -254,7 +254,7 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
 
         if(cards.length == 0) {
             return `all cards from this query are already put up on sale or you are attempting to sell the last of a favorite already in a transaction.
-                Check your \`${ctx.prefix}pending\` transactions and use \`->dcl [transaction id]\` to decline them.`
+                Check your \`${ctx.prefix}transaction pending\` transactions and use \`/transaction decline transaction_id:id\` to decline them.`
         }
     }
 }

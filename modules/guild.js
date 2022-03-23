@@ -86,7 +86,7 @@ const addGuildXP = async (ctx, user, xp) => {
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
             ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
-                For more information run \`->guild info\``)
+                For more information run \`/guild info\``)
         }
     }
 

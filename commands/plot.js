@@ -29,7 +29,7 @@ const {
 cmd(['plot', 'list'], withInteraction(async (ctx, user) => {
     const lots = await getUserPlots(ctx)
     if (lots.length === 0 )
-        return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
     let pages = []
 
     lots.map((x, i) => {
@@ -56,7 +56,7 @@ cmd(['plot', 'list', 'global'], withInteraction(async (ctx, user) => {
     let pages = []
 
     if (lots.length === 0)
-        return ctx.reply(user, `you have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `you have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
 
     lots.map((x, i) => {
         if (i % 10 == 0) pages.push("`Plot # | Building | Level | Lemons | Guild Name`\n")
@@ -92,7 +92,7 @@ cmd(['plot', 'buy'], withInteraction(async (ctx, user) => {
             return ctx.reply(user, 'you have the maximum amount of plots available for this guild!\nWait for the guild level to raise to get more!', 'red')
 
         if (userGlobalPlots.length >= maxUserAmount)
-            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`${ctx.guild.prefix}profile\` levels to be able to buy more!\nA new plot is unlocked every **10** levels after you reach level 20.`, 'red')
+            return ctx.reply(user, `you have the maximum amount of plots available globally!\nUse the bot and gain \`/profile\` levels to be able to buy more!\nA new plot is unlocked every **10** levels after you reach level 20.`, 'red')
 
         if (user.lemons < cost)
             return ctx.reply(user, `you don't have enough lemons to afford this plot!\nYou need **${numFmt(cost)}** ${ctx.symbols.lemon} to purchase another plot!`, 'red')
@@ -158,7 +158,7 @@ cmd(['plot', 'upgrade'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `**${item.name}** is already max level`, 'red')
 
     if(userLvl < level.level)
-        return ctx.reply(user, `you need to be level ${level.level} to upgrade this building! See your level in \`${ctx.guild.prefix}profile\``, 'red')
+        return ctx.reply(user, `you need to be level ${level.level} to upgrade this building! See your level in \`/profile\``, 'red')
 
     if(user.lemons < level.price)
         return ctx.reply(user, `you have to have at least **${numFmt(level.price)}** ${ctx.symbols.lemon} to upgrade this building`, 'red')
@@ -198,7 +198,7 @@ cmd(['plot', 'info'], withInteraction(async (ctx, user, args) => {
     let plotLength = plot.length
 
     if (plot.length === 0)
-        return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `you have no plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
 
     let plotArg = args.plot - 1
     plot = plot[plotArg]
@@ -206,7 +206,7 @@ cmd(['plot', 'info'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `you don't have a plot in position ${args.plot}, you only have ${plotLength} plots in this guild!`, 'red')
 
     if(!plot.building.id)
-        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix}store\` and place them on this plot!`)
+        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`/store\` and place them on this plot!`)
 
     const item = ctx.items.find(x => x.id === plot.building.id)
 
@@ -252,7 +252,7 @@ cmd(['plot', 'info', 'global'], withInteraction(async (ctx, user, args) => {
     let plotLength = plot.length
 
     if (plotLength === 0)
-        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
 
     plot.sort((a, b) => a.guild_id - b.guild_id)
     let plotArg = args.plot - 1
@@ -261,7 +261,7 @@ cmd(['plot', 'info', 'global'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `you don't have a plot in position ${args.plot}, you only have ${plotLength} plots globally!`, 'red')
 
     if(!plot.building.id)
-        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`${ctx.guild.prefix}store\` and place them on this plot!`)
+        return ctx.reply(user, `this is an empty plot! You can buy buildings from the \`/store\` and place them on this plot!`)
 
     const item = ctx.items.find(x => x.id === plot.building.id)
 
@@ -307,7 +307,7 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
     let cap = await getLemonCap(ctx)
 
     if (plots.length === 0)
-        return ctx.reply(user, `you don't have any plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `you don't have any plots in this guild! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
     
     let lastCollected = plots[0].building.last_collected
     plots = plots.filter(x=> x.building)
@@ -359,7 +359,7 @@ cmd(['plot', 'demolish'], withInteraction(async (ctx, user, args) => {
     let plotLength = plots.length
 
     if (plotLength === 0)
-        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
 
     let plotArg = args.plot - 1
     let plot = plots[plotArg]
@@ -407,7 +407,7 @@ cmd(['plot', 'demolish', 'global'], withInteraction(async (ctx, user, args) => {
     let plotLength = plots.length
 
     if (plotLength === 0)
-        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help plot\` for more!`, 'red')
+        return ctx.reply(user, `You have no plots! Start with \`${ctx.prefix}plot buy\` and \`${ctx.prefix}help help_menu:plot\` for more!`, 'red')
 
     plots.sort((a, b) => a.guild_id - b.guild_id)
     let plotArg = args.plot - 1

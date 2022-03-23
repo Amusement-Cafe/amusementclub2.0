@@ -53,7 +53,7 @@ const withUserItems = (callback) => (ctx, user, args) => {
         return ctx.reply(user, `your inventory is empty.
         You can obtain inventory items in the \`${ctx.prefix}store\`.
         If you are looking for your cards, use \`${ctx.prefix}cards\` instead.
-        For more information see \`${ctx.prefix}help inventory\``, 'red')
+        For more information see \`${ctx.prefix}help help_menu:inventory\``, 'red')
 
     let items = mapUserInventory(ctx, user)
     let index
@@ -220,7 +220,7 @@ const uses = {
             }
             user.effects = user.effects.filter(x => x.id != userEffect.id)
             desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
-                ${effect.passive? `The countdown timer on this effect has been extended. Find it in \`${ctx.prefix}hero slots\``:
+                ${effect.passive? `The countdown timer on this effect has been extended. Find it in \`${ctx.prefix}effect list passives\``:
                 `You have extended the number of uses for this effect. Your new usage limit is **${eobject.uses}**`}`
         } else {
             eobject = { id: item.effectid }
@@ -229,8 +229,8 @@ const uses = {
                 eobject.cooldownends = new Date()
             }
             desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
-                ${effect.passive? `To use this passive effect equip it with \`->hero equip [slot] ${effect.id}\``:
-                `Use this effect by typing \`->hero use ${effect.id}\`. Amount of uses is limited to **${item.lasts}**`}`
+                ${effect.passive? `To use this passive effect equip it with \`/hero equip\``:
+                `Use this effect by typing \`/effect use effect_name:${effect.id}\`. Amount of uses is limited to **${item.lasts}**`}`
         }
 
         ctx.mixpanel.track(
@@ -417,12 +417,12 @@ const checks = {
         const requiredUserCards = await findUserCards(ctx, user, item.cards)
         if(item.cards.length != requiredUserCards.length)
             return `you don't have all required cards in order to use this item.
-                Type \`${ctx.prefix}inv info ${item.id}\` to see the list of required cards`
+                Type \`${ctx.prefix}inventory info\` to see the list of required cards`
 
         if(requiredUserCards.find(x => x.fav && x.amount === 1)) {
             const card = requiredUserCards.find(x => x.fav && x.amount === 1)
             return `the last copy of required card ${formatName(ctx.cards[card.cardid])} is marked as favourite.
-                    Please, use \`${ctx.prefix}fav remove ${ctx.cards[card.cardid].name}\` to remove it from favourites first`
+                    Please, use \`${ctx.prefix}fav remove one card_query:${ctx.cards[card.cardid].name}\` to remove it from favourites first`
         }
     },
 
@@ -447,6 +447,7 @@ const checks = {
                 const itemEffect = ctx.effects.find(x => x.id === chosenEffect.id)
                 if (itemEffect.passive && !chosenEffect.expires)
                     return `you need to equip this effect before you can increase it's time length!`
+                ctx.chosenEffectItem = ctx.items.find(x => x.id === chosenEffect.id)
                 return false
             case 'legendswapper':
                 const userCards = await getUserCards(ctx, user)
@@ -514,7 +515,7 @@ const getQuestion = (ctx, user, item) => {
                 case 'slotupgrade':
                     return `Do you want to use the **${item.name}** to increase your passive effect slots?`
                 case 'effectincrease':
-                    return `Do you want to use the **${item.name}** to increase an effects uses/time?`
+                    return `Do you want to use the **${item.name}** to increase ${ctx.chosenEffectItem.name}'s uses/time?`
             }
     }
 }

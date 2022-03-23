@@ -141,7 +141,7 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
             try {
                 await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${numFmt(auc.price)} ${ctx.symbols.tomato}
-                Use \`->auc bid ${auc.id} [new bid]\`
+                Use \`/auction bid auction_id:${auc.id}\`
                 This auction will end in **${formatAucTime(auc.expires)}**`, 'yellow')
             } catch (e) {}
 

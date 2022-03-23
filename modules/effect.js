@@ -39,10 +39,10 @@ const mapUserEffects = (ctx, user) => {
 
 const withUserEffects = (callback) => async (ctx, user, args) => {
     if(!user.hero)
-        return ctx.reply(user, `you don't have a hero yet. You can select hero from the list using \`->hero list\`
-            You can search for the hero using \`->hero list [hero name]\`
-            If you cannot find a hero that you want, submit one using \`->hero submit [anilist link](https://anilist.co/)\`
-            For more information type \`->help hero -here\``, 'red')
+        return ctx.reply(user, `you don't have a hero yet. You can select hero from the list using \`/hero list\`
+            You can search for the hero using \`/hero list hero:hero name\`
+            If you cannot find a hero that you want, submit one using \`/hero submit anilist_link:[anilist link](https://anilist.co/)\`
+            For more information type \`/help help_menu:hero\``, 'red')
 
     await Promise.all(user.effects.map(async x => await check_effect(ctx, user, x.id)))
     await user.save()

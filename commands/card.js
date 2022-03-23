@@ -105,15 +105,15 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
 
     if(!promo && price > user.exp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim ${amount > 1? `**${amount}** cards` : 'a card'}. 
             You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}
-            ${user.dailyquests.length > 0? `Complete your \`${ctx.prefix}quests\` to get more ${ctx.symbols.tomato}` : ''}
+            ${user.dailyquests.length > 0? `Complete your \`${ctx.prefix}quest list\` to get more ${ctx.symbols.tomato}` : ''}
             Use \`${ctx.prefix}daily\` to reset your claim price and get extra ${ctx.symbols.tomato}`, 'red')
 
     if(promo && price > user.promoexp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim ${amount > 1? `**${amount}** cards` : 'a card'}. 
             You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}
-            Claim regular cards using \`${ctx.prefix}claim\` or run \`${ctx.prefix}daily\` when it is ready to obtain more ${promo.currency}`, 'red')
+            Claim regular cards using \`/claim cards\` or run \`/daily\` when it is ready to obtain more ${promo.currency}`, 'red')
 
     if(!promo && args.boostID) {
         boost = curboosts.find(x => x.id === args.boostID.toLowerCase())
@@ -122,8 +122,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     if(!promo && !any && !boost && !amount) {
         return ctx.reply(user, `unknown claim argument \`${args.boostID}\`!
             Please specify a number, boost ID, 'promo' (if there are promotions running) or 'any' (if current server is locked).
-            For more information type \`${ctx.prefix}help claim\`
-            To view boost IDs use \`${ctx.prefix}boosts\``, 'red')
+            To view boost IDs use \`/boost list\``, 'red')
     }
 
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
@@ -238,10 +237,10 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
 
     if (amount > 1 && XPtoLEVEL(user.xp) < 15) {
         fields.push({name: `View your cards`, value:
-            `Use \`${ctx.prefix}sum [card name]\` to view the card
-            (e.g. \`${ctx.prefix}sum ${cards[0].card.name}\`)
-            Use \`${ctx.prefix}card info [card name]\` to view the card tags and metadata
-            (e.g. \`${ctx.prefix}card info ${cards[0].card.name}\`)`})
+            `Use \`${ctx.prefix}summon card_query:card name\` to view the card
+            (e.g. \`${ctx.prefix}summon card_query:${cards[0].card.name}\`)
+            Use \`${ctx.prefix}info card_query:card name\` to view the card tags and metadata
+            (e.g. \`${ctx.prefix}info card_query:${cards[0].card.name}\`)`})
     }
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
@@ -346,7 +345,7 @@ cmd('summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => 
     user.lastcard = card.id
     await user.save()
 
-    let warn = `> This is a random card **that you own**.\nFor more info type \`${ctx.prefix}help summon\``
+    let warn = `> This is a random card **that you own**.\nFor more info type \`${ctx.prefix}help help_menu:summon\``
     let lvl = XPtoLEVEL(user.xp)
 
     if(card.imgur) {
@@ -713,7 +712,7 @@ cmd(['boost', 'list'], withInteraction((ctx, user) => {
     }
 
     const description = boosts.map(x => 
-        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim ${x.id}\`)`).join('\n')
+        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards claim_id:${x.id}\`)`).join('\n')
 
     return ctx.send(ctx.interaction, {
         description,
@@ -733,7 +732,7 @@ cmd(['boost', 'info'], withInteraction((ctx, user, args) => {
     const list = []
     list.push(`Rate: **${boost.rate * 100}%**`)
     list.push(`Cards in pool: **${numFmt(boost.cards.length)}**`)
-    list.push(`Command: \`${ctx.prefix}claim ${boost.id}\``)
+    list.push(`Command: \`${ctx.prefix}claim cards boost_id:${boost.id}\``)
     list.push(`Expires in **${msToTime(boost.expires - now)}**`)
 
     return ctx.sendPgn(ctx, user, {
@@ -823,7 +822,7 @@ cmd(['wish', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, p
     } else {
         
         if(user.wishlist.length === 0)
-            return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+            return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add one\` to add cards to your wishlist`)
 
         cards = cards.filter(x => user.wishlist.some(y => y === x.id))
 
@@ -856,7 +855,7 @@ cmd(['wish', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, pa
 
     if(user.wishlist.some(x => x === card.id)) {
         return ctx.reply(user, `you already have ${formatName(card)} in your wishlist.
-            To remove is use \`${ctx.prefix}wish remove [card]\``, 'red')
+            To remove it use \`${ctx.prefix}wish remove one\``, 'red')
     }
 
     const userHasCard = userCards.some(x => x.cardid === card.id)
@@ -906,7 +905,7 @@ cmd(['wish', 'remove', 'one'], withInteraction(withGlobalCards(async (ctx, user,
         return ctx.qhelp(ctx, user, 'wishlist')
 
     if(user.wishlist.length === 0) {
-        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`, 'red')
+        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add one\` to add cards to your wishlist`, 'red')
     }
 
     const userCards = await getUserCards(ctx, user)
@@ -932,7 +931,7 @@ cmd(['wish', 'remove', 'many'], withInteraction(withGlobalCards(async (ctx, user
     cards = cards.filter(x => user.wishlist.some(y => y === x.id))
 
     if(user.wishlist.length === 0) {
-        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`, 'red')
+        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add one\` to add cards to your wishlist`, 'red')
     }
 
     const userCards = await getUserCards(ctx, user)

@@ -59,7 +59,6 @@ cmd(['guild', 'info'], withInteraction(async (ctx, user, args) => {
     const channels = ctx.guild.botchannels.filter(x => ctx.discord_guild.channels.some(y => y.id === x))
     resp.push(`Level: **${guildlvl}** (${(((ctx.guild.xp - prevxp)/(nextxp - prevxp)) * 100).toFixed(1)}%)`)
     resp.push(`Players: **${numFmt(ctx.guild.userstats.length)}/${numFmt(ctx.discord_guild.memberCount)}**`)
-    resp.push(`Prefix: \`${ctx.guild.prefix || ctx.prefix}\``)
     resp.push(`Claim tax: **${Math.round(ctx.guild.tax * 100)}%**`)
     resp.push(`Bot channels: ${channels.map(x => `<#${x}>`).join(' ')}`)
 
@@ -293,7 +292,7 @@ cmd(['guild', 'lock'], withInteraction(async (ctx, user, args) => {
         Locking to another collection will cost **${numFmt(price)}** ${ctx.symbols.tomato}
         You won't be able to change lock for 7 days.
         You can unlock any time.
-        Users will still be able to claim cards from general pool using \`->claim any\``
+        Users will still be able to claim cards from general pool using \`/claim cards unlocked:true\``
 
     return ctx.sendCfm(ctx, user, {
         question,
@@ -341,25 +340,6 @@ cmd(['guild', 'unlock'], withInteraction(async (ctx, user) => {
                 Claim pool now consists of **${numFmt(colCards.length)}** cards`, 'green', true)
         }
     })
-}))
-
-cmd(['guild', 'set', 'prefix'], withInteraction(async (ctx, user, arg1) => {
-    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
-        return ctx.reply(user, `only owner or guild manager can set guild prefix`, 'red')
-
-    if(!arg1)
-        return ctx.reply(user, `please specify new prefix`, 'red')
-
-    if(arg1.length < 1 || arg1.length > 3)
-        return ctx.reply(user, `prefix length can be between **1** and **3** charaters`, 'red')
-
-    if(arg1 === '<')
-        return ctx.reply(user, `cannot set prefix to \`<\` as this is a Discord reserved character`, 'red')
-
-    ctx.guild.prefix = arg1
-    await ctx.guild.save()
-    return ctx.reply(user, `guild prefix was set to \`${arg1}\``)
 }))
 
 cmd(['guild', 'lead'], withInteraction(async (ctx, user) => {

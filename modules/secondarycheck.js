@@ -39,7 +39,7 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
                 name: `Reward`,
                 value: reward
             }],
-            footer: {text: `To view your achievements use ${ctx.prefix}ach`}
+            footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
         }})
 
     } else if (complete.length > 1) {
@@ -54,7 +54,7 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
             color: colors.blue,
             author: { name: `New Achievements:` },
             description: rewards.join('\n'),
-            footer: {text: `To view your achievements use ${ctx.prefix}ach`}
+            footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
         }})
     }
 }
