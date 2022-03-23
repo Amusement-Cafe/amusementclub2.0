@@ -3,6 +3,7 @@ const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
 const _                 = require('lodash')
+const AsciiTable        = require("ascii-table")
 
 const {
     cap,
@@ -80,7 +81,9 @@ const {
     getStats,
     getStaticStats,
     saveAndCheck,
+    formatUserStats,
 } = require("../modules/userstats")
+
 
 cmd('balance', withInteraction( async (ctx, user) => {
     let max = 1
@@ -127,8 +130,8 @@ cmd(['inventory', 'list'], withInteraction(withUserItems((ctx, user, items, args
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`${ctx.prefix}inv info [item id]\`
-                    To use the item \`${ctx.prefix}inv use [item id]\`` },
+                { name: `Usage`, value: `To view the item details use \`${ctx.prefix}inventory info\`
+                    To use the item \`${ctx.prefix}inventory use\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
             color: colors.blue,
@@ -234,9 +237,9 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
         if(promo || boosts.length > 0) {
             fields.push({name: `Current events and boosts`,
-                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`${ctx.prefix}claim promo\`)` : ''}
+                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`${ctx.prefix}claim cards promo:true\`)` : ''}
                 ${boosts.map(x => 
-                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`${ctx.prefix}claim ${x.id}\``).join('\n')}`
+                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`${ctx.prefix}claim cards boost_id:${x.id}\``).join('\n')}`
             })
         }
 
@@ -284,7 +287,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
     return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**
                 If you want to be notified when your daily is ready use: 
-                \`${ctx.prefix}prefs set notify daily true\``, 'red')
+                \`${ctx.prefix}preferences set notify daily\``, 'red')
 }))
 
 cmd('cards', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
@@ -518,7 +521,7 @@ cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests.
         You get new quests each time you claim your \`${ctx.prefix}daily\` bonus.
-        For more information see \`${ctx.prefix}help quests\``, 'red')
+        For more information see \`${ctx.prefix}help help_menu:quests\``, 'red')
 
     return ctx.send(ctx.interaction, {
         color: colors.blue,
@@ -526,7 +529,7 @@ cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
         description: user.dailyquests.map((x, i) => {
             const qInfo = ctx.quests.daily.find(y => y.id === x)
             return `${i + 1}. \`${new Array(qInfo.tier + 1).join('★')}\` ${qInfo.name} (${qInfo.reward(ctx)})`
-        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info [quest index]\``
+        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
     }, user.discord_id)
 }))
 
@@ -553,7 +556,7 @@ cmd(['quest', 'info'], withInteraction(async (ctx, user, args) => {
         fields: [
             { name: 'Guide', value: quest.desc.replace(/->/gi, ctx.prefix) },
             { name: 'Related help', value: `This quest is completed using **${quest.actions[0]}** command. 
-                For more information type: \`${ctx.prefix}help ${quest.actions[0]} -here\`` },
+                For more information type: \`${ctx.prefix}help help_menu:${quest.actions[0]}\`` },
         ]
     }, user.discord_id)
 }))
@@ -565,11 +568,19 @@ cmd('stats', withInteraction(async (ctx, user) => {
     if (keys.length === 0 || keys.includes('Isnew'))
         return ctx.reply(user, `there are no statistics to display yet today!`)
 
-    return ctx.send(ctx.interaction, {
-        color: colors.blue,
-        author: { name: `${user.username}, your daily stats:` },
-        description: keys.map(x => `${cap(x)}: **${stats[x]}**`).join('\n')
-    }, user.discord_id)
+    let table = new AsciiTable()
+    table.setHeading('Stat', 'Count')
+    keys.map(x => {
+        const format = formatUserStats(x, stats[x])
+        table.addRow(format.stat, numFmt(format.count))
+    })
+
+    return ctx.interaction.createMessage({embed: {
+            color: colors.blue,
+            author: { name: `${user.username}, your daily stats:` },
+            description: `\`\`\`${table.toString()}\`\`\``
+        }})
+
 }))
 
 cmd('achievements', withInteraction(async (ctx, user, args) => {
@@ -589,7 +600,7 @@ cmd('achievements', withInteraction(async (ctx, user, args) => {
     const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length}${miss? ` + ${missDiff} Hidden`: ''})` }}
 
     if (!miss)
-        embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
+        embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}achievements missing:true`}
 
     if (list.length === 0 && miss)
         return ctx.reply(user, `there is nothing to display here! You are missing **${missDiff}** hidden achievements!`, 'red')
@@ -619,7 +630,7 @@ cmd('vote', withInteraction(async (ctx, user) => {
             {
                 name: `Get notified`,
                 value: `You can enable bot notifications to let you know that it is time to vote. 
-                Simply run \`${ctx.prefix}prefs set notify vote true\``
+                Simply run \`${ctx.prefix}preferences set notify vote\``
             }
         ]
     }, user.discord_id)
@@ -641,7 +652,7 @@ cmd('todo', withInteraction(async (ctx, user) => {
     resp.push(`${ctx.symbols.auc_sod} = done | ${ctx.symbols.auc_sbd} = not done`)
     resp.push(`${daily? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim daily** [\`${ctx.prefix}daily\`] (this will reset your claim price)`)
     resp.push(`${vote? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Vote for the bot** [\`${ctx.prefix}vote\`] (get rewards like cards and \`${ctx.symbols.tomato}\`)`)
-    resp.push(`${claim? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim a card** [\`${ctx.prefix}claim\`] (recommended to claim 4-6 cards per day)`)
+    resp.push(`${claim? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim a card** [\`${ctx.prefix}claim cards\`] (recommended to claim 4-6 cards per day)`)
     resp.push(`${quest? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Complete quests** [\`${ctx.prefix}quests\`] (quests refresh daily)`)
     resp.push(`${plot? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Collect plot income** [\`${ctx.prefix}plots\`] (you must have built at least one plot)`)
     resp.push(`Use \`${ctx.prefix}stats\` to see what you did today`)
