@@ -1,5 +1,7 @@
 const {pcmd}        = require('../utils/cmd')
 const Announcement  = require('../collections/announcement')
+const Auction       = require('../collections/auction')
+const Transaction   = require('../collections/transaction')
 const Users         = require('../collections/user')
 const _             = require('lodash')
 
@@ -12,6 +14,7 @@ const {
     fetchOnly,
     addUserCards,
     removeUserCards,
+    findUserCards,
 } = require('../modules/user')
 
 const {
@@ -341,7 +344,7 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'info'], withInteraction(withGlobalCards
 
 pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     return ctx.sendCfm(ctx, user, {
-        embed: { footer: { text: `Run \`->sudo eval info\`first to make sure you have the correct card! ` } },
+        embed: { footer: { text: `Run \`/sudo eval info\`first to make sure you have the correct card! ` } },
         question: `**${user.username}**, do you want to force waiting auction prices into eval for ${formatName(cards[0])}?`,
         onConfirm: async (x) => {
             const info = fetchInfo(ctx, cards[0].id)
@@ -352,6 +355,55 @@ pcmd(['admin', 'mod'], ['sudo', 'eval', 'force'], withInteraction(withGlobalCard
         }
     })
 })))
+
+pcmd(['admin'], ['sudo', 'reverse', 'transaction'], withInteraction(async (ctx, user, args) => {
+    const trans = await Transaction.findOne({id: args.transID})
+    if (!trans)
+        return ctx.reply(user, `transaction with ID \`${args.transID}\` could not be found!`, 'red')
+
+    const fromUser = await fetchOnly(trans.from_id)
+    const toUser = await fetchOnly(trans.to_id)
+
+    if (toUser) {
+        const toUserCards = await findUserCards(ctx, toUser, trans.cards)
+        if (toUserCards.length !== trans.cards.length)
+            return ctx.reply(user, `the user the cards were sold to has already sold or removed some of the cards from their list, reverse cancelled!`, 'red')
+
+        return ctx.sendCfm(ctx, user, {
+            question: `Do you want to reverse transaction \`${trans.id}\` **${fromUser.username}** -> **${toUser.username}** consisting of **${trans.cards.length}** cards worth **${trans.price}**?`,
+            onConfirm: async () => {
+                await removeUserCards(ctx, toUser, trans.cards)
+                await addUserCards(ctx, fromUser, trans.cards)
+                fromUser.exp -= trans.price
+                toUser.exp += trans.price
+                await toUser.save()
+                await fromUser.save()
+                await Transaction.deleteOne({id: args.transID, from_id: fromUser.discord_id})
+                return ctx.reply(user, `reversed transaction \`${trans.id}\` **${fromUser.username}** -> **${toUser.username}** consisting of **${trans.cards.length}** cards worth **${trans.price}**`, 'green', true)
+            }
+        })
+
+    }
+
+    return ctx.sendCfm(ctx, user, {
+        question: `Do you want to reverse transaction \`${trans.id}\` for user **${fromUser.username}** consisting of **${trans.cards.length}** cards worth **${trans.price}**?`,
+        onConfirm: async () => {
+            await addUserCards(ctx, fromUser, trans.cards)
+            fromUser.exp -= trans.price
+            await fromUser.save()
+            await Transaction.deleteOne({id: args.transID, from_id: fromUser.discord_id})
+            return ctx.reply(user, `reversed transaction \`${trans.id}\` for **${fromUser.username}** consisting of **${trans.cards.length}** cards worth **${trans.price}**`, 'green', true)
+        }
+    })
+}))
+
+pcmd(['admin'], ['sudo', 'reverse', 'auction'], withInteraction(async (ctx, user, args) => {
+    // Todo Add reverse auction here and in adminjson
+    // const auction = await Auction.findOne({id: args.aucID, finished: true})
+    // if (!auction)
+    //     return ctx.reply(user, `auction with ID \`${args.aucID}\` could not be found, or it is not finished yet!`, 'red')
+
+}))
 
 pcmd(['admin'], ['sudo', 'crash'], withInteraction((ctx) => {
     throw `This is a test exception`
@@ -366,7 +418,7 @@ pcmd(['admin'], ['sudo', 'embargo'], withInteraction(async (ctx, user, args) => 
             rpl.push(`${target.username} has been lifted`)
             await target.save()
             try {
-                await ctx.direct(target, "Your embargo has been lifted, you may now return to normal bot usage. Please try to follow the rules, they can easily be found at \`->rules\`")
+                await ctx.direct(target, "Your embargo has been lifted, you may now return to normal bot usage. Please try to follow the rules, they can easily be found at \`/rules\`")
             } catch(e) {
                 rpl.push(`\n ${target.username} doesn't allow PMs from the bot, so a message was not sent`)
             }
@@ -391,7 +443,7 @@ pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], withInteraction(async 
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
 }))
 
-pcmd(['admin'], ['sudo', 'lock', 'auc'], ['sudo', 'lock', 'aucs'], withInteraction(async (ctx, user, ...args) => {
+pcmd(['admin'], ['sudo', 'auclock'], withInteraction(async (ctx, user, ...args) => {
     ctx.settings.aucLock = !ctx.settings.aucLock
 
     return ctx.reply(user, `auction lock has been **${ctx.settings.aucLock? `ENABLED` : `DISABLED`}**`)

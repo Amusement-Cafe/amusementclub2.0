@@ -318,6 +318,26 @@
                 ]
             },
             {
+                "name": "reverse",
+                "description": "top level reverse",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "transaction",
+                        "description": "Reverse a transaction",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "transaction_id",
+                                "description": "The transaction ID to reverse",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
                 "name": "embargo",
                 "description": "Remove a rating from a card",
                 "type": 1,
