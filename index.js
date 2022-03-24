@@ -240,7 +240,7 @@ module.exports.create = async ({
     /* service tick for guilds */
     const gtick = (ctx) => {
         const now = new Date()
-        // guild.bill_guilds(ctx, now)
+        guild.bill_guilds(ctx, now)
         plot.castlePayments(ctx, now)
     }
 
@@ -269,7 +269,7 @@ module.exports.create = async ({
     }
 
     const notifytick = () => {
-        // preferences.notifyCheck(ctx)
+        preferences.notifyCheck(ctx)
     }
 
     let tickArray, reconnecting
