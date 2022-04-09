@@ -3,6 +3,7 @@ const Announcement  = require('../collections/announcement')
 const Auction       = require('../collections/auction')
 const Transaction   = require('../collections/transaction')
 const Users         = require('../collections/user')
+const UserCards     = require('../collections/userCard')
 const _             = require('lodash')
 
 const {
@@ -15,6 +16,7 @@ const {
     addUserCards,
     removeUserCards,
     findUserCards,
+    getUserCards,
 } = require('../modules/user')
 
 const {
@@ -407,6 +409,45 @@ pcmd(['admin'], ['sudo', 'reverse', 'auction'], withInteraction(async (ctx, user
 
 pcmd(['admin'], ['sudo', 'crash'], withInteraction((ctx) => {
     throw `This is a test exception`
+}))
+
+pcmd(['admin'], ['sudo', 'refresh', 'global'], withInteraction(async (ctx, user) => {
+    await ctx.bot.bulkEditCommands(ctx.slashCmd)
+    return ctx.reply(user, `an update of the bot's **GLOBAL** slash commands is currently underway. Please allow for up to 1 hour for the changes to be reflected, the bot may not be usable during this time.`)
+}))
+
+pcmd(['admin'], ['sudo', 'refresh', 'admin'], withInteraction(async (ctx, user) => {
+    await ctx.bot.bulkEditGuildCommands(ctx.adminGuildID, ctx.adminCmd)
+    return ctx.reply(user, `an update of the bot's **ADMIN** slash commands is currently underway. Please allow a few minutes for the changes to be reflected.`)
+
+}))
+
+pcmd(['admin'], ['sudo', 'transfer'], withInteraction(async (ctx, user, args) => {
+    const fromUser = await fetchOnly(args.from)
+    const toUser = await fetchOnly(args.to)
+    if (!fromUser.discord_id || !toUser.discord_id)
+        return ctx.reply(user, `no user found for \`${fromUser.discord_id? args.to: args.from}\`. Please make sure they are already a bot user before attempting to transfer cards.`, 'red')
+
+    if (fromUser.discord_id === toUser.discord_id)
+        return ctx.reply(user, `the FROM and TO users cannot be the same!`, 'red')
+
+    let transferIDs = []
+    const fromCards = await getUserCards(ctx, fromUser)
+
+    fromCards.map(x => {
+        for (let i = 0; i < x.amount; i++)
+            transferIDs.push(x.cardid)
+    })
+
+    return ctx.sendCfm(ctx, user, {
+        question: `Do you want to transfer **${fromCards.length}** unique and **${transferIDs.length}** total cards from ${fromUser.username} to ${toUser.username}? This will delete all of ${fromUser.username}'s cards!`,
+        onConfirm: async () => {
+            await addUserCards(ctx, toUser, transferIDs)
+            await UserCards.deleteMany({userid: fromUser.discord_id})
+            return ctx.reply(user, `transferred **${fromCards.length}** unique and **${transferIDs.length}** total cards from ${fromUser.username} to ${toUser.username}!`, 'green', true)
+        }
+    })
+
 }))
 
 pcmd(['admin'], ['sudo', 'embargo'], withInteraction(async (ctx, user, args) => {

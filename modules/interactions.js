@@ -35,15 +35,16 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'collection': interactionArgs.cols.push(x.value.split(' ').map(y => bestColMatchMulti(ctx, y.replace('-', '')))); interactionArgs.colQuery = x.value; break;
             case 'completed': interactionArgs.completed = x.value; break;
             case 'count': interactionArgs.count = x.value; break;
-            case 'missing': interactionArgs.missing = x.value; break;
             case 'effect_name': interactionArgs.effect = x.value; break;
             case 'extra_arguments': interactionArgs.extraArgs = x.value; break;
+            case 'from': interactionArgs.from = x.value; break;
             case 'hero': interactionArgs.hero = x.value; break;
             case 'inventory_item': interactionArgs.invItem = x.value; break;
             case 'item_id': interactionArgs.itemID = x.value; break;
             case 'lift': interactionArgs.lift = x.value; break;
             case 'me': interactionArgs.me = x.value; break;
             case 'message': interactionArgs.message = x.value; break;
+            case 'missing': interactionArgs.missing = x.value; break;
             case 'notification_option': interactionArgs.option = x.value; break;
             case 'plot_number': interactionArgs.plot = x.value; break;
             case 'price': interactionArgs.price = x.value; break;
@@ -56,6 +57,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'tax_percentage': interactionArgs.tax = x.value; break;
             case 'time_length': interactionArgs.timeLength = x.value; break;
             case 'title': interactionArgs.title = x.value; break;
+            case 'to': interactionArgs.to = x.value; break;
             case 'transaction_id': interactionArgs.transID = x.value; break;
             case 'unlocked': interactionArgs.any = x.value; break;
             case 'user_ids': interactionArgs.users = x.value; break;

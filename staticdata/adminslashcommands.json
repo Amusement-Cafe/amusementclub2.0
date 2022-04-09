@@ -438,6 +438,44 @@
                 "description": "Crash the bot",
                 "type": 1,
                 "options": []
+            },
+            {
+                "name": "transfer",
+                "description": "Transfer all cards from one account to another",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "from",
+                        "description": "The user ID to remove cards from",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "to",
+                        "description": "The user ID to add cards to",
+                        "type": 6,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "refresh",
+                "description": "top level refresh",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "global",
+                        "description": "Refresh all global commands. MAY CAUSE BOT TO NOT RESPOND FOR AN HOUR",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "admin",
+                        "description": "Refresh all admin commands. Should update within minutes",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
             }
         ]
     }

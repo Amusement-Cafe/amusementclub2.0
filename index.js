@@ -201,6 +201,7 @@ module.exports.create = async ({
         effects: require('./staticdata/effects'),
         slashCmd: require('./staticdata/slashcommands'),
         adminCmd: require('./staticdata/adminslashcommands'),
+        adminGuildID,
         promos: data.promos,
         boosts: data.boosts,
         cardInfos,
@@ -326,9 +327,11 @@ module.exports.create = async ({
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
         ctx.settings.wip = false
+
         const guildCommands = await bot.getGuildCommands(adminGuildID)
         if (guildCommands.length !== ctx.adminCmd.length)
             await bot.bulkEditGuildCommands(adminGuildID, ctx.adminCmd)
+
         const globalCommands = await bot.getCommands()
         if (globalCommands.length !== ctx.slashCmd.length)
             await bot.bulkEditCommands(ctx.slashCmd)
