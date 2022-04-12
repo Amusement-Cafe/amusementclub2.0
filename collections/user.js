@@ -4,8 +4,8 @@ module.exports = model('User', {
     discord_id:         { type: String, index: true },
     username:           { type: String },
 
-    exp:                { type: Number, default: 0 },
-    promoexp:           { type: Number, default: 0 },
+    exp:                { type: Number, default: 0, index: true },
+    promoexp:           { type: Number, default: 0, index: true },
     joined:             { type: Date },
 
     lastQueriedCard:    { type: Object },
@@ -36,6 +36,10 @@ module.exports = model('User', {
         memoryhall:     {type: Number, default: 0},
         memorybday:     {type: Number, default: 0},
         memoryval:      {type: Number, default: 0},
+        xmasspace:      {type: Boolean, default: false},
+        hallspace:      {type: Boolean, default: false},
+        bdayspace:      {type: Boolean, default: false},
+        valspace:       {type: Boolean, default: false},
     },
 
     cards:              { type: Array, default: [] },
@@ -72,9 +76,9 @@ module.exports = model('User', {
     },
 
     lastcard:           { type: Number, default: -1 },
-    xp:                 { type: Number, default: 0 },
-    vials:              { type: Number, default: 0 },
-    lemons:             { type: Number, default: 0 },
+    xp:                 { type: Number, default: 0, index: true },
+    vials:              { type: Number, default: 0, index: true },
+    lemons:             { type: Number, default: 0, index: true },
     votes:              { type: Number, default: 0 },
 
     dailyquests:        { type: Array, default: [] },

@@ -62,21 +62,28 @@ const trigger = async (type, ctx, user, args) => {
     while (cursor.hasOwnProperty(args[0])) {
         cursor = cursor[args[0]]
         args.shift()
-        ctx.capitalMsg.shift()
+        if (type === 'cmd')
+            ctx.capitalMsg.shift()
     }
 
-    if (!cursor.hasOwnProperty('_callback')) {
-        return ctx.reply(user, `unknown command. Please check your spelling or use help`, 'red')
-    }
+    if (type === 'cmd') {
+        if (!cursor.hasOwnProperty('_callback')) {
+            return ctx.reply(user, `unknown command. Please check your spelling or use help`, 'red')
+        }
 
-    if (cursor._perm) {
-        if(!user.roles || !cursor._perm.find(x => user.roles.some(y => x === y)))
-            return ctx.reply(user,`only users with roles **[${cursor._perm}]** can execute this command`, 'red')
-    }
+        if (cursor._perm) {
+            if(!user.roles || !cursor._perm.find(x => user.roles.some(y => x === y)))
+                return ctx.reply(user,`only users with roles **[${cursor._perm}]** can execute this command`, 'red')
+        }
 
-    if(!ctx.guild && cursor._access != 'dm') {
-        return ctx.reply(user, `this command is possible only in guild (server) channel`, 'red')
+        if(!ctx.guild && cursor._access != 'dm') {
+            return ctx.reply(user, `this command is possible only in guild (server) channel`, 'red')
+        }
     }
+    
+    if (!cursor.hasOwnProperty('_callback'))
+        return
+
 
     const newArgs = [ctx, user || { }].concat(args)
 

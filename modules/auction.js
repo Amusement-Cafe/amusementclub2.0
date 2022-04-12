@@ -60,7 +60,7 @@ const new_auc = (ctx, user, card, price, fee, time) => new Promise(async (resolv
     lockFile.lock('auc', {retries: 10}).then(async (release) => {
         await Promise.all([
             removeUserCards(ctx, target, [card.id]),
-            completed(ctx, target, card),
+            completed(ctx, target, [card.id]),
             target.updateOne({$inc: {exp: -fee, 'dailystats.aucs': 1}}),
         ])
 
@@ -126,6 +126,10 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
     await user.save()
     await auc.save()
 
+    let stats = await getStats(ctx, user, user.lastdaily)
+    stats.aucbid += 1
+    await saveAndCheck(ctx, user, stats)
+
     const author = await fetchOnly(auc.author)
 
     if(lastBidder && !add){
@@ -137,7 +141,7 @@ const bid_auc = async (ctx, user, auc, bid, add = false) => {
             try {
                 await ctx.direct(lastBidder, `Another player has outbid you on card ${formatName(ctx.cards[auc.card])}
                 To remain in the auction, try bidding higher than ${numFmt(auc.price)} ${ctx.symbols.tomato}
-                Use \`->auc bid ${auc.id} [new bid]\`
+                Use \`/auction bid auction_id:${auc.id}\`
                 This auction will end in **${formatAucTime(auc.expires)}**`, 'yellow')
             } catch (e) {}
 
@@ -183,7 +187,7 @@ const finish_aucs = async (ctx, now) => {
     if(lastBidder) {
         let authorStats = await getStats(ctx, author, author.lastdaily)
         let winnerStats = await getStats(ctx, lastBidder, lastBidder.lastdaily)
-        const tback = check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
+        const tback = await check_effect(ctx, lastBidder, 'skyfriend')? Math.round(auc.price * .1) : 0
         lastBidder.exp += (auc.highbid - auc.price) + tback
         winnerStats.tomatoout += (auc.highbid - auc.price) + tback
         winnerStats.aucwin += 1
@@ -219,9 +223,11 @@ const finish_aucs = async (ctx, now) => {
         else
             await AuditAucSell.findOneAndUpdate({ user: author.discord_id}, {$inc: {sold: 1}})
 
-        await completed(ctx, lastBidder, aucCard)
+        await completed(ctx, lastBidder, [aucCard.id])
         await aucEvalChecks(ctx, auc)
         await from_auc(auc, author, lastBidder)
+        await author.save()
+        await lastBidder.save()
 
     } else {
         if(!findSell)

@@ -18,22 +18,22 @@
                 "price": 500,
                 "level": 40,
                 "maintenance": 15,
-                "desc": "Increases all buildings storage capacity in placed guild by 10%, increases daily generation to 35"
+                "desc": "Increases all buildings storage capacity in placed guild by 50%, increases daily generation to 40"
             }, {
                 "price": 1000,
                 "level": 60,
                 "maintenance": 20,
-                "desc": "Increases all buildings storage capacity in placed guild by 15%, increases daily generation to 40"
+                "desc": "Increases all buildings storage capacity in placed guild by 75%, increases daily generation to 50"
             }, {
                 "price": 2000,
                 "level": 80,
                 "maintenance": 25,
-                "desc": "Increases all buildings storage capacity in placed guild by 20%, increases daily generation to 45"
+                "desc": "Increases all buildings storage capacity in placed guild by 100%, increases daily generation to 60"
             }, {
                 "price": 5000,
                 "level": 100,
                 "maintenance": 50,
-                "desc": "Increases all buildings storage capacity in placed guild by 25%, increases daily generation to 50"
+                "desc": "Increases all buildings storage capacity in placed guild by 125%, increases daily generation to 70"
             }
         ]
     }, {
@@ -276,7 +276,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free christmas card",
-        "fulldesc": "When used gives you **Memories of Christmas Cheer** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Christmas Cheer** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12. This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     }, {
@@ -286,7 +286,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free halloween card",
-        "fulldesc": "When used gives you **Memories of Halloween Frights** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Halloween Frights** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12.  This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     }, {
@@ -296,7 +296,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free birthday card",
-        "fulldesc": "When used gives you **Memories of Birthdays Past** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Birthdays Past** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12.  This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     }, {
@@ -306,7 +306,7 @@
         "price": 8000,
         "type": "recipe",
         "desc": "gives free valentine card",
-        "fulldesc": "When used gives you **Memories of Valentines Day** effect card. This is a usable card",
+        "fulldesc": "When used gives you **Memories of Valentines Day** effect card. Has a 1 in 12 chance to give a missing card, 1 missing is guaranteed per 12.  This is a usable card",
         "recipe": [3, 3, 3, 3],
         "lasts": 12
     },
@@ -361,7 +361,7 @@
         "name": "Triple 2 Star Claim Ticket",
         "price": 950,
         "type": "claim_ticket",
-        "desc": "gives 3 random, single collection, 1 star cards",
+        "desc": "gives 3 random, single collection, 2 star cards",
         "fulldesc": "When used gives you 3 random 2 star cards from a single collection",
         "level": [2, 2, 2]
     },  {
@@ -399,5 +399,36 @@
         "fulldesc": "When used gives you 3 random 3 star cards from randomly chosen collections",
         "level": [3, 3, 3],
         "col": "random"
-    }
+    },
+
+
+    {
+    "id": "slotupgrade",
+    "name": "Effect Slot Upgrade",
+    "price": 100,
+    "type": "bonus",
+    "currency": "lemon",
+    "desc": "READ INFO BEFORE BUYING",
+    "typedesc": "Welcome to the bonus store! This store will hold items purchasable with lemons that don't quite fit into any other category. Be it upgrades or misc items, you can find them here!",
+    "fulldesc": "This item, when used, increases the amount of passive effect slots you have for 30 days. The ability to use one is unlocked every 100 levels.\nCheck your level with `/profile`",
+    "level": 100
+    }, {
+    "id": "effectincrease",
+    "name": "Effect Use Increase",
+    "price": 100,
+    "type": "bonus",
+    "currency": "lemon",
+    "desc": "adds time/uses to an effect",
+    "fulldesc": "Each use of this item with a valid effect will increase it's use by 1 or expiry by 1 day.",
+    "level": 100
+    }, {
+    "id": "legendswapper",
+    "name": "Legendary Card Swapper",
+    "price": 100,
+    "type": "bonus",
+    "currency": "lemon",
+    "desc": "swaps a legendary card",
+    "fulldesc": "When used on a legendary card, swaps it for another random legendary in the same collection.",
+    "level": 100
+}
 ]

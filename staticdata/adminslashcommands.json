@@ -1,0 +1,482 @@
+[
+    {
+        "type": 1,
+        "name": "sudo",
+        "description": "Top Level Admin Commands",
+        "options": [
+            {
+                "name": "add",
+                "description": "top level add",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "tomatoes",
+                        "description": "Add tomatoes to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "vials",
+                        "description": "Add vials to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "lemons",
+                        "description": "Add lemons to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "card",
+                        "description": "Add a card to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to add a card to",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to add",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "cards",
+                        "description": "Add multiple cards to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to add cards to",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query of the cards you want to add",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "role",
+                        "description": "Add a role to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get roles added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "role",
+                                "description": "The role to add to the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "top level remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "card",
+                        "description": "Remove a card from a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to remove a card from",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "role",
+                        "description": "Remove a role from a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get roles removed from, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "role",
+                                "description": "The role to remove from the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "eval",
+                "description": "top level eval",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "info",
+                        "description": "View admin stats on card eval",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to view eval info on",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "force",
+                        "description": "Force waiting evals into live evals",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to force eval on",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "reset",
+                        "description": "Reset current auction eval for a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_id",
+                                "description": "The card id of the card you want to reset eval for",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "guild",
+                "description": "top level guild",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "lock",
+                        "description": "Sudo lock a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "collection",
+                                "description": "The collection to lock to",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "unlock",
+                        "description": "Sudo unlock a guild",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "herocheck",
+                        "description": "Force a herocheck in current guild",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
+            },
+            {
+                "name": "lead",
+                "description": "top level lead",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "tomatoes",
+                        "description": "Display the admin leaderboard for tomatoes",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "vials",
+                        "description": "Display the admin leaderboard for vials",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "lemons",
+                        "description": "Display the admin leaderboard for lemons",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "cards",
+                        "description": "Display the admin leaderboard for unique cards",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "completed",
+                        "description": "Display the admin leaderboard for completion count",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "clout",
+                        "description": "Display the admin leaderboard for clout total",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "level",
+                        "description": "Display the admin leaderboard for user level",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
+            },
+            {
+                "name": "reset",
+                "description": "top level reset",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "daily",
+                        "description": "Reset a users daily",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "The user IDs of the users to reset daily",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "reverse",
+                "description": "top level reverse",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "transaction",
+                        "description": "Reverse a transaction",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "transaction_id",
+                                "description": "The transaction ID to reverse",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "embargo",
+                "description": "Remove a rating from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "user_ids",
+                        "description": "The user IDs of the users to embargo, separated by a space",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "lift",
+                        "description": "Whether to lift an embargo or not",
+                        "type": 5,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "wip",
+                "description": "Enable Maintenance Mode",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "message",
+                        "description": "The message to display to a user attempting commands while under maintenance",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "announce",
+                "description": "Send a bot announcement",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "title",
+                        "description": "The title of the announcement",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "message",
+                        "description": "The body of the announcement",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "auclock",
+                "description": "Lockout the ability to auction cards",
+                "type": 1,
+                "options": []
+            },
+            {
+                "name": "inrole",
+                "description": "Find users in a specific role",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "role",
+                        "description": "The role to add to the users",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "stress",
+                "description": "Spam test messages according to amount",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "amount",
+                        "description": "The amount of times to stress",
+                        "type": 4,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "summon",
+                "description": "Summon any card in the bot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to add",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "crash",
+                "description": "Crash the bot",
+                "type": 1,
+                "options": []
+            },
+            {
+                "name": "transfer",
+                "description": "Transfer all cards from one account to another",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "from",
+                        "description": "The user ID to remove cards from",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "to",
+                        "description": "The user ID to add cards to",
+                        "type": 6,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "refresh",
+                "description": "top level refresh",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "global",
+                        "description": "Refresh all global commands. MAY CAUSE BOT TO NOT RESPOND FOR AN HOUR",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "admin",
+                        "description": "Refresh all admin commands. Should update within minutes",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
+            }
+        ]
+    }
+]

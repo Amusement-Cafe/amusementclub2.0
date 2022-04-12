@@ -18,20 +18,24 @@ const {
     getPending,
 } = require('../modules/transaction')
 
-cmd(['trans', 'confirm'], 'confirm', 'cfm', 'accept', (ctx, user, arg1) => {
-    confirm_trs(ctx, user, arg1)
-})
+const {
+    withInteraction,
+} = require("../modules/interactions")
 
-cmd(['trans', 'decline'], 'decline', 'dcl', 'reject', (ctx, user, arg1) => {
-    decline_trs(ctx, user, arg1)
-})
+cmd(['transaction', 'confirm'], withInteraction((ctx, user, args) => {
+    confirm_trs(ctx, user, args.transID, false)
+}))
 
-cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'decline'], withInteraction((ctx, user, args) => {
+    decline_trs(ctx, user, args.transID, false)
+}))
+
+cmd(['transaction', 'all'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({ 
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }] 
     }).sort({ time: -1 })
 
-    if(!parsedargs.isEmpty())
+    if(parsedargs.cardQuery)
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
@@ -45,12 +49,12 @@ cmd('trans', withGlobalCards(async (ctx, user, cards, parsedargs) => {
             color: colors.blue,
         }
     })
-}))
+})))
 
-cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'pending'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await getPending(ctx, user)
 
-    if(!parsedargs.isEmpty())
+    if(parsedargs.cardQuery)
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
@@ -64,14 +68,14 @@ cmd(['trans', 'pending'], 'pending', withGlobalCards(async (ctx, user, cards, pa
             color: colors.yellow,
         }
     })
-}))
+})))
 
-cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'received'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         to_id: user.discord_id
     }).sort({ time: -1 })
 
-    if(!parsedargs.isEmpty())
+    if(parsedargs.cardQuery)
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
@@ -85,9 +89,9 @@ cmd(['trans', 'gets'], 'gets', withGlobalCards(async (ctx, user, cards, parsedar
             color: colors.green,
         }
     })
-}))
+})))
 
-cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'sent'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         from_id: user.discord_id
     }).sort({ time: -1 })
@@ -106,19 +110,19 @@ cmd(['trans', 'sends'], 'sends', withGlobalCards(async (ctx, user, cards, parsed
             color: colors.green,
         }
     })
-}))
+})))
 
-cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, cards, parsedargs, arg1) => {
+cmd(['transaction', 'auction', 'all'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         $or: [{ to_id: user.discord_id }, { from_id: user.discord_id }],
         status: 'auction'
     }).sort({ time: -1 })
 
-    if(!parsedargs.isEmpty())
+    if(parsedargs.cardQuery)
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
-        return ctx.reply(user, `you don't have any recent auction transactions`)
+        return ctx.reply(user, `you don't have any recent auction transactions`, 'red')
 
     const authorText = `${user.username}, your auction transactions (${list.length} results)`
 
@@ -130,9 +134,9 @@ cmd(['trans', 'auction'], ['trans', 'auc'], withGlobalCards(async (ctx, user, ca
             color: colors.green,
         }
     })
-}))
+})))
 
-cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'auction', 'received'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         to_id: user.discord_id ,
         status: 'auction'
@@ -143,7 +147,7 @@ cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(asyn
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
-        return ctx.reply(user, `you don't have any recent auction transactions`)
+        return ctx.reply(user, `you don't have any recent auction transactions where you received a card!`, 'red')
 
     const authorText = `${user.username}, your incoming auction transactions (${list.length} results)`
 
@@ -155,9 +159,9 @@ cmd(['trans', 'auction', 'gets'], ['trans', 'auc', 'gets'], withGlobalCards(asyn
             color: colors.green,
         }
     })
-}))
+})))
 
-cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['transaction', 'auction', 'sent'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let list = await Transaction.find({
         from_id: user.discord_id,
         status: 'auction'
@@ -167,7 +171,7 @@ cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(as
         list = list.filter(x => cards.some(y => x.cards.includes(y.id)))
 
     if(list.length == 0)
-        return ctx.reply(user, `you don't have any recent auction transactions`)
+        return ctx.reply(user, `you don't have any recent auction transactions where you sent a card!`, 'red')
 
     const authorText = `${user.username}, your outgoing auction transactions (${list.length} results)`
 
@@ -180,17 +184,17 @@ cmd(['trans', 'auction', 'sends'], ['trans', 'auc', 'sends'], withGlobalCards(as
             color: colors.green,
         }
     })
-}))
+})))
 
 
-cmd(['trans', 'info'], async (ctx, user, arg1) => {
-    const trs = await Transaction.findOne({ id: arg1 })
+cmd(['transaction', 'info'], withInteraction(async (ctx, user, args) => {
+    const trs = await Transaction.findOne({ id: args.transID })
 
     if(!trs)
-        return ctx.reply(user, `transaction with ID \`${arg1}\` was not found`, 'red')
+        return ctx.reply(user, `transaction with ID \`${args.transID}\` was not found`, 'red')
 
     if(user.discord_id != trs.to_id && user.discord_id != trs.from_id)
-        return ctx.reply(user, `you do not have permission to view \`${arg1}\``, 'red')
+        return ctx.reply(user, `you do not have permission to view \`${args.transID}\``, 'red')
 
     const card = ctx.cards[trs.card]
     const timediff = msToTime(new Date() - trs.time, {compact: true})
@@ -223,9 +227,9 @@ cmd(['trans', 'info'], async (ctx, user, arg1) => {
             }]
         }
     })
-})
+}))
 
-pcmd(['admin', 'mod'], ['trans', 'find'], withGlobalCards(async (ctx, user, cards) => {
+pcmd(['admin', 'mod'], ['trans', 'find'], withInteraction(withGlobalCards(async (ctx, user, cards) => {
     const list = await Transaction.find({ 
         card: { $in: cards.map(c => c.id) }
     }).sort({ time: -1 }).limit(100)
@@ -241,4 +245,4 @@ pcmd(['admin', 'mod'], ['trans', 'find'], withGlobalCards(async (ctx, user, card
             color: colors.blue,
         }
     })
-}))
+})))

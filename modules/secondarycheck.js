@@ -2,6 +2,7 @@ const colors    = require('../utils/colors')
 const User      = require('../collections/user')
 const {
     plotPayout,
+    getLemonCap,
 }   = require('./plot')
 
 const check_achievements = async (ctx, user, action, channelID, stats) => {
@@ -13,6 +14,9 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
         complete = complete.shift()
         const reward = complete.resolve(ctx, user, stats)
         user.achievements.push(complete.id)
+        const cap = await getLemonCap(ctx, user)
+        if (user.lemons > cap)
+            user.lemons = cap
         await user.save()
         await stats.save()
 
@@ -24,7 +28,8 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
         })
         await plotPayout(ctx, 'tavern', 1, 25)
 
-        return ctx.send(channelID || ctx.msg.channel.id, {
+
+        return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,
@@ -34,8 +39,8 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
                 name: `Reward`,
                 value: reward
             }],
-            footer: {text: `To view your achievements use ${ctx.prefix}ach`}
-        })
+            footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
+        }})
 
     } else if (complete.length > 1) {
         complete.map(x => {
@@ -45,12 +50,12 @@ const check_achievements = async (ctx, user, action, channelID, stats) => {
         await user.save()
         await stats.save()
         await plotPayout(ctx, 'tavern', 1, complete.length * 25)
-        return ctx.send(channelID || ctx.msg.channel.id, {
+        return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
             color: colors.blue,
             author: { name: `New Achievements:` },
             description: rewards.join('\n'),
-            footer: {text: `To view your achievements use ${ctx.prefix}ach`}
-        })
+            footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
+        }})
     }
 }
 
@@ -77,6 +82,11 @@ const check_daily = async (ctx, user, action, channelID, stats) => {
         return
 
     await stats.save()
+    const cap = await getLemonCap(ctx, user)
+
+    if (user.lemons > cap)
+        user.lemons = cap
+
     await user.save()
     let guildID
     if (channelID)
@@ -84,16 +94,15 @@ const check_daily = async (ctx, user, action, channelID, stats) => {
 
     await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
-
-    return ctx.send(channelID || ctx.msg.channel.id, {
-        color: colors.green,
-        author: { name: `${user.username}, you completed:` },
-        description: complete.join('\n'),
-        fields: [{
-            name: `Rewards`,
-            value: rewards.join('\n')
-        }]
-    })
+    return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
+            color: colors.green,
+            author: {name: `${user.username}, you completed:`},
+            description: complete.join('\n'),
+            fields: [{
+                name: `Rewards`,
+                value: rewards.join('\n')
+            }]
+        }})
 }
 
 const check_all = async (ctx, user, action, channelID, stats) => {

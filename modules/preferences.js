@@ -32,8 +32,9 @@ const checkAnnounce = async (ctx) => {
 const checkDaily = async (ctx) => {
     let dailyTime = new Date()
     dailyTime = asdate.subtract(dailyTime, 20, 'hours')
+    const jeanneTime = asdate.subtract(dailyTime, 17, 'hours')
 
-    const userToDaily = await User
+    let userToDaily = await User
         .findOne({ 
             'prefs.notifications.daily': true,
             'dailynotified': false,
@@ -41,9 +42,16 @@ const checkDaily = async (ctx) => {
         })
         .sort({ date: -1 })
 
-    if(!userToDaily) return
+    if(!userToDaily)
+        userToDaily = await User.findOne({
+            'prefs.notifications.daily': true,
+            'dailynotified': false,
+            'lastdaily': { $lt: jeanneTime },
+        }).sort({ date: -1 })
 
-    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim your daily bonus now with \`->daily\`!`)
+    if (!userToDaily) return
+
+    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim your daily bonus now with \`/daily\`!`)
     userToDaily.dailynotified = true
     await userToDaily.save()
 }
@@ -63,7 +71,7 @@ const checkVote = async (ctx) => {
     if(!userToVote) return
 
     await sendNotification(ctx, userToVote, `Time to vote!`, `get rewards by voting for the Amusement Club.
-        Use \`->vote\` to get a list of sites where you can vote!`)
+        Use \`/vote\` to get a list of sites where you can vote!`)
 
     userToVote.votenotified = true
     await userToVote.save()

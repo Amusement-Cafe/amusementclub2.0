@@ -29,11 +29,15 @@ const {
 } = require('../modules/card')
 
 const {
+    withInteraction,
+} = require("../modules/interactions")
+
+const {
     getStats,
     saveAndCheck,
-} = require("../modules/userstats");
+} = require("../modules/userstats")
 
-cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
+cmd(['tag', 'info'], withInteraction(withTag(async (ctx, user, card, tag) => {
     const author = await fetchOnly(tag.author)
 
     const resp = []
@@ -50,20 +54,20 @@ cmd(['tag', 'info'], withTag(async (ctx, user, card, tag) => {
         resp.push(`**This tag was automatically added by the system**`)
     } 
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: `#${tag.name}`,
         description: resp.join('\n'),
         color: colors['blue']
     }, user.discord_id)
-}))
+})))
 
-cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+cmd(['tag', 'one'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     
     tgTag = tgTag.replace(/[^\w]/gi, '')
 
     const check = () => {
        if(user.ban && user.ban.tags > 2)
-            return ctx.reply(user, `you were banned from adding tags. To address this issue use \`->help support\``, 'red')
+            return ctx.reply(user, `you were banned from adding tags. To address this issue use \`/help help_menu:support\``, 'red')
 
         if(ctx.filter.isProfane(tgTag))
             return ctx.reply(user, `your tag contains excluded words`, 'red')
@@ -83,7 +87,7 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     let question = `Do you want to ${tag? 'upvote' : 'add'} tag **#${tgTag}** for ${formatName(card)}?`
 
     if (parsedargs.firstTag)
-        question += `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`->rules\` on how to tag!`
+        question += `\n Before confirming, please note that tags are **global**, not personal!\nRead the \`/rules\` on how to tag!`
 
     ctx.sendCfm(ctx, user, {
         check,
@@ -109,16 +113,16 @@ cmd('tag', withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
                     tag: tgTag,
             });
 
-            ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`)
+            ctx.reply(user, `confirmed tag **#${tgTag}** for ${formatName(card)}`, 'green', true)
         },
 
         onDecline: async (x) => {
-            ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red')
+            ctx.reply(user, `tag ${tag? 'upvote' : 'adding'} was declined`, 'red', true)
         }
     })
-}, false))
+}, false)))
 
-cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
+cmd(['tag', 'down'], withInteraction(withTag(async (ctx, user, card, tag, tgTag, parsedargs) => {
     const check = () => {
         if(tag.downvotes.includes(user.discord_id))
             return ctx.reply(user, `you already downvoted this tag`, 'red')
@@ -154,13 +158,12 @@ cmd(['tag', 'down'], withTag(async (ctx, user, card, tag, tgTag, parsedargs) => 
             stats.tags <= 0? stats.tags = 0: stats.tags -= 1
             await saveAndCheck(ctx, user, stats)
 
-            return ctx.reply(user, `${remove? 'removed' : 'downvoted'} tag **#${tgTag}** for ${formatName(card)}`)
+            return ctx.reply(user, `${remove? 'removed' : 'downvoted'} tag **#${tgTag}** for ${formatName(card)}`, 'green', true)
         }
     })
-}))
+})))
 
-
-cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['tag', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'tag')
 
@@ -181,9 +184,9 @@ cmd('tags', ['card', 'tags'], withGlobalCards(async (ctx, user, cards, parsedarg
             color: colors.blue,
         }
     })
-}))
+})))
 
-cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+cmd(['tag', 'created'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const userTags = await fetchUserTags(user)
     const cardIDs = cards.map(x => x.id)
     const tags = userTags.filter(x => cardIDs.includes(x.card))
@@ -197,12 +200,12 @@ cmd(['tags', 'created'], withGlobalCards(async (ctx, user, cards, parsedargs) =>
             return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** - ${formatName(card)}`
         }, 10)),  
         switchPage: (data) => data.embed.description = `**${user.username}**, tags you created:\n\n${data.pages[data.pagenum]}`,
-        buttons: ['back', 'forward'],
+        buttons: ['first', 'back', 'forward', 'last'],
         embed: {
             color: colors.blue,
         }
     })
-}))
+})))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 
     withTag(async (ctx, user, card, tag, tgTag) => {
@@ -272,7 +275,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
 
     try {
         await ctx.direct(target, `your tag **#${tgTag}** for ${formatName(card)} has been banned by moderator.
-            Please make sure you add valid tags in the future as tags are not personal. Learn more with \`->rules\`
+            Please make sure you add valid tags in the future as tags are not personal. Learn more with \`/rules\`
             You have **${3 - target.ban.tags}** warning(s) remaining`, 'red')
     } catch {
         ctx.reply(user, `failed to send a warning to the user.`, 'red')
@@ -315,7 +318,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
 
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'list'], async (ctx, user, arg) => {
+pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'list'], async (ctx, user, arg) => {
     const tags = await fetchTagNames(ctx, arg);
     const pages = []
 

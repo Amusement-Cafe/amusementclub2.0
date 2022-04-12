@@ -1,6 +1,10 @@
 const {cmd}     = require('../utils/cmd')
 const colors    = require('../utils/colors')
 
+const {
+    withInteraction,
+} = require("../modules/interactions")
+
 const desc = {
     aucbidme: `someone bid on your auction`,
     aucoutbid: `someone outbid you on the auction`,
@@ -12,18 +16,18 @@ const desc = {
     completed: `when you complete, or lose completion on a collection`,
 }
 
-cmd('prefs', (ctx, user) => {
+cmd(['preferences', 'show', 'all'], withInteraction((ctx, user) => {
     const cats = []
     cats.push(`\`notify\` **Notifications** (set events that bot can DM you about)`)
 
     return ctx.reply(user, {
         title: `My Preferences`,
         color: colors.deepgreen,
-        description: `available preferences (use \`${ctx.prefix}prefs [id]\`):\n${cats.join('\n')}`,
+        description: `available preferences (use \`${ctx.prefix}preferences show\`):\n${cats.join('\n')}`,
     })
-}).access('dm')
+})).access('dm')
 
-cmd(['prefs', 'notify'], (ctx, user) => {
+cmd(['preferences', 'show', 'notify'], withInteraction((ctx, user) => {
     const notify = user.prefs.notifications
     const fields = Object.keys(notify).map(x => {
         if(desc.hasOwnProperty(x)) {
@@ -31,28 +35,21 @@ cmd(['prefs', 'notify'], (ctx, user) => {
         }
     }).filter(x => x)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: `Notification Preferences`,
         color: colors.deepgreen,
         description: `Get a DM notification when:\n${fields.join('\n')}\n\n
-            Use \`${ctx.prefix}prefs set notify [id] [true/false]\``,
+            Use \`${ctx.prefix}preferences set notify\``,
     })
-}).access('dm')
+})).access('dm')
 
-cmd(['prefs', 'set', 'notify'], async (ctx, user, type, switcher) => {
+cmd(['preferences', 'set', 'notify'], withInteraction(async (ctx, user, args) => {
     const notify = user.prefs.notifications
-    if(!notify.hasOwnProperty(type)) {
-        return ctx.reply(user, `notify setting \`${type}\` doesn't exist.`, 'red')
+    if(!notify.hasOwnProperty(args.option)) {
+        return ctx.reply(user, `notify setting \`${args.option}\` doesn't exist.`, 'red')
     }
 
-    let enable = switcher == 'true'
-
-    if(switcher != 'true' && switcher != 'false') {
-        if(switcher)
-            return ctx.reply(user, `please use either 'true' or 'false' to enable or disable the setting.` , 'red')
-
-        enable = !user.prefs.notifications[type]
-    }
+    let enable = !user.prefs.notifications[args.option]
 
     if(enable) {
         try {
@@ -63,8 +60,8 @@ cmd(['prefs', 'set', 'notify'], async (ctx, user, type, switcher) => {
         }
     }
 
-    user.prefs.notifications[type] = enable
+    user.prefs.notifications[args.option] = enable
     await user.save()
 
-    return ctx.reply(user, `preferences saved. You will ${enable? 'now' : '**not**'} get DM notifications when **${desc[type]}**`)
-}).access('dm')
+    return ctx.reply(user, `preferences saved. You will ${enable? 'now' : '**not**'} get DM notifications when **${desc[args.option]}**`)
+})).access('dm')

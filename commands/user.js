@@ -3,6 +3,7 @@ const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const asdate            = require('add-subtract-date')
 const _                 = require('lodash')
+const AsciiTable        = require("ascii-table")
 
 const {
     cap,
@@ -73,12 +74,18 @@ const {
 } = require("../modules/plot");
 
 const {
+    withInteraction,
+} = require("../modules/interactions")
+
+const {
     getStats,
     getStaticStats,
     saveAndCheck,
-} = require("../modules/userstats");
+    formatUserStats,
+} = require("../modules/userstats")
 
-cmd('bal', 'balance', async (ctx, user) => {
+
+cmd('balance', withInteraction( async (ctx, user) => {
     let max = 1
     let stats = await getStats(ctx, user, user.lastdaily)
     const now = new Date()
@@ -113,9 +120,9 @@ cmd('bal', 'balance', async (ctx, user) => {
     }
 
     return ctx.reply(user, embed)
-}).access('dm')
+})).access('dm')
 
-cmd('inv', withUserItems((ctx, user, items, args) => {
+cmd(['inventory', 'list'], withInteraction(withUserItems((ctx, user, items, args) => {
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(items.map((x, i) => `${i+1}. \`${x.id}\` **${x.name}** (${x.type.replace(/_/, ' ')})`), 5),
         switchPage: (data) => data.embed.fields[1].value = data.pages[data.pagenum],
@@ -123,18 +130,18 @@ cmd('inv', withUserItems((ctx, user, items, args) => {
         embed: {
             author: { name: `${user.username}, your inventory` },
             fields: [
-                { name: `Usage`, value: `To view the item details use \`${ctx.prefix}inv info [item id]\`
-                    To use the item \`${ctx.prefix}inv use [item id]\`` },
+                { name: `Usage`, value: `To view the item details use \`${ctx.prefix}inventory info\`
+                    To use the item \`${ctx.prefix}inventory use\`` },
                 { name: `List (${items.length} results)`, value: '' }
             ],
             color: colors.blue,
         }
     })
-}))
+})))
 
-cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
+cmd(['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items, args, index) => {
     const item = items[0]
-    const itemCheck = await checkItem(ctx, user, item)
+    const itemCheck = await checkItem(ctx, user, item, args)
 
     if(itemCheck)
         return ctx.reply(user, itemCheck, 'red')
@@ -142,11 +149,11 @@ cmd(['inv', 'use'], withUserItems(async (ctx, user, items, args, index) => {
     return ctx.sendCfm(ctx, user, {
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
-        onConfirm: (x) => useItem(ctx, user, item, index)
+        onConfirm: (x) => useItem(ctx, user, item, index, args)
     })
-}))
+})))
 
-cmd(['inv', 'info'], withUserItems(async (ctx, user, items, args) => {
+cmd(['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items, args) => {
     const item = items[0]
 
     const embed = await itemInfo(ctx, user, item)
@@ -156,28 +163,30 @@ cmd(['inv', 'info'], withUserItems(async (ctx, user, items, args) => {
     if(item.col)
         embed.description += `\nThis ticket is for collection \`${item.col}\``
 
-    return ctx.send(ctx.msg.channel.id, embed)
-}))
+    return ctx.send(ctx.interaction, embed)
+})))
 
-cmd('daily', async (ctx, user) => {
+cmd('daily', withInteraction(async (ctx, user) => {
     user.lastdaily = user.lastdaily || new Date(0)
+    const oldStats = await getStaticStats(ctx, user, user.lastdaily)
+    const oldClaims = oldStats.claims || 0
 
     const now = new Date()
-    const future = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const hasJeanne = await check_effect(ctx, user, 'rulerjeanne')
+    const future = asdate.add(user.lastdaily, hasJeanne? 17 : 20, 'hours')
 
     if(future < now) {
         const quests = []
-        let amount = 500
-        const promoAmount = 500 + ((user.dailystats.promoclaims * 50) || 0)
+        let amount = 750
+        const promoAmount = 500 + ((oldStats.promoclaims * 50) || 0)
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
         let stats = await getStats(ctx, user)
         stats.daily = now
-
-        if(check_effect(ctx, user, 'cakeday')) {
-            amount += 100 * (user.dailystats.claims || 0)
+        if(await check_effect(ctx, user, 'cakeday')) {
+            amount += 100 * oldClaims
         }
 
         if (promo) {
@@ -200,7 +209,7 @@ cmd('daily', async (ctx, user) => {
 
         user.markModified('dailyquests')
 
-        addGuildXP(ctx, user, 10)
+        await addGuildXP(ctx, user, 10)
         ctx.guild.balance += userLevel
         await ctx.guild.save()
 
@@ -228,9 +237,9 @@ cmd('daily', async (ctx, user) => {
 
         if(promo || boosts.length > 0) {
             fields.push({name: `Current events and boosts`,
-                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`${ctx.prefix}claim promo\`)` : ''}
+                value: `${promo? `[${msToTime(promo.expires - now, {compact: true})}] **${promo.name}** event (\`${ctx.prefix}claim cards promo:true\`)` : ''}
                 ${boosts.map(x => 
-                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`${ctx.prefix}claim ${x.id}\``).join('\n')}`
+                `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** drop rate for **${x.name}** when you run \`${ctx.prefix}claim cards boost_id:${x.id}\``).join('\n')}`
             })
         }
 
@@ -278,10 +287,10 @@ cmd('daily', async (ctx, user) => {
 
     return ctx.reply(user, `you can claim your daily in **${msToTime(future - now)}**
                 If you want to be notified when your daily is ready use: 
-                \`${ctx.prefix}prefs set notify daily true\``, 'red')
-})
+                \`${ctx.prefix}preferences set notify daily\``, 'red')
+}))
 
-cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('cards', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
@@ -300,11 +309,13 @@ cmd('cards', 'li', 'ls', 'list', withCards(async (ctx, user, cards, parsedargs) 
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
-})).access('dm')
+}))).access('dm')
 
-cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
+cmd('favs', withInteraction( withCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     cards = cards.filter(x => x.fav)
+    if (cards.length === 0)
+        return ctx.reply(user, 'you have no cards favorited!', 'red')
     const cardstr = cards.map(c => {
         const isnew = c.obtained > (user.lastdaily || now)
         return (isnew? '**[new]** ' : '') + formatName(c) + (c.amount > 1? ` (x${numFmt(c.amount)}) ` : ' ') + (c.rating? `[${c.rating}/10]` : '')
@@ -314,15 +325,14 @@ cmd('favs', withCards(async (ctx, user, cards, parsedargs) => {
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, your cards (${numFmt(cards.length)} results)` } }
     })
-})).access('dm')
+}))).access('dm')
 
-cmd('profile', async (ctx, user, ...args) => {
-    const pargs = parseArgs(ctx, args)
-    if(pargs.ids.length > 0) user = await fetchOnly(pargs.ids[0]).lean()
+cmd('profile', withInteraction(async (ctx, user, args) => {
+    if(args.ids.length > 0) user = await fetchOnly(args.ids[0]).lean()
 
     if(!user)
-        return ctx.send(ctx.msg.channel.id, {
-            description: `Cannot find user with ID ${pargs.ids[0]}`,
+        return ctx.send(ctx.interaction, {
+            description: `Cannot find user with ID ${args.ids[0]}`,
             color: colors.red
         })
 
@@ -331,7 +341,7 @@ cmd('profile', async (ctx, user, ...args) => {
     const stamp = user.joined || user._id.getTimestamp()
     const userCards = await getUserCards(ctx, user)
     const cards = mapUserCards(ctx, userCards)
-    const stampString = `${stamp.getFullYear()}.${(stamp.getMonth()+1)}.${stamp.getDate()}`
+    const joinTime = Math.floor(stamp / 1000)
     let price = 0
     let vials = 0
     cards.map(card => {
@@ -349,7 +359,7 @@ cmd('profile', async (ctx, user, ...args) => {
     resp.push(`Level: **${XPtoLEVEL(user.xp)}**`)
     resp.push(`Cards: **${numFmt(userCards.length)}** | Stars: **${numFmt(cards.map(x => x.level).reduce((a, b) => a + b, 0))}**`)
 
-    if (pargs.ids.length > 0 && !isNaN(price)) {
+    if (args.ids.length > 0 && !isNaN(price)) {
         resp.push(`Cards Worth: **${numFmt(price)}** ${ctx.symbols.tomato} or **${numFmt(vials)} ${ctx.symbols.vial}**`)
     } else if (!isNaN(price)) {
         resp.push(`Net Worth: **${numFmt(price + user.exp)}** ${ctx.symbols.tomato} or **${numFmt(vials + user.vials)} ${ctx.symbols.vial}**`)
@@ -358,7 +368,7 @@ cmd('profile', async (ctx, user, ...args) => {
         resp.push(`Worth: **Calculating , try again in ${msToTime(evalTime)}**`)
     }
 
-    resp.push(`In game since: **${stampString}** (${msToTime(new Date() - stamp, {compact: true})})`)
+    resp.push(`In game since: **<t:${joinTime}:D>** (<t:${joinTime}:R>)`)
 
     if(completedSum > 0) {
         resp.push(`Completed collections: **${numFmt(user.completedcols.length)}**`)
@@ -378,7 +388,7 @@ cmd('profile', async (ctx, user, ...args) => {
         resp.push(`Roles: **${user.roles.join(" **|** ")}**`)
 
     const botuser = ctx.bot.users.find(x => x.id === user.discord_id)
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         description: resp.join('\n'),
         color: colors['yellow'],
         author: {
@@ -388,37 +398,37 @@ cmd('profile', async (ctx, user, ...args) => {
             url: botuser? botuser.avatarURL : ''
         }
     }, user.discord_id)
-}).access('dm')
+})).access('dm')
 
-cmd('diff', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args, user)
-
-    if(!newArgs.ids[0])
+cmd(['diff', 'from'], withInteraction(async (ctx, user, args) => {
+    if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
 
-    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherUser = await fetchOnly(args.ids[0])
     if(!otherUser)
         return ctx.reply(user, `could not find target user`, 'red')
 
-    let otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+    const otherUserCards = await getUserCards(ctx, otherUser)
+    let otherCards = filter(mapUserCards(ctx, otherUserCards), args)
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
 
-    if(newArgs.tags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.tags)
+    if(args.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.tags)
         otherCards = otherCards.filter(x => tgcards.includes(x.id))
     }
 
-    if(newArgs.antitags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.antitags)
+    if(args.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.antitags)
         otherCards = otherCards.filter(x => !tgcards.includes(x.id))
     }
 
-    const ids = user.cards.map(x => x.id)
-    const diff = otherCards.filter(x => ids.indexOf(x.id) === -1)
-        .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
-        .sort(newArgs.sort)
+    const selfCards = await getUserCards(ctx, user)
+    const ids = selfCards.map(x => x.cardid)
+    const diff = otherCards.filter(x => ids.indexOf(x.cardid) === -1)
+        .filter(x => x.fav && x.amount == 1 && !args.fav? x.cardid === -1 : x)
+        .sort(args.sort)
 
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
@@ -427,38 +437,37 @@ cmd('diff', async (ctx, user, ...args) => {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
         embed: { author: { name: `${user.username}, unique cards FROM ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
-})
+}))
 
-cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args, user)
-
-    if(!newArgs.ids[0])
+cmd(['diff', 'for'], withInteraction(async (ctx, user, args) => {
+    if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'diff')
 
-    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherUser = await fetchOnly(args.ids[0])
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
-    const otherCards = otherUser.cards
-    let mappedCards = filter(mapUserCards(ctx, user), newArgs)
+    const otherCards = await getUserCards(ctx, otherUser)
+    const userCards = await getUserCards(ctx, user)
+    let mappedCards = filter(mapUserCards(ctx, userCards), args)
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
 
-    if(newArgs.tags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.tags)
+    if(args.tags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.tags)
         mappedCards = mappedCards.filter(x => tgcards.includes(x.id))
     }
 
-    if(newArgs.antitags.length > 0) {
-        const tgcards = await fetchTaggedCards(newArgs.antitags)
+    if(args.antitags.length > 0) {
+        const tgcards = await fetchTaggedCards(args.antitags)
         mappedCards = mappedCards.filter(x => !tgcards.includes(x.id))
     }
 
-    const ids = otherCards.map(x => x.id)
-    const diff = mappedCards.filter(x => ids.indexOf(x.id) === -1)
-        .filter(x => x.fav && x.amount == 1 && !newArgs.fav? x.id === -1 : x)
-        .sort(newArgs.sort)
+    const ids = otherCards.map(x => x.cardid)
+    const diff = mappedCards.filter(x => ids.indexOf(x.cardid) === -1)
+        .filter(x => x.fav && x.amount == 1 && !args.fav? x.cardid === -1 : x)
+        .sort(args.sort)
 
     if(diff.length === 0)
         return ctx.reply(user, `no different cards found`, 'red')
@@ -467,34 +476,34 @@ cmd(['diff', 'reverse'], ['diff', 'rev'], async (ctx, user, ...args) => {
         pages: ctx.pgn.getPages(diff.map(x => `${formatName(x)} ${x.amount > 1? `(x${x.amount})`: ''} ${x.rating? `[${x.rating}/10]` : ''}`), 15),
         embed: { author: { name: `${user.username}, unique cards FOR ${otherUser.username} (${numFmt(diff.length)} results)` } }
     })
-})
+}))
 
-cmd('has', async (ctx, user, ...args) => {
-    const newArgs = parseArgs(ctx, args, user)
-
-    if(!newArgs.ids[0])
+cmd('has', withInteraction(async (ctx, user, args) => {
+    if(!args.ids[0])
         return ctx.qhelp(ctx, user, 'has')
 
-    if(user.discord_id == newArgs.ids[0])
+    if(user.discord_id == args.ids[0])
         return ctx.reply(user, `you can use ${ctx.prefix}cards to see your own cards`, 'red')
 
-    const otherUser = await fetchOnly(newArgs.ids[0])
+    const otherUser = await fetchOnly(args.ids[0])
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
-    const otherCards = filter(mapUserCards(ctx, otherUser), newArgs)
+    const otherCards = await getUserCards(ctx, otherUser)
+    const otherFilteredCards = filter(mapUserCards(ctx, otherCards), args)
 
-    if (otherCards.length === 0)
+    if (otherFilteredCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have that card.`, 'red')
 
-    if (newArgs.filters.length === 0 || otherCards.map(x=> `${formatName(x)}`).length > 1) {
+    if (args.filters.length === 0 || otherFilteredCards.map(x=> `${formatName(x)}`).length > 1) {
         return ctx.reply(user, 'Please specify a single card to match', 'red')
     }
-    return ctx.reply(user, `Matched card ${otherCards.map(x => `${formatName(x)} ${x.fav? 'and it is marked as **favorite**': ''}`)}`)
-})
+    return ctx.reply(user, `Matched card ${otherFilteredCards.map(x => `${formatName(x)} ${x.fav? 'and it is marked as **favorite**': ''}`)}`)
+}))
 
-cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const ids = user.cards.map(x => x.id)
+cmd('miss', withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const userCards = await getUserCards(ctx, user)
+    const ids = userCards.map(x => x.cardid)
     const diff = cards.filter(x => ids.indexOf(x.id) === -1)
         .filter(x => !x.excluded)
         .sort(parsedargs.sort)
@@ -506,28 +515,26 @@ cmd('miss', withGlobalCards(async (ctx, user, cards, parsedargs) => {
         pages: ctx.pgn.getPages(diff.map(x => formatName(x)), 15),
         embed: { author: { name: `${user.username}, cards that you don't have (${numFmt(diff.length)} results)` } }
     })
-}))
+})))
 
-cmd('quest', 'quests', async (ctx, user) => {
+cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
-        return ctx.reply(user, `you don't have any quests`, 'red')
+        return ctx.reply(user, `you don't have any quests.
+        You get new quests each time you claim your \`${ctx.prefix}daily\` bonus.
+        For more information see \`${ctx.prefix}help help_menu:quests\``, 'red')
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your quests:` },
         description: user.dailyquests.map((x, i) => {
             const qInfo = ctx.quests.daily.find(y => y.id === x)
             return `${i + 1}. \`${new Array(qInfo.tier + 1).join('★')}\` ${qInfo.name} (${qInfo.reward(ctx)})`
-        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info [quest index]\``
+        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
     }, user.discord_id)
-})
+}))
 
-cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
-    if(!args[0] || isNaN(args[0])) {
-        return ctx.reply(user, `please specify quest index (e.g. \`${ctx.prefix}quest info 1\`)`, 'red')
-    }
-
-    const index = parseInt(args[0]) - 1
+cmd(['quest', 'info'], withInteraction(async (ctx, user, args) => {
+    const index = args.questNum - 1
 
     if(user.dailyquests.length === 0 && user.questlines.length === 0)
         return ctx.reply(user, `you don't have any quests`, 'red')
@@ -542,57 +549,77 @@ cmd(['quest', 'info'], ['quests', 'info'], async (ctx, user, ...args) => {
     resp.push(`Required user level: **${quest.min_level}**`)
     resp.push(`Reward: ${quest.reward(ctx)}`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: quest.name },
         description: resp.join('\n'),
         fields: [
             { name: 'Guide', value: quest.desc.replace(/->/gi, ctx.prefix) },
             { name: 'Related help', value: `This quest is completed using **${quest.actions[0]}** command. 
-                For more information type: \`${ctx.prefix}help ${quest.actions[0]} -here\`` },
+                For more information type: \`${ctx.prefix}help help_menu:${quest.actions[0]}\`` },
         ]
     }, user.discord_id)
-})
+}))
 
-cmd('stats', async (ctx, user) => {
+cmd('stats', withInteraction(async (ctx, user) => {
     const stats = await getStaticStats(ctx, user, user.lastdaily)
     const keys = _.keys(stats).filter(x => stats[x] !== 0)
     _.pull(keys, '_id', 'daily', 'discord_id', 'username', '__v')
-    return ctx.send(ctx.msg.channel.id, {
-        color: colors.blue,
-        author: { name: `${user.username}, your daily stats:` },
-        description: keys.map(x => `${cap(x)}: **${stats[x]}**`).join('\n')
-    }, user.discord_id)
-})
+    if (keys.length === 0 || keys.includes('Isnew'))
+        return ctx.reply(user, `there are no statistics to display yet today!`)
 
-cmd('achievements', 'ach', async (ctx, user, ...args) => {
-    let list = user.achievements.map(x => {
-        const item = ctx.achievements.find(y => y.id === x)
-        return `**${item.name}** • \`${item.desc}\``
+    let table = new AsciiTable()
+    table.setHeading('Stat', 'Count')
+    keys.map(x => {
+        const format = formatUserStats(x, stats[x])
+        table.addRow(format.stat, numFmt(format.count))
     })
 
-    const miss = args.find(x => x === '-miss'|| x === '-diff')
+    return ctx.interaction.createMessage({embed: {
+            color: colors.blue,
+            author: { name: `${user.username}, your daily stats:` },
+            description: `\`\`\`${table.toString()}\`\`\``
+        }})
 
-    if (miss)
-        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y)).map(z => `**${z.name}** • \`${z.desc}\``)
+}))
 
-    const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length})` }}
+cmd('achievements', withInteraction(async (ctx, user, args) => {
+    let list = user.achievements.map(x => {
+        const item = ctx.achievements.find(y => y.id === x)
+        return `**${item.name}** • \`${item.desc}\`${item.hidden? ` • *Hidden*`: ''}`
+    })
+
+    const miss = args.missing
+    let missDiff
+
+    if (miss) {
+        list = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y) && !x.hidden).map(z => `**${z.name}** • \`${z.desc}\``)
+        missDiff = ctx.achievements.filter(x => !user.achievements.some(y => x.id === y) && x.hidden).length
+    }
+
+    const embed = {author: { name: `${user.username}, ${miss? 'missing' : 'completed'} achievements: (${list.length}${miss? ` + ${missDiff} Hidden`: ''})` }}
 
     if (!miss)
-        embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}ach -miss`}
+        embed.footer = {text: `To see achievements you don't have, use ${ctx.prefix}achievements missing:true`}
+
+    if (list.length === 0 && miss)
+        return ctx.reply(user, `there is nothing to display here! You are missing **${missDiff}** hidden achievements!`, 'red')
+
+    if (list.length === 0)
+        return ctx.reply(user, `there is nothing to display here!`, 'red')
 
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(list, 15),
         embed
     })
-})
+}))
 
-cmd('vote', async (ctx, user) => {
+cmd('vote', withInteraction(async (ctx, user) => {
     const now = new Date()
     const future = asdate.add(user.lastvote, 12, 'hours')
     const topggTime = msToTime(future - now, { compact: true })
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         description: `You can vote for Amusement Club **every 12 hours** and get rewards.
         Make sure you have allowed messages from server members in order to receive rewards in DMs.
@@ -603,35 +630,36 @@ cmd('vote', async (ctx, user) => {
             {
                 name: `Get notified`,
                 value: `You can enable bot notifications to let you know that it is time to vote. 
-                Simply run \`${ctx.prefix}prefs set notify vote true\``
+                Simply run \`${ctx.prefix}preferences set notify vote\``
             }
         ]
     }, user.discord_id)
-}).access('dm')
+})).access('dm')
 
-cmd('todo', async (ctx, user) => {
+cmd('todo', withInteraction(async (ctx, user) => {
     const resp = []
-    const plots = await getUserPlots(ctx)
+    const plots = await getUserPlots(ctx, true)
+    const stats = await getStaticStats(ctx, user, user.lastdaily)
     const now = new Date()
-    const futureDaily = asdate.add(user.lastdaily, check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
+    const futureDaily = asdate.add(user.lastdaily, await check_effect(ctx, user, 'rulerjeanne')? 17 : 20, 'hours')
     const futureVote = asdate.add(user.lastvote, 12, 'hours')
     const daily = futureDaily < now
     const vote = futureVote < now
-    const claim = user.dailystats.claims === 0
+    const claim = stats.claims === 0
     const quest = user.dailyquests.length > 0
     const plot = plots.some(x=> x.building.stored_lemons > 0)
     
     resp.push(`${ctx.symbols.auc_sod} = done | ${ctx.symbols.auc_sbd} = not done`)
     resp.push(`${daily? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim daily** [\`${ctx.prefix}daily\`] (this will reset your claim price)`)
     resp.push(`${vote? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Vote for the bot** [\`${ctx.prefix}vote\`] (get rewards like cards and \`${ctx.symbols.tomato}\`)`)
-    resp.push(`${claim? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim a card** [\`${ctx.prefix}claim\`] (recommended to claim 4-6 cards per day)`)
+    resp.push(`${claim? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Claim a card** [\`${ctx.prefix}claim cards\`] (recommended to claim 4-6 cards per day)`)
     resp.push(`${quest? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Complete quests** [\`${ctx.prefix}quests\`] (quests refresh daily)`)
     resp.push(`${plot? ctx.symbols.auc_sbd : ctx.symbols.auc_sod} **Collect plot income** [\`${ctx.prefix}plots\`] (you must have built at least one plot)`)
     resp.push(`Use \`${ctx.prefix}stats\` to see what you did today`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         color: colors.blue,
         author: { name: `${user.username}, your TODO list:` },
         description: resp.join('\n'),
     })
-})
+}))

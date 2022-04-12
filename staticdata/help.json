@@ -1,967 +1,155 @@
 [
     {
         "type": ["general"],
-        "title": "\u2B50 Amusement Club \u2B50 Card Game",
-        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play)",
-        "fields": [
-            {
-                "title": "User",
-                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish\n->help prefs",
-                "inline": true
-            },
-            {
-                "title": "Card Management",
-                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help forge\n->help info\n->help query",
-                "inline": true
-            },
-            {
-                "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules\n->license",
-                "inline": true
-            },
-            {
-                "title": "Links",
-                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
-            },
-            {
-                "title": "Running",
-                "description": "[Eris](https://github.com/abalabahaha/eris) | [NodeJS](https://nodejs.org/) | [MongoDB](https://www.mongodb.com/)"
-            },
-            {
-                "title": "Invite bot",
-                "description": "Please run `->help invite` and read the conditions. Use `->help guild` to get information about server related commands"
-            }
-        ]
+        "docs": ""
     },
     {
         "type": ["ach", "achievement", "achievements"],
-        "title": "About achievements",
-        "description": "Achievements are fun little extras you can receive by playing the bot normally. They can reward you with personal experience, tomatoes, or vials.",
-        "fields": [
-            {
-                "title": "->achievements",
-                "description": "List your completed achievements"
-            },
-            {
-                "title": "->achievements -miss",
-                "description": "List your missing achievements"
-            }
-        ]
-
+        "docs": "en/user/achievements"
     },
     {
         "type": ["auc", "auction", "auctions"],
-        "title": "About auctions",
-        "description": "**Amusement Club utilizes the [Vickrey auction style](https://en.wikipedia.org/wiki/Vickrey_auction) meaning the actual highest bid is not displayed. Please keep note of this when attempting to bid on auctions!**\n\nAuctions are a way to trade your cards. You can put any card on auction for a fee equal to 10% of your listing price, and then other users can bid on it. Each card will be on the auction list for 6 hours by default and sold to the highest bidder. If nobody bids on your card, your card will be returned to you, but the listing fee will not be refunded.",
-        "fields": [
-            {
-                "title": "IMPORTANT",
-                "description": "Please note that using alt accounts to manipulate auctions in any way may result in a temporary or even **permanent ban**"
-            },
-            {
-                "title": "->auc, ->auc [card name], or ->auc -collection",
-                "description": "Find currently active auctions\n"
-            },
-            {
-                "title": "->auc sell [card name] :[amount] :-[time in hours]",
-                "description": "List your card on auction. The lowest possible price is 0.5x eval, while the highest is 4.0x eval. If no amount is given, the eval price is used.\n The minimum amount of time for an auction is 1 hour, while the maximum is 10."
-            },
-            {
-                "title": "->auc cancel [id]",
-                "description": "Cancels your auction if there are no bids on it and there is more than 1 hour remaining. You do not get list fees back"
-            },
-            {
-                "title": "->auc bid [id] [amount]", 
-                "description": " Bid on Auctions. For example `->auc bid ktgs 500` will bid 500 `🍅` on auction with ID `ktgs`. You can not bid on your own auction. \n**IMPORTANT**: Place your bids carefully! Your tomatoes will be taken automatically when you place a bid. It will be returned to you when you have been outbid.\n You have 5 attempts to outbid someone on an auction before you are locked out from bidding on that specific auction again. If you outbid them, this counter is reset. Any extra tomatoes bid over displayed price will be returned to you upon winning an auction"
-            },
-            {
-                "title": "->auc info [id]",
-                "description": "Find info about an auction, new or old.\n"
-            },
-            {
-                "title": "->auc info all [query]",
-                "description": "Shows the first 15 auctions matching the search query in a changeable page"
-            },
-            {
-                "title": "->auc -me",
-                "description": "List your currently running auctions\n"
-            },
-            {
-                "title": "->auc -bid",
-                "description": "List the auctions you have bid on.\n"
-            },
-            {
-                "title": "->auc -diff/->auc -miss",
-                "description": "List the auctions for cards you do not own\n"
-            },
-            {
-                "title": "Diamond marks",
-                "description": "Auctions in the list has diamond marks on them:\n🔹 means that you created that auction\n🔷 means you created that auction and someone has bid on it\n🔸 means that your bid is leading in this auction\n▪️ means you can bid on this auction.\n"
-            }
-        ]
+        "docs": "en/other/auctions"
     },
     {
         "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato", "lemons", "lemon"],
-        "title": "About currencies",
-        "description": "This command will show your current amount of `🍅` Tomatoes, `🍷`Vials, and `🍋`Lemons.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n **Vials** are a secondary currency, used for drawing cards. You can get them via daily quests or liquifying cards.`->help liq` or `->help draw` for more information.\n **Lemons** are a tertriary currency used in the real of plots, find more information about them at `->help plot`",
-        "fields": [
-            {
-                "title": "Useful to know",
-                "description": "You can also spend your tomatoes by accepting trade requests from other users (`->help sell`) and selling cards on auction (`->help auc`)"
-            },
-            {
-                "title": "Promo Currency",
-                "description": "Promo currency is gotten by doing daily and claiming cards while a promotion event is running"
-            },
-            {
-                "title": "->bal",
-                "description": "Get your balance"
-            }
-        ]
+        "docs": "en/user/balance"
     },
     {
         "type": ["boost"],
-        "title": "About Boosts",
-        "description": "Boosts are admin added items that can increase your chances of claiming certain cards. These are normally run when a new collection releases, however they may also be randomly run as well.",
-        "fields": [
-            {
-                "title": "->boosts",
-                "description": "List all active boosts"
-            },
-            {
-                "title": "->boost info [boost ID]",
-                "description": "Shows information about the boost, such as drop chance and what cards are included."
-            }
-        ]
+        "docs": "en/other/events"
     },
     {
         "type": ["cards", "list", "li", "ls"],
-        "title": "About card listing",
-        "description": "Gets your cards and shows it in several pages. If you have a long card list, use *card filters* to show only the cards that you are interested in. See the filters at `->help query`",
-        "fields": [
-            {
-                "title": "Useful to know",
-                "description": "You can combine any filters in any order. If no cards found, the bot will tell you that\nTo see all collections, run `->col`"
-            },
-            {
-                "title": "->cards",
-                "description": "Show all your cards"
-            },
-            {
-                "title": "->cards -multi",
-                "description": "Show only multiple (x2+) cards"
-            },
-            {
-                "title": "->cards -[collection]\n(e.g. `->cards -yuru`)",
-                "description": "Show only cards from some collection"
-            },
-            {
-                "title": "->cards -[stars]\n(e.g. `->cards -3`)",
-                "description": "Show only cards with a specific amount of stars"
-            },
-            {
-                "title": "->cards #[tag]\n(e.g. `->cards #saber`)",
-                "description": "Show only cards with tag"
-            },
-            {
-                "title": "->cards [keywords]\n(e.g. `->cards kyoko`)",
-                "description": "Show cards that has keyword in the name"
-            }
-        ]
+        "docs": "en/cards/list-view"
     },
     {
         "type": ["channel"],
-        "title": "About bot channels",
-        "description": "Amusement Club is a discord bot that can read commands from any channel. However, there are some limitations",
-        "fields": [
-            {
-                "title": "Any channel",
-                "description": "You can `->summon` cards and call `->help`"
-            },
-            {
-                "title": "Bot channel",
-                "description": "Any command is available"
-            },
-            {
-                "title": "Direct messages",
-                "description": "You can do most commands in direct messages. Messages not allowed in DM's will notify you."
-            }
-        ]
+        "docs": ""
     },
     {
         "type": ["cl", "claim"],
-        "title": "About card claiming",
-        "description": "You can claim cards as long as you have enough `🍅` Tomatoes. Claim costs start at 50 tomatoes and increase by 50 each claim. The claim cost goes back to minimum after running `->daily`. Claim cost can be affected by Guilds in the form of taxes. Prices for claims will be adjusted by specific guild tax amounts",
-        "fields": [
-            {
-                "title": "Locked claims",
-                "description": "If the server you are claiming on is related to a specific fandom/series, that means that only one collection is used for claiming. However, you can always try and claim among all available cards for the bot. Use `->claim any` for that"
-            },
-            {
-                "title": "Useful to know",
-                "description": "This command can be executed only in bot channels (`->help channel` for more info)\nThe message above the card has the receipt which lists how much you spent, your remaining balance, how many more cards you can claim with your remaining balance, and how much your next single claim would cost."
-            },
-            {
-                "title": "->claim",
-                "description": "Get a random card (can be locked)"
-            },
-            {
-                "title": "->claim any",
-                "description": "Get any random card (Not needed if not in a locked server)"
-            },
-            {
-                "title": "->claim [amount]",
-                "description": "Get several cards, limit 10 per command"
-            },
-            {
-                "title": "->claim promo",
-                "description": "Get promo card(s) if there is an event running"
-            },
-            {
-                "title": "->claim [boost ID]",
-                "description": "Get a card using a drop boost (can be found in `->boosts`)"
-            }
-        ]
+        "docs": "en/cards/claim"
     },
     {
         "type": ["col", "collection", "collections", "clout"],
-        "title": "About collections",
-        "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command.\nCollections can be reset(clouted) for 5 star cards if they exist for that collection, or just for clout stars. You need 200 unique cards of various rarities in the collection to reset, or all of the collection if less than 200 cards, excluding 5 star cards.",
-        "fields": [
-            {
-                "title": "->col",
-                "description": "List all collections"
-            },
-            {
-                "title": "->col [name]",
-                "description": "List collections that match name"
-            },
-            {
-                "title": "->col info [name]",
-                "description": "Information about collection"
-            }, 
-            {
-                "title": "->col -completed",
-                "description": "Lists only completed collections"
-            },
-            {
-                "title": "->col -clouted",
-                "description": "Lists only clouted collections"
-            },
-            {
-                "title": "->col reset [collection name]",
-                "description": "Reset a collection for clout stars and 5 stars if available for that collection."
-            }
-        ]
+        "docs": "en/other/collections"
     },
     {
-        "type": ["craft", "forge"],
-        "title": "About card forging",
-        "description": "This command allows you to get new cards using cards that you have. Forge will consume old cards. \n If you got here with `->help craft` and are looking for craft cards. They are no longer a part of Amusement Club, see `->help effects` for the replacement(s)",
-        "fields": [
-            {
-                "title": "Forging Cards",
-                "description": "Can be used to forge cards. You can convert two cards of the same rarity, into a completely new card of the same rarity. The new card is completely random, unless the two cards used are from within the same collection. In this case new card will be also from same collection. These forges cost a percentage of both cards evals + rarity"
-            },
-            {
-                "title": "->forge [card 1 name], [second card]",
-                "description": "To forge cards"
-            },
-            {
-                "title": "Useful to know",
-                "description": "You can’t combine cards of different levels, both cards need to be unique"
-            }
-        ]
+        "type": ["forge", "craft"],
+        "docs": "en/cards/forging"
     },
     {
         "type": ["daily"],
-        "title": "About daily bonus",
-        "description": "You can get **500`🍅`** free Tomatoes every 20 hours, as well as reset your claim cost back down to 50.",
-        "fields": [
-            {
-                "title": "Useful to know",
-                "description": "New players get a 1000`🍅` bonus\n"
-            },
-            {
-                "title": "->daily",
-                "description": "Get daily bonus"
-            }
-        ]
+        "docs": "en/user/daily"
+    },
+    {
+        "type": ["quest", "quests"],
+        "docs": "en/user/quests"
     },
     {
         "type": ["dif", "diff", "difference"],
-        "title": "About difference",
-        "description": "Difference is a very useful command for trading that will show you cards that a user has that you don't. It can accept the same set of filters as the `->cards` command (See all query filters at `->help query`).  Add option `-fav` to include favorite cards.",
-        "fields": [
-            {
-                "title": "Useful to know",
-                "description": "You can combine any filters in any order.\nTo see all collections, run `->col`"
-            },
-            {
-                "title": "->diff @someuser",
-                "description": "Show all different cards"
-            },
-            {
-                "title": "->diff @someuser -multi",
-                "description": "Show only multiple (x2+) cards"
-            },
-            {
-                "title": "->diff @someuser -[collection]\n(e.g. `->diff @John -yuru`)",
-                "description": "Show only cards from some collection"
-            },
-            {
-                "title": "->diff @someuser -[stars]\n(e.g. `->diff @John -3`)",
-                "description": "Show only cards with certain amount of stars"
-            },
-            {
-                "title": "->diff #[tag]\n(e.g. `->diff #saber`)",
-                "description": "Show only cards with tag"
-            },
-            {
-                "title": "->diff [keywords]\n(e.g. `->diff kyoko`)",
-                "description": "Show cards that have the keyword in the name"
-            },
-            {
-                "title": "->diff reverse @user",
-                "description": "Show cards you have that someone else does not"
-            }
-        ]
+        "docs": "en/user/diff-miss"
     },
     {
         "type": ["draw"],
-        "title": "About Drawing",
-        "description": "Drawing is the ability to draw any non-promo card currently owned by someone within the bot, within the rarities of 1-3★, using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
-        "fields": [
-            {
-                "title": "->draw [card]",
-                "description": "Draw a card of your choosing"
-            }
-        ]
+        "docs": "en/cards/draw-liquefy"
     },
     {
         "type": ["effect", "effects"],
-        "title": "Effect cards",
-        "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such, each time you go to craft one you are likely to get different card requirements for it.",
-        "fields": [
-            {
-                "title": "->hero effects, or ->effects",
-                "description": "List all useable effects"
-            },
-            {
-                "title": "->hero slots, or ->slots",
-                "description": "List all passive effects"
-            },
-            {
-                "title": "->hero equip [slot] [passive], or ->equip [slot] [passive]",
-                "description": "Equip a passive effect"
-            },
-            {
-                "title": "->use [effect], ->hero use [effect], or ->effect use [effect]",
-                "description": "Use an active effect in your `->effects`"
-            }
-
-        ]
+        "docs": "en/quick-help/crafting-effects"
     },
     {
         "type": ["eval", "evaluate"],
-        "title": "About card pricing",
-        "description": "Card evaluations are determined by many factors such as auction pricing, amount of users owning the card, card rarity/star count, whether it is animated or not, and more. A cards evaluation is good to know if you are looking to buy cards, or trade them with others for similarly priced cards.",
-        "fields": [
-            {
-                "title": "->eval [card query]",
-                "description": "Get evaluated card price"
-            },
-            {
-                "title": "->eval all [card query]",
-                "description": "Get combined eval of all cards in query"
-            }
-        ]
+        "docs": "en/cards/evals"
     },
     {
         "type": ["fav", "favorite", "favourite"],
-        "title": "Adding cards to favorites",
-        "description": "You can add any card to favorites. Favorited cards can't be sent and they won't show up for other users in `->has` or `->diff` commands, unless you have 2 or more of those cards or they add the `-fav` query",
-        "fields": [
-            {
-                "title": "->fav [card query]",
-                "description": "Favorite a card"
-            },
-            {
-                "title": "->fav all [card query]",
-                "description": "Favorite many cards"
-            },
-            {
-                "title": "->fav remove [card query]\nor\n->unfav [card query]",
-                "description": "Remove a card from favorites"
-            },
-            {
-                "title": "->fav remove all [card query]\nor\n->unfav all [card query]",
-                "description": "Remove many from favorites"
-            },
-            {
-                "title": "->cards -fav\nor\n->favs",
-                "description": "List favorite cards"
-            }
-        ]
+        "docs": "en/cards/favorites"
     },
     {
         "type": ["guild", "server"],
-        "title": "Guild commands",
-        "description": "You can set custom prefix/bot channels for Amusement Club as well as manage guild(server) level settings.",
-        "fields": [
-            {
-                "title": "Useful to know",
-                "description": "A guild is just a discord server. Servers are defined as guilds in the code."
-            },
-            {
-                "title": "->guild",
-                "description": "List possible commands for ->guild [arg]"
-            },
-            {
-                "title": "->guild info",
-                "description": "Show basic information about current guild"
-            },
-            {
-                "title": "->guild status",
-                "description": "Status of finances and buildings"
-            },
-            {
-                "title": "->guild donate [amount]",
-                "description": "Allows you to donate your own `🍅` Tomatoes to the guild's balance that can go towards a guild lock."
-            },
-            {
-                "title": "->guild set tax [percentage]",
-                "description": "Set the claim tax of the guild (owner/manager only)"
-            },
-            {
-                "title": "->guild set report",
-                "description": "Set current channel to report channel of the guild. Only one report channel can be set (owner/manager only)"
-            },
-            {
-                "title": "->guild set bot",
-                "description": "Set current channel as bot. `->guild unset bot` will give an opposite effect (owner only)"
-            },
-            {
-                "title": "->guild set prefix",
-                "description": "Change prefix of bot on current server (owner/manager only)"
-            },
-            {
-                "title": "->guild add manager @someuser",
-                "description": "Set @user as guild manager, allowing them to set guild lock. `->guild remove manager` does the opposite (owner only)"
-            },
-            {
-                "title": "->guild lock [collection]",
-                "description": "Set current guild lock to specified collection, requires 100,000 `🍅` Tomatoes to lock, 5,000 `🍅` Tomatoes/day to upkeep. Can only be set once every 7 days. `->guild unlock` removes the lock (owner/manager only)"
-            }
-        ]
+        "docs": "en/getting-started/server"
     },
     {
         "type": ["has"],
-        "title": "Learn if user has a card",
-        "description": "This command will try to find if a user has a certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already.",
-        "fields": [
-            {
-                "title": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)",
-                "description": "Use command"
-            }
-        ]
+        "docs": "en/user/has"
     },
     {
         "type": ["hero", "heroes"],
-        "title": "About Heroes",
-        "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. The price to submit heroes increases exponentially in price with each submission, starting at 512. You can gain hero XP globally with daily and using hero effects.",
-        "fields": [
-            {
-                "title": "->hero",
-                "description": "Display your current hero"
-            },
-            {
-                "title": "->hero info [name]",
-                "description": "Display information about a hero"
-            },
-            {
-                "title": "->hero list",
-                "description": "List all heroes available"
-            },
-            {
-                "title": "->hero get [name]",
-                "description": "Get a hero"
-            },
-            {
-                "title": "->hero equip [slot number] [effect number], or ->hero equip [slot number] [effect name]",
-                "description": "Equip a passive effect to a hero"
-            },
-            {
-                "title": "->hero submit [Anilist link]",
-                "description": "Submit a hero for review"
-            }
-        ]
+        "docs": "en/other/heroes"
     },
     {
         "type": ["info", "information"],
-        "title": "About info",
-        "description": "Info allows you to see more information about a card, such as Price, Global Average Rating, Source, and Tags",
-        "fields": [
-            {
-                "title": "->info [card name]",
-                "description": "Get more information about a card"
-            }
-        ]
+        "docs": "en/cards/info"
     },
     {
         "type": ["inv", "inventory"],
-        "title": "About inventory",
-        "description": "Inventory contains different items that can be used in game such as effect recipes. Items can be stored for an unlimited amount of time.",
-        "fields": [
-            {
-                "title": "->inv",
-                "description": "See the list of your items"
-            },
-            {
-                "title": "->inv use [some item name]",
-                "description": "Use item"
-            },
-            {
-                "title": "->inv info [some item name]",
-                "description": "Get item info"
-            }
-        ]
+        "docs": "en/user/inventory"
     },
     {
         "type": ["invite"],
-        "title": "About bot invitation",
-        "description": "You can add Amusement Club to any other server. Type `->invite` to get an invite link with all permissions set up.",
-        "fields": [
-            {
-                "title": "Setting up your server",
-                "description": "The channel where you run your first command becomes a bot channel.\n`->guild info` will show you the list of bot channels. You can set a bot channel by typing `->guild set bot` in that channel. `->guild unset bot` will remove bot perms from current channel.\nDon't remove 'send messages' permission from channels where you want `->summon` to work.\nIf you want to exclude Amusement Club from other bot channel, make sure you remove **both** 'read' and 'send' permissions. If you leave 'read messages' permission on, bot will still read commands, but won't be able to respond which can lead to confusion and loss of tomatoes"
-            },
-            {
-                "title": "Channel Privacy (2018-05-28)",
-                "description": "Bot constantly reads all the messages, however it logs only messages that start with `->`. Feel free to exclude bot from ANY channels, that you want to secure contents of.\n**Messages in Logs** can be used by **bot administration** to find bugs/errors and cheaters. In order to secure your channels completely from any bot, make sure that it is **not** present in channels, that may contain any **confidential** information"
-            },
-            {
-                "title": "Server administration",
-                "description": "**Please note**, that the bot can be invited only by users that have the permission to invite bots to your server. If you are NOT target server administrator, send *generated link* to administrator or any person with corresponding role"
-            },
-            {
-                "title": "Any questions?",
-                "description": "If you have any questions regarding bot, please ask them [in bot discord](https://discord.gg/xQAxThF)"
-            },
-            {
-                "title": "Ready to invite?",
-                "description": "Please, run `->invite` to get a link."
-            }
-        ]
+        "docs": ""
     },
     {
         "type": ["liquify", "liq"],
-        "title": "About Liquify",
-        "description": "You can Liquify any card from 1-3★ rarity into `🍷`Vials. The amount of `🍷`Vials you get is dependent on current Eval price and rarity of card being liquified",
-        "fields": [
-            {
-                "title": "->liquify [card]",
-                "description": "Liquify a card of your choosing"
-            },
-            {
-                "title": "->liquify all [card query]",
-                "description": "Liquify all(limit 100) cards in a specific query"
-            },
-            {
-                "title": "->liq preview [card query]",
-                "description": "Previews a liq of all cards(limit 100) in a query"
-            }
-        ]
+        "docs": "en/cards/draw-liquefy"
     },
     {
 
         "type": ["miss", "missing"],
-        "title": "About Miss",
-        "description": "Miss allows you to view your overall missing cards. If an argument is added you can search within cards you don't have",
-        "fields": [
-            {
-                "title": "->miss",
-                "description": "Display all missing cards"
-            },
-            {
-                "title": "->miss [card query]",
-                "description": "Display all missing cards within a certain argument(ex: -col, -rating, -gif, #tag)"
-            }
-        ]
+        "docs": "en/user/diff-miss"
     },
     {
         "type": ["plot", "plots"],
-        "title": "About Plots",
-        "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nPlease note that only one building per type is allowed in a single guild. If you would like to have or utilize multiple buildings they need to be installed in other guilds.",
-        "fields": [
-            {
-                "title": "->plots",
-                "description": "Display your plots in current guild"
-            },
-            {
-                "title": "->plots global",
-                "description": "Display all your plots globally"
-            },
-            {
-                "title": "->plot buy",
-                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by 50, so your 10th plot would cost 500 lemons"
-            },
-            {
-                "title": "->plot info [plot #]",
-                "description": "Displays the information about the specific plot in the current guild."
-            },
-            {
-                "title": "->plot info global [plot #]",
-                "description": "Displays the information about the specific plot from your global list."
-            },
-            {
-                "title": "->plot upgrade [plot #]",
-                "description": "Upgrade a specific building on one of your plots in the current guild."
-            },
-            {
-                "title": "->plots collect",
-                "description": "Collect all stored lemons in the buildings in the current guild."
-            }
-        ]
+        "docs": "en/other/plots"
     },
     {
         "type": ["preferences", "prefs", "notify", "notifications"],
-        "title": "About Preferences",
-        "description": "Preferences are a personal setting to enable or disable certain bot notifications",
-        "fields": [
-            {
-                "title": "->prefs",
-                "description": "Displays available preference options"
-            },
-            {
-                "title": "->prefs [id]",
-                "description": "Displays available options in a sub-menu"
-            },
-            {
-                "title": "->prefs set [id] [option] [true/false]",
-                "description": "Enable or disable an options within a preferences menu"
-            }
-        ]
+        "docs": "en/user/preferences"
     },
     {
         "type": ["profile"],
-        "title": "About Profiles",
-        "description": "Profiles are a way to quickly and nicely see your current: Level, Card Count, Star Count, Clout Count, Time Since Start, and Bot Roles(if any)",
-        "fields": [
-            {
-                "title": "->profile",
-                "description": "Display your own profile"
-            },
-            {
-                "title": "->profile [Discord UserID]",
-                "description": "Display someone else's profile"
-            }
-        ]
+        "docs": "en/user/profile"
     },
     {
         "type": ["query"],
-        "title": "Card query",
-        "description": "In the help messages you will often see `[card query]`. But what does it mean?\n In Amusement Club you can get cards in any request type by using different card parameters. These parameters can be also combined, and are applied in the order you supply them (e.g. `->cards >rating >amount` would list your cards in order of rating, and then within the ratings they will be sorted by amount)",
-        "fields": [
-            {
-                "title": "->cards [some name]",
-                "description": "Name"
-            },
-            {
-                "title": "->cards -[collection]",
-                "description": "Collection"
-            },
-            {
-                "title": "->cards -multi",
-                "description": "Show only cards you have multiple of"
-            },
-            {
-                "title": "->cards -# (where # is amount of stars)",
-                "description": "Rarity"
-            },
-            {
-                "title": "->cards -gif",
-                "description": "Animated"
-            },
-            {
-                "title": "->cards -fav",
-                "description": "Favorite"
-            },
-            {
-                "title": "->cards ![collection] !fav !gif !craft",
-                "description": "Make a NEGATIVE request for every `-` request. This does the opposite of what the `-` does."
-            },
-            {
-                "title": "->cards >col or ->cards <col",
-                "description": "Sort by collection name"
-            },
-            {
-                "title": "->cards >eval or ->cards <eval",
-                "description": "Sort by eval amount"
-            },
-            {
-                "title": "->cards >date or ->cards <date",
-                "description": "Sort by time when card was acquired"
-            },
-            {
-                "title": "->cards >star (default) or ->cards <star",
-                "description": "Sort by star amount"
-            },
-            {
-                "title": "->cards >amount or ->cards <amount",
-                "description": "Sort by amount"
-            },
-            {
-                "title": "->cards >name or ->cards <name",
-                "description": "Sort alphabetically"
-            },
-            {
-                "title": "->cards ># or ->cards <#",
-                "description": "Filter by amount of copies greater than or less than number\nIf <3 doesn't work, you need to type `\\<3`"
-            },
-            {
-                "title": "->cards >=# or ->cards <=#",
-                "description": "Filter by amount of copies equal to or greater than or equal to or less than number"
-            },
-            {
-                "title": "->cards =#",
-                "description": "Filter for exact amount of copies you own"
-            },
-            {
-                "title": "-f",
-                "description": "Adding -f to most commands that require you to confirm or deny bypasses the prompt and forces the command through. Whether you meant to or not."
-            }
-        ]
+        "docs": "en/cards/query"
     },
     {
         "type": ["rate","rating"],
-        "title": "Card Ratings",
-        "description": "Players can rate their cards and view those ratings or even sort by them. Players' ratings are averaged into a global average rating that can be seen with ->info [card]",
-        "fields": [
-            {
-                "title": "->rate [card] :[rating]",
-                "description": "Rate one of your cards from 1 to 10."
-            },
-            {
-                "title": "->rate remove [card]",
-                "description": "Remove the rating of a card"
-            },
-            {
-                "title": "->cards >rating",
-                "description": "Order your cards by rating. Using <rating will list from lowest rated first"
-            }
-        ]
+        "docs": "en/cards/rating"
     },
     {
         "type": ["rules"],
-        "title": "Bot rules",
-        "description": "Please follow these rules when trading and interacting with other players. Ignoring the rules can lead to embargo or ban",
-        "fields": [
-            {
-                "title": "Direct Trading",
-                "description": "There are no commands to gift another player tomatoes nor cards. This is on purpose. Behavior that aims to bypass these restrictions is prohibited."
-            },
-            {
-                "title": "Auction Bidding",
-                "description": "Bidding on auctions for the express purpose of helping someone gain tomatoes is prohibited. This includes buying cards from someone on auction and re-selling it to them, bidding to drive the price higher for them, and more."
-            },
-            {
-                "title": "Multiple Accounts",
-                "description": "This is only allowed if your accounts do not interact with each other."
-            },
-            {
-                "title": "Tagging Bypass",
-                "description": "Attempts to bypass banned words in the tagging process is prohibited. Users found doing this repeatedly will be subject to tagging bans and/or 10,000 tomato fine.\nIf tags are found to be done from an alt, the 10,000 tomato fine will be subjected to the main account, as well as proper punishment for alt usage."
-            },
-            {
-                "title": "Tagging Guidelines",
-                "description": "We are looking for useful tags, not tags based on opinions. \nTag types we are looking for:\n- Character name(s) of pictured\n- Fandom name(s) pictured\n- Key descriptions: `Animal_ears, cat_ears, fox_girl, maid`\n- Word Separation with \\_: Kanna`_`Kamui\n\nTag types we are NOT looking for:\n- Cute X: `Cute girls, cute girl, cute boys, cute boy`\n- Best X: `Best Girl, Best Boy, Best Character etc.`\n- Worst X: `Same as above, replace best with worst`\n- No Word Separation: kannakamui"
-            },
-            {
-                "title": "Play nice",
-                "description": "Don’t be annoying or rude towards other players.\nUse ID instead of ping when possible."
-            }
-        ]
+        "docs": "en/getting-started/rules"
     },
     {
         "type": ["sell", "trade"],
-        "title": "About cards selling",
-        "description": "Users can sell cards either to the bot or to other users. In both cases the prices are defined by the bot.",
-        "fields": [
-            {
-                "title": "->sell [card query]",
-                "description": "Sell a card to the bot for a percentage of eval"
-            },
-            {
-                "title": "->sell all [card query]",
-                "description": "Sell all cards(limit 100) in a query to the bot for a percentage of eval"
-            },
-            {
-                "title": "->sell preview [card query]",
-                "description": "Previews a sale of all cards(limit 100) in a query to the bot (or user if ID provided)"
-            },
-            {
-                "title": "->sell @user [card query]",
-                "description": "Sell a card to another user. Target user will be asked to confirm or decline your transaction. You can **not** send more than 5 requests to the same user. Selling price is decided by bot using **eval algorithm**. You can always run `->eval [card query]` to find out the card's cost before trading it"
-            },
-            {
-                "title": "->sell all @user [card query]",
-                "description": "Sell all cards(limit 100) in a query to another user. Target user will be asked to confirm or decline your transaction. You can **not** send more than 5 requests to the same user. Selling price is decided by bot using **eval algorithm**. You can always run `->eval [card query]` to find out the card's cost before trading it"
-            }
-        ]
+        "docs": "en/other/selling"
     },
     {
         "type": ["store", "st", "building", "buildings", "castle", "tavern", "auchouse", "gbank", "smithhub"],
-        "title": "About store",
-        "description": "The store is where you can buy recipes for effects. To browse the store, use the `category` name or number with the commands below.",
-        "fields": [
-            {
-                "title": "->store",
-                "description": "List the Store Categories"
-            },
-            {
-                "title": "->store [category name]",
-                "description": "Browse the Categories"
-            },
-            {
-                "title": "->store info [item name]",
-                "description": "Get info on a specific item in the store"
-            }, 
-            {
-                "title": "->store buy [item name]",
-                "description": "Buy a specific item from the store"
-            }
-         ]
+        "docs": "en/other/store"
     },
     {
         "type": ["sum", "summon"],
-        "title": "About card summoning",
-        "description": "You can summon a card in any channel on a server, but only if you have the card. This operation won't consume the card.\nYou can use a partial name of the card, but it has to be more than 3 characters long. The system will try to find the *most suitable card* using the name you provided.\nSummon takes all queries listed in `->help query` relating to cards you own.",
-        "fields": [
-            {
-                "title": "->sum [card query]",
-                "description": "Summon a card"
-            }
-        ]
+        "docs": "en/cards/list-view"
     },
     {
         "type": ["support", "embargo", "ban"],
-        "title": "Support for embargo and tag ban",
-        "description": "Join the main support discord for the bot with this [invite link](https://discord.gg/xQAxThF) and head to the #support channel for inquiries",
-        "fields": []
+        "docs": "en/quick-help/embargo"
     },
     {
         "type": ["tag", "tags", "tagging"],
-        "title": "About tagging",
-        "description": "You can tag cards with #tags to help you and the playerbase better find cards. Adding a tag already on a card upvotes the tag.",
-        "fields": [ 
-            {
-                "title": "IMPORTANT INFORMATION",
-                "description": "Tags are a global item, meaning everyone can see your tags. This is why we have tag rules. Read below for tag rules. If you have not run `->help tag`, do that command to see the rules, or do `->rules`."
-            },
-            {
-                "title": "->tag [card] #your_tag_here",
-                "description": "Upvote or Add a tag to a card"
-            },
-            {
-                "title": "->tags created",
-                "description": "List all tags you have created"
-            },
-            {
-                "title": "->tag down [card] #some_tag_here",
-                "description": "Downvote a tag on a card"
-            }, 
-            {
-                "title": "->tag info #some_tag_here [card]",
-                "description": "View information about a tag"
-            },
-            {
-                "title": "->tags [card]",
-                "description": "View tags on a card"
-            },
-            {
-                "title": "Tagging Bypass",
-                "description": "Attempts to bypass banned words in the tagging process is prohibited. Users found doing this repeatedly will be subject to tagging bans and/or 10,000 tomato fine.\nIf tags are found to be done from an alt, the 10,000 tomato fine will be subjected to the main account, as well as proper punishment for alt usage."
-            },
-            {
-                "title": "Tagging Guidelines",
-                "description": "__FAILURE TO FOLLOW THE BELOW CAN RESULT IN YOU BEING BANNED FROM TAGGING__\nWe are looking for useful tags, not tags based on opinions. \nTag types we are looking for:\n- Character name(s) of pictured\n- Fandom name(s) pictured\n- Key descriptions: `Animal_ears, cat_ears, fox_girl, maid`\n- Word Separation with \\_: Kanna`_`Kamui\n\nTag types we are NOT looking for:\n- Cute X: `Cute girls, cute girl, cute boys, cute boy`\n- Best X: `Best Girl, Best Boy, Best Character etc.`\n- Worst X: `Same as above, replace best with worst`\n- No Word Separation: kannakamui"
-            }
-
-        ]
+        "docs": "en/cards/tags"
     },
     {
         "type": ["trans", "transactions"],
-        "title": "About transaction history",
-        "description": "You can review your transaction history; this includes sells and auctions. Transactions older than a certain amount of time are removed.\nIf transaction was done via auction, you can also get auction details using the auction ID `->auc info [auction ID]`",
-        "fields": [
-            {
-                "title": "->trans [optional query]",
-                "description": "List all recent transactions"
-            },
-            {
-                "title": "->trans gets [optional query]",
-                "description": "List of the transactions where you get a card"
-            },
-            {
-                "title": "->trans sends [optional query]",
-                "description": "List of the transactions where you sent a card"
-            },
-            {
-                "title": "->trans auction [optional query]",
-                "description": "List your auction transactions "
-            },
-            {
-                "title": "->trans auction gets [optional query]",
-                "description": "List auction transactions from auctions you won"
-            },
-            {
-                "title": "->trans auction sends [optional query]",
-                "description": "List auction transactions where you sold a card"
-            },
-            {
-                "title": "->pending",
-                "description": "List of the transactions that are waiting for confirmations"
-            },
-            {
-                "title": "->confirm [ID]",
-                "description": "Confirm a pending transaction"
-            },
-            {
-                "title": "->decline [ID]",
-                "description": "Decline a pending transaction"
-            },
-            {
-                "title": "->trans info [ID]",
-                "description": "Gets detailed info about transaction using TransactionID"
-            }
-        ]
+        "docs": "en/other/transactions"
     },
     {
         "type": ["wishlist", "wish"],
-        "title": "About wishlists",
-        "description": "Wishlists are a way to store a list of cards you don't own but would like to own. More information will be filled out as the feature matures. (Note there is currently no way to view someone else's wishlist, this will be added in the future)",
-        "fields": [
-            {
-                "title": "->wishlist list",
-                "description": "Display your own wishlist"
-            },
-            {
-                "title": "->wishlist [card]",
-                "description": "Add a card to your wishlist"
-            },
-            {
-                "title": "->wishlist add all [query]",
-                "description": "Add all cards in a query to your wishlist"
-            },
-            {
-                "title": "->wishlist remove [card]",
-                "description": "Remove a card from your wishlist"
-            },
-            {
-                "title": "->wishlist remove all [query]",
-                "description": "Remove all cards in a query from your wishlist"
-            }
-        ]
+        "docs": "en/user/wishlist"
     }
 ]

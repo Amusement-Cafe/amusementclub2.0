@@ -40,6 +40,7 @@ module.exports = model('Userstats', {
     store1:         { type: Number, default: 0 },
     store2:         { type: Number, default: 0 },
     store3:         { type: Number, default: 0 },
+    store4:         { type: Number, default: 0 },
     t1quests:       { type: Number, default: 0 },
     t2quests:       { type: Number, default: 0 },
 })

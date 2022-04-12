@@ -49,6 +49,7 @@ module.exports = [
         id: 'allcards',
         name: 'Sketchy Collector!',
         desc: 'Collect All Cards, the Sachi way!',
+        hidden: true,
         actions: ['cl', 'claim', 'cards', 'ls'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id] && !ctx.cards[x.id].excluded).length
             >= ctx.cards.filter(x => !x.excluded).length,
@@ -206,6 +207,7 @@ module.exports = [
         id: '5000stars',
         name: `I'm somewhat of a star myself`,
         desc: 'Get 5,000 stars',
+        hidden: true,
         actions: ['claim', 'cl'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
             .map(x => ctx.cards[x.id].level)
@@ -221,6 +223,7 @@ module.exports = [
         id: '10kstars',
         name: `On the road to being an All Star`,
         desc: 'Get 10,000 stars',
+        hidden: true,
         actions: ['claim', 'cl'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
             .map(x => ctx.cards[x.id].level)
@@ -236,6 +239,7 @@ module.exports = [
         id: '15kstars',
         name: `All Star Rookie`,
         desc: 'Get 15,000 stars',
+        hidden: true,
         actions: ['claim', 'cl'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
             .map(x => ctx.cards[x.id].level)
@@ -251,6 +255,7 @@ module.exports = [
         id: '20kstars',
         name: `All Star Pro`,
         desc: 'Get 20,000 stars',
+        hidden: true,
         actions: ['claim', 'cl'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
             .map(x => ctx.cards[x.id].level)
@@ -266,6 +271,7 @@ module.exports = [
         id: '25kstars',
         name: `Hey now, you're an All Star Champion`,
         desc: 'Get 25,000 stars',
+        hidden: true,
         actions: ['claim', 'cl'],
         check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
             .map(x => ctx.cards[x.id].level)
@@ -472,7 +478,7 @@ module.exports = [
         id: 'firstwish',
         name: `When you wish upon a card`,
         desc: 'Add a card to your wishlist',
-        actions: ['wish'],
+        actions: ['wish', 'wishlist'],
         check: (ctx, user) => user.wishlist.length > 0,
         resolve: (ctx, user, stats) => {
             user.exp += 200
@@ -485,6 +491,7 @@ module.exports = [
         id: '1year',
         name: `Story of seasons`,
         desc: 'Play the bot for a year!',
+        hidden: true,
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 1, 'years')
@@ -505,6 +512,7 @@ module.exports = [
         id: '2year',
         name: `It's not an addiction`,
         desc: 'Play the bot for 2 years!',
+        hidden: true,
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 2, 'years')
@@ -525,6 +533,7 @@ module.exports = [
         id: '3year',
         name: `Can't stop, Won't stop`,
         desc: 'Play the bot for 3 years!',
+        hidden: true,
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 3, 'years')
@@ -545,6 +554,7 @@ module.exports = [
         id: '4year',
         name: `Putting fourth some effort`,
         desc: 'Play the bot for 4 years!',
+        hidden: true,
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 4, 'years')
@@ -565,6 +575,7 @@ module.exports = [
         id: '5year',
         name: `Half a decade!`,
         desc: 'Play the bot for 5 years!',
+        hidden: true,
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 5, 'years')

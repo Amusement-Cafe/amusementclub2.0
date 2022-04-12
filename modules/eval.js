@@ -18,11 +18,12 @@ const queueTick = 200
 const evalLastDaily = asdate.subtract(new Date(), 6, 'months');
 const evalQueue = []
 
-let userCount, userCountUpdated, evalPromise
+let userCount, userCountUpdated, evalPromise, activeList
 
 const evalCard = async (ctx, card, modifier = 1) => {
     if((!userCount && Date.now() - userCountUpdated > userCountTTL) || !userCountUpdated) {
-        userCount = await User.countDocuments({ lastdaily: { $gt: evalLastDaily }})
+        activeList = (await User.find({ lastdaily: { $gt: evalLastDaily }}, {discord_id: 1}).lean()).map(x => x.discord_id)
+        userCount = activeList.length
         userCountUpdated = Date.now()
     }
     
@@ -42,9 +43,7 @@ const evalCardFast = (ctx, card) => {
 }
 
 const updateCardUserCount = async (ctx, card, count) => {
-    // TODO consider only active users
-    const ownercount = count || (await UserCard.countDocuments({ cardid: card.id }))
-
+    const ownercount = count || (await UserCard.countDocuments({ userid: {$in: activeList}, cardid: card.id }))
     const info = fetchInfo(ctx, card.id)
     const cachedCard = ctx.cards.find(x => x.id === card.id)
     info.id = card.id
@@ -126,6 +125,9 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     let price =  Math.round(((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
         * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * modifier)
 
+    if (card.level === 5)
+        price = Math.round(legendaryBaseEval(ctx, card) * modifier)
+
     if (info.aucevalinfo.evalprices.length >= ctx.eval.aucEval.minSamples) {
 
         let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
@@ -138,6 +140,19 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     }
 
     return price === Infinity? 0 : price
+}
+
+const legendaryBaseEval = (ctx, card) => {
+    const colCards = ctx.cards.filter(x => card.col === x.col && x.level !== 5)
+    const division = colCards.length >= 200? colCards.length / 200: 1
+    const stars = [
+        colCards.filter(x => x.level === 4).map(y => evalCardFast(ctx, y)),
+        colCards.filter(x => x.level === 3).map(y => evalCardFast(ctx, y)),
+        colCards.filter(x => x.level === 2).map(y => evalCardFast(ctx, y)),
+        colCards.filter(x => x.level === 1).map(y => evalCardFast(ctx, y))
+    ]
+    const sum = stars.map(x => x.length? x.reduce((a, b) => a + b) / division: 0).reduce((y, z) => y + z)
+    return Math.round(sum * 0.4)
 }
 
 const evalAucOutlierCheck = (ctx, number, index, info) => {
@@ -162,7 +177,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
 
         if (auc.price > eval * 1.5)
-            float = eval * ctx.eval.aucEval.aucFailMultiplier
+            float = eval
 
         info.aucevalinfo.newaucprices.push(Math.floor(float))
     } else {
@@ -253,7 +268,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         info.aucevalinfo.lasttoldeval = newEval
 
         if (ctx.eval.aucEval.evalUpdateChannel)
-            await ctx.send(ctx.eval.aucEval.evalUpdateChannel, pricesEmbed)
+            await ctx.bot.createMessage(ctx.eval.aucEval.evalUpdateChannel, {embed: pricesEmbed})
     }
 
     await info.save()
