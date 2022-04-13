@@ -362,18 +362,14 @@ cmd(['hero', 'submit'], async (ctx, user, arg1) => {
     if(!char)
         return ctx.reply(user, `cannot find a valid character at this URL`, 'red')
 
-    if(!char.media)
-        return ctx.reply(user, `seems like this character doesn't have any associated anime.
-            Only characters with valid animeography are allowed`, 'red')
+    if(!char.media || char.media.length == 0)
+        return ctx.reply(user, `seems like this character doesn't have any associated media.
+            Only characters with valid media sources are allowed`, 'red')
 
-    const media = char.media.find(x => x.type === 'ANIME')
-    if(!media)
-        return ctx.reply(user, `seems like this character doesn't have any associated anime.
-            Only characters with valid animeography are allowed`, 'red')
-
+    const media = char.media[0]
     const embed = { 
         title: `Submitting a hero`,
-        description: `You are about to submit **${char.name.english}** from **${media.title.english}**.
+        description: `You are about to submit **${char.name.english || char.name.native}** from **${media.title.english || media.title.romaji}**.
         > This submission will cost you **${numFmt(price)}** ${ctx.symbols.tomato}
         > It may take up some time to review the character. You will keep your current hero while the submission is being processed.
         Proceed?`,

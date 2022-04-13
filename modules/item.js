@@ -39,12 +39,17 @@ const mapUserInventory = (ctx, user) => {
  */
 const withUserItems = (callback) => (ctx, user, ...args) => {
     if (user.inventory.length == 0) 
-        return ctx.reply(user, 'your inventory is empty', 'red')
+        return ctx.reply(user, `your inventory is empty.
+        You can obtain inventory items in the \`${ctx.prefix}store\`.
+        If you are looking for your cards, use \`${ctx.prefix}cards\` instead.
+        For more information see \`${ctx.prefix}help inventory\``, 'red')
 
     let items = mapUserInventory(ctx, user)
-
-    if(!isNaN(args[0]))
-        items = [items[parseInt(args[0]) - 1]]
+    let index
+    if(!isNaN(args[0])) {
+        index = parseInt(args[0]) - 1
+        items = [items[index]]
+    }
     else if(args.length > 0) {
         const reg = new RegExp(args.join('*.'), 'gi')
         items = items.filter(x => reg.test(x.id))
@@ -55,7 +60,7 @@ const withUserItems = (callback) => (ctx, user, ...args) => {
     if(items.length === 0)
         return ctx.reply(user, `found 0 items with ID \`${args.join('')}\``, 'red')
 
-    return callback(ctx, user, items, args)
+    return callback(ctx, user, items, args, index)
 }
 
 const withItem = (callback) => (ctx, user, ...args) => {
@@ -79,13 +84,13 @@ const withItem = (callback) => (ctx, user, ...args) => {
     return callback(ctx, user, item, args)
 }
 
-const useItem = (ctx, user, item) => uses[item.type](ctx, user, item)
+const useItem = (ctx, user, item, index) => uses[item.type](ctx, user, item, index)
 const itemInfo = (ctx, user, item) => infos[item.type](ctx, user, item)
 const buyItem = (ctx, user, item) => buys[item.type](ctx, user, item)
 const checkItem = (ctx, user, item) => checks[item.type](ctx, user, item)
 
 const uses = {
-    blueprint: async (ctx, user, item) => {
+    blueprint: async (ctx, user, item, index) => {
         const check = await checks.blueprint(ctx, user, item)
         if(check)
             return ctx.reply(user, check, 'red')
@@ -102,7 +107,7 @@ const uses = {
         await emptyPlot.save()
 
         user.lemons -= item.levels[0].price
-        pullInventoryItem(user, item.id)
+        pullInventoryItem(user, item.id, index)
         await user.save()
 
         ctx.mixpanel.track(
@@ -116,25 +121,50 @@ const uses = {
         return ctx.reply(user, `you successfully built **${item.name}** in **${ctx.msg.channel.guild.name}**`)
     },
 
-    claim_ticket: async (ctx, user, item) => {
-        const col = item.col? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity))
-        const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === item.level))
+    claim_ticket: async (ctx, user, item, index) => {
+        if(!_.isArray(item.level))
+            item.level = [item.level]
+        let cards = []
+        let resp = `**${user.username}** you got:\n`
+        
+        item.level.map(x => {
+            let col = item.col && item.col !== 'random'? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo))
+            cards.push(_.sample(ctx.cards.filter(y => y.col === col.id && y.level === x)))
+        })
 
-        if(!card)
+        if(cards.length === 0)
             return ctx.reply(user, `seems like this ticket is not valid anymore`, 'red')
 
-        addUserCard(user, card.id)
-        pullInventoryItem(user, item.id)
+        cards.map(x => {
+            const count = addUserCard(user, x.id)
+            if (count > 1)
+                resp += `**${formatName(x)}** #${count}\n`
+            else
+                resp += `**new** **${formatName(x)}**\n`
+        })
+        resp += `from using **${item.name}**`
+
+        pullInventoryItem(user, item.id, index)
         await user.save()
 
-        return ctx.reply(user, {
-            image: { url: card.url },
-            color: colors.blue,
-            description: `you got **${formatName(card)}**!`
+        user.markModified('cards')
+        user.lastcard = cards[0].id
+        await user.save()
+
+        const pages = cards.map(x => x.url)
+        return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+            pages,
+            buttons: ['back', 'forward'],
+            switchPage: (data) => data.embed.image.url = data.pages[data.pagenum],
+            embed: {
+                color: colors.green,
+                description: resp,
+                image: { url: '' }
+            }
         })
     },
 
-    recipe: async (ctx, user, item) => {
+    recipe: async (ctx, user, item, index) => {
         let eobject, desc
         const check = checks.recipe(ctx, user, item)
         if(check)
@@ -186,7 +216,7 @@ const uses = {
             removeUserCard(ctx, user, x)
             completed(ctx, user, ctx.cards[x])
         })
-        pullInventoryItem(user, item.id)
+        pullInventoryItem(user, item.id, index)
         user.effects.push(eobject)
         await user.save()
         user.markModified('cards')
@@ -213,6 +243,7 @@ const infos = {
         item.levels.map((x, i) => (embed.fields.push({
             name: `Level ${i + 1}`,
             value: `Price: **${x.price}** ${ctx.symbols.lemon}
+                Level Requirement: **${x.level}**
                 > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
         })))
         return embed
@@ -311,7 +342,20 @@ const checks = {
 
 const buys = {
     blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
-    claim_ticket: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
+    claim_ticket: (ctx, user, item) => {
+        let col
+        if(!_.isArray(item.level))
+            item.level = [item.level]
+
+        if(item.col !== "random")
+            col = _.sample(ctx.collections.filter(x => !x.rarity && !x.promo))
+
+        let uItem = { id: item.id, time: new Date() }
+        if (col)
+            uItem.col = col.id
+        
+        user.inventory.push(uItem)
+    },
     recipe: (ctx, user, item) => {
         const cards = item.recipe.reduce((arr, x) => {
             arr.push(_.sample(ctx.cards.filter(y => y.level === x 
@@ -326,14 +370,18 @@ const buys = {
 const getQuestion = (ctx, user, item) => {
     switch(item.type) {
         case 'blueprint': return `Do you want to build **${item.name}** in **${ctx.msg.channel.guild.name}**?`
-        case 'claim_ticket': return `Do you want to use **${item.name}** to get a **${item.level}★** card?`
+        case 'claim_ticket': return `Do you want to use **${item.name}** to get **${_.isArray(item.level)? `${item.level.length} ${item.level[0]}`: `1 ${item.level}`} ★** card(s)?`
         case 'recipe': return `Do you want to convert **${item.name}** into an Effect Card? The required cards will be consumed`
     }
 }
 
-const pullInventoryItem = (user, itemid) => {
-    const el = user.inventory.find(x => x.id === itemid)
-    _.pullAt(user.inventory, user.inventory.indexOf(el))
+const pullInventoryItem = (user, itemid, index) => {
+    if (index) {
+        _.pullAt(user.inventory, index)
+    } else {
+        const el = user.inventory.find(x => x.id === itemid)
+        _.pullAt(user.inventory, user.inventory.indexOf(el))
+    }
     user.markModified('inventory')
 }
 

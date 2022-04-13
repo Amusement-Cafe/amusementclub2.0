@@ -46,7 +46,8 @@ const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, 
         await transaction.save()
         await lockFile.unlock('trans')
         return resolve(transaction)
-    }).catch((e) => {
+    }).catch(async (e) => {
+        await lockFile.unlock('trans')
         return reject(e)
     })
 })
@@ -149,7 +150,7 @@ const confirm_trs = async (ctx, user, trs_id) => {
     }
 
     if (transaction.cards.length === 1)
-        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 
     return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
 }
@@ -182,6 +183,11 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
     if(user.ban && user.ban.embargo)
         return `you are not allowed to sell cards.
                 Your dealings were found to be in violation of our community rules.
+                You can inquire further on our [Bot Discord](${ctx.cafe})`
+
+    if(targetuser && targetuser.ban && (targetuser.ban.embargo || targetuser.ban.full))
+        return `the user you are attempting to sell to is embargoed.
+                Cards cannot be sold to this user until they have had their embargo lifted.
                 You can inquire further on our [Bot Discord](${ctx.cafe})`
     
     if(!ctx.msg.channel.guild)

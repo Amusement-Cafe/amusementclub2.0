@@ -114,7 +114,7 @@ cmd(['forge'], withMultiQuery(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, newcard)
                 await user.save()
 
-                await plotPayout(ctx, 'smithhub', 1, newcard.level * 10)
+                await plotPayout(ctx, 'smithhub', 1, 10)
 
                 const usercard = user.cards.find(x => x.id === newcard.id)
                 return ctx.reply(user, {
@@ -148,7 +148,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
         vials += vials * .25
 
     if(card.fav && card.amount === 1)
-        return ctx.reply(user, `you are about to put up last copy of your favourite card for sale. 
+        return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
             Please, use \`->fav remove ${card.name}\` to remove it from favourites first`, 'yellow')
 
     const question = `Do you want to liquify ${formatName(card)} into **${numFmt(vials)}** ${ctx.symbols.vial}?
@@ -167,7 +167,7 @@ cmd('liq', 'liquify', withCards(async (ctx, user, cards, parsedargs) => {
                 await completed(ctx, user, card)
                 await user.save()
 
-                await plotPayout(ctx, 'smithhub', 2, card.level * 15)
+                await plotPayout(ctx, 'smithhub', 2, 15)
 
                 ctx.reply(user, `card ${formatName(card)} was liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
@@ -226,12 +226,16 @@ cmd(['liq', 'all'], ['liquify', 'all'], withCards(async (ctx, user, cards, parse
             try {
                 user.vials += vials
 
+                let lemons = 0
                 cards.map(c => {
                     removeUserCard(ctx, user, c.id)
                     user.dailystats.liquify += 1
                     user.dailystats[`liquify${c.level}`] += 1
+                    lemons += 15
                 })
                 await user.save()
+                await plotPayout(ctx, 'smithhub', 2, lemons)
+
 
                 ctx.reply(user, `${cards.length} cards were liquified. You got **${numFmt(vials)}** ${ctx.symbols.vial}
                     You have **${numFmt(user.vials)}** ${ctx.symbols.vial}
@@ -330,7 +334,8 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
 
     if(user.vials < vials)
         return ctx.reply(user, `you don't have enough vials to draw ${formatName(card)}
-            You need **${numFmt(vials)}** ${ctx.symbols.vial} (+**${numFmt(extra)}**) but you have **${numFmt(user.vials)}** ${ctx.symbols.vial}`, 'red')
+            You need **${numFmt(vials)}** ${ctx.symbols.vial} (+**${numFmt(extra)}**) but you have **${numFmt(user.vials)}** ${ctx.symbols.vial}
+            Liquefy some cards with \`${ctx.prefix}liq\` to get vials!`, 'red')
 
     let question = `Do you want to draw ${formatName(card)} using **${numFmt(vials)}** ${ctx.symbols.vial}?`
     if(amount > 0) {
@@ -349,7 +354,7 @@ cmd(['draw'], withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
             user.dailystats[`draw${card.level}`] += 1
             await user.save()
 
-            await plotPayout(ctx, 'smithhub', 3, card.level * 20)
+            await plotPayout(ctx, 'smithhub', 3, 20)
 
             return ctx.reply(user, {
                 image: { url: card.url },

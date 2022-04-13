@@ -1,27 +1,28 @@
 [
     {
         "type": ["general"],
-        "title": "\u2B50 Amusement Club \u2B50 Card Game",
-        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play)",
+        "title": "Amusement Club - card collecting and trading",
+        "description": "Thousands of cards handcrafted by bot's community are waiting to be claimed! You can get started on any server by typing `->claim` in a bot channel. Each claim will cost you more `🍅` tomatoes (in-game currency) `->daily` will reset your claim cost and give you extra tomatoes.\n\nIf you need help with setting up bot channel or setting custom prefix on your server, use `->help server`.\n\nCheck your `->todo` list and if you are new here, use our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play).\n\nYou can add `help` in front of any command to get more information about it (e.g. `->help daily`).",
+        "docs": "",
         "fields": [
             {
                 "title": "User",
-                "description": "->help daily\n->help balance\n->help diff\n->help profile\n->help miss\n->help inv\n->help wish\n->help prefs",
+                "description": "`->daily` (get daily bonus)\n`->bal` (check balance)\n`->diff` (card difference)\n`->profile` (view profile)\n`->miss` (missing cards)\n`->inv` (item inventory)\n`->wish` (card wishlist)\n`->prefs` (manage preferences)",
                 "inline": true
             },
             {
                 "title": "Card Management",
-                "description": "->help claim\n->help summon\n->help cards\n->help fav\n->help tag\n->help draw\n->help liq\n->help forge\n->help info\n->help query",
+                "description": "`->claim` (get cards)\n`->sum` (view one card)\n`->cards` (view your cards)\n`->sell` (sell card(s))\n`->fav` (favorite a card)\n`->tag` (add tags to card)\n`->draw` (draw any card)\n`->liq` (liquefy a card)\n`->forge` (combine cards)\n`->info` (view card info)\n`->query` (fetching guide)",
                 "inline": true
             },
             {
                 "title": "Other",
-                "description": "->help sell\n->help auction\n->help transactions\n->help store\n->help guild\n->help collections\n->help effects\n->help hero\n->help plot\n->rules\n->license",
+                "description": "`->auc` (card auctions)\n`->trans` (transactions)\n`->store` (item shop)\n`->guild` (view server)\n`->cols` (view collections)\n`->effects` (view  effects)\n`->hero` (view hero)\n`->plot` (your buildings)\n`->rules` (bot rules)\n`->license` (code license)",
                 "inline": true
             },
             {
                 "title": "Links",
-                "description": "[Bot Discord](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Keep Bot Running](https://ko-fi.com/noxcaos/)"
+                "description": "[Support Server](https://discord.gg/kqgAvdX) | [Documentation](https://docs.amusement.cafe/) | [Source Code](https://github.com/NoxCaos/amusementclub2.0) | [Support the bot](https://ko-fi.com/amusement)"
             },
             {
                 "title": "Running",
@@ -37,10 +38,15 @@
         "type": ["ach", "achievement", "achievements"],
         "title": "About achievements",
         "description": "Achievements are fun little extras you can receive by playing the bot normally. They can reward you with personal experience, tomatoes, or vials.",
+        "docs": "en/user/achievements",
         "fields": [
             {
                 "title": "->achievements",
                 "description": "List your completed achievements"
+            },
+            {
+                "title": "->achievements -miss",
+                "description": "List your missing achievements"
             }
         ]
 
@@ -49,6 +55,7 @@
         "type": ["auc", "auction", "auctions"],
         "title": "About auctions",
         "description": "**Amusement Club utilizes the [Vickrey auction style](https://en.wikipedia.org/wiki/Vickrey_auction) meaning the actual highest bid is not displayed. Please keep note of this when attempting to bid on auctions!**\n\nAuctions are a way to trade your cards. You can put any card on auction for a fee equal to 10% of your listing price, and then other users can bid on it. Each card will be on the auction list for 6 hours by default and sold to the highest bidder. If nobody bids on your card, your card will be returned to you, but the listing fee will not be refunded.",
+        "docs": "en/other/auctions",
         "fields": [
             {
                 "title": "IMPORTANT",
@@ -100,6 +107,7 @@
         "type": ["bal", "balance", "economy", "currency", "tomatoes", "vials", "vial", "tomato", "lemons", "lemon"],
         "title": "About currencies",
         "description": "This command will show your current amount of `🍅` Tomatoes, `🍷`Vials, and `🍋`Lemons.\n**Tomatoes** are the main currency in game that are used for card `->claim`, trading, forging, etc. You can get them by completing `->quests` and claiming `->daily`\n **Vials** are a secondary currency, used for drawing cards. You can get them via daily quests or liquifying cards.`->help liq` or `->help draw` for more information.\n **Lemons** are a tertriary currency used in the real of plots, find more information about them at `->help plot`",
+        "docs": "en/user/balance",
         "fields": [
             {
                 "title": "Useful to know",
@@ -119,6 +127,7 @@
         "type": ["boost"],
         "title": "About Boosts",
         "description": "Boosts are admin added items that can increase your chances of claiming certain cards. These are normally run when a new collection releases, however they may also be randomly run as well.",
+        "docs": "en/other/events",
         "fields": [
             {
                 "title": "->boosts",
@@ -134,6 +143,7 @@
         "type": ["cards", "list", "li", "ls"],
         "title": "About card listing",
         "description": "Gets your cards and shows it in several pages. If you have a long card list, use *card filters* to show only the cards that you are interested in. See the filters at `->help query`",
+        "docs": "en/cards/list-view",
         "fields": [
             {
                 "title": "Useful to know",
@@ -169,6 +179,7 @@
         "type": ["channel"],
         "title": "About bot channels",
         "description": "Amusement Club is a discord bot that can read commands from any channel. However, there are some limitations",
+        "docs": "",
         "fields": [
             {
                 "title": "Any channel",
@@ -188,6 +199,7 @@
         "type": ["cl", "claim"],
         "title": "About card claiming",
         "description": "You can claim cards as long as you have enough `🍅` Tomatoes. Claim costs start at 50 tomatoes and increase by 50 each claim. The claim cost goes back to minimum after running `->daily`. Claim cost can be affected by Guilds in the form of taxes. Prices for claims will be adjusted by specific guild tax amounts",
+        "docs": "en/cards/claim",
         "fields": [
             {
                 "title": "Locked claims",
@@ -223,6 +235,7 @@
         "type": ["col", "collection", "collections", "clout"],
         "title": "About collections",
         "description": "Collections or 'fandoms' are sets of cards that have the same template and somehow belong to the same origin. Collections can be used for card filtering like [-collectionname]. Collections have name aliases that can be used for search.\nYou can see the list of all collections or information about certain one using `->col` command.\nCollections can be reset(clouted) for 5 star cards if they exist for that collection, or just for clout stars. You need 200 unique cards of various rarities in the collection to reset, or all of the collection if less than 200 cards, excluding 5 star cards.",
+        "docs": "en/other/collections",
         "fields": [
             {
                 "title": "->col",
@@ -251,9 +264,10 @@
         ]
     },
     {
-        "type": ["craft", "forge"],
+        "type": ["forge", "craft"],
         "title": "About card forging",
         "description": "This command allows you to get new cards using cards that you have. Forge will consume old cards. \n If you got here with `->help craft` and are looking for craft cards. They are no longer a part of Amusement Club, see `->help effects` for the replacement(s)",
+        "docs": "en/cards/forging",
         "fields": [
             {
                 "title": "Forging Cards",
@@ -264,6 +278,10 @@
                 "description": "To forge cards"
             },
             {
+                "title": "->forge [card query]",
+                "description": "Let bot pick 2 cards for you (that match the query) to forge"
+            },
+            {
                 "title": "Useful to know",
                 "description": "You can’t combine cards of different levels, both cards need to be unique"
             }
@@ -272,12 +290,9 @@
     {
         "type": ["daily"],
         "title": "About daily bonus",
-        "description": "You can get **500`🍅`** free Tomatoes every 20 hours, as well as reset your claim cost back down to 50.",
+        "description": "You can get **500`🍅`** free Tomatoes **every 20 hours** (or less with special effects), as well as reset your claim cost back down to **50**.",
+        "docs": "en/user/daily",
         "fields": [
-            {
-                "title": "Useful to know",
-                "description": "New players get a 1000`🍅` bonus\n"
-            },
             {
                 "title": "->daily",
                 "description": "Get daily bonus"
@@ -285,9 +300,26 @@
         ]
     },
     {
+        "type": ["quest", "quests"],
+        "title": "About quests",
+        "description": "Every time you claim your daily you also receive daily quests. If you complete them, they will award you certain amount of in-game currency. The quest difficulty depends on your user level. Please note that if you claim daily before you complete all quests, previous quests will be overwritten by the new ones. So make sure you complete all quests every day!",
+        "docs": "en/user/quests",
+        "fields": [
+            {
+                "title": "->quests",
+                "description": "View your quests available today"
+            },
+            {
+                "title": "->quest info [index]",
+                "description": "Get detailed guide about the quest in your list"
+            }
+        ]
+    },
+    {
         "type": ["dif", "diff", "difference"],
         "title": "About difference",
         "description": "Difference is a very useful command for trading that will show you cards that a user has that you don't. It can accept the same set of filters as the `->cards` command (See all query filters at `->help query`).  Add option `-fav` to include favorite cards.",
+        "docs": "en/user/diff-miss",
         "fields": [
             {
                 "title": "Useful to know",
@@ -327,6 +359,7 @@
         "type": ["draw"],
         "title": "About Drawing",
         "description": "Drawing is the ability to draw any non-promo card currently owned by someone within the bot, within the rarities of 1-3★, using vials as the drawing medium. Cost of drawing is relative to current eval and card rarity",
+        "docs": "en/cards/draw-liquefy",
         "fields": [
             {
                 "title": "->draw [card]",
@@ -338,6 +371,7 @@
         "type": ["effect", "effects"],
         "title": "Effect cards",
         "description": "Effects have changed significantly from version 1.0. Craft recipes are gotten from the store, and placed in your inventory. Running `->inv info #` or `->inv info [effectname]` will list the details of the recipe. Such as how long the effect lasts, what the effect does, and what cards are required to create the effect. The recipes are randomly generated and as such, each time you go to craft one you are likely to get different card requirements for it.",
+        "docs": "en/quick-help/crafting-effects",
         "fields": [
             {
                 "title": "->hero effects, or ->effects",
@@ -362,6 +396,7 @@
         "type": ["eval", "evaluate"],
         "title": "About card pricing",
         "description": "Card evaluations are determined by many factors such as auction pricing, amount of users owning the card, card rarity/star count, whether it is animated or not, and more. A cards evaluation is good to know if you are looking to buy cards, or trade them with others for similarly priced cards.",
+        "docs": "",
         "fields": [
             {
                 "title": "->eval [card query]",
@@ -377,6 +412,7 @@
         "type": ["fav", "favorite", "favourite"],
         "title": "Adding cards to favorites",
         "description": "You can add any card to favorites. Favorited cards can't be sent and they won't show up for other users in `->has` or `->diff` commands, unless you have 2 or more of those cards or they add the `-fav` query",
+        "docs": "en/cards/favorites",
         "fields": [
             {
                 "title": "->fav [card query]",
@@ -404,6 +440,7 @@
         "type": ["guild", "server"],
         "title": "Guild commands",
         "description": "You can set custom prefix/bot channels for Amusement Club as well as manage guild(server) level settings.",
+        "docs": "en/getting-started/server",
         "fields": [
             {
                 "title": "Useful to know",
@@ -455,6 +492,7 @@
         "type": ["has"],
         "title": "Learn if user has a card",
         "description": "This command will try to find if a user has a certain card by name. It is useful when you want to sell a card and would like to make sure the target user doesn't have it already.",
+        "docs": "",
         "fields": [
             {
                 "title": "->has @username [cardname]\n(e.g. `->has @John deceptive love`)",
@@ -466,6 +504,7 @@
         "type": ["hero", "heroes"],
         "title": "About Heroes",
         "description": "Heroes are user submitted characters that can be upgraded via effect slots. The number of effect slots do not vary between characters. To get a hero requires you to be level 10 in `->profile`. The price to submit heroes increases exponentially in price with each submission, starting at 512. You can gain hero XP globally with daily and using hero effects.",
+        "docs": "en/other/heroes",
         "fields": [
             {
                 "title": "->hero",
@@ -497,6 +536,7 @@
         "type": ["info", "information"],
         "title": "About info",
         "description": "Info allows you to see more information about a card, such as Price, Global Average Rating, Source, and Tags",
+        "docs": "",
         "fields": [
             {
                 "title": "->info [card name]",
@@ -508,6 +548,7 @@
         "type": ["inv", "inventory"],
         "title": "About inventory",
         "description": "Inventory contains different items that can be used in game such as effect recipes. Items can be stored for an unlimited amount of time.",
+        "docs": "en/user/inventory",
         "fields": [
             {
                 "title": "->inv",
@@ -527,6 +568,7 @@
         "type": ["invite"],
         "title": "About bot invitation",
         "description": "You can add Amusement Club to any other server. Type `->invite` to get an invite link with all permissions set up.",
+        "docs": "",
         "fields": [
             {
                 "title": "Setting up your server",
@@ -554,6 +596,7 @@
         "type": ["liquify", "liq"],
         "title": "About Liquify",
         "description": "You can Liquify any card from 1-3★ rarity into `🍷`Vials. The amount of `🍷`Vials you get is dependent on current Eval price and rarity of card being liquified",
+        "docs": "en/cards/draw-liquefy",
         "fields": [
             {
                 "title": "->liquify [card]",
@@ -574,6 +617,7 @@
         "type": ["miss", "missing"],
         "title": "About Miss",
         "description": "Miss allows you to view your overall missing cards. If an argument is added you can search within cards you don't have",
+        "docs": "en/user/diff-miss",
         "fields": [
             {
                 "title": "->miss",
@@ -589,6 +633,7 @@
         "type": ["plot", "plots"],
         "title": "About Plots",
         "description": "Plots are personal location in guilds where you can build new buildings that will collect lemons based on user activity in the guild. Buildings all have revenue storage caps dependent on their level.\nPlease note that only one building per type is allowed in a single guild. If you would like to have or utilize multiple buildings they need to be installed in other guilds.",
+        "docs": "en/other/plots",
         "fields": [
             {
                 "title": "->plots",
@@ -600,14 +645,26 @@
             },
             {
                 "title": "->plot buy",
-                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by 50, so your 10th plot would cost 500 lemons"
+                "description": "Buy an empty plot with lemons in current guild. The cost of each successive plot goes up by a factor of 2 from the one prior."
+            },
+            {
+                "title": "->plot delete [plot #]",
+                "description": "Delete a plot from the current guild's plot list, refunds 75% of cost for buildings placed on plot"
+            },
+            {
+                "title": "->plot delete global [plot #]",
+                "description": "Delete a plot from your global plot list, refunds 75% of cost for buildings placed on plot"
             },
             {
                 "title": "->plot info [plot #]",
                 "description": "Displays the information about the specific plot in the current guild."
             },
             {
-                "title": "->plot upgrade [building id]",
+                "title": "->plot info global [plot #]",
+                "description": "Displays the information about the specific plot from your global list."
+            },
+            {
+                "title": "->plot upgrade [plot #]",
                 "description": "Upgrade a specific building on one of your plots in the current guild."
             },
             {
@@ -620,6 +677,7 @@
         "type": ["preferences", "prefs", "notify", "notifications"],
         "title": "About Preferences",
         "description": "Preferences are a personal setting to enable or disable certain bot notifications",
+        "docs": "en/user/preferences",
         "fields": [
             {
                 "title": "->prefs",
@@ -639,6 +697,7 @@
         "type": ["profile"],
         "title": "About Profiles",
         "description": "Profiles are a way to quickly and nicely see your current: Level, Card Count, Star Count, Clout Count, Time Since Start, and Bot Roles(if any)",
+        "docs": "en/user/profile",
         "fields": [
             {
                 "title": "->profile",
@@ -654,6 +713,7 @@
         "type": ["query"],
         "title": "Card query",
         "description": "In the help messages you will often see `[card query]`. But what does it mean?\n In Amusement Club you can get cards in any request type by using different card parameters. These parameters can be also combined, and are applied in the order you supply them (e.g. `->cards >rating >amount` would list your cards in order of rating, and then within the ratings they will be sorted by amount)",
+        "docs": "en/cards/query",
         "fields": [
             {
                 "title": "->cards [some name]",
@@ -729,6 +789,7 @@
         "type": ["rate","rating"],
         "title": "Card Ratings",
         "description": "Players can rate their cards and view those ratings or even sort by them. Players' ratings are averaged into a global average rating that can be seen with ->info [card]",
+        "docs": "",
         "fields": [
             {
                 "title": "->rate [card] :[rating]",
@@ -748,6 +809,7 @@
         "type": ["rules"],
         "title": "Bot rules",
         "description": "Please follow these rules when trading and interacting with other players. Ignoring the rules can lead to embargo or ban",
+        "docs": "en/getting-started/rules",
         "fields": [
             {
                 "title": "Direct Trading",
@@ -779,6 +841,7 @@
         "type": ["sell", "trade"],
         "title": "About cards selling",
         "description": "Users can sell cards either to the bot or to other users. In both cases the prices are defined by the bot.",
+        "docs": "en/other/selling",
         "fields": [
             {
                 "title": "->sell [card query]",
@@ -806,6 +869,7 @@
         "type": ["store", "st", "building", "buildings", "castle", "tavern", "auchouse", "gbank", "smithhub"],
         "title": "About store",
         "description": "The store is where you can buy recipes for effects. To browse the store, use the `category` name or number with the commands below.",
+        "docs": "en/other/store",
         "fields": [
             {
                 "title": "->store",
@@ -829,6 +893,7 @@
         "type": ["sum", "summon"],
         "title": "About card summoning",
         "description": "You can summon a card in any channel on a server, but only if you have the card. This operation won't consume the card.\nYou can use a partial name of the card, but it has to be more than 3 characters long. The system will try to find the *most suitable card* using the name you provided.\nSummon takes all queries listed in `->help query` relating to cards you own.",
+        "docs": "en/cards/list-view",
         "fields": [
             {
                 "title": "->sum [card query]",
@@ -840,12 +905,14 @@
         "type": ["support", "embargo", "ban"],
         "title": "Support for embargo and tag ban",
         "description": "Join the main support discord for the bot with this [invite link](https://discord.gg/xQAxThF) and head to the #support channel for inquiries",
+        "docs": "",
         "fields": []
     },
     {
         "type": ["tag", "tags", "tagging"],
         "title": "About tagging",
         "description": "You can tag cards with #tags to help you and the playerbase better find cards. Adding a tag already on a card upvotes the tag.",
+        "docs": "en/cards/tags",
         "fields": [ 
             {
                 "title": "IMPORTANT INFORMATION",
@@ -886,6 +953,7 @@
         "type": ["trans", "transactions"],
         "title": "About transaction history",
         "description": "You can review your transaction history; this includes sells and auctions. Transactions older than a certain amount of time are removed.\nIf transaction was done via auction, you can also get auction details using the auction ID `->auc info [auction ID]`",
+        "docs": "en/other/transactions",
         "fields": [
             {
                 "title": "->trans [optional query]",
@@ -932,11 +1000,16 @@
     {
         "type": ["wishlist", "wish"],
         "title": "About wishlists",
-        "description": "Wishlists are a way to store a list of cards you don't own but would like to own. More information will be filled out as the feature matures. (Note there is currently no way to view someone else's wishlist, this will be added in the future)",
+        "description": "Wishlists are a way to store a list of cards you don't own but would like to own. More information will be filled out as the feature matures.",
+        "docs": "en/user/wishlist",
         "fields": [
             {
                 "title": "->wishlist list",
                 "description": "Display your own wishlist"
+            },
+            {
+                "title": "->wishlist list [user ID]",
+                "description": "Display someone else's wishlist"
             },
             {
                 "title": "->wishlist [card]",

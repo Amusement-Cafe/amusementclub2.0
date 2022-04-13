@@ -5,6 +5,7 @@ const colors    = require('../utils/colors')
 
 const {
     getAllUserIDs,
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const fetchOrCreate = async (ctx, userid, username) => {
@@ -15,6 +16,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
         user.username = username
         user.discord_id = userid
         user.exp = 3000
+        user.vials = 100
         user.joined = new Date()
         user.lastdaily = asdate.subtract(new Date(), 1, 'day')
 
@@ -77,9 +79,11 @@ const onUsersFromArgs = async (args, callback) => {
 }
 
 const getQuest = (ctx, user, tier, exclude) => {
+    const level = XPtoLEVEL(user.xp)
     const available = ctx.quests.daily.filter(x => 
-        (!exclude || x.id != exclude)
+        (!exclude || x.id.slice(0,-1) != exclude)
         && x.tier === tier
+        && x.min_level <= level
         && x.can_drop)
 
     if(available.length > 0) {

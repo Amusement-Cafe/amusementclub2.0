@@ -129,9 +129,9 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     if (info.aucevalinfo.evalprices.length >= ctx.eval.aucEval.minSamples) {
 
         let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
-            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * 0.689) * modifier)
+            * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * 0.3579) * modifier)
 
-        price = Math.round(info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length)
+        price = Math.round((info.aucevalinfo.evalprices.reduce((a, b) => a + b) / info.aucevalinfo.evalprices.length) * modifier)
 
         if (price < priceFloor)
             price = priceFloor
@@ -162,7 +162,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
         let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
 
         if (auc.price > eval * 1.5)
-            float = eval * ctx.eval.aucEval.aucFailMultiplier
+            float = eval
 
         info.aucevalinfo.newaucprices.push(Math.floor(float))
     } else {
@@ -201,6 +201,8 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
 
     if (info.aucevalinfo.auccount % (ctx.eval.aucEval.minSamples * 2) === 0){
         let newEval = await evalCard(ctx, card)
+        let floored = newEval === Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
+            * limitPriceGrowth(((userCount || card.ownercount * 2) * ctx.eval.evalUserRate) / card.ownercount)) * 0.3579))
         if (lastEval === newEval)
             return await info.save()
 
@@ -235,7 +237,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
                 },
                 {
                     name: "New Eval",
-                    value: `${numFmt(newEval)}`,
+                    value: `${numFmt(newEval)} ${floored? '\n**AT EVAL FLOOR**': ''}`,
                     inline: true
                 },
                 {

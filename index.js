@@ -39,7 +39,7 @@ module.exports.create = async ({
         baseurl, shorturl, auditc, debug, 
         maintenance, invite, data, dbl, 
         analytics, evalc, uniqueFrequency,
-        metac
+        metac, auctionLock, guildLogChannel,
     }) => {
 
     const emitter = new Emitter()
@@ -191,7 +191,8 @@ module.exports.create = async ({
         sauce,
         settings: {
             wip: maintenance,
-            wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ'
+            wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',
+            aucLock: auctionLock
         }
     }
 
@@ -245,7 +246,7 @@ module.exports.create = async ({
         const auctionTick   =   setInterval(tick.bind({}, ctx), 5000)
         const guildTick     =   setInterval(gtick.bind({}, ctx), 10000)
         const userQueueTick =   setInterval(qtick.bind({}, ctx), 1000)
-        const heroTick      =   setInterval(htick.bind({}, ctx), 60000 * 2)
+        const heroTick      =   setInterval(htick.bind({}, ctx), 60000 * 5)
         const auditTick     =   setInterval(atick.bind({}, ctx), 600000)
         const evalTick      =   setInterval(etick.bind({}, ctx), eval.queueTick)
         const notifyTick    =   setInterval(notifytick.bind({}, ctx), 6000)
@@ -295,6 +296,23 @@ module.exports.create = async ({
     bot.on('ready', async event => {
         await bot.editStatus('online', { name: 'commands', type: 2})
         emitter.emit('info', `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`)
+    })
+
+    bot.on('guildCreate', async (guild) => {
+        if (guildLogChannel)
+            await send(guildLogChannel, {
+                description:`Invited to a new guild!\nGuild Name: **${guild.name}**\nGuild ID: \`${guild.id}\``,
+                color: colors.green,
+                thumbnail: {url: guild.iconURL}
+            })
+    })
+
+    bot.on('guildDelete', async (guild) => {
+        if (guildLogChannel)
+            await send(guildLogChannel, {
+                description:`Kicked from guild!\nGuild Name: **${guild.name? guild.name: 'Uncached Guild'}**\nGuild ID: \`${guild.id}\``,
+                color: colors.red
+            })
     })
 
     bot.on('messageCreate', async (msg) => {
@@ -357,7 +375,7 @@ module.exports.create = async ({
                 prefix: curprefix, /* current prefix */
             })
             /* add user to cooldown q */
-            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 5, 'seconds')});
+            userq.push({id: msg.author.id, expires: asdate.add(new Date(), 3, 'seconds')});
 
             let args = cntnt.split(/ +/)
             let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)

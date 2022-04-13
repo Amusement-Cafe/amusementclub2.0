@@ -11,6 +11,7 @@ const {
     claimCost, 
     promoClaimCost,
     numFmt,
+    XPtoLEVEL,
 } = require('../utils/tools')
 
 const {
@@ -25,6 +26,7 @@ const {
     evalCardFast,
     bulkIncrementUserCount,
     getVialCostFast,
+    pushUserCountUpdate,
 } = require('../modules/eval')
 
 const {
@@ -58,6 +60,10 @@ const {
     plotPayout,
 } = require('../modules/plot')
 
+const {
+    fetchOnly,
+} = require('../modules/user')
+
 cmd('claim', 'cl', async (ctx, user, ...args) => {
     const cards = []
     const now = new Date()
@@ -83,12 +89,15 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         return ctx.reply(user, `you can claim only **10** or less cards with one command`, 'red')
 
     if(!promo && price > user.exp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}`, 'red')
+        return ctx.reply(user, `you need **${numFmt(price)}** ${ctx.symbols.tomato} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+            You have **${numFmt(Math.floor(user.exp))}** ${ctx.symbols.tomato}
+            ${user.dailyquests.length > 0? `Complete your \`${ctx.prefix}quests\` to get more ${ctx.symbols.tomato}` : ''}
+            Use \`${ctx.prefix}daily\` to reset your claim price and get extra ${ctx.symbols.tomato}`, 'red')
 
     if(promo && price > user.promoexp)
-        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim ${amount > 1? amount + ' cards' : 'a card'}. 
-            You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}`, 'red')
+        return ctx.reply(user, `you need **${numFmt(price)}** ${promo.currency} to claim **${amount > 1? amount + '** cards' : 'a card'}. 
+            You have **${numFmt(Math.floor(user.promoexp))}** ${promo.currency}
+            Claim regular cards using \`${ctx.prefix}claim\` or run \`${ctx.prefix}daily\` when it is ready to obtain more ${promo.currency}`, 'red')
 
     if(!promo) {
         boost = curboosts.find(x => args.some(y => y === x.id))
@@ -185,6 +194,14 @@ cmd('claim', 'cl', async (ctx, user, ...args) => {
         Your next claim will cost **${promo? numFmt(promoClaimCost(user, 1)) : numFmt(claimCost(user, ctx.guild.tax, 1))}** ${curr}
         ${activepromo && !promo? `You got **${numFmt(extra)}** ${activepromo.currency}
         You now have **${numFmt(user.promoexp)}** ${activepromo.currency}` : ""}`.replace(/\s\s+/gm, '\n')})
+
+    if (amount > 1 && XPtoLEVEL(user.xp) < 15) {
+        fields.push({name: `View your cards`, value:
+            `Use \`${ctx.prefix}sum [card name]\` to view the card
+            (e.g. \`${ctx.prefix}sum ${cards[0].card.name}\`)
+            Use \`${ctx.prefix}card info [card name]\` to view the card tags and metadata
+            (e.g. \`${ctx.prefix}card info ${cards[0].card.name}\`)`})
+    }
     /*fields.push({name: `External view`, value:
         `[view your claimed cards here](http://noxcaos.ddns.net:3000/cards?type=claim&ids=${cards.map(x => x.card.id).join(',')})`})*/
 
@@ -214,6 +231,9 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     user.lastcard = card.id
     await user.save()
 
+    let warn = `> This is a random card **that you own**.\nFor more info type \`${ctx.prefix}help summon\``
+    let lvl = XPtoLEVEL(user.xp)
+
     if(card.imgur) {
         await ctx.reply(user, {
             color: colors.blue,
@@ -226,7 +246,7 @@ cmd('sum', 'summon', withCards(async (ctx, user, cards, parsedargs) => {
     return ctx.reply(user, {
         image: { url: card.url },
         color: colors.blue,
-        description: `summons **${formatName(card)}**!`
+        description: `summons **${formatName(card)}**!\n${parsedargs.isEmpty() && lvl < 25? warn : ''}`
     })
 })).access('dm')
 
@@ -244,7 +264,7 @@ cmd(['search'], ['ls', 'global'], ['cards', 'global'], ['li', 'global'], ['list'
     }
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
-        pages: ctx.pgn.getPages(cards.map(c => formatName(c)), 15),
+        pages: ctx.pgn.getPages(cards.map(c => `${formatName(c)}${parsedargs.evalQuery? ` ${evalCardFast(ctx, c)}${ctx.symbols.tomato}`: ''}`), 15),
         embed: {
             author: { name: `Matched cards from database (${numFmt(cards.length)} results)` },
         }
@@ -304,10 +324,11 @@ cmd(['sell', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     let price = 0
     cards.forEach(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval)
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
     })
 
@@ -351,10 +372,11 @@ cmd(['sell', 'preview'], withCards(async (ctx, user, cards, parsedargs) => {
     let price = 0
     const resp = cards.map(card => {
         const eval = evalCardFast(ctx, card) * (targetuser? 1 : .4)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval)
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
 
         return {
@@ -399,10 +421,11 @@ cmd(['eval', 'all'], withCards(async (ctx, user, cards, parsedargs) => {
     let vials = 0
     cards.map(card => {
         const eval = evalCardFast(ctx, card)
-        if(eval >= 0) {
+        if(eval >= 1) {
             price += Math.round(eval) * card.amount
         } else {
             price = NaN
+            pushUserCountUpdate(card)
         }
         if(card.level < 4 && eval > 0) {
             vials += getVialCostFast(ctx, card, eval) * card.amount
@@ -605,6 +628,8 @@ cmd('rate', withCards(async (ctx, user, cards, parsedargs) => {
         const oldrating = card.rating
         info.ratingsum -= oldrating
         info.usercount--
+    } else {
+        user.dailystats.rates++
     }
 
     user.cards.find(x => x.id === card.id).rating = rating
@@ -646,18 +671,35 @@ cmd(['rate', 'remove'], ['unrate'], withCards(async (ctx, user, cards, parsedarg
 })).access('dm')
 
 cmd(['wish', 'list'], ['wish', 'ls'], ['wishlist', 'list'], ['wishlist', 'ls'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    if(user.wishlist.length === 0) {
-        return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+    let targetUser
+    if(parsedargs.ids[0]) {
+        targetUser = await fetchOnly(parsedargs.ids[0])
+
+        if(targetUser.wishlist.length === 0)
+            return ctx.reply(user, `${targetUser.username}'s wishlist is empty!`)
+
+        cards = cards.filter(x => targetUser.wishlist.some(y => y === x.id))
+
+        if(cards.length === 0)
+            return ctx.reply(user, `there aren't any cards in ${targetUser.username}'s wishlist that match this request`, 'red')
+
+    } else {
+        
+        if(user.wishlist.length === 0)
+            return ctx.reply(user, `your wishlist is empty. Use \`${ctx.prefix}wish add [card]\` to add cards to your wishlist`)
+
+        cards = cards.filter(x => user.wishlist.some(y => y === x.id))
+
+        if(cards.length === 0)
+            return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
+
     }
 
-    cards = cards.filter(x => user.wishlist.some(y => y === x.id))
-    if(cards.length === 0) {
-        return ctx.reply(user, `there aren't any cards in your wishlist that match this request`, 'red')
-    }
+
 
     return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
         pages: ctx.pgn.getPages(cards.map(x => `${formatName(x)}`), 15),
-        embed: { author: { name: `${user.username}, your wishlist (${numFmt(cards.length)} results)` } }
+        embed: { author: { name: `${user.username}, ${targetUser? `here is ${targetUser.username}'s` :`your`} wishlist (${numFmt(cards.length)} results)` } }
     })
 })).access('dm')
 

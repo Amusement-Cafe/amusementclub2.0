@@ -1,7 +1,6 @@
 const asdate             = require('add-subtract-date')
 const dateFormat         = require(`dateformat`)
 const msToTime           = require('pretty-ms')
-const {ch_map}           = require('./transaction')
 const {formatName}       = require('./card')
 const {byAlias}          = require('./collection')
 const colors             = require('../utils/colors')
@@ -65,7 +64,7 @@ const eval_fraud_check = async (ctx, auc, eval, card) => {
     const auditDB = await new Audit()
     auditDB.audit_id = auditIDGen(last_audit)
     auditDB.id = auc.id
-    auditDB.card = card.name
+    auditDB.card = card.id
     auditDB.bids = auc.bids.length
     auditDB.finished = auc.finished
     auditDB.eval = eval
@@ -186,16 +185,20 @@ const paginateCompletedAuditList = (ctx, user, list) => {
     return pages;
 }
 
-
-
-
-
+const ch_map = {
+    confirmed: "\`✅\`",
+    declined: "\`❌\`",
+    pending: "\`❗\`",
+    auction: "\`🔨\`"
+}
 
 const formatGuildTrsList = (ctx, user, gtrans) => {
     let resp = ""
     const timediff = msToTime(new Date() - gtrans.time, {compact: true})
-
-    resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${gtrans.cards.length} card(s) **${gtrans.from}** \`->\` **${gtrans.to}**`
+    if (gtrans.cards.length === 1)
+        resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${formatName(ctx.cards[gtrans.cards[0]])} **${gtrans.from}** \`->\` **${gtrans.to}**`
+    else
+        resp += `[${timediff}] ${ch_map[gtrans.status]} \`${gtrans.id}\` ${gtrans.cards.length} card(s) **${gtrans.from}** \`->\` **${gtrans.to}**`
     return resp;
 }
 
@@ -228,7 +231,7 @@ const auditFetchUserTags = async (user, args) => {
         tagList = res
     }
 
-    return tagList.sort().reverse()
+    return tagList.reverse()
 }
 
 const createFindUserEmbed = (ctx, user, findUser) => {
