@@ -44,6 +44,7 @@ const promoRarity = {
     valentine21: '🌹',
     birthday21: '🧁',
     halloween21: '🕸️',
+    christmas21: '🍪',
 }
 
 const formatName = (x) => {
