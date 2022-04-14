@@ -405,7 +405,7 @@
     {
     "id": "slotupgrade",
     "name": "Effect Slot Upgrade",
-    "price": 100,
+    "price": 30000,
     "type": "bonus",
     "currency": "lemon",
     "desc": "READ INFO BEFORE BUYING",
@@ -415,7 +415,7 @@
     }, {
     "id": "effectincrease",
     "name": "Effect Use Increase",
-    "price": 100,
+    "price": 11000,
     "type": "bonus",
     "currency": "lemon",
     "desc": "adds time/uses to an effect",
@@ -424,7 +424,7 @@
     }, {
     "id": "legendswapper",
     "name": "Legendary Card Swapper",
-    "price": 100,
+    "price": 15000,
     "type": "bonus",
     "currency": "lemon",
     "desc": "swaps a legendary card",
