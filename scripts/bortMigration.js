@@ -6,8 +6,7 @@ const UserStats     = require('../collections/userstats')
 
 const main = async () => {
     const mongoUri = 'mongodb://localhost:27017/amusement2'
-    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true}
-    const mcn = await mongoose.connect(mongoUri, mongoOpt)
+    const mcn = await mongoose.connect(mongoUri)
 
     await bortTransfer()
 }
