@@ -5,7 +5,7 @@ const UserSlot      = require('../collections/userSlot')
 const UserStats     = require('../collections/userstats')
 
 const main = async () => {
-    const mongoUri = 'mongodb://localhost:27017/amusement2'
+    const mongoUri = 'mongodb://127.0.0.1:27017/amusement2'
     const mcn = await mongoose.connect(mongoUri)
 
     await bortTransfer()
