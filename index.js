@@ -472,19 +472,19 @@ module.exports.create = async ({
 
     bot.on('guildCreate', async (guild) => {
         if (guildLogChannel)
-            await send(guildLogChannel, {
+            await bot.createMessage(guildLogChannel, {embed: {
                 description:`Invited to a new guild!\nGuild Name: **${guild.name}**\nGuild ID: \`${guild.id}\``,
                 color: colors.green,
                 thumbnail: {url: guild.iconURL}
-            })
+            }})
     })
 
     bot.on('guildDelete', async (guild) => {
         if (guildLogChannel)
-            await send(guildLogChannel, {
+            await bot.createMessage(guildLogChannel, {embed:{
                 description:`Kicked from guild!\nGuild Name: **${guild.name? guild.name: 'Uncached Guild'}**\nGuild ID: \`${guild.id}\``,
                 color: colors.red
-            })
+            }})
     })
 
     bot.on('messageCreate', async (msg) => {
