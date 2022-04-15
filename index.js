@@ -566,16 +566,6 @@ module.exports.create = async ({
         }
     })
 
-    bot.on('messageReactionAdd', async (msg, emoji, userID) => {
-        if (!msg.author || msg.author.id == bot.user.id || userID == bot.user.id)
-            return
-        try {
-            await trigger("rct", userID, msg, [emoji.name])
-        } catch (e) {
-            emitter.emit('error', e)
-        }
-    })
-
     bot.on('error', async (err, sh) => {
         emitter.emit('error', err, sh)
     })
