@@ -7,6 +7,10 @@ const {
     getUserPlots
 } = require('../modules/plot')
 
+const {
+    addUserCards
+} = require('../modules/user')
+
 const _      = require('lodash')
 const asdate = require('add-subtract-date')
 
@@ -42,7 +46,7 @@ module.exports = [
         resolve: (ctx, user, stats) => {
             const col = _.sample(ctx.collections.filter(x => !x.promo && !x.rarity))
             const card = _.sample(ctx.cards.filter(x => x.col === col.id && x.level === 3))
-            addUserCard(user, card.id)
+            addUserCards(ctx, user, [card.id])
             return formatName(card)
         }
     }, {
@@ -499,7 +503,7 @@ module.exports = [
         },
         resolve: (ctx, user, stats) => {
             let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
-            addUserCard(user, card.id)
+            addUserCards(ctx, user, [card.id])
             user.exp += 10000
             user.lemons += 250
             user.vials += 250
@@ -520,7 +524,7 @@ module.exports = [
         },
         resolve: (ctx, user, stats) => {
             let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
-            addUserCard(user, card.id)
+            addUserCards(ctx, user, [card.id])
             user.exp += 10000
             user.lemons += 250
             user.vials += 250
@@ -541,7 +545,7 @@ module.exports = [
         },
         resolve: (ctx, user, stats) => {
             let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
-            addUserCard(user, card.id)
+            addUserCards(ctx, user, [card.id])
             user.exp += 10000
             user.lemons += 250
             user.vials += 250
@@ -562,7 +566,7 @@ module.exports = [
         },
         resolve: (ctx, user, stats) => {
             let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
-            addUserCard(user, card.id)
+            addUserCards(ctx, user, [card.id])
             user.exp += 10000
             user.lemons += 250
             user.vials += 250
@@ -583,7 +587,7 @@ module.exports = [
         },
         resolve: (ctx, user, stats) => {
             let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
-            addUserCard(user, card.id)
+            addUserCards(ctx, user, [card.id])
             user.exp += 10000
             user.lemons += 250
             user.vials += 250
