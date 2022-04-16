@@ -1,5 +1,6 @@
 const Annmouncement = require('../collections/announcement')
 const User          = require('../collections/user')
+const UserSlot      = require('../collections/userSlot')
 
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
@@ -43,12 +44,18 @@ const checkDaily = async (ctx) => {
         })
         .sort({ date: -1 })
 
-    if(!userToDaily)
+    if(!userToDaily) {
+        const hasJeanne = await UserSlot.find({effect_name: 'rulerjeanne', is_active: true}).lean()
+        if (!hasJeanne)
+            return
+        const jeanneUsers = hasJeanne.map(x => x.discord_id)
         userToDaily = await User.findOne({
             'prefs.notifications.daily': true,
             'dailynotified': false,
             'lastdaily': { $lt: jeanneTime },
+            'discord_id': {$in: jeanneUsers}
         }).sort({ date: -1 })
+    }
 
     if (!userToDaily) return
 
