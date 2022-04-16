@@ -324,7 +324,7 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
     let forfeit = (collection + user.lemons) - cap
 
     if (collection + user.lemons > cap)
-        return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        return ctx.sendCfm(ctx, user, {
             question: `You are about to collect **${numFmt(collection)}** ${ctx.symbols.lemon} which brings you above your lemon limit of **${numFmt(cap)}**! Collecting now will forfeit **${numFmt(forfeit)}** ${ctx.symbols.lemon}
             Do you want to continue?`,
             onConfirm: async () => {
