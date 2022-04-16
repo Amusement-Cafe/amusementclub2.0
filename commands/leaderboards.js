@@ -103,7 +103,7 @@ cmd(['leaderboard', 'clout'], withInteraction(async (ctx, user, args) => {
     cloutUsers.map((x, i) => {
         table.addRow(`${i+1}`, x.username, x.clouts)
     })
-    if (!cloutUsers.some(x => x.discord_id === user.discord_id) && userEntry.clouts)
+    if (!cloutUsers.some(x => x.discord_id === user.discord_id) && userEntry?.clouts)
         table.addRow(`${userPos}`, user.username, userEntry.clouts)
     embed.description = `\`\`\`${table.toString()}\`\`\``
     return ctx.interaction.createMessage({embed: embed})
@@ -123,7 +123,7 @@ cmd(['leaderboard', 'completed'], withInteraction(async (ctx, user, args) => {
     completedUsers.map((x, i) => {
         table.addRow(`${i+1}`, x.username, x.completed)
     })
-    if (!completedUsers.some(x => x.discord_id === user.discord_id) && userEntry.completed)
+    if (!completedUsers.some(x => x.discord_id === user.discord_id) && userEntry?.completed)
         table.addRow(`${userPos}`, user.username, userEntry.completed)
     embed.description = `\`\`\`${table.toString()}\`\`\``
     return ctx.interaction.createMessage({embed: embed})
