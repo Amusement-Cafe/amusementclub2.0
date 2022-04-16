@@ -50,6 +50,7 @@ const completed = async (ctx, user, cardIDs) => {
 
     if (completedCols.length !== 0) {
         completedCols.map(x => user.completedcols.push({id: x}))
+        await user.save()
         if(user.prefs.notifications.completed) {
             try {
                 await ctx.direct(user, `you have just completed \`${completedCols.join(', ')}\`!
@@ -63,6 +64,7 @@ const completed = async (ctx, user, cardIDs) => {
 
     if (lostCompletion.length !== 0) {
         user.completedcols = user.completedcols.filter(x => !lostCompletion.includes(x.id))
+        await user.save()
         if(user.prefs.notifications.completed) {
             try {
                 await ctx.direct(user, `you no longer have all the cards required for a full completion of \`${lostCompletion.join(', ')}\`. ${lostCompletion.length>1? 'These collections have': 'This collection has'} been removed from your completed list.`)
