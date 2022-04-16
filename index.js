@@ -548,11 +548,12 @@ module.exports.create = async ({
                 prefix: curprefix, /* current prefix */
             })
             let args = cntnt.split(/ +/)
-            let usr = await user.fetchOrCreate(isolatedCtx, msg.author.id, msg.author.username)
-            usr.username = usr.username.replace(/\*/gi, '')
-            return bot.createMessage(msg.channel.id, {embed: toObj(usr, `all commands have been moved to slash commands as [verified bots are losing their access to see messages](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-for-Verified-Bots) soon.
-            Check out discord's \`/\` menu to find our commands!
-            Your new command should look something like \`/${args[0]}\``, 'red')})
+            return bot.createMessage(msg.channel.id, {embed: {
+                    description: `**${msg.author.username}**, all commands have been moved to slash commands as [verified bots are losing their access to see messages](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-for-Verified-Bots) soon.
+                             Check out discord's \`/\` menu to find our commands!
+                             Your new command should look something like \`/${args[0]}\``,
+                    color: colors.red
+            }})
 
 
             
