@@ -32,7 +32,8 @@ const checkAnnounce = async (ctx) => {
 const checkDaily = async (ctx) => {
     let dailyTime = new Date()
     dailyTime = asdate.subtract(dailyTime, 20, 'hours')
-    const jeanneTime = asdate.subtract(dailyTime, 17, 'hours')
+    let jeanneTime = new Date()
+    jeanneTime = asdate.subtract(jeanneTime, 17, 'hours')
 
     let userToDaily = await User
         .findOne({ 
