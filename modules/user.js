@@ -30,9 +30,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
             heroSlot.discord_id = user.discord_id
             await heroSlot.save()
         }
-
-        await ctx.bot.createMessage(ctx.interaction.channel.id, {
-            embed: {
+        const embed = {
             color: colors.blue,
             author: { name: `Welcome to Amusement Club!` },
             description: `You are now part of the community card collecting game. Check your \`${ctx.prefix}todo\` list to get started.`,
@@ -41,7 +39,7 @@ const fetchOrCreate = async (ctx, userid, username) => {
                     name: `What should you do?`,
                     value: `Claim your first batch of cards using \`${ctx.prefix}claim cards count:4\`. It is recommended to claim 4-6 cards per day.
                         Use \`${ctx.prefix}daily\` to reset your claim price. Now you can \`${ctx.prefix}claim cards\` more cards!
-                        Check out your \`${ctx.prefix}quests\` that you get every time you claim daily.`
+                        Check out your \`${ctx.prefix}quest list\` that you get every time you claim daily.`
                 },
                 {
                     name: `Moving forward`,
@@ -57,7 +55,17 @@ const fetchOrCreate = async (ctx, userid, username) => {
                         Join the [support server](${ctx.cafe}) to ask any questions.`
                 }
             ]
-        }})
+        }
+        try {
+            await ctx.bot.createMessage(ctx.interaction.channel.id, {embed})
+        } catch (e) {
+            const dmChannel = await ctx.bot.getDMChannel(userid)
+            try {
+                embed.description += `\n**This message has been sent as a DM because you have run a command or selected a button in a channel the bot cannot view. Please allow the bot view access to that channel or run commands in a channel the bot can view!**`
+                await ctx.bot.createMessage(dmChannel.id, {embed})
+            } catch (e) {}
+        }
+
     }
 
     if(user.username != username) {
