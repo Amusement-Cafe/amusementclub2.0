@@ -373,7 +373,7 @@ cmd(['plot', 'demolish'], withInteraction(async (ctx, user, args) => {
         return ctx.sendCfm(ctx, user, {
             question,
             onConfirm: async () => {
-                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, building: {$eq: null}})
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, 'building.id': {$eq: null}})
                 return ctx.reply(user, `you have deleted an empty plot, you now have ${plotLength - 1} plot(s) total!`, 'green', true)
             }
         })
@@ -422,7 +422,7 @@ cmd(['plot', 'demolish', 'global'], withInteraction(async (ctx, user, args) => {
         return ctx.sendCfm(ctx, user, {
             question,
             onConfirm: async () => {
-                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, building: {$eq: null}})
+                await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, 'building.id': {$eq: null}})
                 return ctx.reply(user, `you have deleted an empty plot in ${plot.guild_name}, you now have ${plotLength - 1} plot(s) total!`, 'green', true)
             }
         })
