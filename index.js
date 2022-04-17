@@ -460,7 +460,8 @@ module.exports.create = async ({
             let isoCtx = Object.assign({}, ctx, {
                 reply,
                 interaction: interaction,
-                discord_guild: interaction.member? interaction.member.guild: null
+                discord_guild: interaction.member? interaction.member.guild: null,
+                prefix: `/`
             })
 
             let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
