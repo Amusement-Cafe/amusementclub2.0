@@ -18,7 +18,7 @@ const getLemonCap = async (ctx, user) => {
 }
 
 const getUserPlots = async (ctx, global = false, building, user_id, guild_id) => {
-    let q = {user_id: ctx.interaction.member.id}
+    let q = {user_id: ctx.interactionUser.id}
     if (user_id)
         q.user_id = user_id
     if (!global)
