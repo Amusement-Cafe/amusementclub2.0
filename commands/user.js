@@ -150,7 +150,7 @@ cmd(['inventory', 'use'], withInteraction(withUserItems(async (ctx, user, items,
         force: ctx.globals.force,
         question: getQuestion(ctx, user, item),
         onConfirm: (x) => useItem(ctx, user, item, index, args)
-    })
+    }, false)
 })))
 
 cmd(['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items, args) => {

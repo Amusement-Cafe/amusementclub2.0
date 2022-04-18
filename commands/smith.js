@@ -146,7 +146,7 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
                     Please try again`, 'red', true)
             }
         }
-    })
+    }, false)
 })))
 
 cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
@@ -198,7 +198,7 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
                     Please try again`, 'red', true)
             }
         },
-    })
+    }, false)
 })))
 
 cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
@@ -271,7 +271,7 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
                     Please try again`, 'red', true)
             }
         },
-    })
+    }, false)
 })))
 
 cmd(['liquefy', 'preview'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {

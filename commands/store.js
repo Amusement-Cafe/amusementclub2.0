@@ -96,5 +96,5 @@ cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => 
                 The item has been added to your inventory. See \`${ctx.prefix}inventory info ${item.id}\` for details
                 ${catNum == 3? `You have **${3-stats.store3}** purchase(s) left for this store today!`: ''}`, 'green', true)
         }
-    })
+    }, false)
 })))
