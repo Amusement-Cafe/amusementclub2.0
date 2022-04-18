@@ -109,8 +109,8 @@ module.exports.create = async ({
 
     /* create direct reply fn */
     const direct = async (user, str, clr = 'default') => {
-        const ch = await bot.getDMChannel(user.discord_id)
         try {
+            const ch = await bot.getDMChannel(user.discord_id)
             return bot.createMessage(ch.id, {embed: toObj(user, str, clr)}).catch(e => console.log(e))
         } catch (e) {}
     }
@@ -352,7 +352,7 @@ module.exports.create = async ({
 
                 if (userq.some(x => x.id === interactionUser.id)) {
                     await interaction.acknowledge(64)
-                    return reply(botUser, 'you are currently on a command cooldown. Please wait a moment and try your command again!', 'red')
+                    return reply(botUser, 'you are currently on a command cooldown. These last only 3 seconds from your last command, please wait a moment and try your command again!', 'red')
                 }
 
                 const curguild = await guild.fetchGuildById(interaction.guildID)
@@ -409,7 +409,8 @@ module.exports.create = async ({
                     discord_guild: interaction.member ? interaction.member.guild : null,  /* current discord guild */
                     prefix: '/', /* current prefix */
                     interaction: interaction,
-                    options
+                    options,
+                    interactionUser
                 })
 
                 let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.username)
@@ -451,23 +452,32 @@ module.exports.create = async ({
 
         //Buttons
         if (interaction instanceof Eris.ComponentInteraction) {
-            if (interaction.applicationID !== bot.application.id)
-                return
+            try {
+                if (interaction.applicationID !== bot.application.id)
+                    return
 
-            const interactionUser = interaction.user || interaction.member.user
+                const interactionUser = interaction.user || interaction.member.user
 
-            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
-            let isoCtx = Object.assign({}, ctx, {
-                reply,
-                interaction: interaction,
-                discord_guild: interaction.member? interaction.member.guild: null,
-                prefix: `/`
-            })
+                const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
+                let isoCtx = Object.assign({}, ctx, {
+                    reply,
+                    interaction: interaction,
+                    discord_guild: interaction.member? interaction.member.guild: null,
+                    prefix: `/`,
+                    interactionUser
+                })
 
-            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
-            usr.username = usr.username.replace(/\*/gi, '')
-            await interaction.acknowledge()
-            await trigger('rct', isoCtx, null, [interaction.data.custom_id])
+                let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
+                usr.username = usr.username.replace(/\*/gi, '')
+                await interaction.acknowledge()
+                await trigger('rct', isoCtx, null, [interaction.data.custom_id])
+            } catch (e) {
+                if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
+                    return
+
+                emitter.emit('error', e)
+            }
+
         }
     })
 
