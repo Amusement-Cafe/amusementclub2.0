@@ -559,7 +559,7 @@ module.exports.create = async ({
                 prefix: curprefix, /* current prefix */
             })
             let args = cntnt.split(/ +/)
-            return bot.createMessage(msg.channel.id, {embed: {
+            await bot.createMessage(msg.channel.id, {embed: {
                     description: `**${msg.author.username}**, all commands have been moved to slash commands as [verified bots are losing their access to see messages](https://support-dev.discord.com/hc/en-us/articles/4404772028055-Message-Content-Privileged-Intent-for-Verified-Bots) soon.
                              Check out discord's \`/\` menu to find our commands!
                              Your new command should look something like \`/${args[0]}\``,
