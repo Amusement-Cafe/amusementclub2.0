@@ -336,7 +336,7 @@ cmd(['plot', 'collect'], withInteraction(async (ctx, user) => {
                 user.lemons = cap
                 await user.save()
                 return ctx.reply(user, `you have successfully collected **${numFmt(collection - forfeit)}** ${ctx.symbols.lemon} from this guild, forfeiting **${numFmt(forfeit)}**! 
-                You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`)
+                You now have **${numFmt(user.lemons)}** ${ctx.symbols.lemon}`, 'green', true)
             }
         })
     plots.map(async y => {
@@ -442,7 +442,7 @@ cmd(['plot', 'demolish', 'global'], withInteraction(async (ctx, user, args) => {
                 await Plots.deleteOne({guild_id: plot.guild_id, user_id: user.discord_id, "building.id": plot.building.id})
                 user.lemons += refund
                 await user.save()
-                return ctx.reply(user, `you have demolished your ${plot.building.id} and plot in ${plot.guild_name}. You have received **${numFmt(refund)}** ${ctx.symbols.lemon} back.`, 'green', 'true')
+                return ctx.reply(user, `you have demolished your ${plot.building.id} and plot in ${plot.guild_name}. You have received **${numFmt(refund)}** ${ctx.symbols.lemon} back.`, 'green', true)
             }
         })
     }
