@@ -1,6 +1,5 @@
 const {
     formatName,
-    addUserCard,
 } = require('../modules/card')
 
 const {
@@ -8,7 +7,8 @@ const {
 } = require('../modules/plot')
 
 const {
-    addUserCards
+    addUserCards,
+    getUserCards
 } = require('../modules/user')
 
 const _      = require('lodash')
@@ -55,8 +55,10 @@ module.exports = [
         desc: 'Collect All Cards, the Sachi way!',
         hidden: true,
         actions: ['cl', 'claim', 'cards', 'ls'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id] && !ctx.cards[x.id].excluded).length
-            >= ctx.cards.filter(x => !x.excluded).length,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid] && !ctx.cards[x.cardid].excluded) >= ctx.cards.filter(x => !x.excluded).length
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 10000
             user.vials += 1000
@@ -120,7 +122,10 @@ module.exports = [
         name: `Well aren't you special?`,
         desc: 'Get a first 4-star',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => user.cards.some(x => ctx.cards[x.id] && ctx.cards[x.id].level === 4),
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.some(x => ctx.cards[x.cardid] && ctx.cards[x.cardid].level === 4)
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 500
             stats.tomatoin += 500
@@ -131,9 +136,12 @@ module.exports = [
         name: `Getting star-struck`,
         desc: 'Get 1,000 stars',
         actions: ['cl', 'claim'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
-            .map(x => ctx.cards[x.id].level)
-            .reduce((a, b) => a + b, 0) >= 1000,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid])
+                .map(x => ctx.cards[x.cardid].level)
+                .reduce((a, b) => a + b, 0) >= 1000
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 5000
             stats.tomatoin += 5000
@@ -213,9 +221,12 @@ module.exports = [
         desc: 'Get 5,000 stars',
         hidden: true,
         actions: ['claim', 'cl'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
-            .map(x => ctx.cards[x.id].level)
-            .reduce((a, b) => a + b, 0) >= 5000,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid])
+                .map(x => ctx.cards[x.cardid].level)
+                .reduce((a, b) => a + b, 0) >= 5000
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 7500
             user.lemons += 200
@@ -229,9 +240,12 @@ module.exports = [
         desc: 'Get 10,000 stars',
         hidden: true,
         actions: ['claim', 'cl'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
-            .map(x => ctx.cards[x.id].level)
-            .reduce((a, b) => a + b, 0) >= 10000,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid])
+                .map(x => ctx.cards[x.cardid].level)
+                .reduce((a, b) => a + b, 0) >= 10000
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 10000
             user.lemons += 400
@@ -245,9 +259,12 @@ module.exports = [
         desc: 'Get 15,000 stars',
         hidden: true,
         actions: ['claim', 'cl'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
-            .map(x => ctx.cards[x.id].level)
-            .reduce((a, b) => a + b, 0) >= 15000,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid])
+                .map(x => ctx.cards[x.cardid].level)
+                .reduce((a, b) => a + b, 0) >= 15000
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 12500
             user.lemons += 800
@@ -261,9 +278,12 @@ module.exports = [
         desc: 'Get 20,000 stars',
         hidden: true,
         actions: ['claim', 'cl'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
-            .map(x => ctx.cards[x.id].level)
-            .reduce((a, b) => a + b, 0) >= 20000,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid])
+                .map(x => ctx.cards[x.cardid].level)
+                .reduce((a, b) => a + b, 0) >= 20000
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 15000
             user.lemons += 900
@@ -277,9 +297,12 @@ module.exports = [
         desc: 'Get 25,000 stars',
         hidden: true,
         actions: ['claim', 'cl'],
-        check: (ctx, user) => user.cards.filter(x => ctx.cards[x.id])
-            .map(x => ctx.cards[x.id].level)
-            .reduce((a, b) => a + b, 0) >= 25000,
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.filter(x => ctx.cards[x.cardid])
+                .map(x => ctx.cards[x.cardid].level)
+                .reduce((a, b) => a + b, 0) >= 25000
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 17500
             user.lemons += 1000
@@ -292,7 +315,10 @@ module.exports = [
         name: `Become a legend`,
         desc: 'Acquire your first legendary card',
         actions: ['col', 'ls', 'li', 'cards'],
-        check: (ctx, user) => user.cards.some(x => ctx.cards[x.id] && ctx.cards[x.id].level === 5),
+        check: async (ctx, user) => {
+            const cards = await getUserCards(ctx, user)
+            return cards.some(x => ctx.cards[x.cardid] && ctx.cards[x.cardid].level === 5)
+        },
         resolve: (ctx, user, stats) => {
             user.exp += 1000
             user.lemons += 50
