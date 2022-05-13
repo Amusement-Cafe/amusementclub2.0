@@ -116,12 +116,11 @@ module.exports.create = async ({
     }
 
     const qhelp = (ctx, user, cat) => {
-        const help = ctx.help.filter(x => x.type.includes(cat))[0]
         return send(ctx.interaction, {
-            author: { name: `Possible options:` },
-            fields: help.fields.slice(0, 5).map(x => ({ name: x.title, value: x.description })),
-            color: colors.blue,
-            footer: { text: `For full information type ->help ${cat} -here` }
+            author: { name: `Something went wrong!` },
+            description: 'A required argument was not supplied, or something has gone wrong with the command. Check out our documentation page linked with `/help` and if you continue to receive this message please report it in our support discord listed on the main documentation page!',
+            color: colors.red,
+            footer: { text: `Get a link to the command documentation by running /help!` }
         }, user.discord_id)
     }
 
@@ -388,7 +387,7 @@ module.exports.create = async ({
                     await interaction.acknowledge(64)
 
 
-                    return interaction.createMessage({
+                    return await interaction.createMessage({
                         embed: {
                             description: `**${interactionUser.username}**, bot commands are only available in these channels: 
                             ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
