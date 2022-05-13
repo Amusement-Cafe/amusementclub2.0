@@ -42,6 +42,11 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
+const {
+    saveAndCheck,
+    getStats,
+} = require("../modules/userstats")
+
 const Anilist = new anilist();
 
 cmd(['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects, args) => {
@@ -243,6 +248,8 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
     user.markModified('effects')
 
     await user.save()
+    let stats = await getStats(ctx, user, user.lastdaily)
+    await saveAndCheck(ctx, user, stats)
 
     const embed = { 
         description: res.msg,
