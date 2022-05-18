@@ -282,6 +282,7 @@ const doResolve = async (ctx, reaction) => {
     if(!data) return
 
     confirmations = confirmations.filter(x => x.msg != ctx.interaction.message.id)
+    confirmPaginations = confirmPaginations.filter(x => x.msg != ctx.interaction.message.id)
 
     if(reaction === chars.decline)
         await data.onDecline(userID)
