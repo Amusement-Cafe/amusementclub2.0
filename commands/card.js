@@ -144,8 +144,8 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
         else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const userCard = userCards.find(x => x.cardid === card.id)
-        const alreadyClaimed = cards.filter(x => x.userCard === userCard).length
-        const count = userCard? (alreadyClaimed + 1) + userCard.amount: 1
+        const alreadyClaimed = cards.filter(x => x.card === card).length
+        const count = userCard? (alreadyClaimed + 1) + userCard.amount: alreadyClaimed? alreadyClaimed + 1: 1
 
         cards.push({ 
             count,
@@ -400,6 +400,9 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
     }
 
     const card = bestMatch(cards)
+    if (!card) {
+        return ctx.reply(user, 'no card has been found for this transaction!', 'red')
+    }
     const err = await validate_trs(ctx, user, [card], id, targetuser)
     if(err) {
         return ctx.reply(user, err, 'red')
@@ -440,6 +443,9 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
         cards = cards.filter(x => otherIDs.indexOf(x.cardid) === -1)
             .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
             .sort(parsedargs.sort)
+    }
+    if (cards.length === 0) {
+        return ctx.reply(user, 'there are no cards to sell in this transaction!', 'red')
     }
 
     let err = await validate_trs(ctx, user, cards, id, targetuser)
