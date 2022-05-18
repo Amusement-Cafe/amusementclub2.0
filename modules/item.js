@@ -146,7 +146,7 @@ const uses = {
             let col = item.col && item.col !== 'random'? ctx.collections.find(x => x.id === item.col) : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo))
             const card = _.sample(ctx.cards.filter(y => y.col === col.id && y.level === x))
             const userCard = existingCards.find(y => y.cardid === card.id)
-            const alreadyClaimed = cards.filter(x => x.userCard === userCard).length
+            const alreadyClaimed = cards.filter(x => x.card === card).length
             const count = userCard? (alreadyClaimed + 1) + userCard.amount: alreadyClaimed? alreadyClaimed + 1: 0
             cards.push({
                 userCard,
@@ -240,13 +240,14 @@ const uses = {
                 is_passive: effect.passive,
         })
 
-        await completed(ctx, user, item.cards)
-
         await removeUserCards(ctx, user, item.cards)
 
         pullInventoryItem(user, item.id, index)
         user.effects.push(eobject)
         await user.save()
+
+        await completed(ctx, user, item.cards)
+
 
         return ctx.reply(user, {
             image: { url: `${ctx.baseurl}/effects/${effect.id}.gif` },
