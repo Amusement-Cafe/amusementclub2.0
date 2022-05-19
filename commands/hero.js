@@ -57,7 +57,7 @@ cmd(['hero', 'show'], withInteraction(withUserEffects(async (ctx, user, effects,
         return ctx.reply(user, `you don't have a hero yet. To get one use \`/hero get\``, 'red')
 
     const embed = await getInfo(ctx, user, user.hero)
-    const slots = await UserSlot.find({discord_id: user.discord_id}).lean()
+    const slots = await UserSlot.find({discord_id: user.discord_id, is_active: true}).lean()
     embed.fields = slots.map((x, i) => {
         return {name: `Effect Card Slot ${i + 1}`, value: formatUserEffect(ctx, user, effects.find(y => y.id === x.effect_name)) || 'Empty'}
     })
