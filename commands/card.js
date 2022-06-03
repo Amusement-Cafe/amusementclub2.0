@@ -958,7 +958,7 @@ cmd(['wish', 'remove', 'many'], withInteraction(withGlobalCards(async (ctx, user
             await user.save()
             await stats.save()
 
-            return ctx.reply(user, `removed **${numFmt(cards.length)}** cards from your wishlist`)
+            return ctx.reply(user, `removed **${numFmt(cards.length)}** cards from your wishlist`, 'green', true)
         }
     })
 }))).access('dm')
