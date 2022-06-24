@@ -207,7 +207,7 @@ cmd(['tag', 'created'], withInteraction(withGlobalCards(async (ctx, user, cards,
     })
 })))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'], 
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'remove'],
     withTag(async (ctx, user, card, tag, tgTag) => {
 
         const targetUser = await fetchOnly(tag.author)
@@ -222,7 +222,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'remove'],
         return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'], 
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'restore'],
     withTag(async (ctx, user, card, tag, tgTag) => {
 
         const target = await fetchOnly(tag.author)
@@ -254,7 +254,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'restore'],
         return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'], 
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'ban'],
     withTag(async (ctx, user, card, tag, tgTag) => {
 
     const target = await fetchOnly(tag.author)
@@ -285,7 +285,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'ban'],
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'info'],
     withTag(async (ctx, user, card, tag, tgTag) => {
         const author = await fetchOnly(tag.author)
         const pages = []
@@ -318,7 +318,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'info'],
 
 }))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tag', 'mod', 'list'], async (ctx, user, arg) => {
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'list'], async (ctx, user, arg) => {
     const tags = await fetchTagNames(ctx, arg);
     const pages = []
 

@@ -41,7 +41,11 @@ const {
     User
 }     = require('../collections')
 
-pcmd(['admin', 'auditor'], ['audit', 'help'], async (ctx, user, ...args) => {
+const {
+    withInteraction
+} = require("../modules/interactions")
+
+pcmd(['admin', 'auditor'], ['audit', 'help'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -49,9 +53,9 @@ pcmd(['admin', 'auditor'], ['audit', 'help'], async (ctx, user, ...args) => {
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
     return ctx.sendPgn(ctx, user, curpgn)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -59,9 +63,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user) => {
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
     return ctx.sendPgn(ctx, user, curpgn)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -78,9 +82,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -97,9 +101,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -116,9 +120,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -135,9 +139,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -154,9 +158,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -164,9 +168,9 @@ pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
     return ctx.sendPgn(ctx, user, curpgn)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'user'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
@@ -203,9 +207,9 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg, fullArgs) => {
+pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withInteraction( withGlobalCards(async (ctx, user, cards, arg, fullArgs) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -232,9 +236,9 @@ pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGloba
             color: colors.blue,
         }
     })
-}))
+})))
 
-pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'guild'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
@@ -258,9 +262,9 @@ pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
+pcmd(['admin', 'auditor'], ['audit', 'trans'], withInteraction( async (ctx, user, ...arg) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let trans = await Transaction.findOne({id: arg[0]})
@@ -294,9 +298,9 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
         }
 
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'warn'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, ctx.capitalMsg)
@@ -318,9 +322,9 @@ pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
     }
 
     return ctx.reply(user, "Warning message sent")
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     const auc = await Auction.findOne({ id: args[0] })
@@ -370,9 +374,9 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[0] = { name: `Auction Bids`, value: data.pages[data.pagenum] }
     }, user.discord_id)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
@@ -387,9 +391,9 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
     let embed = createFindUserEmbed(ctx, user, findUser)
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
     let arg = parseAuditArgs(ctx, args)
@@ -404,9 +408,9 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object']
     let embed = createFindUserEmbed(ctx, user, findUser)
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ctx, user, cards, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withInteraction( withGlobalCards(async (ctx, user, cards, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -425,9 +429,9 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ct
             color: colors.blue,
         }
     })
-}))
+})))
 
-pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit', 'cfm'], async (ctx, user, arg) => {
+pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit', 'cfm'], withInteraction( async (ctx, user, arg) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -443,9 +447,9 @@ pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit'
     auditEntry.closedBy = user.username
     await auditEntry.save()
     return ctx.reply(user, `audit record with ID ${arg} has been confirmed as audited`)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
+pcmd(['admin', 'auditor'], ['audit', 'closed'], withInteraction( async (ctx, user, arg) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'this command can only be run in an audit channel.', 'red')
 
@@ -462,9 +466,9 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], withInteraction( async (ctx, user, ...args) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -485,4 +489,4 @@ pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${numFmt(findCards.length)} results)` } }
     })
-})
+}))

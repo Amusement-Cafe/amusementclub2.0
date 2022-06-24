@@ -478,5 +478,95 @@
                 ]
             }
         ]
+    },
+    {
+        "type": 1,
+        "name": "meta",
+        "description": "Top level Meta Commands",
+        "options": [
+            {
+                "name": "list",
+                "description": "List either sourced or unsourced cards",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card to filter for",
+                        "type": 3,
+                        "required": false
+                    },
+                    {
+                        "name": "sourced",
+                        "description": "Whether to list only sourced, or only unsourced cards. Defaults to true",
+                        "type": 5,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "set",
+                "description": "Top Level for set",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "source",
+                        "description": "Set and image source to a specific link",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card to filter for",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "source",
+                                "description": "The direct link to the source of the card",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "booru",
+                        "description": "Set and image source to a specific Danbooru link",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card to filter for",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "booru_id",
+                                "description": "The ID of the Booru source",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "guess",
+                "description": "Attempt to find an image from another link on Danbooru. Link has to be direct to picture.",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card to filter for",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "source",
+                        "description": "The direct link to the image that will be searched for",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
     }
 ]

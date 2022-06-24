@@ -20,12 +20,14 @@ const parseInteractionOptions = async (ctx, user) => {
     const cardArgs = parseArgs(ctx, user)
     let cardArgs1, cardArgs2
     ctx.options.map(x => {
+        // This entire thing is here solely as a reference of what is already used and available as options. Stopping the possibility of having multiple types of the same option
         switch (x.name) {
             case 'amount': interactionArgs.amount = x.value; break;
             case 'anilist_link': interactionArgs.anilistLink = x.value; break;
             case 'auction_id': interactionArgs.aucID = x.value; break;
             case 'bid': interactionArgs.bid = x.value; break;
             case 'boost_id': interactionArgs.boostID = x.value; break;
+            case 'booru_id': interactionArgs.booruID = x.value; break;
             case 'card_id': interactionArgs.cardID = x.value; break;
             case 'card_query': interactionArgs.cardQuery = x.value; break;
             case 'card_query_1': cardArgs1 = parseArgs(ctx, user, x); interactionArgs.cardQuery1 = x.value; break;
@@ -53,6 +55,8 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'rating': interactionArgs.rating = x.value; break;
             case 'role': interactionArgs.role = x.value; break;
             case 'slot_number': interactionArgs.slot = x.value; break;
+            case 'source': interactionArgs.source = x.value; break;
+            case 'sourced': interactionArgs.source = x.value; break;
             case 'store_number': interactionArgs.store = x.value; break;
             case 'tax_percentage': interactionArgs.tax = x.value; break;
             case 'time_length': interactionArgs.timeLength = x.value; break;
