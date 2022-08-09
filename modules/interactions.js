@@ -25,6 +25,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'amount': interactionArgs.amount = x.value; break;
             case 'anilist_link': interactionArgs.anilistLink = x.value; break;
             case 'auction_id': interactionArgs.aucID = x.value; break;
+            case 'auctions': interactionArgs.auctions = x.value; break;
             case 'bid': interactionArgs.bid = x.value; break;
             case 'boost_id': interactionArgs.boostID = x.value; break;
             case 'booru_id': interactionArgs.booruID = x.value; break;
@@ -40,6 +41,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'effect_name': interactionArgs.effect = x.value; break;
             case 'extra_arguments': interactionArgs.extraArgs = x.value; break;
             case 'from': interactionArgs.from = x.value; break;
+            case 'guild_id': interactionArgs.guildID = x.value; break;
             case 'hero': interactionArgs.hero = x.value; break;
             case 'inventory_item': interactionArgs.invItem = x.value; break;
             case 'item_id': interactionArgs.itemID = x.value; break;
@@ -56,7 +58,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'role': interactionArgs.role = x.value; break;
             case 'slot_number': interactionArgs.slot = x.value; break;
             case 'source': interactionArgs.source = x.value; break;
-            case 'sourced': interactionArgs.source = x.value; break;
+            case 'sourced': interactionArgs.sourced = x.value; break;
             case 'store_number': interactionArgs.store = x.value; break;
             case 'tax_percentage': interactionArgs.tax = x.value; break;
             case 'time_length': interactionArgs.timeLength = x.value; break;
