@@ -568,5 +568,287 @@
                 ]
             }
         ]
+    },
+    {
+        "type": 1,
+        "name": "tagmod",
+        "description": "Top level Tagmod Commands",
+        "options": [
+            {
+                "name": "remove",
+                "description": "Remove a tag from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to remove a tag from",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to remove",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "restore",
+                "description": "Restore a banned tag to a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to restore a tag to",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to restore",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "ban",
+                "description": "Ban a tag from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to ban a tag for",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to ban",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "Get detailed information about a tag on a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to check",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to check",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "description": "Lists all tag names",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "description": "Insert text here to limit to only result starting with your text",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "audit",
+        "description": "Top level Audit Commands",
+        "options": [
+            {
+                "name": "report",
+                "description": "Top Level for reports",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "one",
+                        "type": 1,
+                        "description": "Displays a list of users with a high auction sell percentage",
+                        "options": []
+                    },
+                    {
+                        "name": "two",
+                        "type": 1,
+                        "description": "Displays a list of auctions selling for a certain amount over eval",
+                        "options": []
+                    },
+                    {
+                        "name": "three",
+                        "type": 1,
+                        "description": "Displays where a user sells a card on auction, and re-purchases that same card",
+                        "options": []
+                    },
+                    {
+                        "name": "four",
+                        "type": 1,
+                        "description": "Same as report 3, but the person has to be the same person the auction went to",
+                        "options": []
+                    },
+                    {
+                        "name": "five",
+                        "type": 1,
+                        "description": "Displays when a user purchases a card via direct sale or auction and sells the card to bot",
+                        "options": []
+                    }
+                ]
+            },
+            {
+                "name": "user",
+                "type": 1,
+                "description": "Audit a user's transactions",
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID to audit",
+                        "required": true
+                    },
+                    {
+                        "name": "auctions",
+                        "type": 5,
+                        "description": "Set to true to filter for only auctions"
+                    },
+                    {
+                        "name": "from",
+                        "type": 5,
+                        "description": "Set to true to further filter by only sends"
+                    },
+                    {
+                        "name": "to",
+                        "type": 5,
+                        "description": "Set to true to further filter by only gets"
+                    }
+                ]
+            },
+            {
+                "name": "find",
+                "type": 2,
+                "description": "Top level find",
+                "options": [
+                    {
+                        "name": "user",
+                        "type": 1,
+                        "description": "Finds a user from the database",
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "type": 3,
+                                "description": "The user ID of the user to display info on",
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "obj",
+                        "type": 1,
+                        "description": "Finds a user by object ID from the database",
+                        "options": [
+                            {
+                                "name": "extra_arguments",
+                                "type": 3,
+                                "description": "The object ID of the user to display info on",
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "auction",
+                "type": 1,
+                "description": "Audit a specific auction",
+                "options": [
+                    {
+                        "name": "auction_id",
+                        "type": 3,
+                        "description": "The auction to audit",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "warn",
+                "type": 1,
+                "description": "Send a warning to a user",
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID of the user to warn",
+                        "required": true
+                    },
+                    {
+                        "name": "extra_arguments",
+                        "type": 3,
+                        "description": "The warning message",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "transaction",
+                "type": 1,
+                "description": "Inspect a transaction",
+                "options": [
+                    {
+                        "name": "transaction_id",
+                        "type": 3,
+                        "description":"The transaction to inspect",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "guild",
+                "type": 1,
+                "description": "Audit transactions in a guild",
+                "options": [
+                    {
+                        "name": "guild_id",
+                        "type": 3,
+                        "description": "The guild to inspect",
+                        "required": true
+                    },
+                    {
+                        "name": "auctions",
+                        "type": 5,
+                        "description": "Filter to only auction transactions"
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "type": 1,
+                "description": "Browse a user's card list",
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID to view cards of",
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "type": 3,
+                        "description": "Standard card query filter"
+                    }
+                ]
+            }
+        ]
     }
 ]
