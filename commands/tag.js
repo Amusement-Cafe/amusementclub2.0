@@ -1,7 +1,6 @@
 const {cmd, pcmd}       = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const Tag               = require('../collections/tag')
-const {parseAuditArgs}  = require("../modules/audit")
 const dateFormat        = require('dateformat')
 const {getHelpEmbed}    = require('./misc')
 
@@ -9,6 +8,11 @@ const {
     fetchOnly,
     updateUser,
 } = require('../modules/user')
+
+const {
+    parseAuditArgs, 
+    auditFetchUserTags,
+} = require("../modules/audit")
 
 const { 
     new_tag,
@@ -208,7 +212,7 @@ cmd(['tag', 'created'], withInteraction(withGlobalCards(async (ctx, user, cards,
 })))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'remove'],
-    withTag(async (ctx, user, card, tag, tgTag) => {
+    withInteraction(withTag(async (ctx, user, card, tag, tgTag) => {
 
         const targetUser = await fetchOnly(tag.author)
         let log
@@ -220,10 +224,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'remove'],
             await log.save()
 
         return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}`)
-}))
+})))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'restore'],
-    withTag(async (ctx, user, card, tag, tgTag) => {
+    withInteraction(withTag(async (ctx, user, card, tag, tgTag) => {
 
         const target = await fetchOnly(tag.author)
 
@@ -252,10 +256,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'restore'],
         await tag.save()
 
         return ctx.reply(user, `restored tag **#${tgTag}** for ${formatName(card)}`)
-}))
+})))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'ban'],
-    withTag(async (ctx, user, card, tag, tgTag) => {
+    withInteraction(withTag(async (ctx, user, card, tag, tgTag) => {
 
     const target = await fetchOnly(tag.author)
 
@@ -283,10 +287,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'ban'],
 
     return ctx.reply(user, `removed tag **#${tgTag}** for ${formatName(card)}. 
         User **${target.username}** has **${target.ban.tags}** banned tags and will be blocked from tagging at 3`)
-}))
+})))
 
 pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'info'],
-    withTag(async (ctx, user, card, tag, tgTag) => {
+    withInteraction(withTag(async (ctx, user, card, tag, tgTag) => {
         const author = await fetchOnly(tag.author)
         const pages = []
         const resp = []
@@ -316,10 +320,10 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'info'],
             switchPage: (data) => data.embed.fields[0] = { name: `Upvotes`, value: data.pages[data.pagenum] || "no upvotes Found"}
             })
 
-}))
+})))
 
-pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'list'], async (ctx, user, arg) => {
-    const tags = await fetchTagNames(ctx, arg);
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'list'], withInteraction( async (ctx, user, arg) => {
+    const tags = await fetchTagNames(ctx, arg.extraArgs);
     const pages = []
 
     tags.map((t, i) => {
@@ -335,13 +339,39 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'list'], async (ctx, user, arg) => {
         pages,
         buttons: ['first', 'back', 'forward', 'last'],
         embed: {
-            author: { name: `List of ${arg? `tags starting with "${arg}"`: 'all tag names' }: ${tags.length} results` },
+            author: { name: `List of ${arg? `tags starting with "${arg.extraArgs}"`: 'all tag names' }: ${tags.length} results` },
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, visible, args) => {
+//Todo: Make work
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'audit', 'tags'], withInteraction( withGlobalCards(async (ctx, user, cards, arg, fullArgs) => {
+    if (arg.ids.length === 0)
+        return ctx.reply(user, `please submit a valid user ID`, 'red')
+
+    const auditedUser = await fetchOnly(arg.ids)
+    const userTags = await auditFetchUserTags(auditedUser, auditArgs)
+    const cardIDs = cards.map(x => x.id)
+    const tags = userTags.filter(x => cardIDs.includes(x.card))
+
+    if(tags.length === 0)
+        return ctx.reply(user, `cannot find tags for matching cards (${cards.length} cards matched)`)
+
+    return ctx.sendPgn(ctx, user, {
+        pages: ctx.pgn.getPages(tags.map(x => {
+            const card = ctx.cards[x.card]
+            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** ${x.status!='clear'? `(${x.status})`: ''} - ${formatName(card)}`
+        }, 10)),
+        switchPage: (data) => data.embed.description = `**${user.username}**, tags that ${auditedUser.username} created:\n\n${data.pages[data.pagenum]}`,
+        buttons: ['first', 'back', 'forward', 'last'],
+        embed: {
+            color: colors.blue,
+        }
+    })
+})))
+
+pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withInteraction(withPurgeTag(async (ctx, user, visible, args) => {
     let question = `Do you want to remove all tags with the name ${args.tags[0]}?`
     return ctx.sendCfm(ctx, user, {
         question,
@@ -351,15 +381,15 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'tag'], withPurgeTag(async (ctx, user, v
                 tag.status = 'removed'
                 await tag.save()
             })
-            ctx.reply(user, `removed tag ${args.tags[0]} from ${cardCount} cards.`)
+            ctx.reply(user, `removed tag ${args.tags[0]} from ${cardCount} cards.`, 'green', true)
         },
         onDecline: async (x) => {
-            ctx.reply(user, `tag purging was declined`, 'red')
+            ctx.reply(user, `tag purging was declined`, 'red', true)
         }
     })
-}))
+})))
 
-pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, visible, args) => {
+pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withInteraction( withPurgeTag(async (ctx, user, visible, args) => {
     let target = await fetchOnly(args.ids[0])
     let question = `Do you want to remove all tags made by **${target.username}** with no upvotes?`
     return ctx.sendCfm(ctx, user, {
@@ -371,15 +401,15 @@ pcmd(['admin', 'mod'], ['tag', 'purge', 'user'], withPurgeTag(async (ctx, user, 
             })
             let log = await logTagAudit(ctx, user, `**User Purged** ${visible.length} tags removed`, false, target)
             await log.save()
-            ctx.reply(user, `removed all tags made by **${target.username}** with no upvotes`)
+            ctx.reply(user, `removed all tags made by **${target.username}** with no upvotes`, 'green', true)
         },
         onDecline: async () => {
-            ctx.reply(user, `tag purging was declined`, 'red')
+            ctx.reply(user, `tag purging was declined`, 'red', true)
         }
     })
-}, false))
+}, false)))
 
-pcmd(['admin', 'mod'], ['tag', 'log', 'removed'],async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'], ['tag', 'log', 'removed'], withInteraction( async (ctx, user, ...args) => {
     let parsedArgs = parseAuditArgs(ctx, args)
 
     if (!parsedArgs.id)
@@ -392,15 +422,15 @@ pcmd(['admin', 'mod'], ['tag', 'log', 'removed'],async (ctx, user, ...args) => {
         onConfirm: async () => {
             let auditlog = await logTagAdd(ctx, user, target, parsedArgs, false)
             await auditlog.save()
-            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log`)
+            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s removed tags log`, 'green', true)
         },
         onDecline: async () => {
-            ctx.reply(user, `tag log adding was declined`, 'red')
+            ctx.reply(user, `tag log adding was declined`, 'red', true)
         }
     })
-})
+}))
 
-pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
+pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], withInteraction( async (ctx, user, ...args) => {
     let parsedArgs = parseAuditArgs(ctx, args)
 
     if (!parsedArgs.id)
@@ -413,21 +443,21 @@ pcmd(['admin', 'mod'], ['tag', 'log', 'banned'], async (ctx, user, ...args) => {
         onConfirm: async () => {
             let auditlog = await logTagAdd(ctx, user, target, parsedArgs, true)
             await auditlog.save()
-            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log`)
+            ctx.reply(user, `added **${parsedArgs.extraArgs.join(', ')}** to ${target.username}'s banned tags log`, 'green', true)
         },
         onDecline: async () => {
-            ctx.reply(user, `tag log adding was declined`, 'red')
+            ctx.reply(user, `tag log adding was declined`, 'red', true)
         }
     })
-})
+}))
 
-pcmd(['admin','mod', 'tagmod'], ['tagmod', 'help'], async (ctx, user) => {
+pcmd(['admin','mod', 'tagmod'], ['tagmod', 'help'], withInteraction( async (ctx, user) => {
 
     const help = ctx.audithelp.find(x => x.type === 'tagmod')
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
     return ctx.sendPgn(ctx, user, curpgn)
-})
+}))
 
 
 
