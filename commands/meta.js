@@ -151,10 +151,10 @@ cmd('info', withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs)
 
 }))).access('dm')
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const booruID = parsedargs.extra[0]
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    const booruID = parsedargs.booruID
     if(isNaN(booruID)) {
-        return ctx.reply(user, `booru ID should be a number and specified as \`:1234567\``, 'red')
+        return ctx.reply(user, `booru ID should be a number and specified as \`1234567\``, 'red')
     }
 
     const post = await getBooruPost(ctx, booruID)
@@ -189,26 +189,26 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withGlobalCards(asyn
         onConfirm: async (x) => {
             try {
                 await setCardBooruData(ctx, user, card.id, post)
-                return ctx.reply(user, `sources and tags have been saved!`)
+                return ctx.reply(user, `sources and tags have been saved!`, 'green', true)
 
             } catch(e) {
                 return ctx.reply(user, `unexpected error occured while trying to add card booru data. Please try again.
-                    ${e.message}`, 'red')
+                    ${e.message}`, 'red', true)
             }
         },
     })
-}))
+})))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
     
     if(parsedargs.isEmpty()) {
         return ctx.reply(user, `please specify card`, 'red')
     }
     
     let booruID = ""
-    const targetLink = parsedargs.extra[0]
+    const targetLink = parsedargs.source
     if(!targetLink || !targetLink.match(urlRegex)) {
-        return ctx.reply(user, `please specify image url as \`:https://www.pixiv.net/en/artworks/1234567.jpg\``, 'red')
+        return ctx.reply(user, `please specify image url as \`https://www.pixiv.net/en/artworks/1234567.jpg\``, 'red')
     }
 
     try {
@@ -264,20 +264,20 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withGlobalCards(as
         onConfirm: async (x) => {
             try {
                 await setCardBooruData(ctx, user, card.id, post)
-                return ctx.reply(user, `sources and tags have been saved!`)
+                return ctx.reply(user, `sources and tags have been saved!`, 'green', true)
 
             } catch(e) {
                 return ctx.reply(user, `unexpected error occured while trying to add card booru data. Please try again.
-                    ${e.message}`, 'red')
+                    ${e.message}`, 'red', 'true')
             }
         },
     })
-}))
+})))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(async (ctx, user, cards, parsedargs, ...args) => {
-    const url = ctx.capitalMsg.find(x => x[0] == ':').substring(1)
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs, ...args) => {
+    const url = parsedargs.source
     if(!url) {
-        return ctx.reply(user, `please specify the url to the card source as \`:https://www.pixiv.net/en/artworks/80848641\``, 'red')
+        return ctx.reply(user, `please specify the url to the card source as just a link i.e. (\`https://www.pixiv.net/en/artworks/80848641\`)`, 'red')
     }
 
     const card = bestMatch(cards)
@@ -290,9 +290,9 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withGlobalCards(asy
     await setCardSource(ctx, user, card.id, url)
 
     return ctx.reply(user, `successfully set source image for ${formatName(card)}`)
-}))
+})))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, ...args) => {
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], withInteraction( async (ctx, user, ...args) => {
     https.get(ctx.msg.attachments[0].url, res => {
         const parsedArgs = parseArgs(ctx, args, user)
         const authorID = parsedArgs.extra[0]
@@ -341,42 +341,47 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], async (ctx, user, 
             }
         });
     })
-})
-
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'sourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    const sourcedCards = cards.map(x => {
-        x.info = ctx.cardInfos[x.id]
-        return x
-    }).filter(x => x.info && x.info.meta && x.info.meta.source)
-
-    const names = sourcedCards
-    .map(c => {
-        const rarity = new Array(c.level + 1).join('★')
-        return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.shorturl}) \`[${c.col}]\` [source](${c.info.meta.source})`
-    })
-
-    return ctx.sendPgn(ctx, user, {
-        pages: ctx.pgn.getPages(names, 10),
-        embed: {
-            author: { name: `Found sourced ${names.length} / ${cards.length} overall` },
-        }
-    })
 }))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'list', 'unsourced'], withGlobalCards(async (ctx, user, cards, parsedargs) => {
-    cards = cards.filter(x => !ctx.cardInfos[x.id] || 
-        !ctx.cardInfos[x.id].meta || 
-        !ctx.cardInfos[x.id].meta.source)
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'list'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
+    let sourced = parsedargs.sourced
+    if (!sourced && sourced !== false)
+        sourced = true
 
-    const names = cards.map(c => {
-        const rarity = new Array(c.level + 1).join('★')
-        return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.url}) \`[${c.col}]\``
-    })
+    if (sourced) {
+        const sourcedCards = cards.map(x => {
+            x.info = ctx.cardInfos[x.id]
+            return x
+        }).filter(x => x.info && x.info.meta && x.info.meta.source)
 
-    return ctx.sendPgn(ctx, user, {
-        pages: ctx.pgn.getPages(names, 10),
-        embed: {
-            author: { name: `Found ${cards.length} without sources` },
-        }
-    })
-}))
+        const names = sourcedCards
+            .map(c => {
+                const rarity = new Array(c.level + 1).join('★')
+                return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.shorturl}) \`[${c.col}]\` [source](${c.info.meta.source})`
+            })
+
+        return ctx.sendPgn(ctx, user, {
+            pages: ctx.pgn.getPages(names, 10),
+            embed: {
+                author: { name: `Found sourced ${names.length} / ${cards.length} overall` },
+            }
+        })
+    } else {
+        cards = cards.filter(x => !ctx.cardInfos[x.id] ||
+            !ctx.cardInfos[x.id].meta ||
+            !ctx.cardInfos[x.id].meta.source)
+
+        const names = cards.map(c => {
+            const rarity = new Array(c.level + 1).join('★')
+            return `[${rarity}] [${cap(c.name.replace(/_/g, ' '))}](${c.url}) \`[${c.col}]\``
+        })
+
+        return ctx.sendPgn(ctx, user, {
+            pages: ctx.pgn.getPages(names, 10),
+            embed: {
+                author: { name: `Found ${cards.length} without sources` },
+            }
+        })
+    }
+
+})))

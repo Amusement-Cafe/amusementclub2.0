@@ -1,7 +1,6 @@
 const {pcmd}                    = require('../utils/cmd')
 const {evalCard}                = require('../modules/eval')
 const {getHelpEmbed}            = require('../commands/misc')
-const {fetchOnly}               = require('../modules/user')
 const {numFmt}                  = require('../utils/tools')
 const colors                    = require('../utils/colors')
 const msToTime                  = require('pretty-ms')
@@ -13,15 +12,18 @@ const {
 } = require('../modules/transaction')
 
 const {
+    fetchOnly,
+    getUserCards,
+} = require('../modules/user')
+
+const {
     filter,
     formatName,
     mapUserCards,
-    parseArgs,
     withGlobalCards,
 }   = require('../modules/card')
 
 const {
-    auditFetchUserTags,
     createFindUserEmbed,
     formatAucBidList,
     paginateBotSells,
@@ -30,7 +32,6 @@ const {
     paginateOversells,
     paginateOverPrice,
     paginateRebuys,
-    parseAuditArgs,
 }   = require("../modules/audit");
 
 const {
@@ -41,27 +42,11 @@ const {
     User
 }     = require('../collections')
 
-pcmd(['admin', 'auditor'], ['audit', 'help'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
-        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
+const {
+    withInteraction
+} = require("../modules/interactions")
 
-    const help = ctx.audithelp.find(x => x.type === 'audit')
-    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
-
-    return ctx.sendPgn(ctx, user, curpgn)
-})
-
-pcmd(['admin', 'auditor'], ['fraud', 'report'], async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
-        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-
-    const help = ctx.audithelp.find(x => x.type === 'audit')
-    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
-
-    return ctx.sendPgn(ctx, user, curpgn)
-})
-
-pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'report', 'one'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -78,9 +63,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '1'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'report', 'two'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -97,9 +82,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '2'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'report', 'three'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -116,9 +101,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '3'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'report', 'four'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -135,9 +120,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '4'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit', 'report', 'five'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -154,9 +139,9 @@ pcmd(['admin', 'auditor'], ['fraud', 'report', '5'], async (ctx, user, ...args) 
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
+pcmd(['admin', 'auditor'], ['audit'], withInteraction( async (ctx, user) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -164,27 +149,26 @@ pcmd(['admin', 'auditor'], ['audit'], async (ctx, user, ...args) => {
     const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
 
     return ctx.sendPgn(ctx, user, curpgn)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'user'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, args)
 
-    let search
-    const auditedUser = await fetchOnly(arg.id)
-
-    if (!arg.id)
+    if (!args.ids[0])
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    if (arg.auction) {
-        if (arg.sends || arg.gets)
-            search = arg.sends? {from_id: auditedUser.discord_id, status: 'auction'}: {to_id: auditedUser.discord_id, status: 'auction'}
+    let search
+    const auditedUser = await fetchOnly(args.ids[0])
+
+    if (args.auctions) {
+        if (args.from || args.to)
+            search = args.from? {from_id: auditedUser.discord_id, status: 'auction'}: {to_id: auditedUser.discord_id, status: 'auction'}
         else
             search = {$or: [{to_id: auditedUser.discord_id}, {from_id: auditedUser.discord_id}], status: 'auction'}
 
-    } else if (arg.gets || arg.sends) {
-        search = arg.gets? {to_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}:
+    } else if (args.to || args.from) {
+        search = args.to? {to_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}:
             {from_id: auditedUser.discord_id, $or: [{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}
     } else {
         search = {$or: [{to_id: auditedUser.discord_id}, {from_id: auditedUser.discord_id}]}
@@ -203,46 +187,16 @@ pcmd(['admin', 'auditor'], ['audit', 'user'], async (ctx, user, ...args) => {
             color: colors.blue,
         }
     })
-})
-
-pcmd(['admin', 'mod', 'auditor', 'tagmod'], ['audit', 'user', 'tags'], withGlobalCards(async (ctx, user, cards, arg, fullArgs) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
-        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-
-    if (arg.ids.length === 0)
-        return ctx.reply(user, `please submit a valid user ID`, 'red')
-
-    const auditedUser = await fetchOnly(arg.ids)
-    const auditArgs = parseAuditArgs(ctx, fullArgs)
-    const userTags = await auditFetchUserTags(auditedUser, auditArgs)
-    const cardIDs = cards.map(x => x.id)
-    const tags = userTags.filter(x => cardIDs.includes(x.card))
-
-    if(tags.length === 0)
-        return ctx.reply(user, `cannot find tags for matching cards (${cards.length} cards matched)`)
-
-    return ctx.sendPgn(ctx, user, {
-        pages: ctx.pgn.getPages(tags.map(x => {
-            const card = ctx.cards[x.card]
-            return `\`${ctx.symbols.accept}${x.upvotes.length} ${ctx.symbols.decline}${x.downvotes.length}\` **#${x.name}** ${x.status!='clear'? `(${x.status})`: ''} - ${formatName(card)}`
-        }, 10)),
-        switchPage: (data) => data.embed.description = `**${user.username}**, tags that ${auditedUser.username} created:\n\n${data.pages[data.pagenum]}`,
-        buttons: ['first', 'back', 'forward', 'last'],
-        embed: {
-            color: colors.blue,
-        }
-    })
 }))
 
-pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'guild'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, args)
     let search
-    if (!arg.id)
+    if (!args.guildID)
         return ctx.reply(user, `please submit a valid guild ID`, 'red')
 
-    arg.auction? search = {status: 'auction', guild_id: arg.id}: search = {guild_id: arg.id, $or:[{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}
+    args.auctions? search = {status: 'auction', guild_id: args.guildID}: search = {guild_id: args.guildID, $or:[{status: 'pending'}, {status: 'declined'}, {status: 'confirmed'}]}
 
     let list = await Transaction.find(search).sort({ time :-1})
 
@@ -254,22 +208,23 @@ pcmd(['admin', 'auditor'], ['audit', 'guild'], async (ctx, user, ...args) => {
         pages: paginateGuildTrsList(ctx, user, list),
         buttons: ['back', 'forward'],
         embed: {
-            author: { name: `${user.username}, here are the guild transactions for \`${arg.id}\` (${list.length} results)` },
+            author: { name: `${user.username}, here are the guild transactions for \`${args.guildID}\` (${list.length} results)` },
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'transaction'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let trans = await Transaction.findOne({id: arg[0]})
+
+    let trans = await Transaction.findOne({id: args.transID})
 
     if (!trans)
-        return ctx.reply(user, `transaction ID \`${arg[0]}\` was not found`, 'red')
+        return ctx.reply(user, `transaction ID \`${args.transID}\` was not found`, 'red')
 
     const timediff = msToTime(new Date() - trans.time, {compact: true})
-    const corespAudit = await Audit.findOne({transid: arg[0]})
+    const corespAudit = await Audit.findOne({transid: args.transID})
 
     const resp = []
     resp.push(`Price: **${numFmt(trans.price)}** ${ctx.symbols.tomato}`)
@@ -294,22 +249,21 @@ pcmd(['admin', 'auditor'], ['audit', 'trans'], async (ctx, user, ...arg) => {
         }
 
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'warn'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, ctx.capitalMsg)
-    let warnedUser = await fetchOnly(arg.id)
+    let warnedUser = await fetchOnly(args.ids[0])
 
     if (!warnedUser)
-        return ctx.reply(user, `user with ID ${arg.id} not found`, 'red')
+        return ctx.reply(user, `user with ID ${args.ids[0]} not found`, 'red')
 
     try {
-        const ch = await ctx.bot.getDMChannel(arg.id)
+        const ch = await ctx.bot.getDMChannel(args.ids[0])
         let embed = {
             title: "**Rule Violation Warning**",
-            description: `**${warnedUser.username}**, ${arg.extraArgs.join(" ")}`,
+            description: `${args.extraArgs}`,
             color: colors['yellow']
         }
         await ctx.direct(warnedUser, embed)
@@ -318,20 +272,20 @@ pcmd(['admin', 'auditor'], ['audit', 'warn'], async (ctx, user, ...args) => {
     }
 
     return ctx.reply(user, "Warning message sent")
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    const auc = await Auction.findOne({ id: args[0] })
+    const auc = await Auction.findOne({ id: args.aucID })
 
     if(!auc)
-        return ctx.reply(user, `auction with ID \`${args[0]}\` was not found`, 'red')
+        return ctx.reply(user, `auction with ID \`${args.aucID}\` was not found`, 'red')
 
     const author = await fetchOnly(auc.author)
     const card = ctx.cards[auc.card]
     const timediff = msToTime(auc.expires - new Date(), {compact: true})
-    const corespAudit = await Audit.findOne({id: args[0]})
+    const corespAudit = await Audit.findOne({id: args.aucID})
 
     const resp = []
 
@@ -370,16 +324,15 @@ pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], async (ctx, u
         buttons: ['back', 'forward'],
         switchPage: (data) => data.embed.fields[0] = { name: `Auction Bids`, value: data.pages[data.pagenum] }
     }, user.discord_id)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, args)
-    if (!arg.id)
+    if (!args.ids[0])
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    const findUser = await User.findOne({discord_id: arg.id})
+    const findUser = await User.findOne({discord_id: args.ids[0]})
 
     if (!findUser)
         return ctx.reply(user, 'no user found with that ID', 'red')
@@ -387,16 +340,16 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'user'], async (ctx, user, ...args)
     let embed = createFindUserEmbed(ctx, user, findUser)
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-    let arg = parseAuditArgs(ctx, args)
-    if (!arg.extraArgs)
+
+    if (!args.extraArgs)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    const findUser = await User.findOne({_id: arg.extraArgs[0]})
+    const findUser = await User.findOne({_id: args.extraArgs})
 
     if (!findUser)
         return ctx.reply(user, 'no user found with that ID', 'red')
@@ -404,14 +357,15 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'obj'], ['audit', 'find', 'object']
     let embed = createFindUserEmbed(ctx, user, findUser)
 
     return ctx.send(ctx.interaction, embed, user.discord_id)
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ctx, user, cards, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+//Todo: Make work
+pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withInteraction( withGlobalCards(async (ctx, user, cards, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     const list = await Transaction.find({
-        $or: [{to_id: args[0].ids}, {from_id: args[0].ids}], card: { $in: cards.map(c => c.id) }
+        $or: [{to_id: args.ids}, {from_id: args.ids}], card: { $in: cards.map(c => c.id) }
     }).sort({ time: -1 }).limit(100)
 
     if(list.length == 0)
@@ -425,9 +379,9 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withGlobalCards(async (ct
             color: colors.blue,
         }
     })
-}))
-
-pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit', 'cfm'], async (ctx, user, arg) => {
+})))
+//Todo: Make work
+pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit', 'cfm'], withInteraction( async (ctx, user, arg) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
@@ -443,9 +397,9 @@ pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit'
     auditEntry.closedBy = user.username
     await auditEntry.save()
     return ctx.reply(user, `audit record with ID ${arg} has been confirmed as audited`)
-})
-
-pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
+}))
+//Todo: Make work
+pcmd(['admin', 'auditor'], ['audit', 'closed'], withInteraction( async (ctx, user, arg) => {
     if (!ctx.audit.channel.includes(ctx.msg.channel.id))
         return ctx.reply(user, 'this command can only be run in an audit channel.', 'red')
 
@@ -462,19 +416,19 @@ pcmd(['admin', 'auditor'], ['audit', 'closed'], async (ctx, user, arg) => {
             color: colors.blue,
         }
     })
-})
+}))
 
-pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'], ['audit', 'ls'], async (ctx, user, ...args) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+pcmd(['admin', 'auditor'], ['audit', 'list'], withInteraction( async (ctx, user, args) => {
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
-    let arg = parseArgs(ctx, args)
-    if (!arg.ids)
+    if (!args.ids[0])
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    const findUser = await User.findOne({discord_id: arg.ids[0]})
+    const findUser = await User.findOne({discord_id: args.ids[0]})
+    const userCards = await getUserCards(ctx, findUser)
     const now = new Date()
-    let findCards = filter(mapUserCards(ctx, findUser).sort(arg.sort), arg)
+    let findCards = filter(mapUserCards(ctx, userCards).sort(args.sort), args)
 
     const cardstr = findCards.map(c => {
         const isnew = c.obtained > (findUser.lastdaily || now)
@@ -485,4 +439,4 @@ pcmd(['admin', 'auditor'], ['audit', 'list'], ['audit', 'li'], ['audit', 'cards'
         pages: ctx.pgn.getPages(cardstr, 15),
         embed: { author: { name: `${user.username}, here are ${findUser.username}'s cards (${numFmt(findCards.length)} results)` } }
     })
-})
+}))
