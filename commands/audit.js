@@ -47,7 +47,7 @@ const {
 } = require("../modules/interactions")
 
 pcmd(['admin', 'auditor'], ['audit', 'report', 'one'], withInteraction( async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let overSell = await AuditAucSell.find({sold: {$gt:5}}).sort({sold: -1, unsold: 1})
@@ -66,7 +66,7 @@ pcmd(['admin', 'auditor'], ['audit', 'report', 'one'], withInteraction( async (c
 }))
 
 pcmd(['admin', 'auditor'], ['audit', 'report', 'two'], withInteraction( async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let overPrice = (await Audit.find({ audited: false, report_type: 2 }).sort({price_over : -1}))
@@ -85,7 +85,7 @@ pcmd(['admin', 'auditor'], ['audit', 'report', 'two'], withInteraction( async (c
 }))
 
 pcmd(['admin', 'auditor'], ['audit', 'report', 'three'], withInteraction( async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let buybacks = await Audit.find({audited: false, report_type: 3}).sort({price: -1})
@@ -104,7 +104,7 @@ pcmd(['admin', 'auditor'], ['audit', 'report', 'three'], withInteraction( async 
 }))
 
 pcmd(['admin', 'auditor'], ['audit', 'report', 'four'], withInteraction( async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let buybacks = await Audit.find({audited: false, report_type: 4})
@@ -123,7 +123,7 @@ pcmd(['admin', 'auditor'], ['audit', 'report', 'four'], withInteraction( async (
 }))
 
 pcmd(['admin', 'auditor'], ['audit', 'report', 'five'], withInteraction( async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
     let botsells = await Audit.find({audited: false, report_type: 5})
@@ -139,16 +139,6 @@ pcmd(['admin', 'auditor'], ['audit', 'report', 'five'], withInteraction( async (
             color: colors.blue,
         }
     })
-}))
-
-pcmd(['admin', 'auditor'], ['audit'], withInteraction( async (ctx, user) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
-        return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
-
-    const help = ctx.audithelp.find(x => x.type === 'audit')
-    const curpgn = getHelpEmbed(ctx, help, ctx.guild.prefix)
-
-    return ctx.sendPgn(ctx, user, curpgn)
 }))
 
 pcmd(['admin', 'auditor'], ['audit', 'user'], withInteraction( async (ctx, user, args) => {
