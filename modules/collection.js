@@ -32,7 +32,7 @@ const completed = async (ctx, user, cardIDs) => {
         const userCardCount = await countUserCards(ctx, user, colCards.map(y => y.id))
 
         if (!preCompleted && userCardCount < colCards.length)
-            return
+            continue
 
         if (preCompleted && preCompleted.amount) {
             if (preCompleted.amount !== 0 && !user.cloutedcols.some(y => y.id === card.col))
@@ -47,7 +47,6 @@ const completed = async (ctx, user, cardIDs) => {
         if (!preCompleted && userCardCount >= colCards.length)
             completedCols.push(card.col)
     }
-
     if (completedCols.length !== 0) {
         completedCols.map(x => user.completedcols.push({id: x}))
         await user.save()
