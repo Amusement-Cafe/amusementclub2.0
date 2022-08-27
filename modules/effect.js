@@ -19,6 +19,13 @@ const check_effect = async (ctx, user, id) => {
         return false
     }
 
+    if (userEffect && !userEffect.expires && inSlot) {
+        inSlot.effect_name = null
+        inSlot.cooldown = null
+        await inSlot.save()
+        return false
+    }
+
     return effect && inSlot && userEffect.expires
 }
 
