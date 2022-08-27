@@ -345,13 +345,12 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'list'], withInteraction( async (ctx
     })
 }))
 
-//Todo: Make work
-pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'audit', 'tags'], withInteraction( withGlobalCards(async (ctx, user, cards, arg, fullArgs) => {
+pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'audit'], withInteraction( withGlobalCards(async (ctx, user, cards, arg) => {
     if (arg.ids.length === 0)
         return ctx.reply(user, `please submit a valid user ID`, 'red')
 
-    const auditedUser = await fetchOnly(arg.ids)
-    const userTags = await auditFetchUserTags(auditedUser, auditArgs)
+    const auditedUser = await fetchOnly(arg.ids[0])
+    const userTags = await auditFetchUserTags(auditedUser, arg)
     const cardIDs = cards.map(x => x.id)
     const tags = userTags.filter(x => cardIDs.includes(x.card))
 

@@ -370,15 +370,15 @@ pcmd(['admin', 'auditor'], ['audit', 'find', 'trans'], withInteraction( withGlob
         }
     })
 })))
-//Todo: Make work
+
 pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit', 'cfm'], withInteraction( async (ctx, user, arg) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'This command can only be run in an audit channel.', 'red')
 
-    if (!arg)
+    if (!arg.extraArgs)
         return ctx.reply(user, `please submit a valid audit ID`, 'red')
 
-    const auditEntry = await Audit.findOne({audit_id: arg, audited: false})
+    const auditEntry = await Audit.findOne({audit_id: arg.extraArgs, audited: false})
     
     if (!auditEntry)
         return ctx.reply(user, `no audit record found with that ID or it is already completed`, `red`)
@@ -386,11 +386,11 @@ pcmd(['admin', 'auditor'], ['audit', 'complete'], ['audit', 'confirm'], ['audit'
     auditEntry.audited = true
     auditEntry.closedBy = user.username
     await auditEntry.save()
-    return ctx.reply(user, `audit record with ID ${arg} has been confirmed as audited`)
+    return ctx.reply(user, `audit record with ID ${arg.extraArgs} has been confirmed as audited`)
 }))
-//Todo: Make work
+
 pcmd(['admin', 'auditor'], ['audit', 'closed'], withInteraction( async (ctx, user, arg) => {
-    if (!ctx.audit.channel.includes(ctx.msg.channel.id))
+    if (!ctx.audit.channel.includes(ctx.interaction.channel.id))
         return ctx.reply(user, 'this command can only be run in an audit channel.', 'red')
 
     const closedAudits = await Audit.find({audited: true}).sort({ _id: -1})

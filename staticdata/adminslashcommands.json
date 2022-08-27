@@ -662,6 +662,25 @@
                         "required": false
                     }
                 ]
+            },
+            {
+                "name": "audit",
+                "description": "Lists all tags a user has created",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID to audit",
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "description": "The card query to audit",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
             }
         ]
     },
@@ -780,6 +799,25 @@
                         "required": true
                     }
                 ]
+            },
+            {
+                "name": "complete",
+                "type": 1,
+                "description": "Mark an audit entry as completed",
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "type": 3,
+                        "description": "Enter the Audit ID to complete",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "closed",
+                "type": 1,
+                "description": "List all completed audit entries",
+                "options": []
             },
             {
                 "name": "warn",
