@@ -1274,6 +1274,14 @@
                         "description": "Sell only cards the other user is missing",
                         "type": 5,
                         "required": false
+                    },
+                    {
+                        "name": "count",
+                        "description": "Limit the number of cards to sell, Default 100",
+                        "type": 4,
+                        "min_value": 1,
+                        "max_value": 100,
+                        "required": false
                     }
                 ]
             },
