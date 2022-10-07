@@ -231,6 +231,12 @@
                                 "description": "The collection to lock to",
                                 "type": 3,
                                 "required": true
+                            },
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to lock",
+                                "type": 3,
+                                "required": true
                             }
                         ]
                     },
@@ -238,7 +244,14 @@
                         "name": "unlock",
                         "description": "Sudo unlock a guild",
                         "type": 1,
-                        "options": []
+                        "options": [
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to unlock",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
                     },
                     {
                         "name": "herocheck",

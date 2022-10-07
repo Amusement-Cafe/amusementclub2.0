@@ -48,6 +48,9 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
+const {
+    fetchGuildById,
+} = require("../modules/guild")
 
 const {
     numFmt,
@@ -225,18 +228,27 @@ pcmd(['admin'], ['sudo', 'stress'], withInteraction(async (ctx, user, args) => {
 pcmd(['admin'], ['sudo', 'guild', 'lock'], withInteraction(async (ctx, user, args) => {
     if (args.cols.length === 0)
         return ctx.reply(user, `collection \`${args.colQuery}\` not found`, 'red')
+    const guild = await fetchGuildById(args.guildID)
+
+    if (!guild)
+        return ctx.reply(user, `no guild found with ID \`${args.guildID}\`!`, 'red')
 
     const col = _.flattenDeep(args.cols)[0]
 
-    ctx.guild.overridelock = col.id
-    await ctx.guild.save()
+    guild.overridelock = col.id
+    await guild.save()
 
-    return ctx.reply(user, `current guild was override-locked to **${col.name}** collection`)
+    return ctx.reply(user, `guild \`${guild.id}\` was override-locked to the **${col.name}** collection`)
 }))
 
-pcmd(['admin'], ['sudo', 'guild', 'unlock'], withInteraction(async (ctx, user) => {
-    ctx.guild.overridelock = ''
-    await ctx.guild.save()
+pcmd(['admin'], ['sudo', 'guild', 'unlock'], withInteraction(async (ctx, user, args) => {
+    const guild = await fetchGuildById(args.guildID)
+
+    if (!guild)
+        return ctx.reply(user, `no guild found with ID \`${args.guildID}\`!`, 'red')
+
+    guild.overridelock = ''
+    await guild.save()
 
     return ctx.reply(user, `guild override lock was removed. Guild locks (if any) will remain active`)
 }))
