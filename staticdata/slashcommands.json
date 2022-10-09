@@ -495,7 +495,7 @@
                         "name": "card_query",
                         "description": "The card query of the cards you want to favorite",
                         "type": 3,
-                        "required": true
+                        "required": false
                     }
                 ]
             },
@@ -526,7 +526,7 @@
                                 "name": "card_query",
                                 "description": "The card query of the cards you want to remove from your favorites",
                                 "type": 3,
-                                "required": true
+                                "required": false
                             }
                         ]
                     }
