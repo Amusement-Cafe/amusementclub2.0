@@ -1,8 +1,12 @@
-const {Auction, AuditAucSell}         = require('../collections')
-
 const lockFile  = require('proper-lockfile')
 const asdate    = require('add-subtract-date')
 const msToTime  = require('pretty-ms')
+const _         = require("lodash")
+
+const {
+    Auction,
+    AuditAucSell,
+} = require('../collections')
 
 const {
     generateNextId,
@@ -36,6 +40,7 @@ const {
     addUserCards,
     removeUserCards,
     findUserCards,
+    getUserCards,
 } = require('./user')
 
 const {
@@ -324,10 +329,25 @@ const formatAucTime = (time, compact = false) => {
     return `${hours <= 0? '': `${hours}h`} ${minutes}m`
 }
 
-const unlock = () => {
-    lockFile.unlock('auc.lock', err => {
-        if(err) console.log(err)
-    })
+const autoAuction = async (ctx) => {
+    const active = await Auction.find({ finished: false })
+    const aucUser = await fetchOnly(ctx.auctionUserID)
+
+    if (active.length >= 100 || !aucUser)
+        return
+
+    const cards = await getUserCards(ctx, aucUser)
+    const card = _.sample(cards)
+
+    if (!card)
+        return
+
+    const aucCard = ctx.cards[card.cardid]
+    const eval = await evalCard(ctx, aucCard)
+
+    ctx.guild = {id: ctx.adminGuildID}
+
+    await new_auc(ctx, aucUser, aucCard, Math.round(eval * 0.9), 0, 12)
 }
 
 module.exports = {
@@ -335,5 +355,6 @@ module.exports = {
     paginate_auclist,
     bid_auc,
     finish_aucs,
-    format_auc
+    format_auc,
+    autoAuction
 }
