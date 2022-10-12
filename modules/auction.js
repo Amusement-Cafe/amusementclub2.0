@@ -331,9 +331,9 @@ const formatAucTime = (time, compact = false) => {
 
 const autoAuction = async (ctx) => {
     const active = await Auction.find({ finished: false })
-    const aucUser = await fetchOnly(ctx.auctionUserID)
+    const aucUser = await fetchOnly(ctx.autoAuction.auctionUserID)
 
-    if (active.length >= 100 || !aucUser)
+    if (active.length >= ctx.autoAuction.auctionCount || !aucUser)
         return
 
     const cards = await getUserCards(ctx, aucUser)
@@ -347,7 +347,7 @@ const autoAuction = async (ctx) => {
 
     ctx.guild = {id: ctx.adminGuildID}
 
-    await new_auc(ctx, aucUser, aucCard, Math.round(eval * 0.9), 0, 12)
+    await new_auc(ctx, aucUser, aucCard, Math.round(eval * ctx.autoAuction.auctionMultiplier), 0, ctx.autoAuction.auctionLength)
 }
 
 module.exports = {

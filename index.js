@@ -40,7 +40,7 @@ module.exports.create = async ({
         maintenance, invite, data, dbl, 
         analytics, evalc, uniqueFrequency,
         metac, auctionLock, guildLogChannel,
-        adminGuildID, auctionUserID
+        adminGuildID, autoAuction
     }) => {
 
     const emitter = new Emitter()
@@ -200,7 +200,7 @@ module.exports.create = async ({
         slashCmd: require('./staticdata/slashcommands'),
         adminCmd: require('./staticdata/adminslashcommands'),
         adminGuildID,
-        auctionUserID,
+        autoAuction,
         promos: data.promos,
         boosts: data.boosts,
         cardInfos,
@@ -236,7 +236,7 @@ module.exports.create = async ({
         auction.finish_aucs(ctx, now)
         pgn.timeoutTick()
 
-        if (ctx.auctionUserID && !ctx.settings.aucLock)
+        if (ctx.autoAuction.auctionUserID && !ctx.settings.aucLock)
             auction.autoAuction(ctx)
     }
 
