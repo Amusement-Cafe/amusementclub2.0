@@ -495,7 +495,7 @@
                         "name": "card_query",
                         "description": "The card query of the cards you want to favorite",
                         "type": 3,
-                        "required": true
+                        "required": false
                     }
                 ]
             },
@@ -526,7 +526,7 @@
                                 "name": "card_query",
                                 "description": "The card query of the cards you want to remove from your favorites",
                                 "type": 3,
-                                "required": true
+                                "required": false
                             }
                         ]
                     }
@@ -1273,6 +1273,14 @@
                         "name": "missing",
                         "description": "Sell only cards the other user is missing",
                         "type": 5,
+                        "required": false
+                    },
+                    {
+                        "name": "count",
+                        "description": "Limit the number of cards to sell, Default 100",
+                        "type": 4,
+                        "min_value": 1,
+                        "max_value": 100,
                         "required": false
                     }
                 ]

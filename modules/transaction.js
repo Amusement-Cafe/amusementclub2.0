@@ -196,7 +196,7 @@ const check_trs = async (ctx, user, target) => {
     return await Transaction.find({ from_id: user.discord_id, status: 'pending', to_id: target })
 }
 
-const validate_trs = async (ctx, user, cards, id, targetuser) => {
+const validate_trs = async (ctx, user, cards, id, targetuser, count = 100) => {
     if(user.ban && user.ban.embargo)
         return `you are not allowed to sell cards.
                 Your dealings were found to be in violation of our community rules.
@@ -211,8 +211,8 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
         return `transactions are possible only in guild channel`
 
     const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to_id === id)
-    cards.splice(100, cards.length)
+    const pendingto = pending.filter(x => x.to_id == id)
+    cards.splice(count, cards.length)
 
     if(targetuser && targetuser.discord_id === user.discord_id) {
         return `you cannot sell cards to yourself.`
@@ -220,10 +220,10 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
 
     if(!targetuser && pendingto.length > 0)
         return `you already have pending transaction to **BOT**. 
-            First resolve transaction \`${pending[0].id}\`
-            Type \`/transaction info transaction_id:${pending[0].id}\` to see more information
-            \`/transaction confirm transaction_id:${pending[0].id}\` to confirm
-            \`/transaction decline transaction_id:${pending[0].id}\` to decline`
+            First resolve transaction \`${pendingto[0].id}\`
+            Type \`/transaction info transaction_id:${pendingto[0].id}\` to see more information
+            \`/transaction confirm transaction_id:${pendingto[0].id}\` to confirm
+            \`/transaction decline transaction_id:${pendingto[0].id}\` to decline`
 
     else if(pendingto.length >= 5)
         return `you already have pending transactions to **${pendingto[0].to}**. 

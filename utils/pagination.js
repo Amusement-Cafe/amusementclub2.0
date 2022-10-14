@@ -319,19 +319,19 @@ const remove = (ctx) => {
         return
 
     paginations.filter(x => x.msg !== ctx.interaction.message.id)
-    ctx.interaction.deleteOriginalMessage()
+    ctx.interaction.deleteOriginalMessage().catch(e => e)
 }
 
 const sendConfirm = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'Operation was confirmed!', color: colors.green}, components: []})
+    interaction.editOriginalMessage({embed: {description: 'Operation was confirmed!', color: colors.green}, components: []}).catch(e => e)
 }
 
 const sendDecline = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'Operation was declined!', color: colors.red}, components: []})
+    interaction.editOriginalMessage({embed: {description: 'Operation was declined!', color: colors.red}, components: []}).catch(e => e)
 }
 
 const sendTimeout = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'This confirmation dialog has expired!', color: colors.grey}, components: []})
+    interaction.editOriginalMessage({embed: {description: 'This confirmation dialog has expired!', color: colors.grey}, components: []}).catch(e => e)
 }
 
 const timeoutTick = () => {
