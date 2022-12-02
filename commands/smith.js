@@ -120,7 +120,7 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
                 if(!newcard)
                     return ctx.reply(user, `an error occured, please try again`, 'red')
 
-                removeUserCards(ctx, user, [card1.id, card2.id])
+                await removeUserCards(ctx, user, [card1.id, card2.id])
 
 
                 await addUserCards(ctx, user, [newcard.id])
