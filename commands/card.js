@@ -718,7 +718,7 @@ cmd(['boost', 'list'], withInteraction((ctx, user) => {
     }
 
     const description = boosts.map(x => 
-        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards claim_id:${x.id}\`)`).join('\n')
+        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards boost_id:${x.id}\`)`).join('\n')
 
     return ctx.send(ctx.interaction, {
         description,
