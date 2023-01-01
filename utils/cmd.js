@@ -1,6 +1,7 @@
 const tree = {
     cmd: {},
     rct: {},
+    con: {},
 }
 
 const cmd = (...args) => buildTree(args)
@@ -10,6 +11,19 @@ const pcmd = (perm, ...args) => buildTree(args, perm)
 const rct = (...args) => {
     const callback = args.pop()
     const cursor = tree.rct
+
+    args.map(alias => {
+        if (!cursor.hasOwnProperty(alias)) {
+            cursor[alias] = {}
+        }
+
+        cursor[alias]._callback = callback
+    })
+}
+
+const con = (...args) => {
+    const callback = args.pop()
+    const cursor = tree.con
 
     args.map(alias => {
         if (!cursor.hasOwnProperty(alias)) {
@@ -99,20 +113,7 @@ module.exports = {
     cmd,
     pcmd,
     rct,
+    con,
     trigger,
 }
-
-/* testing */
-
-// cmd('help', async (...args) => {
-//     console.log('help', args)
-// })
-
-// cmd('help', 'tomato', async (...args) => {
-//     console.log('help', 'tomato', args)
-// })
-
-// trigger(['help', 1, 2, 3])
-// trigger(['help', 'francesca', 2, 3])
-// trigger(['help', 'tomato', 1, 2, 3])
 
