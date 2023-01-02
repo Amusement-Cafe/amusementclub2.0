@@ -3,7 +3,9 @@ const msToTime = require('pretty-ms')
 const lockFile  = require('proper-lockfile')
 
 const {
-    User, Transaction, Audit, Auction,
+    User,
+    Transaction,
+    UserCard,
 }   = require('../collections')
 
 const {
@@ -12,10 +14,14 @@ const {
 } = require('../utils/tools')
 
 const {
-    addUserCard, 
-    removeUserCard,
     formatName,
 } = require('./card')
+
+const {
+    addUserCards, 
+    removeUserCards,
+    fetchOnly,
+} = require('./user')
 
 const {
     completed,
@@ -24,6 +30,10 @@ const {
 const {
     trans_fraud_check,
 } = require('./audit')
+
+const {
+    getStats,
+} = require("./userstats");
 
 const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, reject) => {
 
@@ -37,8 +47,8 @@ const new_trs = (ctx, user, cards, price, to_id) => new Promise(async (resolve, 
         transaction.from_id = user.discord_id
         transaction.to = target? target.username : 'bot'
         transaction.to_id = to_id
-        transaction.guild = ctx.msg.channel.guild.name
-        transaction.guild_id = ctx.msg.channel.guild.id
+        transaction.guild = ctx.interaction.channel.guild.name
+        transaction.guild_id = ctx.interaction.channel.guild.id
         transaction.status = 'pending'
         transaction.time = new Date()
         transaction.cards = cards.map(x => x.id)
@@ -72,65 +82,72 @@ const from_auc = async (auc, from, to) => {
     return transaction.save()
 }
 
-const confirm_trs = async (ctx, user, trs_id) => {
+const confirm_trs = async (ctx, user, trs_id, edit = true) => {
     if(typeof user === 'string')
-        user = await User.findOne({ discord_id: user })
+        user = await fetchOnly(user)
 
     if(!user) return;
 
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
-        return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red')
+        return ctx.reply(user, `transaction with id \`${trs_id}\` was not found`, 'red', edit)
 
-    const from_user = await User.findOne({ discord_id: transaction.from_id })
-    const to_user = await User.findOne({ discord_id: transaction.to_id })
-    const cards = from_user.cards.filter(x => transaction.cards.some(y => y == x.id))
+    const from_user = await fetchOnly(transaction.from_id)
+    const to_user = await fetchOnly(transaction.to_id)
+    const cards = await UserCard.find({ 
+        userid: transaction.from_id,
+        cardid: { $in: transaction.cards } 
+    }).lean()
+    let fromStats = await getStats(ctx, from_user, from_user.lastdaily)
 
     if(cards.length != transaction.cards.length){
         transaction.status = 'declined'
         await transaction.save()
-        return ctx.reply(to_user, `this transaction is not valid anymore. Seller doesn't have some of the cards in this transaction.`, 'red')
+        return ctx.reply(to_user || from_user, `this transaction is not valid anymore. Seller doesn't have some of the cards in this transaction.`, 'red', edit)
     }
 
     if(to_user) {
         if(user.discord_id != transaction.to_id)
-            return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
+            return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red', edit)
 
         if(to_user.exp < transaction.price)
-            return ctx.reply(to_user, `you need **${numFmt(Math.floor(transaction.price - to_user.exp))}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red')
+            return ctx.reply(to_user, `you need **${numFmt(Math.floor(transaction.price - to_user.exp))}** ${ctx.symbols.tomato} more to confirm this transaction`, 'red', edit)
         
         to_user.exp -= transaction.price
 
-        transaction.cards.map(async (x) => {
-            addUserCard(to_user, x)
-            await completed(ctx, to_user, ctx.cards[x])
-        })
+        let toStats = await getStats(ctx, to_user, to_user.lastdaily)
+        toStats.userbuy += transaction.cards.length
+        toStats.tomatoout += transaction.price
+        await toStats.save()
+
+        fromStats.usersell += transaction.cards.length
         await to_user.save()
-        to_user.markModified('cards')
-        await to_user.save()
-
-
-
+        await addUserCards(ctx, to_user, transaction.cards)
+        await completed(ctx, to_user, transaction.cards)
 
     } else if(user.discord_id != transaction.from_id) {
-        return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red')
+        return ctx.reply(user, `you don't have rights to confirm this transaction`, 'red', edit)
+    } else {
+        fromStats.botsell += transaction.cards.length
     }
 
     transaction.cards.map(async (x) => {
-        removeUserCard(ctx, from_user, x)
-        await completed(ctx, from_user, ctx.cards[x])
         await trans_fraud_check(ctx, from_user, transaction, x)
     })
+
+
     await from_user.save()
-    from_user.markModified('cards')
-    await from_user.save()
+    await removeUserCards(ctx, from_user, transaction.cards)
+    await completed(ctx, from_user, transaction.cards)
 
     from_user.exp += transaction.price
+    fromStats.tomatoin += transaction.price
     transaction.status = 'confirmed'
 
     await from_user.save()
     await transaction.save()
+    await fromStats.save()
 
     /*ctx.mixpanel.track(
         "Card Sell", { 
@@ -144,18 +161,18 @@ const confirm_trs = async (ctx, user, trs_id) => {
 
     if(to_user) {
         if (transaction.cards.length === 1)
-            return ctx.reply(from_user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+            return ctx.reply(from_user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 
-        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+        return ctx.reply(from_user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
     }
 
     if (transaction.cards.length === 1)
-        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+        return ctx.reply(user, `sold **${formatName(ctx.cards[transaction.cards[0]])}** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 
-    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`)
+    return ctx.reply(user, `sold **${transaction.cards.length} card(s)** to **${transaction.to}** for **${numFmt(transaction.price)}** ${ctx.symbols.tomato}`, 'green', edit)
 }
 
-const decline_trs = async (ctx, user, trs_id) => {
+const decline_trs = async (ctx, user, trs_id, edit = true) => {
     if(typeof user === 'string')
         user = await User.findOne({ discord_id: user })
 
@@ -164,22 +181,22 @@ const decline_trs = async (ctx, user, trs_id) => {
     const transaction = await Transaction.findOne({ id: trs_id, status: 'pending' })
 
     if(!transaction)
-        return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red')
+        return ctx.reply(user, `transaction with id **${trs_id}** was not found`, 'red', edit)
 
     if(!(user.discord_id === transaction.from_id || user.discord_id === transaction.to_id) && !user.isMod)
-        return ctx.reply(user, `you don't have rights to decline this transaction`, 'red')
+        return ctx.reply(user, `you don't have rights to decline this transaction`, 'red', edit)
 
     transaction.status = 'declined'
     await transaction.save()
 
-    return ctx.reply(user, `transaction \`${trs_id}\` was declined`)
+    return ctx.reply(user, `transaction \`${trs_id}\` was declined`, 'green', edit)
 }
 
 const check_trs = async (ctx, user, target) => {
     return await Transaction.find({ from_id: user.discord_id, status: 'pending', to_id: target })
 }
 
-const validate_trs = async (ctx, user, cards, id, targetuser) => {
+const validate_trs = async (ctx, user, cards, id, targetuser, count = 100) => {
     if(user.ban && user.ban.embargo)
         return `you are not allowed to sell cards.
                 Your dealings were found to be in violation of our community rules.
@@ -190,12 +207,12 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
                 Cards cannot be sold to this user until they have had their embargo lifted.
                 You can inquire further on our [Bot Discord](${ctx.cafe})`
     
-    if(!ctx.msg.channel.guild)
+    if(!ctx.interaction.channel.guild)
         return `transactions are possible only in guild channel`
 
     const pending = await getPendingFrom(ctx, user)
-    const pendingto = pending.filter(x => x.to_id === id)
-    cards.splice(100, cards.length)
+    const pendingto = pending.filter(x => x.to_id == id)
+    cards.splice(count, cards.length)
 
     if(targetuser && targetuser.discord_id === user.discord_id) {
         return `you cannot sell cards to yourself.`
@@ -203,23 +220,23 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
 
     if(!targetuser && pendingto.length > 0)
         return `you already have pending transaction to **BOT**. 
-            First resolve transaction \`${pending[0].id}\`
-            Type \`->trans info ${pending[0].id}\` to see more information
-            \`->confirm ${pending[0].id}\` to confirm
-            \`->decline ${pending[0].id}\` to decline`
+            First resolve transaction \`${pendingto[0].id}\`
+            Type \`/transaction info transaction_id:${pendingto[0].id}\` to see more information
+            \`/transaction confirm transaction_id:${pendingto[0].id}\` to confirm
+            \`/transaction decline transaction_id:${pendingto[0].id}\` to decline`
 
     else if(pendingto.length >= 5)
         return `you already have pending transactions to **${pendingto[0].to}**. 
             You can have up to **5** pending transactions to the same user.
-            Type \`->pending\` to see them
-            \`->decline [id]\` to decline`
+            Type \`/transaction pending\` to see them
+            \`/transaction decline transaction_id:id\` to decline`
 
     let lastFav = false
     let listedFavs = 0
     let lastMsg = 'you are about to put up the last copy of your favorite card(s) for sale.\n'
     cards.map((x, i) => {
         if (x.amount === 1 && x.fav && listedFavs < 10) {
-            lastMsg += `Use \`${ctx.prefix}fav remove ${x.name}\` to remove it from favorites first.\n`
+            lastMsg += `Use \`${ctx.prefix}fav remove one card_query:${x.name}\` to remove it from favorites first.\n`
             lastFav = true
             listedFavs++
         }
@@ -237,7 +254,7 @@ const validate_trs = async (ctx, user, cards, id, targetuser) => {
 
         if(cards.length == 0) {
             return `all cards from this query are already put up on sale or you are attempting to sell the last of a favorite already in a transaction.
-                Check your \`${ctx.prefix}pending\` transactions and use \`->dcl [transaction id]\` to decline them.`
+                Check your \`${ctx.prefix}transaction pending\` transactions and use \`/transaction decline transaction_id:id\` to decline them.`
         }
     }
 }

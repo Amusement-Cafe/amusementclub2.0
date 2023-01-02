@@ -34,13 +34,18 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
     if (!guild) {
         guild = await new Guild()
         guild.id = discord_guild.id
-        guild.botchannels = [ctx.msg.channel.id]
-        guild.reportchannel = ctx.msg.channel.id
+        guild.botchannels = [ctx.interaction.channel.id]
+        guild.reportchannel = ctx.interaction.channel.id
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
 
         await guild.save()
-        await ctx.reply(user, `new guild added. This channel was marked as bot and report channel.
-            Type \`->help guild -here\` to see more about guild setup`)
+        await ctx.bot.createMessage(ctx.interaction.channel.id, {
+            embed: {
+                description: `**${user.username}**, new guild added. This channel was marked as bot and report channel.
+            Type \`/help help_menu:guild here:true\` to see more about guild setup`,
+                color: color.green
+            }
+        })
     }
 
     if(!fromcache)
@@ -49,15 +54,19 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
     return guild
 }
 
-const fetchOnly = async (discord_guild) => {
+const fetchGuild = async (discord_guild) => {
     if(!discord_guild)
         return null
 
+    return fetchGuildById(discord_guild.id)
+}
+
+const fetchGuildById = async (guildId) => {
     let fromcache = true
-    let guild = cache.find(x => x.id === discord_guild.id)
+    let guild = cache.find(x => x.id === guildId)
 
     if(!guild) {
-        guild = await Guild.findOne({ id: discord_guild.id })
+        guild = await Guild.findOne({ id: guildId })
         fromcache = false
     }
 
@@ -67,7 +76,7 @@ const fetchOnly = async (discord_guild) => {
     return guild
 }
 
-const addGuildXP = (ctx, user, xp) => {
+const addGuildXP = async (ctx, user, xp) => {
     let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
     
     if(!guildUser) {
@@ -77,12 +86,12 @@ const addGuildXP = (ctx, user, xp) => {
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
             ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
-                For more information run \`->guild info\``)
+                For more information run \`/guild info\``)
         }
     }
 
     ctx.guild.xp += xp * .05
-    guildUser.xp += xp + (check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
+    guildUser.xp += xp + (await check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
     if(rank > guildUser.rank) {
@@ -145,11 +154,12 @@ const bill_guilds = async (ctx, now) => {
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
     
-    return ctx.send(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
+    return ctx.bot.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
+        embed: {
             author: { name: `Receipt for ${now}` },
             description: report.join('\n'),
             color: (ratio < 1? color.red : color.green),
-    })
+    }})
 }
 
 const getMaintenanceCost = (ctx) => {
@@ -181,14 +191,14 @@ const getBuildingInfo = (ctx, user, args) => {
     embed.fields.push({ name: `Health`, value: `**${building.health}** ${heart}` })
     embed.fields[0].name += ` (current)`
 
-    return ctx.send(ctx.msg.channel.id, embed, user.discord_id)
+    return ctx.send(ctx.interaction, embed, user.discord_id)
 }
 
 const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)
 
 const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.discord_id)
 
-const isUserOwner = (ctx, user) => ctx.msg.channel.guild.ownerID === user.discord_id
+const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === user.discord_id
 
 const fetchGuildUsers = (ctx) => User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
 
@@ -224,7 +234,8 @@ module.exports = Object.assign(module.exports, {
     getBuildingInfo,
     isUserManager,
     dropCache,
-    fetchOnly,
+    fetchGuild,
+    fetchGuildById,
     fetchGuildUsers,
     clean_trans,
 })

@@ -18,7 +18,9 @@ const getLemonCap = async (ctx, user) => {
 }
 
 const getUserPlots = async (ctx, global = false, building, user_id, guild_id) => {
-    let q = {user_id: user_id || ctx.msg.author.id}
+    let q = {user_id: ctx.interactionUser.id}
+    if (user_id)
+        q.user_id = user_id
     if (!global)
         q.guild_id = guild_id || ctx.guild.id
     if (building)
@@ -51,8 +53,6 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0, guildID, use
         return
 
     relatedPlots.map(async x => {
-        if (ctx.msg.author.id === x.user_id)
-            return
         const maxCap = await getMaxStorage(ctx, x)
         let payAmount = amount
         if (x.building.level >= requiredLevel && x.building.stored_lemons < maxCap){

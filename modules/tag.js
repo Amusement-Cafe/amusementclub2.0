@@ -54,8 +54,8 @@ const delete_tag = (tag) => Tag.deleteOne({ name: tag.name, card: tag.card })
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withTag = (callback, forceFind = true) => async(ctx, user, ...args) => {
-    const parsedargs = cardMod.parseArgs(ctx, args)
+const withTag = (callback, forceFind = true) => async(ctx, user, args) => {
+    const parsedargs = args
 
     if(parsedargs.isEmpty(false))
         return ctx.qhelp(ctx, user, 'tag')
@@ -221,7 +221,7 @@ const newAuditTag = async (ctx, user, tag, target, ban, embed, now) => {
     ban? auditTag.tagsBanned.push(tag): auditTag.tagsRemoved.push(tag)
     ban? embed.fields[0].value = tag: embed.fields[1].value = tag
 
-    let newMessage = await ctx.send(ctx.audit.taglogchannel, embed)
+    let newMessage = await ctx.bot.createMessage(ctx.audit.taglogchannel, {embed: embed})
 
     auditTag.message_id = newMessage.id
     return auditTag

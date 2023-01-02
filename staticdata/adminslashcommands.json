@@ -1,0 +1,905 @@
+[
+    {
+        "type": 1,
+        "name": "sudo",
+        "description": "Top Level Admin Commands",
+        "options": [
+            {
+                "name": "add",
+                "description": "top level add",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "tomatoes",
+                        "description": "Add tomatoes to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "vials",
+                        "description": "Add vials to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "lemons",
+                        "description": "Add lemons to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get tomatoes added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "amount",
+                                "description": "The amount of tomatoes to add",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "card",
+                        "description": "Add a card to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to add a card to",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to add",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "cards",
+                        "description": "Add multiple cards to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to add cards to",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query of the cards you want to add",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "role",
+                        "description": "Add a role to a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get roles added to, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "role",
+                                "description": "The role to add to the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "top level remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "card",
+                        "description": "Remove a card from a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to remove a card from",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to remove",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "role",
+                        "description": "Remove a role from a user",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "All the user IDs to get roles removed from, separated by a space",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "role",
+                                "description": "The role to remove from the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "eval",
+                "description": "top level eval",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "info",
+                        "description": "View admin stats on card eval",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to view eval info on",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "force",
+                        "description": "Force waiting evals into live evals",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to force eval on",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "reset",
+                        "description": "Reset current auction eval for a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_id",
+                                "description": "The card id of the card you want to reset eval for",
+                                "type": 4,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "guild",
+                "description": "top level guild",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "lock",
+                        "description": "Sudo lock a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "collection",
+                                "description": "The collection to lock to",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to lock",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "unlock",
+                        "description": "Sudo unlock a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to unlock",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "herocheck",
+                        "description": "Force a herocheck in current guild",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
+            },
+            {
+                "name": "lead",
+                "description": "top level lead",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "tomatoes",
+                        "description": "Display the admin leaderboard for tomatoes",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "vials",
+                        "description": "Display the admin leaderboard for vials",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "lemons",
+                        "description": "Display the admin leaderboard for lemons",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "cards",
+                        "description": "Display the admin leaderboard for unique cards",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "completed",
+                        "description": "Display the admin leaderboard for completion count",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "clout",
+                        "description": "Display the admin leaderboard for clout total",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "level",
+                        "description": "Display the admin leaderboard for user level",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
+            },
+            {
+                "name": "reset",
+                "description": "top level reset",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "daily",
+                        "description": "Reset a users daily",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_ids",
+                                "description": "The user IDs of the users to reset daily",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "reverse",
+                "description": "top level reverse",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "transaction",
+                        "description": "Reverse a transaction",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "transaction_id",
+                                "description": "The transaction ID to reverse",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "embargo",
+                "description": "Remove a rating from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "user_ids",
+                        "description": "The user IDs of the users to embargo, separated by a space",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "lift",
+                        "description": "Whether to lift an embargo or not",
+                        "type": 5,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "wip",
+                "description": "Enable Maintenance Mode",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "message",
+                        "description": "The message to display to a user attempting commands while under maintenance",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "announce",
+                "description": "Send a bot announcement",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "title",
+                        "description": "The title of the announcement",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "message",
+                        "description": "The body of the announcement",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "auclock",
+                "description": "Lockout the ability to auction cards",
+                "type": 1,
+                "options": []
+            },
+            {
+                "name": "inrole",
+                "description": "Find users in a specific role",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "role",
+                        "description": "The role to add to the users",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "stress",
+                "description": "Spam test messages according to amount",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "amount",
+                        "description": "The amount of times to stress",
+                        "type": 4,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "summon",
+                "description": "Summon any card in the bot",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to add",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "crash",
+                "description": "Crash the bot",
+                "type": 1,
+                "options": []
+            },
+            {
+                "name": "transfer",
+                "description": "Transfer all cards from one account to another",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "from",
+                        "description": "The user ID to remove cards from",
+                        "type": 6,
+                        "required": true
+                    },
+                    {
+                        "name": "to",
+                        "description": "The user ID to add cards to",
+                        "type": 6,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "refresh",
+                "description": "top level refresh",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "global",
+                        "description": "Refresh all global commands. MAY CAUSE BOT TO NOT RESPOND FOR AN HOUR",
+                        "type": 1,
+                        "options": []
+                    },
+                    {
+                        "name": "admin",
+                        "description": "Refresh all admin commands. Should update within minutes",
+                        "type": 1,
+                        "options": []
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "meta",
+        "description": "Top level Meta Commands",
+        "options": [
+            {
+                "name": "list",
+                "description": "List either sourced or unsourced cards",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card to filter for",
+                        "type": 3,
+                        "required": false
+                    },
+                    {
+                        "name": "sourced",
+                        "description": "Whether to list only sourced, or only unsourced cards. Defaults to true",
+                        "type": 5,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "set",
+                "description": "Top Level for set",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "source",
+                        "description": "Set and image source to a specific link",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card to filter for",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "source",
+                                "description": "The direct link to the source of the card",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "booru",
+                        "description": "Set and image source to a specific Danbooru link",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card to filter for",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "booru_id",
+                                "description": "The ID of the Booru source",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "guess",
+                "description": "Attempt to find an image from another link on Danbooru. Link has to be direct to picture.",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card to filter for",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "source",
+                        "description": "The direct link to the image that will be searched for",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "tagmod",
+        "description": "Top level Tagmod Commands",
+        "options": [
+            {
+                "name": "remove",
+                "description": "Remove a tag from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to remove a tag from",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to remove",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "restore",
+                "description": "Restore a banned tag to a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to restore a tag to",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to restore",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "ban",
+                "description": "Ban a tag from a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to ban a tag for",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to ban",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "info",
+                "description": "Get detailed information about a tag on a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the card you want to check",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "tag",
+                        "description": "The tag you want to check",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "description": "Lists all tag names",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "description": "Insert text here to limit to only result starting with your text",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "name": "audit",
+                "description": "Lists all tags a user has created",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID to audit",
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "description": "The card query to audit",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "audit",
+        "description": "Top level Audit Commands",
+        "options": [
+            {
+                "name": "report",
+                "description": "Top Level for reports",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "one",
+                        "type": 1,
+                        "description": "Displays a list of users with a high auction sell percentage",
+                        "options": []
+                    },
+                    {
+                        "name": "two",
+                        "type": 1,
+                        "description": "Displays a list of auctions selling for a certain amount over eval",
+                        "options": []
+                    },
+                    {
+                        "name": "three",
+                        "type": 1,
+                        "description": "Displays where a user sells a card on auction, and re-purchases that same card",
+                        "options": []
+                    },
+                    {
+                        "name": "four",
+                        "type": 1,
+                        "description": "Same as report 3, but the person has to be the same person the auction went to",
+                        "options": []
+                    },
+                    {
+                        "name": "five",
+                        "type": 1,
+                        "description": "Displays when a user purchases a card via direct sale or auction and sells the card to bot",
+                        "options": []
+                    }
+                ]
+            },
+            {
+                "name": "user",
+                "type": 1,
+                "description": "Audit a user's transactions",
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID to audit",
+                        "required": true
+                    },
+                    {
+                        "name": "auctions",
+                        "type": 5,
+                        "description": "Set to true to filter for only auctions"
+                    },
+                    {
+                        "name": "from",
+                        "type": 5,
+                        "description": "Set to true to further filter by only sends"
+                    },
+                    {
+                        "name": "to",
+                        "type": 5,
+                        "description": "Set to true to further filter by only gets"
+                    }
+                ]
+            },
+            {
+                "name": "find",
+                "type": 2,
+                "description": "Top level find",
+                "options": [
+                    {
+                        "name": "user",
+                        "type": 1,
+                        "description": "Finds a user from the database",
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "type": 3,
+                                "description": "The user ID of the user to display info on",
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "obj",
+                        "type": 1,
+                        "description": "Finds a user by object ID from the database",
+                        "options": [
+                            {
+                                "name": "extra_arguments",
+                                "type": 3,
+                                "description": "The object ID of the user to display info on",
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "auction",
+                "type": 1,
+                "description": "Audit a specific auction",
+                "options": [
+                    {
+                        "name": "auction_id",
+                        "type": 3,
+                        "description": "The auction to audit",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "complete",
+                "type": 1,
+                "description": "Mark an audit entry as completed",
+                "options": [
+                    {
+                        "name": "extra_arguments",
+                        "type": 3,
+                        "description": "Enter the Audit ID to complete",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "closed",
+                "type": 1,
+                "description": "List all completed audit entries",
+                "options": []
+            },
+            {
+                "name": "warn",
+                "type": 1,
+                "description": "Send a warning to a user",
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID of the user to warn",
+                        "required": true
+                    },
+                    {
+                        "name": "extra_arguments",
+                        "type": 3,
+                        "description": "The warning message",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "transaction",
+                "type": 1,
+                "description": "Inspect a transaction",
+                "options": [
+                    {
+                        "name": "transaction_id",
+                        "type": 3,
+                        "description":"The transaction to inspect",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "guild",
+                "type": 1,
+                "description": "Audit transactions in a guild",
+                "options": [
+                    {
+                        "name": "guild_id",
+                        "type": 3,
+                        "description": "The guild to inspect",
+                        "required": true
+                    },
+                    {
+                        "name": "auctions",
+                        "type": 5,
+                        "description": "Filter to only auction transactions"
+                    }
+                ]
+            },
+            {
+                "name": "list",
+                "type": 1,
+                "description": "Browse a user's card list",
+                "options": [
+                    {
+                        "name": "user_id",
+                        "type": 3,
+                        "description": "The user ID to view cards of",
+                        "required": true
+                    },
+                    {
+                        "name": "card_query",
+                        "type": 3,
+                        "description": "Standard card query filter"
+                    }
+                ]
+            }
+        ]
+    }
+]

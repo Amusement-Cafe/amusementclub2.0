@@ -18,33 +18,43 @@ const {
 const {
     nameSort,
     numFmt,
-}    = require('../utils/tools')
+} = require('../utils/tools')
+
+const {
+    fetchOnly,
+    findUserCards,
+    getUserCards,
+} = require('../modules/user')
+
+const {
+    withInteraction,
+} = require("../modules/interactions")
 
 const {cmd}         = require('../utils/cmd')
 const colors        = require('../utils/colors')
-const { fetchOnly } = require('../modules/user')
 
-cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
-    const completed = args.find(x => x === '-completed' || x === '!completed')
-    const clouted = args.find(x => x === '-clouted' || x === '!clouted')
-    args = args.filter(x => x != '-completed' && x != '!completed' && x != '-clouted' && x != '!clouted')
 
-    let cols = _.flatten(args.map(x => byAlias(ctx, x.replace('-', ''))))
+cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
+    let cols
+    if (args.cols.length > 0)
+        cols = _.flattenDeep(args.cols)
+    else
+        cols = byAlias(ctx, ``)
 
-    if (args.length === 0)
-        cols = byAlias(ctx, args.join().replace('-', ''))
+    const completed = args.completed? true: args.completed === false
+    const clouted = args.clouted? true: args.clouted === false
 
     cols = _.uniqBy(cols, 'id').sort((a, b) => nameSort(a, b, 'id')).filter(x => x)
 
     if(completed) {
-        if(completed[0] === '-') 
+        if(args.completed)
             cols = cols.filter(x => user.completedcols.some(y => y.id === x.id))
         else
             cols = cols.filter(x => !user.completedcols.some(y => y.id === x.id))
     }
 
     if (clouted) {
-        if(clouted[0] === '-')
+        if(args.clouted)
             cols = cols.filter(x => user.cloutedcols.some(y => y.id === x.id))
         else
             cols = cols.filter(x => !user.cloutedcols.some(y => y.id === x.id))
@@ -53,33 +63,44 @@ cmd('col', 'cols', 'collection', 'collections', async (ctx, user, ...args) => {
     if(cols.length === 0)
         return ctx.reply(user, `no collections found`, 'red')
 
-    const cardmap = mapUserCards(ctx, user)
+    const userCards = await getUserCards(ctx, user)
     const pages = ctx.pgn.getPages(cols.map(x => {
         const clout = user.cloutedcols? user.cloutedcols.find(y => x.id === y.id): null
         const overall = ctx.cards.filter(c => c.col === x.id).length
-        const usercount = cardmap.filter(c => c.col === x.id).length
+        const usercount = userCards.filter(c => ctx.cards[c.cardid].col === x.id).length
         const rate = usercount / overall
         const cloutstars = clout && clout.amount > 0? `[${clout.amount}${ctx.symbols.star}] ` : ''
-        return `${cloutstars}**${x.name}** \`${x.id}\` ${rate != 0? `(${Math.floor(rate * 100)}%)` : ''}`
+
+        let rateText = ''
+        if(rate > 0) {
+            const floorRate = Math.floor(rate * 100)
+            if(floorRate < 1) {
+                rateText = `(<1%)`
+            } else {
+                rateText = `(${Math.floor(rate * 100)}%)`
+            }
+        }
+
+        return `${cloutstars}**${x.name}** \`${x.id}\` ${rateText} ${rateText === `(100%)`? ``: `[${usercount}/${overall}]`}`
     }))
 
-    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendPgn(ctx, user, {
         pages,
         buttons: ['back', 'forward'],
         embed: {
             author: { name: `found ${cols.length} collections` }
         }
     })
-})
+})).access('dm')
 
-cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
-    const col = bestColMatch(ctx, args.join().replace('-', ''));
+cmd(['collection', 'info'], withInteraction(async (ctx, user, args) => {
+    const col = _.flattenDeep(args.cols)[0];
 
     if(!col)
-        return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `found 0 collections matching \`${args.colQuery}\``, 'red')
 
     const colCards = ctx.cards.filter(x => x.col === col.id && x.level < 5)
-    const userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
+    const userCards = await findUserCards(ctx, user, colCards.map(x => x.id))
     const card = _.sample(colCards)
     const clout = user.cloutedcols.find(x => x.id === col.id)
     const colInfos = colCards.map(x => ctx.cardInfos[x.id]).filter(x => x)
@@ -112,19 +133,19 @@ cmd(['col', 'info'], ['collection', 'info'], async (ctx, user, ...args) => {
 
     resp.push(`Sample card: ${formatName(card)}`)
 
-    return ctx.send(ctx.msg.channel.id, {
+    return ctx.send(ctx.interaction, {
         title: col.name,
         image: { url: card.url },
         description: resp.join('\n'),
         color: colors.blue
     }, user.discord_id)
-})
+})).access('dm')
 
-cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
-    const col = bestColMatch(ctx, args.join().replace('-', ''));
+cmd(['collection', 'reset'], withInteraction(async (ctx, user, args) => {
+    const col = _.flattenDeep(args.cols)[0];
 
     if(!col)
-        return ctx.reply(user, `found 0 collections matching \`${args.join(' ')}\``, 'red')
+        return ctx.reply(user, `found 0 collections matching \`${args.colQuery}\``, 'red')
 
 
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
@@ -132,7 +153,8 @@ cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
 
     const neededForReset = await resetNeeds(ctx, user, colCards)
 
-    let userCards = mapUserCards(ctx, user).filter(x => x.col === col.id && x.level < 5)
+    const matchingUserCards = await findUserCards(ctx, user, colCards.map(x => x.id))
+    const userCards = mapUserCards(ctx, matchingUserCards)
     const hasNeeded = await hasResetNeeds(ctx, userCards, neededForReset)
 
     let neededBlock = ``
@@ -146,7 +168,7 @@ cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
         neededBlock += `★: **${neededForReset[1]}** ${hasNeeded? '': `- You have **${userCards.filter(x => x.level === 1 && (x.fav? x.amount > 1: x.amount > 0)).length}**`}\n`
 
     if(!hasNeeded)
-        return ctx.reply(user, `you have to have **100%** of the required card rarities to reset this collection!
+        return ctx.reply(user, `you have to have **100%** of the required card rarities to reset collection **${col.name}** (\`${col.id}\`)!
         Unique cards needed for this collection reset are as follows:\n${neededBlock}***This count excludes single cards that are favorited***.`, 'red')
 
     let question = `Do you really want to reset **${col.name}**?
@@ -155,8 +177,8 @@ cmd(['col', 'reset'], ['collection', 'reset'], async (ctx, user, ...args) => {
         You will get a clout star ${legendary? ' + legendary ticket for resetting this collection' :
         `for resetting this collection\n> Please note that you won't get a legendary card ticket because this collection doesn't have any legendaries`}`
 
-    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+    return ctx.sendCfm(ctx, user, {
         question,
         onConfirm: (x) => reset(ctx, user, col, neededForReset),
     })
-})
+}))

@@ -6,11 +6,11 @@ const _             = require('lodash')
 
 const {
     formatName,
-    addUserCard,
 } = require('./card')
 
 const {
     fetchOnly,
+    addUserCards,
 } = require('../modules/user')
 
 let listener
@@ -77,10 +77,10 @@ const registerTopggVote = async (ctx, vote) => {
 
     resp += `Votes until free special card: **${streak2}**`
 
-    addUserCard(votingUser, card.id)
+    await addUserCards(ctx, votingUser, [card.id])
     votingUser.lastvote = new Date()
     votingUser.votenotified = false
-    votingUser.save()
+    await votingUser.save()
 
     return ctx.direct(votingUser, {
         image: { url: card.url },

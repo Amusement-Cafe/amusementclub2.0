@@ -11,9 +11,8 @@ const Guild         = require('../collections/guild')
 const Cardinfo      = require('../collections/cardinfo')
 
 const main = async () => {
-    const mongoUri = 'mongodb://localhost:27017/amusement2'
-    const mongoOpt = {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}
-    const mcn = await mongoose.connect(mongoUri, mongoOpt)
+    const mongoUri = 'mongodb://127.0.0.1:27017/amusement2'
+    const mcn = await mongoose.connect(mongoUri)
 
     MongoClient.connect('mongodb://localhost:27017/', mongoOpt, async (err, conn) => {
         if(err)

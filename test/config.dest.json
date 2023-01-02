@@ -7,13 +7,20 @@
     "daily": 72000000,
     "debug": true,
     "invite": "",
-    "maintenance": false,
+    "maintenance": true,
     "auctionLock": false,
     "uniqueFrequency": 10,
-    "guildLogChannel": "",
+    "guildLogChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+    "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE",
     "auditc": {
         "channel": ["DISCORD_VALID_CHANNEL_ID_GOES_HERE", "CAN TAKE MULTIPLE"],
         "taglogchannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+    },
+    "autoAuction": {
+        "auctionCount": 100,
+        "auctionMultiplier": 0.9,
+        "auctionLength": 12,
+        "auctionUserID": "DISCORD_VALID_USER_ID_GOES_HERE WILL EMPTY CARDS"
     },
     "evalc": {
         "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],

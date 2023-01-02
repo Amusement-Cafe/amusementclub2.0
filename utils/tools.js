@@ -4,7 +4,7 @@ const cap = (str) => {
 
 const claimCost = (user, tax, amount, totalClaims) => {
     let total = 0
-    let claims = totalClaims || user.dailystats.claims || 0
+    let claims = totalClaims || 0
     for (let i = 0; i < amount; i++) {
         claims++
         total += claims * 50
@@ -15,7 +15,7 @@ const claimCost = (user, tax, amount, totalClaims) => {
 
 const promoClaimCost = (user, amount, totalClaims) => {
     let total = 0
-    let claims = totalClaims || user.dailystats.promoclaims || 0
+    let claims = totalClaims || 0
     for (let i = 0; i < amount; i++) {
         claims++
         total += claims * 50
@@ -92,8 +92,27 @@ const generateNextId = (lastId, idLength = 4) => {
     return nextId;
 }
 
+const findCardsFast = (outCardArray, associateCardArray, property = 'id') => {
+    const associate = []
+    associateCardArray.map(x => associate[x.id] = 1)
+
+    return outCardArray.filter(x => associate[x[property]])
+}
+
 const numFmt = (number) => {
     return number.toLocaleString('en-US')
+}
+
+const formatDateLong= (date) => {
+    return `<t:${Math.floor(date.getTime() / 1000)}:D>`
+}
+
+const formatDateTimeLong= (date) => {
+    return `<t:${Math.floor(date.getTime() / 1000)}:F>`
+}
+
+const formatDateTimeRelative = (date) => {
+    return `<t:${Math.floor(date.getTime() / 1000)}:R>`
 }
 
 //const XPtoLEVEL = (xp) => xp === 0? 0 : Math.max(Math.floor((Math.log(xp) / Math.log(5)) * Math.sqrt(xp) * .75), 0)
@@ -121,4 +140,8 @@ module.exports = {
     escapeRegex,
     numFmt,
     urlRegex,
+    findCardsFast,
+    formatDateLong,
+    formatDateTimeLong,
+    formatDateTimeRelative,
 }

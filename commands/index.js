@@ -15,5 +15,6 @@ require('./collection.js')
 require('./preferences.js')
 require('./meta.js')
 require('./plot.js')
+require('./leaderboards')
 
 module.exports = {}
