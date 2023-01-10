@@ -1,6 +1,7 @@
 const User      = require('../collections/user')
 const UserCard  = require('../collections/userCard')
 const UserSlot  = require('../collections/userSlot')
+const UserQuest = require("../collections/userQuest");
 const _         = require('lodash')
 const asdate    = require('add-subtract-date')
 const colors    = require('../utils/colors')
@@ -96,7 +97,7 @@ const onUsersFromArgs = async (args, callback) => {
     }))
 }
 
-const getQuest = (ctx, user, tier, exclude) => {
+const getDailyQuest = (ctx, user, tier, exclude) => {
     const level = XPtoLEVEL(user.xp)
     const available = ctx.quests.daily.filter(x => 
         (!exclude || x.id.slice(0,-1) != exclude)
@@ -112,6 +113,44 @@ const getQuest = (ctx, user, tier, exclude) => {
         x.id != exclude
     ))
 }
+
+const getWeeklyQuest = (ctx, user, tier, exclude) => {
+    const level = XPtoLEVEL(user.xp)
+    const available = ctx.quests.weekly.filter(x =>
+        (!exclude || x.id != exclude)
+        && x.tier === tier
+        && x.min_level <= level
+        && x.can_drop)
+
+    if(available.length > 0) {
+        return _.sample(available)
+    }
+
+    return _.sample(ctx.quests.weekly.filter(x =>
+        x.id != exclude
+    ))
+}
+
+const getMonthlyQuest = (ctx, user, tier, exclude) => {
+    const level = XPtoLEVEL(user.xp)
+    const available = ctx.quests.monthly.filter(x =>
+        (!exclude || x.id != exclude)
+        && x.tier === tier
+        && x.min_level <= level
+        && x.can_drop)
+
+    if(available.length > 0) {
+        return _.sample(available)
+    }
+
+    return _.sample(ctx.quests.monthly.filter(x =>
+        x.id != exclude
+    ))
+}
+
+const getUserQuests = async (ctx, user) => UserQuest.find({userid: user.discord_id})
+
+const updateUserQuest = async (ctx, user, questid, query) => UserQuest.updateOne({userid: user.discord_id, questid: questid}, query, { returnNewDocument: true })
 
 const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id }).lean()
 
@@ -158,8 +197,12 @@ module.exports = {
     fetchOnly,
     onUsersFromArgs,
     updateUser,
-    getQuest,
+    updateUserQuest,
+    getDailyQuest,
+    getWeeklyQuest,
+    getMonthlyQuest,
     getUserCards,
+    getUserQuests,
     findUserCards,
     addUserCards,
     removeUserCards,

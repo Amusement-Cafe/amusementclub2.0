@@ -13,5 +13,6 @@ module.exports = {
     Plots: require('./plot'),
     UserCard: require('./userCard'),
     UserStats: require('./userstats'),
-    UserSlot: require('./userSlot')
+    UserSlot: require('./userSlot'),
+    UserQuest: require('./userQuest')
 }

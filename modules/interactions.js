@@ -43,6 +43,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'from': interactionArgs.from = x.value; break;
             case 'guild_id': interactionArgs.guildID = x.value; break;
             case 'hero': interactionArgs.hero = x.value; break;
+            case 'interact_option': interactionArgs.option = x.value; break;
             case 'inventory_item': interactionArgs.invItem = x.value; break;
             case 'item_id': interactionArgs.itemID = x.value; break;
             case 'lift': interactionArgs.lift = x.value; break;

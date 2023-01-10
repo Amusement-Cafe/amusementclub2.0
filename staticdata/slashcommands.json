@@ -1108,6 +1108,19 @@
                                 "required": true
                             }
                         ]
+                    },
+                    {
+                        "name": "interact",
+                        "description": "Interaction Preferences",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "interact_option",
+                                "description": "The name of the option you want to toggle",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
                     }
                 ]
             },
@@ -1116,6 +1129,11 @@
                 "name": "show",
                 "description": "Subcommand head for preference listing",
                 "options": [
+                    {
+                        "name": "interact",
+                        "description": "Interaction Preferences",
+                        "type": 1
+                    },
                     {
                         "name": "notify",
                         "description": "Notification Preferences",
@@ -1681,6 +1699,72 @@
                             {
                                 "name": "card_query",
                                 "description": "The card query of the cards you want to remove from your wishlist",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": 1,
+        "name": "lock",
+        "description": "Top Command for Lock",
+        "options": [
+            {
+                "name": "one",
+                "description": "Lock a card",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the card you want to lock",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "many",
+                "description": "Lock many cards at once",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query of the cards you want to add to lock",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "remove",
+                "description": "Subgroup remove",
+                "type": 2,
+                "options": [
+                    {
+                        "name": "one",
+                        "description": "Unlock a card",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the card you want to unlock",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "many",
+                        "description": "Unlock many cards",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query of the cards you want to unlock",
                                 "type": 3,
                                 "required": true
                             }

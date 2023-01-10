@@ -86,14 +86,20 @@ module.exports = model('User', {
 
     prefs:              {
         notifications:  {
-            aucbidme:   { type: Boolean, default: true },
-            aucoutbid:  { type: Boolean, default: true },
+            aucbidme:   { type: Boolean, default: true  },
+            aucoutbid:  { type: Boolean, default: true  },
             aucnewbid:  { type: Boolean, default: false },
-            aucend:     { type: Boolean, default: true },
+            aucend:     { type: Boolean, default: true  },
             announce:   { type: Boolean, default: false },
             daily:      { type: Boolean, default: false },
             vote:       { type: Boolean, default: false },
-            completed:  { type: Boolean, default: true },
+            completed:  { type: Boolean, default: true  },
+            effectend:  { type: Boolean, default: false },
         },
+        interactions:   {
+            canhas:     { type: Boolean, default: true  },
+            candiff:    { type: Boolean, default: true  },
+            cansell:    { type: Boolean, default: true  },
+        }
     }
 })

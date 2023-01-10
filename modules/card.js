@@ -45,12 +45,13 @@ const promoRarity = {
     birthday21: '🧁',
     halloween21: '🕸️',
     christmas21: '🍪',
+    christmas22: '🥛',
 }
 
 const formatName = (x) => {
     const promo = promoRarity[x.col]
     const rarity = promo? `\`${new Array(x.level + 1).join(promo)}\`` : new Array(x.level + 1).join('★')
-    return `[${rarity}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
+    return `[${rarity}]${x.locked? ' `🔒` ': ''}${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
     //return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
@@ -136,6 +137,7 @@ const parseArgs = (ctx, user, option) => {
                     case 'gif': q.filters.push(c => c.animated == m); break
                     case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); q.userQuery = true; break
                     case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
+                    case 'locked': q.filters.push(c => m? c.locked : !c.locked); m? q.locked = true: q.locked; q.userQuery = true; break
                     case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
                     case 'rated': q.filters.push(c => m? c.rating: !c.rating); q.userQuery = true; break
                     case 'wish': q.filters.push(c => m? user.wishlist.includes(c.id): !user.wishlist.includes(c.id)); break

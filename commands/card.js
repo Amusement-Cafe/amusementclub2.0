@@ -391,6 +391,12 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
 
+    if(targetuser && !targetuser.prefs.interactions.cansell)
+        return ctx.reply(user, `the user you are checking has disabled the ability to sell them cards`, 'red')
+
+    if (!parsedargs.locked)
+        cards = cards.filter(x => !x.locked)
+
     if (targetuser && parsedargs.missing) {
         const otherCards = await getUserCards(ctx, targetuser)
         const otherIDs = otherCards.map(x => x.cardid)
@@ -436,6 +442,12 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
+
+    if(targetuser && !targetuser.prefs.interactions.cansell)
+        return ctx.reply(user, `the user you are checking has disabled the ability to sell them cards`, 'red')
+
+    if (!parsedargs.locked)
+        cards = cards.filter(x => !x.locked)
 
     if (targetuser && parsedargs.missing) {
         const otherCards = await getUserCards(ctx, targetuser)
@@ -515,6 +527,12 @@ cmd(['sell', 'preview'], withInteraction(withCards(async (ctx, user, cards, pars
 
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
+
+    if(targetuser && !targetuser.prefs.interactions.cansell)
+        return ctx.reply(user, `the user you are checking has disabled the ability to sell them cards`, 'red')
+
+    if (!parsedargs.locked)
+        cards = cards.filter(x => !x.locked)
 
     if (targetuser && parsedargs.missing) {
         const otherCards = await getUserCards(ctx, targetuser)
@@ -962,3 +980,97 @@ cmd(['wish', 'remove', 'many'], withInteraction(withGlobalCards(async (ctx, user
         }
     })
 }))).access('dm')
+
+cmd(['lock', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'lock')
+
+    const unlocked = cards.filter(x => !x.locked)
+    let card = bestMatch(unlocked)
+
+    if(!card) {
+        card = bestMatch(cards)
+        return ctx.reply(user, `card ${formatName(card)} is already locked!`, 'red')
+    }
+
+    await UserCard.updateOne({cardid: card.id, userid: user.discord_id}, {locked: true})
+
+    return ctx.reply(user, `locked ${formatName(card)}`)
+})))
+
+cmd(['lock', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => !x.locked)
+
+    if(cards.length === 0)
+        return ctx.reply(user, `all cards from that request are already locked`, 'red')
+
+    const embed = {
+        title: `**${user.username}**, do you want to lock **${numFmt(cards.length)}** cards?`,
+        footer: { text: `Locked cards can be shown with -locked` },
+        color: colors.yellow
+    }
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x)), 10),
+        embed,
+        force: ctx.globals.force,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.description = data.pages[data.pagenum]
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} || Locked cards can be shown with -locked`}
+        },
+        onConfirm: async (x) => {
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {locked: true})
+
+            return ctx.reply(user, `locked **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+})))
+
+cmd(['lock', 'remove', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'lock')
+
+    const locked = cards.filter(x => x.locked)
+    let card = bestMatch(locked)
+
+    if(!card) {
+        card = bestMatch(cards)
+        return ctx.reply(user, `card ${formatName(card)} is not locked`, 'red')
+    }
+
+    await UserCard.updateOne({cardid: card.id, userid: user.discord_id}, {locked: false})
+
+    return ctx.reply(user, `unlocked ${formatName(card)}`)
+})))
+
+cmd(['lock', 'remove', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => x.locked)
+
+    if(cards.length === 0)
+        return ctx.reply(user, `all cards from that request are already unlocked`, 'red')
+
+    const embed = {
+        title: `**${user.username}**, do you want to unlock **${numFmt(cards.length)}** cards?`,
+        footer: { text: `Locked cards can be shown with -locked` },
+        color: colors.yellow
+    }
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x)), 10),
+        embed,
+        force: ctx.globals.force,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.description = data.pages[data.pagenum]
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} || Locked cards can be shown with -locked`}
+        },
+        onConfirm: async (x) => {
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {locked: false})
+
+            return ctx.reply(user, `unlocked **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+})))

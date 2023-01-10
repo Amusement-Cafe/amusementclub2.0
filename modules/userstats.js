@@ -31,10 +31,13 @@ const getStaticStats = async (ctx, user, daily) => {
     return userStats
 }
 
+const getAllStats = async (ctx, user) => UserStats.find({discord_id: user.discord_id}).lean()
+
 // Save a users stats and then check for completed quests and achievements
 const saveAndCheck = async (ctx, user, stats) => {
     await stats.save()
-    await check_all(ctx, user, ctx.action, null, stats)
+    const allStats = await getAllStats(ctx, user)
+    await check_all(ctx, user, ctx.action, null, stats, allStats)
 }
 
 const formatUserStats = (stat, count) => {
@@ -84,6 +87,7 @@ const formatUserStats = (stat, count) => {
 
 module.exports = {
     formatUserStats,
+    getAllStats,
     getStats,
     getStaticStats,
     saveAndCheck

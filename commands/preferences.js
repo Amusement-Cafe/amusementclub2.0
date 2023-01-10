@@ -14,11 +14,16 @@ const desc = {
     daily: `you can claim your daily`,
     vote: `you can vote for the bot`,
     completed: `when you complete, or lose completion on a collection`,
+    effectend: `when one of your passive effects has expired`,
+    canhas: `use the \`/has\` command on you`,
+    cansell: `sell you cards`,
+    candiff: `use \`/diff\` commands on you`,
 }
 
 cmd(['preferences', 'show', 'all'], withInteraction((ctx, user) => {
     const cats = []
     cats.push(`\`notify\` **Notifications** (set events that bot can DM you about)`)
+    cats.push(`\`interact\` **Interactions** (Set how you interact with others in the bot)`)
 
     return ctx.reply(user, {
         title: `My Preferences`,
@@ -64,4 +69,34 @@ cmd(['preferences', 'set', 'notify'], withInteraction(async (ctx, user, args) =>
     await user.save()
 
     return ctx.reply(user, `preferences saved. You will ${enable? 'now' : '**not**'} get DM notifications when **${desc[args.option]}**`)
+})).access('dm')
+
+cmd(['preferences', 'show', 'interact'], withInteraction((ctx, user) => {
+    const interact = user.prefs.interactions
+    const fields = Object.keys(interact).map(x => {
+        if(desc.hasOwnProperty(x)) {
+            return `\`${interact[x]? ctx.symbols.accept : ctx.symbols.decline} ${x}\` ${desc[x]}`
+        }
+    }).filter(x => x)
+
+    return ctx.send(ctx.interaction, {
+        title: `Interaction Preferences`,
+        color: colors.deepgreen,
+        description: `Allow or disallow other users to:\n${fields.join('\n')}\n\n
+            Use \`${ctx.prefix}preferences set interact\``,
+    })
+})).access('dm')
+
+cmd(['preferences', 'set', 'interact'], withInteraction(async (ctx, user, args) => {
+    const interact = user.prefs.interactions
+    if(!interact.hasOwnProperty(args.option)) {
+        return ctx.reply(user, `interact setting \`${args.option}\` doesn't exist.`, 'red')
+    }
+
+    let enable = !user.prefs.interactions[args.option]
+
+    user.prefs.interactions[args.option] = enable
+    await user.save()
+
+    return ctx.reply(user, `preferences saved. Other users are now ${enable? '': 'not'} able to **${desc[args.option]}**`)
 })).access('dm')

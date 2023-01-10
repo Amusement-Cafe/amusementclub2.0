@@ -1,6 +1,7 @@
 const msToTime          = require('pretty-ms')
 const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
+const UserQuest         = require("../collections/userQuest")
 const asdate            = require('add-subtract-date')
 const _                 = require('lodash')
 const AsciiTable        = require("ascii-table")
@@ -11,6 +12,7 @@ const {
     numFmt,
     promoClaimCost,
     XPtoLEVEL,
+    formatDateTimeRelative,
 } = require('../utils/tools')
 
 const {
@@ -24,8 +26,8 @@ const {
 
 const {
     fetchOnly,
-    getQuest,
-    getUserCards,
+    getDailyQuest,
+    getUserCards, getUserQuests, getWeeklyQuest, getMonthlyQuest,
 } = require('../modules/user')
 
 const {
@@ -80,9 +82,11 @@ const {
 const {
     getStats,
     getStaticStats,
+    getAllStats,
     saveAndCheck,
     formatUserStats,
 } = require("../modules/userstats")
+
 
 
 cmd('balance', withInteraction( async (ctx, user) => {
@@ -183,6 +187,9 @@ cmd('daily', withInteraction(async (ctx, user) => {
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
+        const userquests = await getUserQuests(ctx, user)
+        const weeklies = userquests.filter(x => x.type === 'weekly')
+        const monthlies = userquests.filter(x => x.type === 'monthly')
         let stats = await getStats(ctx, user)
         stats.daily = now
         if(await check_effect(ctx, user, 'cakeday')) {
@@ -197,17 +204,21 @@ cmd('daily', withInteraction(async (ctx, user) => {
         user.lastdaily = now
         user.exp += amount
         user.xp += 10
-        user.dailyquests = []
         stats.tomatoin += amount
 
 
-        quests.push(getQuest(ctx, user, 1))
-        user.dailyquests.push(quests[0].id)
+        quests.push({type: 'daily', quest: getDailyQuest(ctx, user, 1), hours: 24, created: now})
+        quests.push({type: 'daily', quest: getDailyQuest(ctx, user, userLevel > 10? 2 : 1, quests[0].quest.id.slice(0,-1)), hours: 24, created: now})
 
-        quests.push(getQuest(ctx, user, userLevel > 10? 2 : 1, quests[0].id.slice(0,-1)))
-        user.dailyquests.push(quests[1].id)
+        if (weeklies.length === 0 || weeklies[0].expiry < now) {
+            quests.push({type: 'weekly', quest: getWeeklyQuest(ctx, user, 3), hours: 168, created: now})
+            quests.push({type: 'weekly', quest: getWeeklyQuest(ctx, user, userLevel > 10? 4 : 3, quests.filter(x => x.type === 'weekly')[0].quest.id), hours: 168, created: now})
+        }
 
-        user.markModified('dailyquests')
+        if (monthlies.length === 0 || monthlies[0].expiry < now) {
+            quests.push({type: 'monthly', quest: getMonthlyQuest(ctx, user, 5), hours: 720, created: now})
+            quests.push({type: 'monthly', quest: getMonthlyQuest(ctx, user, userLevel > 10? 6 : 5, quests.filter(x => x.type === 'monthly')[0].quest.id), hours: 720, created: now})
+        }
 
         await addGuildXP(ctx, user, 10)
         ctx.guild.balance += userLevel
@@ -219,11 +230,23 @@ cmd('daily', withInteraction(async (ctx, user) => {
         }
 
         const fields = []
+        let questUpdate = []
         if(quests.length > 0) {
             fields.push({
                 name: `Daily quest(s)`, 
-                value: quests.map((x, i) => `${i + 1}. ${x.name} (${x.reward(ctx)})`).join('\n')
+                value: quests.filter(q => q.type === 'daily').map((x, i) => `${i + 1}. ${x.quest.name} (${x.quest.reward(ctx)})`).join('\n')
             })
+            if (quests.some(x => x.type === 'weekly'))
+                fields.push({
+                    name: `New Weekly quest(s)`,
+                    value: quests.filter(q => q.type === 'weekly').map((x, i) => `${i + 1}. ${x.quest.name} (${x.quest.reward(ctx)})`).join('\n')
+                })
+            if (quests.some(x => x.type === 'monthly'))
+                fields.push({
+                    name: `New Monthly quest(s)`,
+                    value: quests.filter(q => q.type === 'monthly').map((x, i) => `${i + 1}. ${x.quest.name} (${x.quest.reward(ctx)})`).join('\n')
+                })
+            quests.map(q => questUpdate.push({insertOne: {document: {userid: user.discord_id, questid: q.quest.id, type: q.type, expiry: asdate.add(new Date(), q.hours, 'hours')}}}))
         }
 
         const trs = (await getPending(ctx, user)).filter(x => x.from_id != user.discord_id)
@@ -266,6 +289,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
         user.dailynotified = false
         await user.save()
+        await UserQuest.bulkWrite(questUpdate)
         await saveAndCheck(ctx, user, stats)
         await plotPayout(ctx, 'gbank', 1, 5)
 
@@ -409,7 +433,10 @@ cmd(['diff', 'from'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `could not find target user`, 'red')
 
     const otherUserCards = await getUserCards(ctx, otherUser)
-    let otherCards = filter(mapUserCards(ctx, otherUserCards), args)
+    let otherCards = filter(mapUserCards(ctx, otherUserCards), args).filter(x => !x.locked)
+
+    if(!otherUser.prefs.interactions.candiff)
+        return ctx.reply(user, `the user you are checking has disabled the ability to use \`/diff\` commands on them`, 'red')
 
     if(otherCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have any cards matching this request`, 'red')
@@ -447,6 +474,9 @@ cmd(['diff', 'for'], withInteraction(async (ctx, user, args) => {
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
+    if(!otherUser.prefs.interactions.candiff)
+        return ctx.reply(user, `the user you are checking has disabled the ability to use \`/diff\` commands on them`, 'red')
+
     const otherCards = await getUserCards(ctx, otherUser)
     const userCards = await getUserCards(ctx, user)
     let mappedCards = filter(mapUserCards(ctx, userCards), args)
@@ -463,6 +493,9 @@ cmd(['diff', 'for'], withInteraction(async (ctx, user, args) => {
         const tgcards = await fetchTaggedCards(args.antitags)
         mappedCards = mappedCards.filter(x => !tgcards.includes(x.id))
     }
+
+    if (!args.locked)
+        mappedCards = mappedCards.filter(x => !x.locked)
 
     const ids = otherCards.map(x => x.cardid)
     const diff = mappedCards.filter(x => ids.indexOf(x.cardid) === -1)
@@ -489,8 +522,11 @@ cmd('has', withInteraction(async (ctx, user, args) => {
     if(!otherUser)
         return ctx.reply(user, 'cannot find user with that ID', 'red')
 
+    if(!otherUser.prefs.interactions.canhas)
+        return ctx.reply(user, `the user you are attempting to check has disabled the ability to check their cards with \`/has\``, 'red')
+
     const otherCards = await getUserCards(ctx, otherUser)
-    const otherFilteredCards = filter(mapUserCards(ctx, otherCards), args)
+    const otherFilteredCards = filter(mapUserCards(ctx, otherCards), args).filter(x => !x.locked)
 
     if (otherFilteredCards.length === 0)
         return ctx.reply(user, `**${otherUser.username}** doesn't have that card.`, 'red')
@@ -518,19 +554,58 @@ cmd('miss', withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs)
 })))
 
 cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
-    if(user.dailyquests.length === 0 && user.questlines.length === 0)
+    let quests = await getUserQuests(ctx, user)
+    quests = quests.filter(x => !x.completed)
+
+    if (quests.length === 0)
         return ctx.reply(user, `you don't have any quests.
         You get new quests each time you claim your \`${ctx.prefix}daily\` bonus.
         For more information see \`${ctx.prefix}help help_menu:quests\``, 'red')
 
-    return ctx.send(ctx.interaction, {
-        color: colors.blue,
-        author: { name: `${user.username}, your quests:` },
-        description: user.dailyquests.map((x, i) => {
-            const qInfo = ctx.quests.daily.find(y => y.id === x)
-            return `${i + 1}. \`${new Array(qInfo.tier + 1).join('★')}\` ${qInfo.name} (${qInfo.reward(ctx)})`
-        }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
-    }, user.discord_id)
+
+    const dailyQuests = quests.filter(x => x.type === 'daily').map((y, i) => {
+        const info = ctx.quests.daily.find(z => z.id === y.questid)
+        return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})\nExpires in: ${formatDateTimeRelative(y.expiry)}`
+    }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
+
+    const weeklyQuests = quests.filter(x => x.type === 'weekly').map((y, i) => {
+        const info = ctx.quests.weekly.find(z => z.id === y.questid)
+        return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})\nExpires in: ${formatDateTimeRelative(y.expiry)}`
+    }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
+
+    const monthlyQuests = quests.filter(x => x.type === 'monthly').map((y, i) => {
+        const info = ctx.quests.monthly.find(z => z.id === y.questid)
+        return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})\nExpires in: ${formatDateTimeRelative(y.expiry)}`
+    }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
+
+    const pages = [
+        {
+            name: `\`${user.username}, your **daily** quests:\``,
+            info: dailyQuests
+        },
+        {
+            name: `\`${user.username}, your **weekly** quests:\``,
+            info: weeklyQuests
+        },
+        {
+            name: `\`${user.username}, your monthly quests:\``,
+            info: monthlyQuests
+        }
+    ]
+    return ctx.sendPgn(ctx, user, {
+        pages,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.author.name = page.name
+            data.embed.description = page.info
+        },
+        embed: {
+            author: { name: '' },
+            description: 'loading',
+            color: colors.blue
+        }
+    })
 }))
 
 cmd(['quest', 'info'], withInteraction(async (ctx, user, args) => {
@@ -562,6 +637,7 @@ cmd(['quest', 'info'], withInteraction(async (ctx, user, args) => {
 }))
 
 cmd('stats', withInteraction(async (ctx, user) => {
+    const allStats = await getAllStats(ctx, user)
     const stats = await getStaticStats(ctx, user, user.lastdaily)
     const keys = _.keys(stats).filter(x => stats[x] !== 0)
     _.pull(keys, '_id', 'daily', 'discord_id', 'username', '__v')

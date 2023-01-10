@@ -170,6 +170,11 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
     if(parsedargs.isEmpty())
         return ctx.reply(user, `please specify card`, 'red')
 
+    cards = cards.filter(x => !x.locked)
+
+    if (cards.length === 0)
+        return ctx.reply(user, `you are attempting to sell a locked card, or no longer own the card you are attempting to put on auction!`, 'red')
+
     const card = bestMatch(cards)
     const ceval = await evalCard(ctx, card)
     let price = parsedargs.price || Math.round(ceval)

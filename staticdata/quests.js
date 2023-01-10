@@ -3,7 +3,7 @@ module.exports = {
         {
             id: 'claim4',
             name: 'Claim 4 cards today',
-            desc: 'Claim cards using `->claim` command. Example: `->claim 4`',
+            desc: 'Claim cards using the `/claim cards` command. Example: `/claim cards count: 4`',
             tier: 1,
             can_drop: true,
             min_level: 0,
@@ -20,7 +20,7 @@ module.exports = {
         }, {
             id: 'claim8',
             name: 'Claim 8 cards today',
-            desc: 'Claim cards using `->claim` command. Example: `->claim 8`',
+            desc: 'Claim cards using the `/claim cards` command. Example: `/claim cards count:8`',
             tier: 2,
             can_drop: true,
             min_level: 10,
@@ -327,6 +327,180 @@ module.exports = {
             },
             reward: (ctx) => `**1,000** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **5** xp`
         },
+    ],
+
+    weekly: [
+        {
+            id: 'claim28',
+            name: 'Claim 28 Cards',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 3,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.totalregclaims >= 56,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'claim56',
+            name: 'Claim 56 cards',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 4,
+            can_drop: true,
+            min_level: 20,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.totalregclaims >= 56,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'complete4',
+            name: 'Complete 4 quests',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 3,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 4,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'complete7',
+            name: 'Complete 7 quests',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 4,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 7,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'draw10',
+            name: 'Draw 10 cards',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 3,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.draw >= 10,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'draw12',
+            name: 'Draw 12 cards',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 4,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.draw >= 12,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'bid12',
+            name: 'Bid on 12 auctions',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 3,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.aucbid >= 12,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'bid18',
+            name: 'Bid on 18 auctions',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 4,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.aucbid >= 18,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        }
+    ],
+
+    monthly: [
+        {
+            id: 'claim120',
+            name: 'Claim 120 Cards',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **monthly** quest, you have 30 days to complete it. Example: `/claim cards count:10`',
+            tier: 5,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.totalregclaims >= 120,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'claim240',
+            name: 'Claim 240 cards',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **monthly** quest, you have 30 days to complete it. Example: `/claim cards count:10`',
+            tier: 6,
+            can_drop: true,
+            min_level: 10,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.totalregclaims >= 240,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'complete15',
+            name: 'Complete 15 quests',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 5,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 15,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'complete20',
+            name: 'Complete 20 quests',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 6,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 20,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'bid30',
+            name: 'Bid on 30 auctions',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 5,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.aucbid >= 30,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        },
+        {
+            id: 'bid45',
+            name: 'Bid on 45 auctions',
+            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            tier: 6,
+            can_drop: true,
+            min_level: 0,
+            actions: [],
+            check: (ctx, user, stats, extra) => extra.aucbid >= 45,
+            resolve: (ctx, user, stats) => {},
+            reward: (ctx) => `**A sense of pride and accomplishment**`
+        }
     ],
 
     getting_started: [],
