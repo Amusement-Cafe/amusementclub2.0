@@ -460,7 +460,7 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
         return ctx.reply(user, 'there are no cards to sell in this transaction!', 'red')
     }
 
-    let err = await validate_trs(ctx, user, cards, id, targetuser)
+    let err = await validate_trs(ctx, user, cards, id, targetuser, parsedargs.count)
     if(err) {
         err += 'This list stops at 10 and does not display any more favorites. Please double check your favorites before continuing, or add `!fav` to your query.'
         return ctx.reply(user, err, 'red')

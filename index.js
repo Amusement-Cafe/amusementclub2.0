@@ -145,6 +145,9 @@ const tick = (ctx) => {
     const now = new Date()
     auction.finish_aucs(ctx, now)
     pgn.timeoutTick()
+
+    if (ctx.autoAuction.auctionUserID && !ctx.settings.aucLock)
+            auction.autoAuction(ctx)
 }
 
 /* service tick for guilds */
@@ -260,6 +263,8 @@ con('startup', async (data) => {
         adminGuildID: config.adminGuildID,
         promos: config.data.promos.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
         boosts: config.data.boosts.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
+        adminGuildID,
+        autoAuction,
         cardInfos,
         filter,
         direct, /* DM reply function to the user */
