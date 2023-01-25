@@ -72,7 +72,8 @@ module.exports = model('User', {
     ban:                {
         full:           {type: Boolean},
         embargo:        {type: Boolean},
-        tags:           {type: Number}
+        report:         {type: Boolean},
+        tags:           {type: Number},
     },
 
     lastcard:           { type: Number, default: -1 },
@@ -83,6 +84,15 @@ module.exports = model('User', {
 
     dailyquests:        { type: Array, default: [] },
     questlines:         { type: Array, default: [] },
+
+    streaks:            {
+        votes:          {
+            topgg:      { type: Number, default: 0 },
+            dbl:        { type: Number, default: 0 },
+        },
+        daily:          { type: Number, default: 0 },
+        kofi:           { type: Number, default: 0 },
+    },
 
     prefs:              {
         notifications:  {

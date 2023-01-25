@@ -1,6 +1,7 @@
 const {cmd}             = require('../utils/cmd')
 const colors            = require('../utils/colors')
 const Announcement      = require('../collections/announcement')
+const Kofi              = require('../collections/kofi')
 const msToTime          = require('pretty-ms')
 const _                 = require('lodash')
 const pjson             = require('../package.json')
@@ -29,6 +30,41 @@ cmd('rules', withInteraction(async (ctx, user) => {
     const help = ctx.help.find(x => x.type.includes('rules'))
     return ctx.interaction.createMessage(getHelpEmbed(ctx, help))
 })).access('dm')
+
+cmd('report', withInteraction(async (ctx, user, args) => {
+    if(user.ban && user.ban.report)
+        return ctx.reply(user, `you have been banned from using this feature due to false reports or spamming. If you have a concern please visit our [support server](${ctx.cafe})!`, 'red')
+
+    ctx.sendCfm(ctx, user, {
+        question: `You are about to submit a report stating:\n**"${args.message}**"
+        Are you sure you want to submit this? 
+        Please note that false reports or spamming using this feature may get you blocked from reporting`,
+        onConfirm: async () => {
+            ctx.bot.createMessage('671783963253276733', {embed: {footer: {text: user.discord_id}, description: args.message, color: colors.yellow}})
+            ctx.reply(user, `report submitted!`, 'green', true)
+        }
+    })
+})).access('dm')
+
+cmd('kofi', withInteraction(async (ctx, user, args) => {
+    const isLink = args.transID.startsWith('http')
+    let query
+
+    if (isLink)
+        query = {url: args.transID}
+    else
+        query = {transaction_id: args.transID}
+
+    const isValid = await Kofi.findOne(query)
+
+    if (!isValid)
+        return ctx.reply(user, `there is no stored Ko-Fi payment with a transaction ID/link of \`${args.transID}\`.
+        Make sure you are going to your order page and copying the URL, or the txid and pasting it here. 
+        If you are sure you have done that then please reach out to either the email provided on the order page, or contact us in our [discord](${ctx.cafe})`, 'red')
+
+
+
+}), true)
 
 cmd('announcement', withInteraction(async (ctx, user) => {
     const announcement = (await Announcement.find().sort({ date: -1 }))[0]

@@ -26,11 +26,15 @@ const {
     guild,
     hero,
     eval,
-    webhooks,
     meta,
-    preferences,
     plot,
 } = require('./modules')
+
+const {
+    registerTopggVote,
+    registerDblVote,
+    registerKofiPayment
+} = require("./modules/webhooks");
 
 const userq = []
 const guildq = []
@@ -161,6 +165,7 @@ const gtick = (ctx) => {
 const qtick = () => {
     const now = new Date()
     _.remove(userq, (x) => x.expires < now)
+    user.deleteOldQuests(now)
 }
 
 /* service tick for hero checks */
@@ -200,14 +205,6 @@ const startTicks = () => {
 
 const stopTicks = () => {
     tickArray.map(x => clearInterval(x))
-}
-
-const startWebhooks = () => {
-    webhooks.listen(ctx)
-}
-
-const stopWebhooks = () => {
-    webhooks.stopListener(ctx)
 }
 
 const filter = new Filter()
@@ -263,8 +260,7 @@ con('startup', async (data) => {
         adminGuildID: config.adminGuildID,
         promos: config.data.promos.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
         boosts: config.data.boosts.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
-        adminGuildID,
-        autoAuction,
+        autoAuction: config.autoAuction,
         cardInfos,
         filter,
         direct, /* DM reply function to the user */
@@ -281,19 +277,18 @@ con('startup', async (data) => {
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel,
         sauce,
+        guildLogChannel: config.guildLogChannel,
         settings: {
             wip: config.maintenance,
             wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',
             aucLock: config.auctionLock
         }
     }
-    startWebhooks()
     await bot.connect()
 })
 
 con('shutdown', async () => {
     stopTicks()
-    stopWebhooks()
     await bot.disconnect({reconnect: false})
     process.exit()
 })
@@ -307,6 +302,15 @@ con('updateCols', (coldata) => ctx.collections = coldata.updateCols)
 con('updatePromos', (promodata) => ctx.promos = promodata.updatePromos.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})))
 con('updateBoosts', (boostdata) => ctx.boosts = boostdata.updateBoosts.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})))
 con('updateWords', (wordsdata) => filter.addWords(...wordsdata.updateWords))
+
+con('vote', (voteData) => {
+    if (voteData.type === 'dbl')
+        registerDblVote(ctx, voteData.vote)
+    if (voteData.type === 'topgg')
+        registerTopggVote(ctx, voteData.vote)
+    if (voteData.type === 'kofi')
+        registerKofiPayment(ctx, voteData.vote)
+})
 
 bot.once('ready', async () => {
     started = true
@@ -460,8 +464,8 @@ bot.on('interactionCreate', async (interaction) => {
 })
 
 bot.on('guildCreate', async (guild) => {
-    if (config.guildLogChannel)
-        await bot.createMessage(config.guildLogChannel, {embed: {
+    if (ctx.guildLogChannel)
+        await bot.createMessage(ctx.guildLogChannel, {embed: {
                 description:`Invited to a new guild!\nGuild Name: **${guild.name}**\nGuild ID: \`${guild.id}\``,
                 color: colors.green,
                 thumbnail: {url: guild.iconURL}
@@ -469,8 +473,8 @@ bot.on('guildCreate', async (guild) => {
 })
 
 bot.on('guildDelete', async (guild) => {
-    if (config.guildLogChannel)
-        await bot.createMessage(config.guildLogChannel, {embed:{
+    if (ctx.guildLogChannel)
+        await bot.createMessage(ctx.guildLogChannel, {embed:{
                 description:`Kicked from guild!\nGuild Name: **${guild.name? guild.name: 'Uncached Guild'}**\nGuild ID: \`${guild.id}\``,
                 color: colors.red
             }})

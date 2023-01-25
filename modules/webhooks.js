@@ -1,7 +1,5 @@
-const express       = require("express")
-const bodyParser    = require("body-parser")
-const Topgg         = require('@top-gg/sdk')
 const color         = require('../utils/colors')
+const Kofi          = require('../collections/kofi')
 const _             = require('lodash')
 
 const {
@@ -13,55 +11,17 @@ const {
     addUserCards,
 } = require('../modules/user')
 
-let listener
-
-const listen = (ctx) => {
-    const app = express()
-    const topggWebhook = new Topgg.Webhook(ctx.dbl.pass)
-    app.use(bodyParser.json())
-    app.use(bodyParser.urlencoded({ extended: true })); 
-
-    // Webhook handle for https://top.gg/
-    app.post("/topgg", topggWebhook.middleware(), (req, res) => {
-        const vote = req.vote
-        registerTopggVote(ctx, vote)
-        res.status(200).end()
-    })
-
-    // Webhook handle for https://discordbotlist.com/
-    app.post("/dbl", (req, res) => {
-        if(req.headers.authorization != ctx.dbl.pass) {
-            console.log(`DBL webhook has incorrect auth token ${req.headers.authorization}`)
-            res.status(401).end()
-            return
-        }
-
-        registerDblVote(ctx, req)
-        res.status(200).end()
-    })
-
-    // Webhook handle for https://ko-fi.com/
-    app.post("/kofi", (req, res) => {
-        // TODO: add donation handle
-        const obj = JSON.parse(req.body.data)
-        console.log(obj)
-        res.status(200).end()
-    })
-
-    listener = app.listen(ctx.dbl.port, () => console.log(`Listening to webhooks on port ${ctx.dbl.port}`))
-}
-
 const registerTopggVote = async (ctx, vote) => {
-    var votingUser = await fetchOnly(vote.user)
+    let votingUser = await fetchOnly(vote.user)
 
     if(!votingUser) 
         return
 
     console.log(`User ${votingUser.username} just voted on top.gg!`)
-    votingUser.votes++
+    votingUser.streaks.votes.topgg++
 
-    const streak1 = 10 - votingUser.votes % 10
-    const streak2 = 100 - votingUser.votes % 100
+    const streak1 = 10 - votingUser.streaks.votes.topgg % 10
+    const streak2 = 100 - votingUser.streaks.votes.topgg % 100
 
     let card = _.sample(ctx.cards.filter(y => y.level < 4 
         && !ctx.collections.find(z => z.id === y.col).promo))
@@ -90,29 +50,51 @@ const registerTopggVote = async (ctx, vote) => {
 }
 
 const registerDblVote = async (ctx, vote) => {
-    // TODO: add streak
-
-    var votingUser = await fetchOnly(vote.body.id)
+    let votingUser = await fetchOnly(vote.body.id)
 
     if(!votingUser) 
         return
 
+    const streak1 = 10 - votingUser.streaks.votes.dbl % 10
+    const streak2 = 100 - votingUser.streaks.votes.dbl % 100
+
+    let reward = 500
+
+    if (votingUser.streaks.votes.dbl % 100 === 0)
+        reward += 4500
+    else if (votingUser.streaks.votes.dbl % 10 === 0)
+        reward += 500
+
     console.log(`User ${votingUser.username} just voted on dbl!`)
-    votingUser.exp += 500
+    votingUser.streaks.votes.dbl++
+    votingUser.exp += reward
     votingUser.save()
+
+    let resp = `thank you for voting! You got **${reward}${ctx.symbols.tomato}**\n`
+
+    if (streak2 > 10)
+        resp += `Votes until a 2x bonus: **${streak1}**\n`
+
+    resp += `Votes until a 10x bonus: **${streak2}**`
 
     return ctx.direct(votingUser, {
         color: color.blue,
-        description: `thank you for voting! You got **${500}${ctx.symbols.tomato}**`
+        description: resp
     })
 }
 
-const stopListener = (ctx) => {
-    listener.close()
-    console.log(`Stopped listening to webhooks on port ${ctx.dbl.port}`)
+const registerKofiPayment = async (ctx, kofiResp) => {
+    const newKofi = new Kofi()
+    newKofi.type = kofiResp.type
+    newKofi.url = kofiResp.url
+    newKofi.transaction_id = kofiResp.kofi_transaction_id
+    newKofi.amount = kofiResp.amount
+    newKofi.timestamp = kofiResp.timestamp
+    await newKofi.save()
 }
 
 module.exports = {
-    listen,
-    stopListener,
+    registerDblVote,
+    registerKofiPayment,
+    registerTopggVote,
 }
