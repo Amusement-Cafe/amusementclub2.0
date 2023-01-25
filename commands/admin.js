@@ -1,10 +1,10 @@
 const {pcmd}        = require('../utils/cmd')
 const Announcement  = require('../collections/announcement')
-const Auction       = require('../collections/auction')
 const Transaction   = require('../collections/transaction')
 const Users         = require('../collections/user')
 const UserCards     = require('../collections/userCard')
 const _             = require('lodash')
+const asdate        = require('add-subtract-date')
 
 const {
     getHelpEmbed,
@@ -256,8 +256,11 @@ pcmd(['admin'], ['sudo', 'guild', 'unlock'], withInteraction(async (ctx, user, a
 pcmd(['admin'], ['sudo', 'reset', 'daily'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
+    const now = new Date()
+    const past = asdate.subtract(now, 1, 'day')
+
     await onUsersFromArgs(args, async (target, newargs) => {
-        target.lastdaily = new Date(0)
+        target.lastdaily = new Date(past)
         await target.save()
         rpl.push(`\`✅\` daily reset for **${target.username}** (${target.discord_id})`)
     })
