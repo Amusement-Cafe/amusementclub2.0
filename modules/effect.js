@@ -37,8 +37,8 @@ const formatUserEffect = (ctx, user, x) => {
     return `\`${eff.id}\` **${eff.name}** ${lasts? `(${lasts})` : ''}`
 }
 
-const mapUserEffects = (ctx, user) => {
-    return user.effects.map(x => Object.assign({},
+const mapUserEffects = (ctx, user, effects) => {
+    return effects.map(x => Object.assign({},
         ctx.items.find(y => y.effectid === x.id),
         ctx.effects.find(y => y.id === x.id),
         x))
@@ -51,9 +51,12 @@ const withUserEffects = (callback) => async (ctx, user, args) => {
             If you cannot find a hero that you want, submit one using \`/hero submit anilist_link:[anilist link](https://anilist.co/)\`
             For more information type \`/help help_menu:hero\``, 'red')
 
-    await Promise.all(user.effects.map(async x => await check_effect(ctx, user, x.id)))
-    await user.save()
-    const map = await mapUserEffects(ctx, user)
+    const effects = await UserEffect.find({userid: user.discord_id})
+    await Promise.all(effects.map(async x => await check_effect(ctx, user, x.id)))
+
+    // await Promise.all(user.effects.map(async x => await check_effect(ctx, user, x.id)))
+    // await user.save()
+    const map = await mapUserEffects(ctx, user, effects)
     return callback(ctx, user, map, args)
 }
 
