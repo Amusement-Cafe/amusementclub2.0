@@ -1,7 +1,7 @@
 {
     "token": "DISCORD_VALID_BOT_TOKEN_GOES_HERE",
     "database": "mongodb://localhost/amusement",
-    "prefix": "->",
+    "prefix": "/",
     "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com",
     "shorturl": "https://amuse.noxc.dev",
     "daily": 72000000,
@@ -10,6 +10,7 @@
     "maintenance": true,
     "auctionLock": false,
     "uniqueFrequency": 10,
+    "auctionFeePercent": 10,
     "guildLogChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
     "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE",
     "auditc": {
