@@ -58,6 +58,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'rating': interactionArgs.rating = x.value; break;
             case 'role': interactionArgs.role = x.value; break;
             case 'slot_number': interactionArgs.slot = x.value; break;
+            case 'sort_completion': interactionArgs.sortComplete = x.value; break;
             case 'source': interactionArgs.source = x.value; break;
             case 'sourced': interactionArgs.sourced = x.value; break;
             case 'store_number': interactionArgs.store = x.value; break;

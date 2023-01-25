@@ -277,6 +277,11 @@
                         "name": "completed",
                         "description": "True: Lists only collections that are completed, False: Lists only collections not completed",
                         "type": 5
+                    },
+                    {
+                        "name": "sort_completion",
+                        "description": "True: Sort from most completed to least completed,False: Sort from least completed to most completed",
+                        "type": 5
                     }
                 ]
             },
@@ -892,6 +897,19 @@
     },
     {
         "type": 1,
+        "name": "kofi",
+        "description": "Claim a KoFi transaction!",
+        "options": [
+            {
+                "name": "transaction_id",
+                "description": "Put the order page URL or txid in the url here to claim",
+                "type": 3,
+                "required": true
+            }
+        ]
+    },
+    {
+        "type": 1,
         "name": "leaderboard",
         "description": "Base command for leaderboards!",
         "options": [
@@ -1233,6 +1251,19 @@
                 ]
             }
 
+        ]
+    },
+    {
+        "type": 1,
+        "name": "report",
+        "description": "Report an issue you see with the bot!",
+        "options": [
+            {
+                "name": "message",
+                "description": "Type the issue or suspicious activity you would like to report here.",
+                "type": 3,
+                "required": true
+            }
         ]
     },
     {
