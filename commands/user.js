@@ -19,7 +19,6 @@ const {
     formatName,
     withCards,
     withGlobalCards,
-    parseArgs,
     filter,
     mapUserCards,
 } = require('../modules/card')
@@ -27,12 +26,15 @@ const {
 const {
     fetchOnly,
     getDailyQuest,
-    getUserCards, getUserQuests, getWeeklyQuest, getMonthlyQuest,
+    getUserCards,
+    getUserQuests,
+    getWeeklyQuest,
+    getMonthlyQuest,
+    deleteDailyQuests,
 } = require('../modules/user')
 
 const {
     addGuildXP,
-    getBuilding,
     rankXP,
 } = require('../modules/guild')
 
@@ -178,20 +180,31 @@ cmd('daily', withInteraction(async (ctx, user) => {
     const now = new Date()
     const hasJeanne = await check_effect(ctx, user, 'rulerjeanne')
     const future = asdate.add(user.lastdaily, hasJeanne? 17 : 20, 'hours')
+    const streakCheck = oldStats.daily >= asdate.subtract(new Date(), 2, 'days')
 
     if(future < now) {
         const quests = []
-        let amount = 750
+        let amount = 500, streakAdd
         const promoAmount = 500 + ((oldStats.promoclaims * 50) || 0)
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
         const hero = await get_hero(ctx, user.hero)
         const userLevel = XPtoLEVEL(user.xp)
+        await deleteDailyQuests(ctx, user)
         const userquests = await getUserQuests(ctx, user)
         const weeklies = userquests.filter(x => x.type === 'weekly')
         const monthlies = userquests.filter(x => x.type === 'monthly')
         let stats = await getStats(ctx, user)
         stats.daily = now
+
+        if(streakCheck) {
+            user.streaks.daily++
+            streakAdd = user.streaks.daily >= 100? amount: Math.ceil(amount * (user.streaks.daily / 100))
+            amount += streakAdd
+        } else {
+            user.streaks.daily = 0
+        }
+
         if(await check_effect(ctx, user, 'cakeday')) {
             amount += 100 * oldClaims
         }
@@ -207,8 +220,8 @@ cmd('daily', withInteraction(async (ctx, user) => {
         stats.tomatoin += amount
 
 
-        quests.push({type: 'daily', quest: getDailyQuest(ctx, user, 1), hours: 24, created: now})
-        quests.push({type: 'daily', quest: getDailyQuest(ctx, user, userLevel > 10? 2 : 1, quests[0].quest.id.slice(0,-1)), hours: 24, created: now})
+        quests.push({type: 'daily', quest: getDailyQuest(ctx, user, 1), hours: 20, created: now})
+        quests.push({type: 'daily', quest: getDailyQuest(ctx, user, userLevel > 10? 2 : 1, quests[0].quest.id.slice(0,-1)), hours: 20, created: now})
 
         if (weeklies.length === 0 || weeklies[0].expiry < now) {
             quests.push({type: 'weekly', quest: getWeeklyQuest(ctx, user, 3), hours: 168, created: now})
@@ -246,7 +259,7 @@ cmd('daily', withInteraction(async (ctx, user) => {
                     name: `New Monthly quest(s)`,
                     value: quests.filter(q => q.type === 'monthly').map((x, i) => `${i + 1}. ${x.quest.name} (${x.quest.reward(ctx)})`).join('\n')
                 })
-            quests.map(q => questUpdate.push({insertOne: {document: {userid: user.discord_id, questid: q.quest.id, type: q.type, expiry: asdate.add(new Date(), q.hours, 'hours')}}}))
+            quests.map(q => questUpdate.push({insertOne: {document: {userid: user.discord_id, questid: q.quest.id, type: q.type, expiry: asdate.add(new Date(), q.hours, 'hours'), created: q.created}}}))
         }
 
         const trs = (await getPending(ctx, user)).filter(x => x.from_id != user.discord_id)
@@ -301,9 +314,15 @@ cmd('daily', withInteraction(async (ctx, user) => {
                 promo_amount: promoAmount,
         })
 
+        let desc = `you received daily **${numFmt(amount)}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(promoAmount)}** ${promo.currency}`: ""}\n`
+
+        if(streakCheck)
+            desc += `You are currently on a **${numFmt(user.streaks.daily)}** day daily streak! You gained an additional **${numFmt(streakAdd)}** ${ctx.symbols.tomato}\n`
+
+        desc += `You now have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(user.promoexp)}** ${promo.currency}`: ""}`
+
         return ctx.reply(user, {
-            description: `you received daily **${numFmt(amount)}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(promoAmount)}** ${promo.currency}`: ""}
-                You now have **${numFmt(Math.round(user.exp))}** ${ctx.symbols.tomato} ${promo? `and **${numFmt(user.promoexp)}** ${promo.currency}`: ""}`,
+            description: desc,
             color: colors.green,
             fields
         })
@@ -563,33 +582,42 @@ cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
         For more information see \`${ctx.prefix}help help_menu:quests\``, 'red')
 
 
-    const dailyQuests = quests.filter(x => x.type === 'daily').map((y, i) => {
+    let dailyQuests = quests.filter(x => x.type === 'daily').map((y, i) => {
         const info = ctx.quests.daily.find(z => z.id === y.questid)
         return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})\nExpires in: ${formatDateTimeRelative(y.expiry)}`
-    }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
+    })
 
-    const weeklyQuests = quests.filter(x => x.type === 'weekly').map((y, i) => {
+    let weeklyQuests = quests.filter(x => x.type === 'weekly').map((y, i) => {
         const info = ctx.quests.weekly.find(z => z.id === y.questid)
         return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})\nExpires in: ${formatDateTimeRelative(y.expiry)}`
-    }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
+    })
 
-    const monthlyQuests = quests.filter(x => x.type === 'monthly').map((y, i) => {
+    let monthlyQuests = quests.filter(x => x.type === 'monthly').map((y, i) => {
         const info = ctx.quests.monthly.find(z => z.id === y.questid)
         return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})\nExpires in: ${formatDateTimeRelative(y.expiry)}`
-    }).join('\n') + `\nTo get help with the quest use \`${ctx.prefix}quest info\``
+    })
+
+    if (dailyQuests.length === 0)
+        dailyQuests = [`No daily quests found! You will receive more with your next \`/daily\`!`]
+
+    if (weeklyQuests.length === 0)
+        weeklyQuests = [`No weekly quests found! Wait **7** days from your last set to receive new ones!`]
+
+    if (monthlyQuests.length === 0)
+        monthlyQuests = [`No monthly quests found! Wait **30** days from your last set to receive new ones!`]
 
     const pages = [
         {
-            name: `\`${user.username}, your **daily** quests:\``,
-            info: dailyQuests
+            name: `${user.username}, your DAILY quests:`,
+            info: dailyQuests.join('\n')
         },
         {
-            name: `\`${user.username}, your **weekly** quests:\``,
-            info: weeklyQuests
+            name: `${user.username}, your WEEKLY quests:`,
+            info: weeklyQuests.join('\n')
         },
         {
-            name: `\`${user.username}, your monthly quests:\``,
-            info: monthlyQuests
+            name: `${user.username}, your MONTHLY quests:`,
+            info: monthlyQuests.join('\n')
         }
     ]
     return ctx.sendPgn(ctx, user, {
@@ -599,6 +627,7 @@ cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
             const page = data.pages[data.pagenum]
             data.embed.author.name = page.name
             data.embed.description = page.info
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} | To get help with the a quest use '/quest info'`}
         },
         embed: {
             author: { name: '' },

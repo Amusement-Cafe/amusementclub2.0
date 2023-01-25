@@ -444,7 +444,7 @@ module.exports = [
         resolve: (ctx, user, stats) => {
             user.vials += 200
             user.lemons += 50
-            stats.tomatoin += 200
+            stats.vialin += 200
             stats.lemonin += 50
             return `**200** ${ctx.symbols.vial} | **50** ${ctx.symbols.lemon}`
         }
@@ -457,7 +457,7 @@ module.exports = [
         resolve: (ctx, user, stats) => {
             user.vials += 300
             user.lemons += 75
-            stats.tomatoin += 300
+            stats.vialin += 300
             stats.lemonin += 75
             return `**300** ${ctx.symbols.vial} | **75** ${ctx.symbols.lemon}`
         }
@@ -621,6 +621,421 @@ module.exports = [
             stats.vialin += 250
             stats.lemonin += 250
             return `${formatName(card)}\n **10,000** ${ctx.symbols.tomato} | **250** ${ctx.symbols.vial} | **250** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '6year',
+        name: `One more than five`,
+        desc: 'Play the bot for 6 years!',
+        hidden: true,
+        actions: ['daily', 'profile'],
+        check: (ctx, user) => {
+            const past = asdate.subtract(new Date(), 6, 'years')
+            return user.joined < past
+        },
+        resolve: (ctx, user, stats) => {
+            let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
+            addUserCards(ctx, user, [card.id])
+            user.exp += 10000
+            user.lemons += 250
+            user.vials += 250
+            stats.tomatoin += 10000
+            stats.vialin += 250
+            stats.lemonin += 250
+            return `${formatName(card)}\n **10,000** ${ctx.symbols.tomato} | **250** ${ctx.symbols.vial} | **250** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '7year',
+        name: `Why was six afraid of seven?`,
+        desc: 'Play the bot for 7 years!',
+        hidden: true,
+        actions: ['daily', 'profile'],
+        check: (ctx, user) => {
+            const past = asdate.subtract(new Date(), 7, 'years')
+            return user.joined < past
+        },
+        resolve: (ctx, user, stats) => {
+            let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
+            addUserCards(ctx, user, [card.id])
+            user.exp += 10000
+            user.lemons += 250
+            user.vials += 250
+            stats.tomatoin += 10000
+            stats.vialin += 250
+            stats.lemonin += 250
+            return `${formatName(card)}\n **10,000** ${ctx.symbols.tomato} | **250** ${ctx.symbols.vial} | **250** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '8year',
+        name: `Eights the place`,
+        desc: 'Play the bot for 8 years!',
+        hidden: true,
+        actions: ['daily', 'profile'],
+        check: (ctx, user) => {
+            const past = asdate.subtract(new Date(), 8, 'years')
+            return user.joined < past
+        },
+        resolve: (ctx, user, stats) => {
+            let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
+            addUserCards(ctx, user, [card.id])
+            user.exp += 10000
+            user.lemons += 250
+            user.vials += 250
+            stats.tomatoin += 10000
+            stats.vialin += 250
+            stats.lemonin += 250
+            return `${formatName(card)}\n **10,000** ${ctx.symbols.tomato} | **250** ${ctx.symbols.vial} | **250** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '9year',
+        name: `Almost to double digits`,
+        desc: 'Play the bot for 9 years!',
+        hidden: true,
+        actions: ['daily', 'profile'],
+        check: (ctx, user) => {
+            const past = asdate.subtract(new Date(), 9, 'years')
+            return user.joined < past
+        },
+        resolve: (ctx, user, stats) => {
+            let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
+            addUserCards(ctx, user, [card.id])
+            user.exp += 10000
+            user.lemons += 250
+            user.vials += 250
+            stats.tomatoin += 10000
+            stats.vialin += 250
+            stats.lemonin += 250
+            return `${formatName(card)}\n **10,000** ${ctx.symbols.tomato} | **250** ${ctx.symbols.vial} | **250** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '10year',
+        name: `An entire decade!`,
+        desc: 'Play the bot for 10 years!',
+        hidden: true,
+        actions: ['daily', 'profile'],
+        check: (ctx, user) => {
+            const past = asdate.subtract(new Date(), 10, 'years')
+            return user.joined < past
+        },
+        resolve: (ctx, user, stats) => {
+            let card = _.sample(ctx.cards.filter(x => x.col === 'special' && x.level === 4))
+            addUserCards(ctx, user, [card.id])
+            user.exp += 10000
+            user.lemons += 250
+            user.vials += 250
+            stats.tomatoin += 10000
+            stats.vialin += 250
+            stats.lemonin += 250
+            return `${formatName(card)}\n **10,000** ${ctx.symbols.tomato} | **250** ${ctx.symbols.vial} | **250** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1mspent',
+        name: 'I was a millionaire',
+        desc: 'Spend a total of 1M tomatoes!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.tomatoout >= 1000000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 5000
+            user.lemons += 500
+            stats.tomatoin += 5000
+            stats.lemonin += 500
+            return `**5,000** ${ctx.symbols.tomato} | **500** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '10mspent',
+        name: 'Tomatoes, what are those?',
+        desc: 'Spend a total of 10M tomatoes!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.tomatoout >= 10000000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 10000
+            user.lemons += 1000
+            stats.tomatoin += 10000
+            stats.lemonin += 1000
+            return `**10,000** ${ctx.symbols.tomato} | **1,000** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100mspent',
+        name: 'I see tomatoes everywhere I go',
+        desc: 'Spend a total of 100M tomatoes!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.tomatoout >= 100000000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 100000
+            user.lemons += 10000
+            stats.tomatoin += 100000
+            stats.lemonin += 10000
+            return `**100,000** ${ctx.symbols.tomato} | **10,000** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1kclaims',
+        name: 'Gotta have my cards',
+        desc: 'Claim a total of 1k cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 1000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 1000
+            user.lemons += 200
+            stats.lemonin += 200
+            stats.tomatoin += 1000
+            return `**1,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '10kclaims',
+        name: 'There\'s something to this card thing',
+        desc: 'Claim a total of 10k cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 10000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 5000
+            user.lemons += 200
+            stats.lemonin += 200
+            stats.tomatoin += 5000
+            return `**5,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100kclaims',
+        name: 'Just one more card',
+        desc: 'Claim a total of 100k cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 100000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 10000
+            user.lemons += 200
+            stats.lemonin += 200
+            stats.tomatoin += 10000
+            return `**10,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1mclaims',
+        name: 'I would like to buy a card',
+        desc: 'Claim a total of 1M cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 1000000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 15000
+            user.lemons += 200
+            stats.lemonin += 200
+            stats.tomatoin += 15000
+            return `**15,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100aucsell',
+        name: 'Share the cards',
+        desc: 'Auction 100 cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 100,
+        resolve: (ctx, user, stats) => {
+            user.exp += 500
+            user.lemons += 100
+            stats.tomatoin += 500
+            stats.lemonin += 100
+            return `**500** ${ctx.symbols.tomato} | **100** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1kaucsell',
+        name: 'Am I rich yet?',
+        desc: 'Auction 1k cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 1000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 1000
+            user.lemons += 200
+            stats.tomatoin += 1000
+            stats.lemonin += 200
+            return `**1,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '10kaucsell',
+        name: 'I have a card to spare',
+        desc: 'Auction 10k cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 10000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 2000
+            user.lemons += 400
+            stats.tomatoin += 2000
+            stats.lemonin += 400
+            return `**2,000** ${ctx.symbols.tomato} | **400** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100kaucsell',
+        name: 'Cards here, get your cards here',
+        desc: 'Auction 100k cards!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 100000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 4000
+            user.lemons += 800
+            stats.tomatoin += 4000
+            stats.lemonin += 800
+            return `**4,000** ${ctx.symbols.tomato} | **800** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100aucwins',
+        name: 'Best Bidder',
+        desc: 'Win 100 auctions!',
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucwin >= 100,
+        resolve: (ctx, user, stats) => {
+            user.exp += 500
+            user.lemons += 100
+            stats.tomatoin += 500
+            stats.lemonin += 100
+            return `**500** ${ctx.symbols.tomato} | **100** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1kaucwins',
+        name: 'Paddle up',
+        desc: 'Win 1k auctions!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucwin >= 1000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 1000
+            user.lemons += 200
+            stats.tomatoin += 1000
+            stats.lemonin += 200
+            return `**1,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '10kaucwins',
+        name: 'Proficient Bidder',
+        desc: 'Win 10k auctions!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.aucwin >= 10000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 2000
+            user.lemons += 400
+            stats.tomatoin += 2000
+            stats.lemonin += 400
+            return `**2,000** ${ctx.symbols.tomato} | **400** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100quests',
+        name: 'Going on an adventure',
+        desc: 'Complete 100 quests!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) =>
+            (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 100,
+        resolve: (ctx, user, stats) => {
+            user.exp += 500
+            user.lemons += 100
+            stats.tomatoin += 500
+            stats.lemonin += 100
+            return `**500** ${ctx.symbols.tomato} | **100** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1kquests',
+        name: 'All quests fall before me',
+        desc: 'Complete 1k quests!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) =>
+            (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 1000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 1000
+            user.lemons += 200
+            stats.tomatoin += 1000
+            stats.lemonin += 200
+            return `**1,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '10kquests',
+        name: 'Quest-ionable gains',
+        desc: 'Complete 10k quests!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) =>
+            (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 10000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 2000
+            user.lemons += 400
+            stats.tomatoin += 2000
+            stats.lemonin += 400
+            return `**2,000** ${ctx.symbols.tomato} | **400** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100kquests',
+        name: 'Do these ever end?',
+        desc: 'Complete 100k quests!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) =>
+            (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 100000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 4000
+            user.lemons += 800
+            stats.tomatoin += 4000
+            stats.lemonin += 800
+            return `**4,000** ${ctx.symbols.tomato} | **800** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '100dailies',
+        name: 'A daily a day',
+        desc: 'You\'ve used daily 100 times!',
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 100,
+        resolve: (ctx, user, stats) => {
+            user.exp += 500
+            user.lemons += 100
+            stats.tomatoin += 500
+            stats.lemonin += 100
+            return `**500** ${ctx.symbols.tomato} | **100** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '365dailies',
+        name: 'A year of dailies',
+        desc: 'You\'ve used daily 365 times!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 365,
+        resolve: (ctx, user, stats) => {
+            user.exp += 1000
+            user.lemons += 200
+            stats.tomatoin += 1000
+            stats.lemonin += 200
+            return `**1,000** ${ctx.symbols.tomato} | **200** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '500dailies',
+        name: 'Half of a thousand days',
+        desc: 'You\'ve used daily 500 times!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 500,
+        resolve: (ctx, user, stats) => {
+            user.exp += 2000
+            user.lemons += 400
+            stats.tomatoin += 2000
+            stats.lemonin += 400
+            return `**2,000** ${ctx.symbols.tomato} | **400** ${ctx.symbols.lemon}`
+        }
+    }, {
+        id: '1kdailies',
+        name: 'Now that\'s a lot of daily',
+        desc: 'You\'ve used daily 1k times!',
+        hidden: true,
+        disabled: true,
+        check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 1000,
+        resolve: (ctx, user, stats) => {
+            user.exp += 4000
+            user.lemons += 800
+            stats.tomatoin += 4000
+            stats.lemonin += 800
+            return `**4,000** ${ctx.symbols.tomato} | **800** ${ctx.symbols.lemon}`
         }
     }
 ]

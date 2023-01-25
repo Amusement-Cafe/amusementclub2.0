@@ -148,9 +148,15 @@ const getMonthlyQuest = (ctx, user, tier, exclude) => {
     ))
 }
 
+const deleteOldQuests = async (now) => {
+    await UserQuest.deleteMany({expiry: {$lt: now}})
+}
+
 const getUserQuests = async (ctx, user) => UserQuest.find({userid: user.discord_id})
 
 const updateUserQuest = async (ctx, user, questid, query) => UserQuest.updateOne({userid: user.discord_id, questid: questid}, query, { returnNewDocument: true })
+
+const deleteDailyQuests = async (ctx, user) => UserQuest.deleteMany({userid: user.discord_id, type: 'daily'})
 
 const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id }).lean()
 
@@ -203,6 +209,8 @@ module.exports = {
     getMonthlyQuest,
     getUserCards,
     getUserQuests,
+    deleteDailyQuests,
+    deleteOldQuests,
     findUserCards,
     addUserCards,
     removeUserCards,

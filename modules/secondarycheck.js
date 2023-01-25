@@ -1,7 +1,6 @@
 const asdate    = require('add-subtract-date')
 const _         = require("lodash")
 const colors    = require('../utils/colors')
-const User      = require('../collections/user')
 
 const {
     getUserQuests,
@@ -13,9 +12,16 @@ const {
     getLemonCap,
 }   = require('./plot')
 
-const check_achievements = async (ctx, user, action, channelID, stats) => {
-    const possible = ctx.achievements.filter(x => !user.achievements.includes(x.id))
-    let complete = (await Promise.all(possible.map(async (x) => await x.check(ctx, user, stats)? x : false))).filter(x => x)
+const check_achievements = async (ctx, user, action, channelID, stats, allStats) => {
+    const possible = ctx.achievements.filter(x => !user.achievements.includes(x.id) && !x.disabled)
+    const combinedStats = []
+    const statKeys = Object.keys(allStats[0])
+    _.pull(statKeys, '_id', 'daily', 'discord_id', 'username', '__v')
+    allStats.map(x => {
+        statKeys.map(y => combinedStats[y]? combinedStats[y] += x[y]: combinedStats[y] = x[y])
+    })
+    combinedStats['totaldaily'] = allStats.length
+    let complete = (await Promise.all(possible.map(async (x) => await x.check(ctx, user, stats, combinedStats)? x : false))).filter(x => x)
     const rewards = []
 
     if (complete.length === 1) {
@@ -77,29 +83,27 @@ const check_daily = async (ctx, user, action, channelID, stats, allStats) => {
     }
     const quests = await getUserQuests(ctx, user)
     const statKeys = Object.keys(allStats[0])
+    const weekly = quests.find(x => x.type === 'weekly' && !x.completed)?.created
+    const monthly = quests.find(x => x.type === 'monthly' && !x.completed)?.created
+
     _.pull(statKeys, '_id', 'daily', 'discord_id', 'username', '__v')
     allStats.map(x => {
-        if (x.daily >= asdate.subtract(stats.daily, 7, 'days'))
+        if (x.daily >= asdate.subtract(stats.daily, 7, 'days') && x.daily >= weekly)
             statKeys.map(y => combinedStats.weekly[y]? combinedStats.weekly[y] += x[y]: combinedStats.weekly[y] = x[y])
-        if (x.daily >= asdate.subtract(stats.daily, 30, 'days'))
+        if (x.daily >= asdate.subtract(stats.daily, 30, 'days') && x.daily >= monthly)
             statKeys.map(y => combinedStats.monthly[y]? combinedStats.monthly[y] += x[y]: combinedStats.monthly[y] = x[y])
     })
 
     completed[0] = ctx.quests.daily.filter(x => quests.some(y=> !y.completed && x.id === y.questid && x.check(ctx, user, stats)))
     completed[1] = ctx.quests.weekly.filter(x => quests.some(y => !y.completed && x.id === y.questid && x.check(ctx, user, stats, combinedStats.weekly)))
     completed[2] = ctx.quests.monthly.filter(x => quests.some(y => !y.completed && x.id === y.questid && x.check(ctx, user, stats, combinedStats.monthly)))
-    console.log(completed)
-    for (let i = 0; i < 3; i++) {
-        console.log(completed[i])
-    }
+
     for (let completedQuests of completed) {
-        console.log(completedQuests)
         for (const q of completedQuests) {
-            console.log(q)
             const reward = q.resolve(ctx, user, stats)
             stats[`t${q.tier}quests`]++
             await updateUserQuest(ctx, user, q.id, {completed: true})
-            rewards.push(q.reward(ctx))
+            rewards.push(q.reward(ctx, stats))
             complete.push(q.name.replace('-star', ctx.symbols.star))
 
             ctx.mixpanel.track('Quest Complete', {
