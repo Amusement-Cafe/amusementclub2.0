@@ -183,7 +183,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
         price *= ceval
 
     price = Math.round(price)
-    const fee = Math.round(price * .1)
+    const fee = Math.round(price * (ctx.auctionFeePercent / 100))
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
     const timenum = parsedargs.timeLength
@@ -219,7 +219,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.sendCfm(ctx, user, {
-        embed: { footer: { text: `This will cost ${numFmt(fee)} (10% fee)` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (${ctx.auctionFeePercent}% fee)` } },
         force: ctx.globals.force,
         question,
         check,

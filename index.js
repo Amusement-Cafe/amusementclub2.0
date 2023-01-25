@@ -261,6 +261,7 @@ con('startup', async (data) => {
         promos: config.data.promos.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
         boosts: config.data.boosts.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
         autoAuction: config.autoAuction,
+        auctionFeePercent: config.auctionFeePercent,
         cardInfos,
         filter,
         direct, /* DM reply function to the user */
