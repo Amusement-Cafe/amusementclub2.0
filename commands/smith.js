@@ -341,7 +341,9 @@ cmd(['draw'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedarg
         return ctx.reply(user, `no cards found matching \`${parsedargs.cardQuery}\``, 'red')
 
     const cost = await getVialCost(ctx, card)
-    const extra = Math.floor(cost * .2 * amount)
+    let extra = Math.floor(cost * .2 * amount)
+    if (amount >= 10)
+        extra = Math.floor(cost * (2 ** amount / 100))
     const vials = cost + extra
     const col = ctx.collections.find(x => x.id === card.col)
 
