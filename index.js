@@ -28,6 +28,7 @@ const {
     eval,
     meta,
     plot,
+    preferences,
 } = require('./modules')
 
 const {
