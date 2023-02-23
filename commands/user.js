@@ -653,7 +653,7 @@ cmd('vote', withInteraction(async (ctx, user) => {
             }
         ]
     }, user.discord_id)
-})).access('dm')
+}, true)).access('dm')
 
 cmd('todo', withInteraction(async (ctx, user) => {
     const resp = []
