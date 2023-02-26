@@ -57,7 +57,7 @@ module.exports = [
         actions: ['cl', 'claim', 'cards', 'ls'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
-            return cards.filter(x => ctx.cards[x.cardid] && !ctx.cards[x.cardid].excluded) >= ctx.cards.filter(x => !x.excluded).length
+            return cards.filter(x => ctx.cards[x.cardid] && !ctx.cards[x.cardid].excluded).length >= ctx.cards.filter(x => !x.excluded).length
         },
         resolve: (ctx, user, stats) => {
             user.exp += 10000
