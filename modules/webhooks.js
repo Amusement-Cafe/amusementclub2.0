@@ -3,6 +3,7 @@ const bodyParser    = require("body-parser")
 const Topgg         = require('@top-gg/sdk')
 const color         = require('../utils/colors')
 const _             = require('lodash')
+const Vote          = require('../collections/vote')
 
 const {
     formatName,
@@ -14,6 +15,7 @@ const {
 } = require('../modules/user')
 
 let listener
+let voteCache = []
 
 const listen = (ctx) => {
     const app = express()
@@ -46,6 +48,52 @@ const listen = (ctx) => {
         const obj = JSON.parse(req.body.data)
         console.log(obj)
         res.status(200).end()
+    })
+
+    app.post("/specials", async (req, res, next) => {
+        try {
+            const obj = req.body
+            let vote = await Vote.findOne({token: obj.token, votedat: {$eq: null}})
+
+            if (!obj.token || !vote) {
+                res.status(403).end()
+                return
+            }
+
+            if (!obj.id) {
+                res.status(200).end()
+                return
+            }
+
+            vote.vote = obj.id
+            vote.votedat = new Date()
+            await vote.save()
+            let cache = voteCache.find(x => x.id == obj.id)
+
+            if (!cache)
+                voteCache.push({id: obj.id, count: 1})
+            else
+                cache.count++
+
+            res.status(200).end()
+
+        } catch (e) {
+            return next(e)
+        }
+    })
+
+    app.get("/votes:id", async (req, res) => {
+        if (!req.params.id)
+            return res.status(400).end()
+        let votes = voteCache.find(x => x.id == req.params.id)?.count
+
+        if (!votes)
+            votes = await Vote.countDocuments({vote: req.params.id})
+
+        if (!votes)
+            return res.status(200).send({count: 0, id: req.params.id}).end()
+
+        res.status(200).send({count: votes, id: req.params.id}).end()
     })
 
     listener = app.listen(ctx.dbl.port, () => console.log(`Listening to webhooks on port ${ctx.dbl.port}`))
