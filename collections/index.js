@@ -14,4 +14,5 @@ module.exports = {
     Expedition: require('./expedition'),
     BattleProfile: require('./battleProfile'),
     CardStats: require('./cardStats'),
+    Match: require('./match'),
 }

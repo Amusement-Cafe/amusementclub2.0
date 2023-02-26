@@ -6,6 +6,8 @@ const {
     fetchCardStats,
     formatStats,
     sortStats,
+    fetchUserBattleCards,
+    joinOrCreateMatch,
 } = require('../modules/battle')
 
 const {
@@ -84,3 +86,17 @@ cmd(['battle', 'cards'], ['btl', 'cd'], withCards(async (ctx, user, cards, parse
         }
     })
 })).access('dm')
+
+cmd(['battle', 'join'], async (ctx, user, ...args) => {
+    const bCardCount = await fetchUserBattleCards(ctx, user).count()
+
+    if (bCardCount < 3) {
+        return ctx.reply(user, `you have to have ar least **3** Battle Cards before you can join the battle.
+            Get some using \`${ctx.prefix}card upgrade [card]\` (only ${ctx.battleCol} cards accepted)`, 'red')
+    }
+
+    const battleProfile = await fetchOrCreateBP(ctx, user)
+    const battle = await joinOrCreateMatch(ctx, user)
+    
+    return ctx.reply(user, `joined! Match ID: `, 'amethyst')
+}).access('dm')

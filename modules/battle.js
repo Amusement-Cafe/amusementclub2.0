@@ -2,6 +2,7 @@ const {
     BattleProfile,
     CardStats,
 } = require('../collections')
+const user = require('../collections/user')
 
 const fetchOrCreateBP = async (ctx, user) => {
     let battleProfile = await BattleProfile.findOne({ user: user.discord_id })
@@ -33,6 +34,12 @@ const fetchCardStats = async (ctx, user, cardIds) => {
     return cardStats;
 }
 
+const fetchUserBattleCards = (ctx, user) => CardStats.find({ user_id: user.discord_id })
+
+const joinOrCreateMatch = async (ctx, user) => {
+
+}
+
 const formatStats = (ctx, battleCard) => {
     return Object.keys(battleCard.stats).map(x => `${ctx.symbols[x]} **${x === 'hp'? 100 + battleCard.stats[x] * 100 : battleCard.stats[x]}**`)
 }
@@ -49,4 +56,6 @@ module.exports = {
     fetchCardStats,
     formatStats,
     sortStats,
+    fetchUserBattleCards,
+    joinOrCreateMatch,
 }
