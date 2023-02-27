@@ -58,12 +58,12 @@ const fetchOrCreate = async (ctx, userid, username) => {
             ]
         }
         try {
-            await ctx.bot.createMessage(ctx.interaction.channel.id, {embed})
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [embed]})
         } catch (e) {
-            const dmChannel = await ctx.bot.getDMChannel(userid)
+            const dmChannel = await ctx.bot.rest.users.createDM(userid)
             try {
                 embed.description += `\n**This message has been sent as a DM because you have run a command or selected a button in a channel the bot cannot view. Please allow the bot view access to that channel or run commands in a channel the bot can view!**`
-                await ctx.bot.createMessage(dmChannel.id, {embed})
+                await ctx.bot.rest.channels.createMessage(dmChannel.id, {embeds: [embed]})
             } catch (e) {}
         }
 
