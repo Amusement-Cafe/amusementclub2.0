@@ -110,6 +110,17 @@ module.exports = model('User', {
             canhas:     { type: Boolean, default: true  },
             candiff:    { type: Boolean, default: true  },
             cansell:    { type: Boolean, default: true  },
+        },
+        profile:        {
+            bio:        { type: String, default: 'This user has not set a bio' },
+            title:      { type: String, default: '' },
+            color:      { type: String, default: '16756480' },
+            card:       { type: String, default: '' },
+            favcomplete:{ type: String, default: '' },
+            favclout:   { type: String, default: '' },
         }
-    }
+    },
+
+    premium:            { type: Boolean, default: false },
+    premiumExpires:     { type: Date }
 })
