@@ -430,5 +430,17 @@
     "desc": "swaps a legendary card",
     "fulldesc": "When used on a legendary card, swaps it for another random legendary in the same collection.",
     "level": 100
-}
+    },
+
+
+    {
+        "id": "building1",
+        "name": "Building 1",
+        "price": 10000,
+        "type": "guild",
+        "desc": "It does a thing",
+        "currency": "tomato",
+        "typedesc": "This is a thing",
+        "fulldesc": "This item will do a thing"
+    }
 ]
