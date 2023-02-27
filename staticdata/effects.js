@@ -1,8 +1,10 @@
 const _ = require('lodash')
 const { byAlias, completed } = require('../modules/collection')
 const { formatName } = require('../modules/card')
-const { addUserCards, getUserCards, findUserCards} = require('../modules/user')
+const { addUserCards, getUserCards, findUserCards, getUserQuests} = require('../modules/user')
 const { getStats } = require("../modules/userstats")
+const {UserQuest} = require("../collections");
+const asdate = require("add-subtract-date");
 
 module.exports = [
     {
@@ -61,14 +63,14 @@ module.exports = [
         passive: false,
         cooldown: 20,
         use: async (ctx, user) => {
-            const quest = ctx.quests.daily.filter(x => user.dailyquests.includes(x.id)).find(x => x.tier === 1)
+            const quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)[0]
+            const quest = Object.assign({}, quests, ctx.quests.daily.find(y => y.id === quests.questid))
             if(!quest)
                 return { msg: `you don't have any tier 1 quest to complete`, used: false }
 
             let stats = await getStats(ctx, user, user.lastdaily)
             quest.resolve(ctx, user, stats)
-            user.dailyquests = user.dailyquests.filter(y => y != quest.id)
-            user.markModified('dailyquests')
+            await UserQuest.deleteOne(quests)
             stats.t1quests += 1
             await user.save()
             await stats.save()
@@ -82,13 +84,12 @@ module.exports = [
         passive: false,
         cooldown: 32,
         use: async (ctx, user) => {
-            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1 && !user.dailyquests.includes(x.id) && x.can_drop))
+            const questList = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily').map(x => x.questid)
+            const quest = _.sample(ctx.quests.daily.filter(x => x.tier === 1 && !questList.includes(x.id) && x.can_drop))
             if(!quest)
                 return { msg: `cannot find a unique quest. Please, complete some quests before using this effect.`, used: false }
 
-            user.dailyquests.push(quest.id)
-            user.markModified('dailyquests')
-            await user.save()
+            await UserQuest.create({userid: user.discord_id, questid: quest.id, type: 'daily', expiry: asdate.add(new Date(), 20, 'hours'), created: new Date()})
 
             return { msg: `received **${quest.name}**`, used: true }
         }
@@ -171,7 +172,7 @@ module.exports = [
     }, {
         id: 'memoryxmas',
         name: 'Memories of Christmas Cheer',
-        desc: 'Gives a random card from Christmas promos',
+        desc: 'Gives a random 1-3★ card from Christmas promos',
         passive: false,
         cooldown: 120,
         use: async (ctx, user) => {
