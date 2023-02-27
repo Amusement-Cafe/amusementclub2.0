@@ -15,9 +15,11 @@ const {
 const {
     XPtoLEVEL,
     numFmt,
+    formatDateTimeLong,
 } = require('../utils/tools')
 
 const {
+    deleteUserEffect,
     formatUserEffect,
     withUserEffects,
 } = require('../modules/effect')
@@ -236,7 +238,7 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
     const userEffect = uEffects.find(x => x.id === effect.id)
     const now = new Date()
     if(effect.cooldownends > now)
-        return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
+        return ctx.reply(user, `effect card **${effect.name}** is on cooldown until \n**${formatDateTimeLong(effect.cooldownends)}**`, 'red')
 
     const res = await effect.use(ctx, user, args)
     if(!res.used)
@@ -245,9 +247,10 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
     const cooldown = await check_effect(ctx, user, 'spellcard')? Math.round(effect.cooldown * .6) : effect.cooldown
     userEffect.uses--
     userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
+    userEffect.notified = false
     await userEffect.save()
     if (userEffect.uses === 0) {
-        await UserEffect.deleteOne(userEffect)
+        await deleteUserEffect(userEffect)
         expired = true
     }
 
@@ -264,7 +267,7 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
     if(expired)
         embed.description += `\nEffect Card has expired. Please make a new one`
     else
-        embed.description += `\nEffect Card has been used and now on cooldown for **${cooldown}** hour(s)\n**${userEffect.uses}** uses left`
+        embed.description += `\nEffect Card has been used and now on cooldown until: \n**${formatDateTimeLong(asdate.add(new Date(), cooldown, 'hours'))}**\n**${userEffect.uses}** uses left`
 
     return ctx.reply(user, embed)
 }))).access('dm')
@@ -307,9 +310,8 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
 
     const equip = async () => {
         if(!effect.expires) {
-            const ueffect = user.effects.findIndex(x => x.id === effect.id)
-            user.effects[ueffect].expires = asdate.add(new Date(), effect.lasts, 'days')
-            user.markModified('effects')
+            const expiryDate = asdate.add(new Date(), effect.lasts, 'days')
+            await UserEffect.updateOne({userid: user.discord_id, _id: effect._id}, {expires: expiryDate})
         }
 
         chosenSlot.effect_name = effect.id
