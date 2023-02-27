@@ -13,5 +13,6 @@ module.exports = {
     meta: require('./meta'),
     webhooks: require('./webhooks'),
     preferences: require('./preferences'),
-    plot: require('./plot')
+    plot: require('./plot'),
+    modals: require('./modals')
 }
