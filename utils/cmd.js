@@ -2,6 +2,7 @@ const tree = {
     cmd: {},
     rct: {},
     con: {},
+    mod: {},
 }
 
 const cmd = (...args) => buildTree(args)
@@ -24,6 +25,19 @@ const rct = (...args) => {
 const con = (...args) => {
     const callback = args.pop()
     const cursor = tree.con
+
+    args.map(alias => {
+        if (!cursor.hasOwnProperty(alias)) {
+            cursor[alias] = {}
+        }
+
+        cursor[alias]._callback = callback
+    })
+}
+
+const mod = (...args) => {
+    const callback = args.pop()
+    const cursor = tree.mod
 
     args.map(alias => {
         if (!cursor.hasOwnProperty(alias)) {
@@ -82,15 +96,19 @@ const trigger = async (type, ctx, user, args) => {
 
     if (type === 'cmd') {
         if (!cursor.hasOwnProperty('_callback')) {
+            await ctx.interaction.defer()
             return ctx.reply(user, `unknown command. Please check your spelling or use help`, 'red')
         }
 
         if (cursor._perm) {
-            if(!user.roles || !cursor._perm.find(x => user.roles.some(y => x === y)))
+            if(!user.roles || !cursor._perm.find(x => user.roles.some(y => x === y))) {
+                await ctx.interaction.defer()
                 return ctx.reply(user,`only users with roles **[${cursor._perm}]** can execute this command`, 'red')
+            }
         }
 
         if(!ctx.guild && cursor._access != 'dm') {
+            await ctx.interaction.defer()
             return ctx.reply(user, `this command is possible only in guild (server) channel`, 'red')
         }
     }
@@ -114,6 +132,7 @@ module.exports = {
     pcmd,
     rct,
     con,
+    mod,
     trigger,
 }
 
