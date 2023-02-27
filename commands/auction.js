@@ -303,7 +303,7 @@ cmd(['auction', 'bid'], withInteraction(async (ctx, user, args) => {
         await bid_auc(ctx, user, auc, bid)
     }
 
-}, true)).access('dm')
+}, {ephemeral: true})).access('dm')
 
 cmd(['auction', 'cancel'], withInteraction(async (ctx, user, args) => {
     let auc = await Auction.findOne({ id: args.aucID })
