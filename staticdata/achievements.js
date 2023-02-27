@@ -11,14 +11,16 @@ const {
     getUserCards
 } = require('../modules/user')
 
-const _      = require('lodash')
-const asdate = require('add-subtract-date')
+const _          = require('lodash')
+const asdate     = require('add-subtract-date')
+const UserEffect = require("../collections/userEffect")
 
 module.exports = [
     {
         id: 'claimcard',
         name: 'More cards!',
         desc: 'Claim your first card',
+        title: '{name} listens to the heart of the cards!',
         actions: ['claim', 'cl'],
         check: (ctx, user, stats) => stats.claims > 0,
         resolve: (ctx, user, stats) => {
@@ -30,6 +32,7 @@ module.exports = [
         id: 'auccard',
         name: 'Playing the Auctions',
         desc: 'Auction your first card',
+        title: 'Auctioneer {name}',
         actions: ['auc', 'auction'],
         check: (ctx, user, stats) => stats.aucsell > 0,
         resolve: (ctx, user, stats) => {
@@ -41,6 +44,7 @@ module.exports = [
         id: 'firstdaily',
         name: 'Get the salary',
         desc: 'Get first Daily Bonus',
+        title: '',
         actions: ['daily'],
         check: (ctx, user) => new Date() - user.lastdaily < 5000,
         resolve: (ctx, user, stats) => {
@@ -54,10 +58,11 @@ module.exports = [
         name: 'Sketchy Collector!',
         desc: 'Collect All Cards, the Sachi way!',
         hidden: true,
-        actions: ['cl', 'claim', 'cards', 'ls'],
+        title: 'Professional Stalker {name}',
+        actions: ['claim cards'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
-            return cards.filter(x => ctx.cards[x.cardid] && !ctx.cards[x.cardid].excluded) >= ctx.cards.filter(x => !x.excluded).length
+            return cards.filter(x => ctx.cards[x.cardid] && !ctx.cards[x.cardid].excluded).length >= ctx.cards.filter(x => !x.excluded).length
         },
         resolve: (ctx, user, stats) => {
             user.exp += 10000
@@ -71,6 +76,7 @@ module.exports = [
         id: 'firstforge',
         name: '1+1=1',
         desc: 'Forge cards for the first time',
+        title: '{name}: believer in 1+1=1',
         actions: ['forge'],
         check: (ctx, user, stats) => stats.forge > 0,
         resolve: (ctx, user, stats) => {
@@ -81,7 +87,8 @@ module.exports = [
     }, {
         id: 'firstliq',
         name: `Didn't need that card anyway`,
-        desc: 'Liquify card for the first time',
+        desc: 'Liquefy card for the first time',
+        title: '',
         actions: ['liq', 'liquify'],
         check: (ctx, user, stats) => stats.liquefy > 0,
         resolve: (ctx, user, stats) => {
@@ -93,6 +100,7 @@ module.exports = [
         id: 'firstdraw',
         name: 'Best Artist Around',
         desc: 'Draw card for the first time',
+        title: '',
         actions: ['draw'],
         check: (ctx, user, stats) => stats.draw > 0,
         resolve: (ctx, user, stats) => {
@@ -104,6 +112,7 @@ module.exports = [
         id: 'firstreset',
         name: 'Snap your fingers',
         desc: 'Reset collection for the first time',
+        title: 'Thanos has nothing on {name}',
         actions: ['col', 'collection'],
         check: (ctx, user) => {
             const col = user.cloutedcols.sort((a, b) => b.amount - a.amount)[0]
@@ -121,6 +130,7 @@ module.exports = [
         id: 'firstspecial',
         name: `Well aren't you special?`,
         desc: 'Get a first 4-star',
+        title: '',
         actions: ['cl', 'claim'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -135,6 +145,7 @@ module.exports = [
         id: '1000stars',
         name: `Getting star-struck`,
         desc: 'Get 1,000 stars',
+        title: 'Star of the club, {name}',
         actions: ['cl', 'claim'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -151,9 +162,11 @@ module.exports = [
         id: 'firsteffect',
         name: `Now that's effective!`,
         desc: 'Create your first effect card',
+        title: '',
         actions: ['inv'],
-        check: (ctx, user) => {
-            return user.effects[0]
+        check: async (ctx, user) => {
+            const eff = await UserEffect.find({userid: user.discord_id}).lean()
+            return eff[0]
         },
         resolve: (ctx, user, stats) => {
             user.exp += 1500
@@ -164,6 +177,7 @@ module.exports = [
         id: 'plotcastle',
         name: `Now that's what I call a castle!`,
         desc: 'Build your first castle',
+        title: '',
         actions: ['plot', 'plots'],
         check: async (ctx, user) => await getUserPlots(ctx, true, 'castle', user.discord_id).then(x => {return x[0]}),
         resolve: (ctx, user, stats) => {
@@ -175,6 +189,7 @@ module.exports = [
         id: 'plotgbank',
         name: `It's not gambling, it's a bank!`,
         desc: 'Build your first gacha bank',
+        title: '',
         actions: ['plot', 'plots'],
         check: async (ctx, user) => await getUserPlots(ctx, true, 'gbank', user.discord_id).then(x => {return x[0]}),
         resolve: (ctx, user, stats) => {
@@ -186,6 +201,7 @@ module.exports = [
         id: 'plottavern',
         name: `Building these are hard work, have a rest!`,
         desc: 'Build your first tavern',
+        title: '',
         actions: ['plot', 'plots'],
         check: async (ctx, user) => await getUserPlots(ctx, true, 'tavern', user.discord_id).then(x => {return x[0]}),
         resolve: (ctx, user, stats) => {
@@ -197,6 +213,7 @@ module.exports = [
         id: 'plotsmithhub',
         name: `Strike while the iron is hot!`,
         desc: 'Build your first smithing hub',
+        title: '',
         actions: ['plot', 'plots'],
         check: async (ctx, user) => await getUserPlots(ctx, true, 'smithhub', user.discord_id).then(x => {return x[0]}),
         resolve: (ctx, user, stats) => {
@@ -208,6 +225,7 @@ module.exports = [
         id: 'plotauchouse',
         name: `Going once! Going twice! SOLD!`,
         desc: 'Build your first auction house',
+        title: '',
         actions: ['plot', 'plots'],
         check: async (ctx, user) => await getUserPlots(ctx, true, 'auchouse', user.discord_id).then(x => {return x[0]}),
         resolve: (ctx, user, stats) => {
@@ -220,6 +238,7 @@ module.exports = [
         name: `I'm somewhat of a star myself`,
         desc: 'Get 5,000 stars',
         hidden: true,
+        title: '',
         actions: ['claim', 'cl'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -239,6 +258,7 @@ module.exports = [
         name: `On the road to being an All Star`,
         desc: 'Get 10,000 stars',
         hidden: true,
+        title: '',
         actions: ['claim', 'cl'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -258,6 +278,7 @@ module.exports = [
         name: `All Star Rookie`,
         desc: 'Get 15,000 stars',
         hidden: true,
+        title: '',
         actions: ['claim', 'cl'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -277,6 +298,7 @@ module.exports = [
         name: `All Star Pro`,
         desc: 'Get 20,000 stars',
         hidden: true,
+        title: '',
         actions: ['claim', 'cl'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -296,6 +318,7 @@ module.exports = [
         name: `Hey now, you're an All Star Champion`,
         desc: 'Get 25,000 stars',
         hidden: true,
+        title: '',
         actions: ['claim', 'cl'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -314,6 +337,7 @@ module.exports = [
         id: 'firstlegendary',
         name: `Become a legend`,
         desc: 'Acquire your first legendary card',
+        title: '',
         actions: ['col', 'ls', 'li', 'cards'],
         check: async (ctx, user) => {
             const cards = await getUserCards(ctx, user)
@@ -330,6 +354,7 @@ module.exports = [
         id: 'claim10cards',
         name: `Max Claimer`,
         desc: 'Claim 10 cards in a day',
+        title: '',
         actions: ['cl', 'claim'],
         check: (ctx, user, stats) => stats.totalregclaims >= 10,
         resolve: (ctx, user, stats) => {
@@ -343,6 +368,7 @@ module.exports = [
         id: 'claim15cards',
         name: `👀`,
         desc: 'Claim 15 cards in a day',
+        title: '',
         actions: ['cl', 'claim'],
         check: (ctx, user, stats) => stats.totalregclaims >= 15,
         resolve: (ctx, user, stats) => {
@@ -356,6 +382,7 @@ module.exports = [
         id: 'claim20cards',
         name: `Big Spender`,
         desc: 'Claim 20 cards in a day',
+        title: '',
         actions: ['cl', 'claim'],
         check: (ctx, user, stats) => stats.totalregclaims >= 20,
         resolve: (ctx, user, stats) => {
@@ -369,6 +396,7 @@ module.exports = [
         id: 'firstpromo',
         name: `Seasonal Event Participant`,
         desc: 'Claim your first promo card',
+        title: '',
         actions: ['cl', 'claim'],
         check: (ctx, user, stats) => {
             const now = new Date()
@@ -388,6 +416,7 @@ module.exports = [
         id: 'claim5promo',
         name: `Event Rush`,
         desc: 'Claim 5 promo cards in a day',
+        title: '',
         actions: ['cl', 'claim'],
         check: (ctx, user, stats) => {
             const now = new Date()
@@ -407,6 +436,7 @@ module.exports = [
         id: 'claim10promo',
         name: `Maximum Promo`,
         desc: 'Claim 10 promo cards in a day',
+        title: '',
         actions: ['cl', 'claim'],
         check: (ctx, user, stats) => {
             const now = new Date()
@@ -426,6 +456,7 @@ module.exports = [
         id: 'forge10cards',
         name: `Prolific Forger`,
         desc: 'Forge 10 times in a day',
+        title: '',
         actions: ['forge'],
         check: (ctx, user, stats) => stats.forge >= 10,
         resolve: (ctx, user, stats) => {
@@ -439,6 +470,7 @@ module.exports = [
         id: 'draw8cards',
         name: `Painting happy little cards`,
         desc: 'Draw 6 cards in a day',
+        title: '',
         actions: ['draw'],
         check: (ctx, user, stats) => stats.draw >= 6,
         resolve: (ctx, user, stats) => {
@@ -452,6 +484,7 @@ module.exports = [
         id: 'draw10cards',
         name: `The Bob Ross of cards`,
         desc: 'Draw 10 cards in a day',
+        title: '',
         actions: ['draw'],
         check: (ctx, user, stats) => stats.draw >= 10,
         resolve: (ctx, user, stats) => {
@@ -465,6 +498,7 @@ module.exports = [
         id: 'liq10cards',
         name: `There's always a need for more`,
         desc: 'Liquefy 10 cards in a day',
+        title: '',
         actions: ['liq', 'liquify'],
         check: (ctx, user, stats) => stats.liquefy >= 10,
         resolve: (ctx, user, stats) => {
@@ -480,6 +514,7 @@ module.exports = [
         id: 'liq20cards',
         name: `There's no heart in these cards`,
         desc: 'Liquefy 20 cards in a day',
+        title: '',
         actions: ['liq', 'liquify'],
         check: (ctx, user, stats) => stats.liquefy >= 20,
         resolve: (ctx, user, stats) => {
@@ -495,6 +530,7 @@ module.exports = [
         id: 'firstrate',
         name: `Card Critic`,
         desc: 'Rate a card for the first time',
+        title: '',
         actions: ['rate'],
         check: (ctx, user, stats) => stats.rates > 0,
         resolve: (ctx, user, stats) => {
@@ -508,6 +544,7 @@ module.exports = [
         id: 'firstwish',
         name: `When you wish upon a card`,
         desc: 'Add a card to your wishlist',
+        title: '',
         actions: ['wish', 'wishlist'],
         check: (ctx, user) => user.wishlist.length > 0,
         resolve: (ctx, user, stats) => {
@@ -522,6 +559,7 @@ module.exports = [
         name: `Story of seasons`,
         desc: 'Play the bot for a year!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 1, 'years')
@@ -543,6 +581,7 @@ module.exports = [
         name: `It's not an addiction`,
         desc: 'Play the bot for 2 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 2, 'years')
@@ -564,6 +603,7 @@ module.exports = [
         name: `Can't stop, Won't stop`,
         desc: 'Play the bot for 3 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 3, 'years')
@@ -585,6 +625,7 @@ module.exports = [
         name: `Putting fourth some effort`,
         desc: 'Play the bot for 4 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 4, 'years')
@@ -606,6 +647,7 @@ module.exports = [
         name: `Half a decade!`,
         desc: 'Play the bot for 5 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 5, 'years')
@@ -627,6 +669,7 @@ module.exports = [
         name: `One more than five`,
         desc: 'Play the bot for 6 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 6, 'years')
@@ -648,6 +691,7 @@ module.exports = [
         name: `Why was six afraid of seven?`,
         desc: 'Play the bot for 7 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 7, 'years')
@@ -669,6 +713,7 @@ module.exports = [
         name: `Eights the place`,
         desc: 'Play the bot for 8 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 8, 'years')
@@ -690,6 +735,7 @@ module.exports = [
         name: `Almost to double digits`,
         desc: 'Play the bot for 9 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 9, 'years')
@@ -711,6 +757,7 @@ module.exports = [
         name: `An entire decade!`,
         desc: 'Play the bot for 10 years!',
         hidden: true,
+        title: '',
         actions: ['daily', 'profile'],
         check: (ctx, user) => {
             const past = asdate.subtract(new Date(), 10, 'years')
@@ -732,7 +779,7 @@ module.exports = [
         name: 'I was a millionaire',
         desc: 'Spend a total of 1M tomatoes!',
         hidden: true,
-        disabled: true,
+        title: 'Kingpin {name}',
         check: (ctx, user, dayStats, allStats) => allStats.tomatoout >= 1000000,
         resolve: (ctx, user, stats) => {
             user.exp += 5000
@@ -746,7 +793,7 @@ module.exports = [
         name: 'Tomatoes, what are those?',
         desc: 'Spend a total of 10M tomatoes!',
         hidden: true,
-        disabled: true,
+        title: 'Tomato Connoisseur {name}',
         check: (ctx, user, dayStats, allStats) => allStats.tomatoout >= 10000000,
         resolve: (ctx, user, stats) => {
             user.exp += 10000
@@ -760,7 +807,7 @@ module.exports = [
         name: 'I see tomatoes everywhere I go',
         desc: 'Spend a total of 100M tomatoes!',
         hidden: true,
-        disabled: true,
+        title: '{name}, Lord of the Tomatoes',
         check: (ctx, user, dayStats, allStats) => allStats.tomatoout >= 100000000,
         resolve: (ctx, user, stats) => {
             user.exp += 100000
@@ -774,7 +821,7 @@ module.exports = [
         name: 'Gotta have my cards',
         desc: 'Claim a total of 1k cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 1000,
         resolve: (ctx, user, stats) => {
             user.exp += 1000
@@ -788,7 +835,7 @@ module.exports = [
         name: 'There\'s something to this card thing',
         desc: 'Claim a total of 10k cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 10000,
         resolve: (ctx, user, stats) => {
             user.exp += 5000
@@ -802,7 +849,7 @@ module.exports = [
         name: 'Just one more card',
         desc: 'Claim a total of 100k cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 100000,
         resolve: (ctx, user, stats) => {
             user.exp += 10000
@@ -816,7 +863,7 @@ module.exports = [
         name: 'I would like to buy a card',
         desc: 'Claim a total of 1M cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totalregclaims >= 1000000,
         resolve: (ctx, user, stats) => {
             user.exp += 15000
@@ -830,7 +877,7 @@ module.exports = [
         name: 'Share the cards',
         desc: 'Auction 100 cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 100,
         resolve: (ctx, user, stats) => {
             user.exp += 500
@@ -844,7 +891,7 @@ module.exports = [
         name: 'Am I rich yet?',
         desc: 'Auction 1k cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 1000,
         resolve: (ctx, user, stats) => {
             user.exp += 1000
@@ -858,7 +905,7 @@ module.exports = [
         name: 'I have a card to spare',
         desc: 'Auction 10k cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 10000,
         resolve: (ctx, user, stats) => {
             user.exp += 2000
@@ -872,7 +919,7 @@ module.exports = [
         name: 'Cards here, get your cards here',
         desc: 'Auction 100k cards!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucsell >= 100000,
         resolve: (ctx, user, stats) => {
             user.exp += 4000
@@ -885,7 +932,7 @@ module.exports = [
         id: '100aucwins',
         name: 'Best Bidder',
         desc: 'Win 100 auctions!',
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucwin >= 100,
         resolve: (ctx, user, stats) => {
             user.exp += 500
@@ -899,7 +946,7 @@ module.exports = [
         name: 'Paddle up',
         desc: 'Win 1k auctions!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucwin >= 1000,
         resolve: (ctx, user, stats) => {
             user.exp += 1000
@@ -913,7 +960,7 @@ module.exports = [
         name: 'Proficient Bidder',
         desc: 'Win 10k auctions!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.aucwin >= 10000,
         resolve: (ctx, user, stats) => {
             user.exp += 2000
@@ -927,7 +974,7 @@ module.exports = [
         name: 'Going on an adventure',
         desc: 'Complete 100 quests!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) =>
             (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 100,
         resolve: (ctx, user, stats) => {
@@ -942,7 +989,7 @@ module.exports = [
         name: 'All quests fall before me',
         desc: 'Complete 1k quests!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) =>
             (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 1000,
         resolve: (ctx, user, stats) => {
@@ -957,7 +1004,7 @@ module.exports = [
         name: 'Quest-ionable gains',
         desc: 'Complete 10k quests!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) =>
             (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 10000,
         resolve: (ctx, user, stats) => {
@@ -972,7 +1019,7 @@ module.exports = [
         name: 'Do these ever end?',
         desc: 'Complete 100k quests!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) =>
             (allStats.t1quests + allStats.t2quests + allStats.t3quests + allStats.t4quests + allStats.t5quests + allStats.t6quests) >= 100000,
         resolve: (ctx, user, stats) => {
@@ -986,7 +1033,7 @@ module.exports = [
         id: '100dailies',
         name: 'A daily a day',
         desc: 'You\'ve used daily 100 times!',
-        disabled: true,
+        title: 'Well seasoned: {name}',
         check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 100,
         resolve: (ctx, user, stats) => {
             user.exp += 500
@@ -1000,7 +1047,7 @@ module.exports = [
         name: 'A year of dailies',
         desc: 'You\'ve used daily 365 times!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 365,
         resolve: (ctx, user, stats) => {
             user.exp += 1000
@@ -1014,7 +1061,7 @@ module.exports = [
         name: 'Half of a thousand days',
         desc: 'You\'ve used daily 500 times!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 500,
         resolve: (ctx, user, stats) => {
             user.exp += 2000
@@ -1028,7 +1075,7 @@ module.exports = [
         name: 'Now that\'s a lot of daily',
         desc: 'You\'ve used daily 1k times!',
         hidden: true,
-        disabled: true,
+        title: '',
         check: (ctx, user, dayStats, allStats) => allStats.totaldaily >= 1000,
         resolve: (ctx, user, stats) => {
             user.exp += 4000
