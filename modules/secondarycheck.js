@@ -43,7 +43,7 @@ const check_achievements = async (ctx, user, action, channelID, stats, allStats)
         await plotPayout(ctx, 'tavern', 1, 25)
 
 
-        return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
+        return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
             color: colors.blue,
             author: { name: `New Achievement:` },
             title: complete.name,
@@ -54,7 +54,7 @@ const check_achievements = async (ctx, user, action, channelID, stats, allStats)
                 value: reward
             }],
             footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
-        }})
+        }]})
 
     } else if (complete.length > 1) {
         complete.map(x => {
@@ -64,12 +64,12 @@ const check_achievements = async (ctx, user, action, channelID, stats, allStats)
         await user.save()
         await stats.save()
         await plotPayout(ctx, 'tavern', 1, complete.length * 25)
-        return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
+        return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
             color: colors.blue,
             author: { name: `New Achievements:` },
             description: rewards.join('\n'),
             footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
-        }})
+        }]})
     }
 }
 
@@ -82,16 +82,27 @@ const check_daily = async (ctx, user, action, channelID, stats, allStats) => {
         monthly: []
     }
     const quests = await getUserQuests(ctx, user)
-    const statKeys = Object.keys(allStats[0])
+
+    if (quests.length === 0)
+        return
+
+
+    const statKeys = Object.keys(allStats[allStats.length - 1])
     const weekly = quests.find(x => x.type === 'weekly' && !x.completed)?.created
     const monthly = quests.find(x => x.type === 'monthly' && !x.completed)?.created
 
     _.pull(statKeys, '_id', 'daily', 'discord_id', 'username', '__v')
     allStats.map(x => {
         if (x.daily >= asdate.subtract(stats.daily, 7, 'days') && x.daily >= weekly)
-            statKeys.map(y => combinedStats.weekly[y]? combinedStats.weekly[y] += x[y]: combinedStats.weekly[y] = x[y])
+            statKeys.map(y => {
+                if (!Number.isNaN(x[y]))
+                    combinedStats.weekly[y]? combinedStats.weekly[y] += x[y]: combinedStats.weekly[y] = x[y]
+            })
         if (x.daily >= asdate.subtract(stats.daily, 30, 'days') && x.daily >= monthly)
-            statKeys.map(y => combinedStats.monthly[y]? combinedStats.monthly[y] += x[y]: combinedStats.monthly[y] = x[y])
+            statKeys.map(y => {
+                if (!Number.isNaN(x[y]))
+                    combinedStats.monthly[y]? combinedStats.monthly[y] += x[y]: combinedStats.monthly[y] = x[y]
+            })
     })
 
     completed[0] = ctx.quests.daily.filter(x => quests.some(y=> !y.completed && x.id === y.questid && x.check(ctx, user, stats)))
@@ -130,7 +141,7 @@ const check_daily = async (ctx, user, action, channelID, stats, allStats) => {
 
     await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
-    return ctx.bot.createMessage(ctx.interaction.channel.id, {embed: {
+    return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
             color: colors.green,
             author: {name: `${user.username}, you completed:`},
             description: complete.join('\n'),
@@ -138,14 +149,12 @@ const check_daily = async (ctx, user, action, channelID, stats, allStats) => {
                 name: `Rewards`,
                 value: rewards.join('\n')
             }]
-        }})
+        }]})
 }
 
 const check_all = async (ctx, user, action, channelID, stats, allStats) => {
     await check_achievements(ctx, user, action, channelID, stats, allStats)
-
-    if(user.dailyquests.length > 0)
-        await check_daily(ctx, user, action, channelID, stats, allStats)
+    await check_daily(ctx, user, action, channelID, stats, allStats)
 }
 
 module.exports = {
