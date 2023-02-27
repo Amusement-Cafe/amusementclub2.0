@@ -1,12 +1,13 @@
 const msToTime  = require('pretty-ms')
 const UserSlot = require('../collections/userSlot')
+const UserEffect = require('../collections/userEffect')
 
-const check_effect = async (ctx, user, id) => {
+const check_effect = async (ctx, user, id, uEffect) => {
     if(!user.hero)
         return false
 
     const effect = ctx.effects.find(x => x.id === id)
-    const userEffect = user.effects.find(x => x.id === id)
+    const userEffect = uEffect? uEffect: await UserEffect.findOne({userid: user.discord_id, id: id})
     const inSlot = await UserSlot.findOne({discord_id: user.discord_id, effect_name: id})
     if(userEffect && userEffect.expires && userEffect.expires < new Date()) {
         if (inSlot) {
@@ -14,8 +15,7 @@ const check_effect = async (ctx, user, id) => {
             inSlot.cooldown = null
             await inSlot.save()
         }
-        user.effects = user.effects.filter(x => x.id != id)
-        user.markModified('effects')
+        await UserEffect.deleteOne(userEffect)
         return false
     }
 
@@ -51,8 +51,8 @@ const withUserEffects = (callback) => async (ctx, user, args) => {
             If you cannot find a hero that you want, submit one using \`/hero submit anilist_link:[anilist link](https://anilist.co/)\`
             For more information type \`/help help_menu:hero\``, 'red')
 
-    const effects = await UserEffect.find({userid: user.discord_id})
-    await Promise.all(effects.map(async x => await check_effect(ctx, user, x.id)))
+    const effects = await UserEffect.find({userid: user.discord_id}).lean()
+    await Promise.all(effects.map(async x => await check_effect(ctx, user, x.id, x)))
 
     // await Promise.all(user.effects.map(async x => await check_effect(ctx, user, x.id)))
     // await user.save()
@@ -60,10 +60,12 @@ const withUserEffects = (callback) => async (ctx, user, args) => {
     return callback(ctx, user, map, args)
 }
 
+const deleteUserEffect = async (query) => await UserEffect.deleteOne(query)
 
 
 module.exports = {
     check_effect,
+    deleteUserEffect,
     formatUserEffect,
     withUserEffects
 }
