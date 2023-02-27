@@ -9,6 +9,7 @@ const mstotime      = require('pretty-ms')
 const {
     numFmt,
     XPtoLEVEL,
+    formatDateTimeLong,
 }   = require('../utils/tools')
 
 const {
@@ -220,17 +221,16 @@ cmd(['plot', 'info'], withInteraction(async (ctx, user, args) => {
             },
             {
                 name: `Installation Date`,
-                value: `${dateFormat(plot.building.install_date, "yyyy-mm-dd HH:MM:ss Z", true)}`,
+                value: `${formatDateTimeLong(plot.building.install_date)}`,
                 inline: true
             },
             {
                 name: `Last Collected Date`,
-                value: `${dateFormat(plot.building.last_collected, "yyyy-mm-dd HH:MM:ss Z", true)}`,
+                value: `${formatDateTimeLong(plot.building.last_collected)}`,
                 inline: true
             },
         ],
-        color: colors.blue,
-        footer: {text: dateFormat(new Date(), "yyyy-mm-dd HH:MM:ss Z", true)}
+        color: colors.blue
 
     }
 
@@ -275,16 +275,16 @@ cmd(['plot', 'info', 'global'], withInteraction(async (ctx, user, args) => {
             },
             {
                 name: `Installation Date`,
-                value: `${dateFormat(plot.building.install_date, "yyyy-mm-dd HH:MM:ss Z", true)}`,
+                value: `${formatDateTimeLong(plot.building.install_date)}`,
                 inline: true
             },
             {
                 name: `Last Collected Date`,
-                value: `${dateFormat(plot.building.last_collected, "yyyy-mm-dd HH:MM:ss Z", true)}`,
+                value: `${formatDateTimeLong(plot.building.last_collected)}`,
                 inline: true
             },
         ],
-        color: colors.blue,
+        color: colors.blue
     }
 
     let level = item.levels.map((x, i) => ({
