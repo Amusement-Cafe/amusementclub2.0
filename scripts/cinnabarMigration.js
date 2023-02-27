@@ -19,17 +19,18 @@ const cinnabarTransfer = async () => {
     let left = '-'
     const length = users.length
     const next = Math.floor(length / 10)
+    const futureExpiry = asdate.add(new Date(), 2, 'days')
     for await (const u of users) {
         const curCount = Math.floor(count / next)
         process.stdout.write(`\r[${prog.repeat(curCount)}${left.repeat(10-curCount)}] ${count}/${length}`)
 
         for (const q of u.dailyquests) {
-            const futureExpiry = asdate.add(new Date(), 365, 'days')
             const quest = new UserQuest()
             quest.userid = u.discord_id
             quest.questid = q
             quest.questtype = 'daily'
             quest.expiry = futureExpiry
+            quest.completed = false
             await quest.save()
         }
 
@@ -60,6 +61,15 @@ const cinnabarTransfer = async () => {
         u.inventory = []
         u.dailyquests = []
         u.streaks.votes.topgg = u.votes
+        u.prefs.profile = {
+            bio: 'This user has not set a bio',
+            card: '',
+            color: '16756480',
+            favclout: '',
+            favcomplete: '',
+            title: ''
+        }
+        u.premium = false
 
         await u.save()
         count++
