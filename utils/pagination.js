@@ -29,43 +29,43 @@ const buttons = {
         type: 2,
         label: "First",
         style: 1,
-        custom_id: "⏪"
+        customID: "⏪"
     },
     back: {
         type: 2,
         label: "Back",
         style: 1,
-        custom_id: "⬅"
+        customID: "⬅"
     },
     forward: {
         type: 2,
         label: "Next",
         style: 1,
-        custom_id: "➡"
+        customID: "➡"
     },
     last: {
         type: 2,
         label: "Last",
         style: 1,
-        custom_id: "⏩"
+        customID: "⏩"
     },
     close: {
         type: 2,
         label: "Delete",
         style: 4,
-        custom_id: "🚫"
+        customID: "🚫"
     },
     confirm: {
         type: 2,
         label: "Confirm",
         style: 3,
-        custom_id: "✅"
+        customID: "✅"
     },
     decline: {
         type: 2,
         label: "Decline",
         style: 4,
-        custom_id: "❌"
+        customID: "❌"
     }
 }
 
@@ -80,7 +80,7 @@ const addPagination = async (ctx, params) => {
     const oldpagination = paginations.filter(x => x.userID === userID)[0]
     try {
         if(oldpagination && oldpagination.channel && oldpagination.msg) {
-            await ctx.interaction.editMessage(oldpagination.msg, {components: []})
+            await ctx.bot.rest.interactions.editOriginalMessage(ctx.bot.application.id, oldpagination.interaction.token, {embeds: [oldpagination.embed], components: []})
         }
     } catch(e) {}
 
@@ -123,10 +123,14 @@ const addPagination = async (ctx, params) => {
         interMsg = await ctx.bot.createMessage(ch.id, {embed: obj.embed, components: obj.components})
         await ctx.interaction.createMessage({embed: {color: colors.green, description: 'A DM has been sent to you'}})
     } else {
-        if (params.edit)
-            interMsg = await ctx.interaction.editOriginalMessage({ embed: obj.embed, components: obj.components })
+        if (params.edit && !params.extra)
+            interMsg = await ctx.interaction.editOriginal({ embeds: [obj.embed], components: obj.components })
+        else if (params.edit && params.extra){
+            await params.extra.editParent({ embeds: [obj.embed], components: obj.components })
+            interMsg = await params.extra.getOriginal()
+        }
         else
-            interMsg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
+            interMsg = await ctx.interaction.createFollowup({ embeds: [obj.embed], components: obj.components })
     }
     obj.msg = interMsg.id
     obj.channel = interMsg.channel.id
@@ -137,7 +141,7 @@ const addConfirmation = async (ctx, params) => {
     const old = confirmations.filter(x => x.userID === userID)[0]
     try {
         if(old && old.channel && old.msg)
-            await ctx.interaction.editMessage(old.msg, {components: []})
+            await ctx.bot.rest.interactions.editOriginalMessage(ctx.bot.application.id, old.interaction.token, {embeds: [old.embed], components: []})
     } catch(e) {}
 
     confirmations = confirmations.filter(x => x.userID != userID)
@@ -170,7 +174,7 @@ const addConfirmation = async (ctx, params) => {
 
     confirmations.push(obj)
 
-    const msg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
+    const msg = await ctx.interaction.createFollowup({ embeds: [obj.embed], components: obj.components })
     obj.msg = msg.id
     obj.channel = msg.channel.id
 }
@@ -180,7 +184,7 @@ const addConfirmPagination = async (ctx, params) => {
     const oldpagination = confirmPaginations.filter(x => x.userID === userID)[0]
     try {
         if(confirmPaginations && oldpagination.channel && oldpagination.msg) {
-            await ctx.interaction.editMessage(oldpagination.msg, {components: []})
+            await ctx.bot.rest.interactions.editOriginalMessage(ctx.bot.application.id, oldpagination.interaction.token, {embeds: [oldpagination.embed], components: []})
         }
     } catch(e) {}
 
@@ -239,9 +243,9 @@ const addConfirmPagination = async (ctx, params) => {
     let interMsg
 
     if (params.edit)
-        interMsg = await ctx.interaction.editOriginalMessage({ embed: obj.embed, components: obj.components })
+        interMsg = await ctx.interaction.editOriginal({ embeds: [obj.embed], components: obj.components })
     else
-        interMsg = await ctx.interaction.createMessage({ embed: obj.embed, components: obj.components })
+        interMsg = await ctx.interaction.createFollowup({ embeds: [obj.embed], components: obj.components })
 
     obj.msg = interMsg.id
     obj.channel = interMsg.channel.id
@@ -251,7 +255,7 @@ const doSwitch =  async (ctx, newpage) => {
     const userID = ctx.interaction.member? ctx.interaction.member.id: ctx.interaction.user.id
     const data = paginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.includes(userID))[0] ||
         confirmPaginations.filter(x => x.msg === ctx.interaction.message.id && x.perms.switch.includes(userID))[0]
-    if(!data) return
+    if (!data) return
 
     const max = data.pages.length - 1
     data.pagenum = newpage(data.pagenum)
@@ -264,7 +268,7 @@ const doSwitch =  async (ctx, newpage) => {
 
     if(data.embed.footer.text.startsWith('Page'))
         data.embed.footer.text = `Page ${data.pagenum + 1}/${data.pages.length}`
-    await ctx.interaction.editOriginalMessage({ embed: data.embed })
+    await ctx.interaction.editParent({ embeds: [data.embed] })
 
 }
 
@@ -285,13 +289,13 @@ const doResolve = async (ctx, reaction) => {
     confirmPaginations = confirmPaginations.filter(x => x.msg != ctx.interaction.message.id)
 
     if(reaction === chars.decline)
-        await data.onDecline(userID)
+        await data.onDecline(userID, ctx.interaction)
 
     if(data.check && await data.check())
-        return await data.onError(userID)
+        return await data.onError(userID, ctx.interaction)
 
     if(reaction === chars.confirm)
-        await data.onConfirm(userID)
+        await data.onConfirm(userID, ctx.interaction)
 }
 
 const getPages = (array, split = 10, maxCharacters = 4096) => {
@@ -319,43 +323,49 @@ const remove = (ctx) => {
         return
 
     paginations.filter(x => x.msg !== ctx.interaction.message.id)
-    ctx.interaction.deleteOriginalMessage().catch(e => e)
+    data.interaction.deleteOriginal().catch(e => e)
 }
 
 const sendConfirm = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'Operation was confirmed!', color: colors.green}, components: []}).catch(e => e)
+    interaction.editOriginal({embeds: [{description: 'Operation was confirmed!', color: colors.green}], components: []}).catch(e => e)
 }
 
 const sendDecline = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'Operation was declined!', color: colors.red}, components: []}).catch(e => e)
+    interaction.editOriginal({embeds: [{description: 'Operation was declined!', color: colors.red}], components: []}).catch(e => e)
 }
 
 const sendTimeout = (interaction) => {
-    interaction.editOriginalMessage({embed: {description: 'This confirmation dialog has expired!', color: colors.grey}, components: []}).catch(e => e)
+    interaction.editOriginal({embeds: [{description: 'This confirmation dialog has expired!', color: colors.grey}], components: []}).catch(e => e)
 }
 
 const timeoutTick = () => {
     const now = new Date()
     paginations.filter(x => x.expires < now).map(async y => {
         try {
-            await y.interaction.editOriginalMessage({embed: y.embed, components: []})
-        } catch (e) {}
+            await y.interaction.editOriginal({embeds: [y.embed], components: []})
+        } catch (e) {
+            process.send({error: {message: e.message, stack: e.stack}})
+        }
     })
     paginations = paginations.filter(x => x.expires >= now)
 
     confirmations.filter(x => x.expires < now).map(async y => {
         try {
-            await y.interaction.editOriginalMessage({embed: y.embed, components: []})
+            await y.interaction.editOriginal({embeds: [y.embed], components: []})
             await y.onTimeout()
-        } catch (e) {}
+        } catch (e) {
+            process.send({error: {message: e.message, stack: e.stack}})
+        }
     })
     confirmations = confirmations.filter(x => x.expires >= now)
 
     confirmPaginations.filter(x => x.expires < now).map(async y => {
         try {
-            await y.interaction.editOriginalMessage({embed: y.embed, components: []})
+            await y.interaction.editOriginal({embeds: [y.embed], components: []})
             await y.onTimeout()
-        } catch (e) {}
+        } catch (e) {
+            process.send({error: {message: e.message, stack: e.stack}})
+        }
     })
     confirmPaginations = confirmPaginations.filter(x => x.expires >= now)
 }
