@@ -1,4 +1,5 @@
-const Eris          = require('eris')
+// const Eris          = require('eris')
+const Oceanic       = require('oceanic.js')
 const Emitter       = require('events')
 const Filter        = require('bad-words')
 const Mixpanel      = require('mixpanel')
@@ -41,8 +42,8 @@ const userq = []
 const guildq = []
 const cardInfos = []
 
-
-const bot = new Eris(process.env.token, { maxShards: process.env.shards })
+const bot = new Oceanic.Client({ auth: 'Bot ' + process.env.token})
+const shards = new Oceanic.ShardManager(bot, {maxShards: parseInt(process.env.shards) })
 let mcn, started, config, sauce, ctx
 
 
@@ -58,8 +59,8 @@ const fillCardData = (carddata) => {
         const col = config.data.collections.filter(y => y.id == x.col)[0]
         const ext = x.animated? 'gif' : (col.compressed? 'jpg' : 'png')
         const basePath = `/${col.promo? 'promo':'cards'}/${col.id}/${x.level}_${x.name}.${ext}`
-        x.url = config.baseurl + basePath
-        x.shorturl = config.shorturl + basePath
+        x.url = config.links.baseurl + basePath
+        x.shorturl = config.links.shorturl + basePath
         x.id = i
 
         if(x.added)
@@ -81,9 +82,9 @@ const send = (interaction, content, userid, components, edit = false) => {
         _.remove(userq, (x) => x.id === userid)
 
     if (edit)
-        return interaction.editOriginalMessage({ embed: content, components: components })
+        return interaction.editOriginal({ embeds: [content], components: components }).catch(e => process.send({error: e}))
 
-    return interaction.createMessage({ embed: content, components: components })
+    return interaction.createFollowup({ embeds: [content], components: components }).catch(e => process.send({error: e}))
 }
 
 const toObj = (user, str, clr) => {
@@ -99,9 +100,9 @@ const toObj = (user, str, clr) => {
 /* create direct reply fn */
 const direct = async (user, str, clr = 'default') => {
     try {
-        const ch = await bot.getDMChannel(user.discord_id)
-        return bot.createMessage(ch.id, {embed: toObj(user, str, clr)}).catch(e => console.log(e))
-    } catch (e) {}
+        const ch = await bot.rest.users.createDM(user.discord_id)
+        return ch.createMessage({embeds: [toObj(user, str, clr)]}).catch(e => console.log(e))
+    } catch (e) {console.log(e)}
 }
 
 const qhelp = (ctx, user, cat) => {
@@ -151,7 +152,7 @@ const tick = (ctx) => {
     auction.finish_aucs(ctx, now)
     pgn.timeoutTick()
 
-    if (ctx.autoAuction.auctionUserID && !ctx.settings.aucLock)
+    if (ctx.autoAuction.userID && !ctx.settings.aucLock)
             auction.autoAuction(ctx)
 }
 
@@ -217,12 +218,12 @@ process.on('message', async (message) => {
 
 con('startup', async (data) => {
     config = data.startup
-    mcn = await mongoose.connect(config.database)
+    mcn = await mongoose.connect(config.bot.database)
     fillCardData(config.data.cards)
     await fillCardOwnerCount(config.cards)
     filter.addWords(...config.data.bannedwords)
-    if(config.metac.sauceNaoToken) {
-        sauce = sagiri(config.metac.sauceNaoToken, {
+    if(config.sourcing.sauceNaoToken) {
+        sauce = sagiri(config.sourcing.sauceNaoToken, {
             mask: [9],
             results: 2,
         })
@@ -258,32 +259,33 @@ con('startup', async (data) => {
         effects: require('./staticdata/effects'),
         slashCmd: require('./staticdata/slashcommands'),
         adminCmd: require('./staticdata/adminslashcommands'),
-        adminGuildID: config.adminGuildID,
+        adminGuildID: config.bot.adminGuildID,
         promos: config.data.promos.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
         boosts: config.data.boosts.map( x => Object.assign({}, x, {starts: Date.parse(x.starts), expires: Date.parse(x.expires)})),
-        autoAuction: config.autoAuction,
-        auctionFeePercent: config.auctionFeePercent,
+        autoAuction: config.auction.auto,
+        auctionFeePercent: config.auction.auctionFeePercent,
         cardInfos,
         filter,
         direct, /* DM reply function to the user */
-        symbols,
-        baseurl: config.baseurl,
+        symbols: config.symbols,
+        baseurl: config.links.baseurl,
         pgn,
         qhelp,
-        invite: config.invite,
-        prefix: config.prefix,
-        dbl: config.dbl,
-        uniqueFrequency: config.uniqueFrequency,
-        audit: config.auditc,
-        eval: config.evalc,
+        links: config.links,
+        invite: config.bot.invite,
+        prefix: config.bot.prefix,
+        uniqueFrequency: config.effects.uniqueFrequency,
+        eval: config.evals,
         cafe: 'https://discord.gg/xQAxThF', /* support server invite */
         mixpanel,
         sauce,
-        guildLogChannel: config.guildLogChannel,
+        config,
+        rng: config.rng,
+        guildLogChannel: config.channels.guildLog,
         settings: {
-            wip: config.maintenance,
+            wip: config.bot.maintenance,
             wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',
-            aucLock: config.auctionLock
+            aucLock: config.auction.lock
         }
     }
     await bot.connect()
@@ -291,7 +293,7 @@ con('startup', async (data) => {
 
 con('shutdown', async () => {
     stopTicks()
-    await bot.disconnect({reconnect: false})
+    await bot.disconnect(false)
     process.exit()
 })
 
@@ -316,14 +318,25 @@ con('vote', (voteData) => {
 
 bot.once('ready', async () => {
     started = true
-    await bot.editStatus('online', { name: 'commands', type: 2})
+    const guildCommands = await bot.application.getGuildCommands(ctx.adminGuildID)
+    if (guildCommands.length !== ctx.adminCmd.length)
+        await bot.application.bulkEditGuildCommands(ctx.adminGuildID, ctx.adminCmd)
+
+    const globalCommands = await bot.application.getGlobalCommands()
+    if (globalCommands.length !== ctx.slashCmd.length)
+        await bot.application.bulkEditGlobalCommands(ctx.slashCmd)
+
+    await bot.editStatus('online', [{ name: 'commands', type: 2}])
     process.send({info: `Bot is ready on **${bot.guilds.size} guild(s)** with **${bot.users.size} user(s)** using **${bot.shards.size} shard(s)**`})
+    ctx.settings.wip = false
     startTicks()
 })
 
 bot.on('interactionCreate', async (interaction) => {
+    if (!started)
+        return
     //Slash Commands
-    if (interaction instanceof Eris.CommandInteraction) {
+    if (interaction instanceof Oceanic.CommandInteraction) {
         try {
             if (interaction.applicationID !== bot.application.id)
                 return
@@ -336,7 +349,7 @@ bot.on('interactionCreate', async (interaction) => {
             let botUser = await user.fetchOnly(interactionUser.id)
 
             if (userq.some(x => x.id === interactionUser.id)) {
-                await interaction.acknowledge(64)
+                await interaction.defer(64)
                 return reply(botUser, 'you are currently on a command cooldown. These last only 3 seconds from your last command, please wait a moment and try your command again!', 'red')
             }
 
@@ -347,12 +360,12 @@ bot.on('interactionCreate', async (interaction) => {
 
             let cursor = interaction.data
             while (cursor.hasOwnProperty('options')) {
-                cursor = cursor.options
+                cursor = cursor.options.raw? cursor.options.raw : cursor.options
                 cursor.map(x => {
                     if (x.type === 1 || x.type === 2) {
                         base.push(x.name)
                         cursor = x
-                    } else if (x.name === 'global' && x.value) {
+                    } else if ((x.name === 'global' && x.value) || (x.name === 'local' && x.value)) {
                         base.push(x.name)
                     } else {
                         options.push(x)
@@ -370,16 +383,16 @@ bot.on('interactionCreate', async (interaction) => {
                 && !base.join(' ').includes('pat')
                 && !curguild.botchannels.some(x => x === interaction.channel.id)) {
 
-                await interaction.acknowledge(64)
+                await interaction.defer(64)
 
 
-                return await interaction.createMessage({
-                    embed: {
+                return await interaction.createFollowup({
+                    embeds: [{
                         description: `**${interactionUser.username}**, bot commands are only available in these channels: 
                             ${curguild.botchannels.map(x => `<#${x}>`).join(' ')}
                             \nGuild owner or administrator can add a bot channel by typing \`/${setbotmsg}\` in the target channel.`,
                         color: colors.red
-                    }
+                    }]
                 })
 
             }
@@ -405,6 +418,7 @@ bot.on('interactionCreate', async (interaction) => {
             userq.push({id: interactionUser.id, expires: asdate.add(new Date(), 3, 'seconds')})
 
             if (ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
+                await interaction.defer()
                 return reply(usr, ctx.settings.wipMsg, 'yellow')
             }
 
@@ -425,24 +439,23 @@ bot.on('interactionCreate', async (interaction) => {
                 command: args,
                 guild: isolatedCtx.guild ? isolatedCtx.guild.id : 'direct',
             })
-
             await trigger('cmd', isolatedCtx, usr, args, isolatedCtx.prefix)
         } catch (e) {
             if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
                 return
-            process.send({error: e})
+            process.send({error: {message: e.message, stack: e.stack}})
         }
     }
 
     //Buttons
-    if (interaction instanceof Eris.ComponentInteraction) {
+    if (interaction instanceof Oceanic.ComponentInteraction) {
         try {
             if (interaction.applicationID !== bot.application.id)
                 return
 
             const interactionUser = interaction.user || interaction.member.user
 
-            const reply = (user, str, clr = 'default') => send(interaction, toObj(user, str, clr), user.discord_id)
+            const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
             let isoCtx = Object.assign({}, ctx, {
                 reply,
                 interaction: interaction,
@@ -453,37 +466,77 @@ bot.on('interactionCreate', async (interaction) => {
 
             let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
             usr.username = usr.username.replace(/\*/gi, '')
-            await interaction.acknowledge()
-            await trigger('rct', isoCtx, null, [interaction.data.custom_id])
+            await trigger('rct', isoCtx, usr, [interaction.data.customID])
         } catch (e) {
             if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
                 return
 
-            process.send({error: e})
+            process.send({error: {message: e.message, stack: e.stack}})
         }
 
+    }
+
+    if (interaction instanceof Oceanic.ModalSubmitInteraction) {
+        try {
+            if (interaction.applicationID !== bot.application.id)
+                return
+
+            const interactionUser = interaction.user || interaction.member.user
+
+            let args = []
+
+            interaction.data.components.map(x => {
+                if (x.type === 1)
+                    x.components.map(y => {
+                        args.push(y)
+                    })
+                else
+                    args.push(x)
+            })
+            const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
+            let isoCtx = Object.assign({}, ctx, {
+                reply,
+                interaction: interaction,
+                discord_guild: interaction.member? interaction.member.guild: null,
+                prefix: `/`,
+                interactionUser,
+                args
+            })
+
+            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
+            usr.username = usr.username.replace(/\*/gi, '')
+            await interaction.defer()
+            await trigger('mod', isoCtx, usr, [interaction.data.customID])
+        } catch (e) {
+            if(e.message === 'Missing Permissions' || e.message === 'Cannot send messages to this user')
+                return
+
+            process.send({error: {message: e.message, stack: e.stack}})
+        }
     }
 })
 
 bot.on('guildCreate', async (guild) => {
     if (ctx.guildLogChannel)
-        await bot.createMessage(ctx.guildLogChannel, {embed: {
+        await bot.rest.channels.createMessage(ctx.guildLogChannel, {embeds: [{
                 description:`Invited to a new guild!\nGuild Name: **${guild.name}**\nGuild ID: \`${guild.id}\``,
                 color: colors.green,
                 thumbnail: {url: guild.iconURL}
-            }})
+            }]})
 })
 
 bot.on('guildDelete', async (guild) => {
     if (ctx.guildLogChannel)
-        await bot.createMessage(ctx.guildLogChannel, {embed:{
+        await bot.rest.channels.createMessage(ctx.guildLogChannel, {embeds: [{
                 description:`Kicked from guild!\nGuild Name: **${guild.name? guild.name: 'Uncached Guild'}**\nGuild ID: \`${guild.id}\``,
                 color: colors.red
-            }})
+            }]})
 })
 
+
+
 bot.on('error', async (err, sh) => {
-    process.send({error: err, num: sh})
+    process.send({error: {message: err.message, stack: err.stack}})
 })
 
 module.exports.schemas = require('./collections')
