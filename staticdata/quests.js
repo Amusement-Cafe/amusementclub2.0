@@ -7,7 +7,7 @@ module.exports = {
             tier: 1,
             can_drop: true,
             min_level: 0,
-            actions: ['claim', 'cl'],
+            actions: ['claim cards'],
             check: (ctx, user, stats) => stats.totalregclaims >= 4,
             resolve: (ctx, user, stats) => {
                 user.exp += 750
@@ -71,7 +71,7 @@ module.exports = {
         }, {
             id: 'forge1',
             name: 'Forge 1-star card',
-            desc: 'Use forge to complete this quest. Forge allows you to merge two cards and get one. See list of your cards using `->cards` and find two 1-star cards that you don\'t need/like and then forge them together. Keep in mind that you can only forge cards with the same amount of stars. Example: `->forge eat them all, tsundere side`. If you have multiples of some card, you can also use `->forge -1 -multi` and let system choose cards for you (only multiples will be chosen).',
+            desc: 'Use forge to complete this quest. Forge allows you to merge two cards and get one. See list of your cards using `->cards` and find two 1-star cards that you don\'t need/like and then forge them together. Keep in mind that you can only forge cards with the same amount of stars. Example: `->forge card_query_1:eat them all card_query_2:tsundere side`. If you have multiples of some card, you can also use `->forge -1 -multi` and let system choose cards for you (only multiples will be chosen).',
             tier: 1,
             can_drop: true,
             min_level: 0,
@@ -89,7 +89,7 @@ module.exports = {
         }, {
             id: 'forge2',
             name: 'Forge 2-star card',
-            desc: 'Use forge to complete this quest. Forge allows you to merge two cards and get one. See list of your cards using `->cards` and find two 2-star cards that you don\'t need/like and then forge them together. Keep in mind that you can only forge cards with the same amount of stars. Example: `->forge eat them all, tsundere side`. If you have multiples of some card, you can also use `->forge -2 -multi` and let system choose cards for you (only multiples will be chosen).',
+            desc: 'Use forge to complete this quest. Forge allows you to merge two cards and get one. See list of your cards using `->cards` and find two 2-star cards that you don\'t need/like and then forge them together. Keep in mind that you can only forge cards with the same amount of stars. Example: `->forge card_query_1:eat them all card_query_2:tsundere side`. If you have multiples of some card, you can also use `->forge -2 -multi` and let system choose cards for you (only multiples will be chosen).',
             tier: 1,
             can_drop: true,
             min_level: 5,
@@ -103,13 +103,13 @@ module.exports = {
                 user.lemons += 15
                 stats.tomatoin += 900
                 stats.lemonin += 15
-                stats.vialin += 30
+                stats.vialin += 25
             },
             reward: (ctx) => `**900** ${ctx.symbols.tomato} | **15** ${ctx.symbols.lemon} | **25** ${ctx.symbols.vial} | **2** xp`
         }, {
             id: 'forge3',
             name: 'Forge 3-star card',
-            desc: 'Use forge to complete this quest. Forge allows you to merge two cards and get one. See list of your cards using `->cards` and find two 3-star cards that you don\'t need/like and then forge them together. Keep in mind that you can only forge cards with the same amount of stars. Example: `->forge eat them all, tsundere side`. If you have multiples of some card, you can also use `->forge -3 -multi` and let system choose cards for you (only multiples will be chosen)',
+            desc: 'Use forge to complete this quest. Forge allows you to merge two cards and get one. See list of your cards using `->cards` and find two 3-star cards that you don\'t need/like and then forge them together. Keep in mind that you can only forge cards with the same amount of stars. Example: `->forge card_query_1:eat them all card_query_2:tsundere side`. If you have multiples of some card, you can also use `->forge -3 -multi` and let system choose cards for you (only multiples will be chosen)',
             tier: 2,
             can_drop: true,
             min_level: 15,
@@ -159,7 +159,7 @@ module.exports = {
         }, {
             id: 'liq2',
             name: 'Liquefy 2 cards',
-            desc: 'Use liquefy to complete this quest. Liquefy allows you to convert cards into vials that are used to draw cards that you want. See list of your cards using `->cards` and find a card that you don\'t need/like and then liquefy it. Example: `->liq eat them all`. Do this 2 times for different cards.',
+            desc: 'Use liquefy to complete this quest. Liquefy allows you to convert cards into vials that are used to draw cards that you want. See list of your cards using `->cards` and find a card that you don\'t need/like and then liquefy it. Example: `->liquefy one card_query:eat them all`. Do this 2 times for different cards.',
             tier: 2,
             can_drop: true,
             min_level: 10,
@@ -170,14 +170,14 @@ module.exports = {
                 user.exp += 500
                 user.xp += 3
                 user.lemons += 30
-                stats.tomatoin += 60
+                stats.tomatoin += 500
                 stats.lemonin += 30
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **3** xp`
         }, {
             id: 'liq4',
             name: 'Liquefy 4 cards',
-            desc: 'Use liquefy to complete this quest. Liquefy allows you to convert cards into vials that are used to draw cards that you want. See list of your cards using `->cards` and find a card that you don\'t need/like and then liquefy it. Example: `->liq eat them all`. Do this 4 times for different cards.',
+            desc: 'Use liquefy to complete this quest. Liquefy allows you to convert cards into vials that are used to draw cards that you want. See list of your cards using `->cards` and find a card that you don\'t need/like and then liquefy it. Example: `->liquefy one card_query:eat them all`. Do this 4 times for different cards.',
             tier: 2,
             can_drop: true,
             min_level: 35,
@@ -185,7 +185,7 @@ module.exports = {
             actions: ['draw'],
             check: (ctx, user, stats) => stats.liquefy >= 4,
             resolve: (ctx, user, stats) => {
-                user.vials += 500
+                user.exp += 500
                 user.xp += 6
                 user.lemons += 30
                 stats.tomatoin += 500
@@ -195,7 +195,7 @@ module.exports = {
         }, {
             id: 'draw2',
             name: 'Draw 2 cards',
-            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. Search for a card using `->search` (e.g. `->search tohru` or `->search -touhou` or `->search #keqing`) then draw any card from the list. Example: `->draw thundering might`. Do this 2 times.',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw thundering might`. Do this 2 times.',
             tier: 2,
             can_drop: true,
             min_level: 20,
@@ -209,13 +209,13 @@ module.exports = {
                 user.lemons += 30
                 stats.tomatoin += 500
                 stats.lemonin += 30
-                stats.vialin += 60
+                stats.vialin += stats.vialout * 0.75
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **75%** ${ctx.symbols.vial} cost | **3** xp`
         }, {
             id: 'draw4',
             name: 'Draw 4 cards',
-            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. Search for a card using `->search` (e.g. `->search tohru` or `->search -touhou` or `->search #keqing`) then draw any card from the list. Example: `->draw thundering might`. Do this 4 times.',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw thundering might`. Do this 4 times.',
             tier: 2,
             can_drop: true,
             min_level: 40,
@@ -229,13 +229,13 @@ module.exports = {
                 user.lemons += 30
                 stats.tomatoin += 500
                 stats.lemonin += 30
-                stats.vialin += 120
+                stats.vialin += stats.vialout * 0.8
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **80%** ${ctx.symbols.vial} cost | **6** xp`
         }, {
             id: 'draw1star',
             name: 'Draw a 1 star card',
-            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. This quest requires specific rarity of card (1). Search for a card using `->search` (e.g. `->search -1 tohru` or `->search -1 -touhou` or `->search -1 #keqing`) then draw any card from the list. Example: `->draw purple gold`.',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. This quest requires specific rarity of card (1). Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw purple gold`.',
             tier: 1,
             can_drop: true,
             min_level: 5,
@@ -255,7 +255,7 @@ module.exports = {
         }, {
             id: 'draw2star',
             name: 'Draw a 2 star card',
-            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. This quest requires specific rarity of card (2). Search for a card using `->search` (e.g. `->search -2 tohru` or `->search -2 -touhou` or `->search -2 #keqing`) then draw any card from the list. Example: `->draw sacrificial sword`.',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. This quest requires specific rarity of card (2). Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw sacrificial sword`.',
             tier: 1,
             can_drop: true,
             min_level: 15,
@@ -267,7 +267,7 @@ module.exports = {
                 user.vials += 80
                 user.xp += 3
                 user.lemons += 15
-                stats.tomatoin += 750
+                stats.tomatoin += 250
                 stats.vialin += 80
                 stats.lemonin += 15
             },
@@ -275,7 +275,7 @@ module.exports = {
         }, {
             id: 'draw3star',
             name: 'Draw a 3 star card',
-            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. This quest requires specific rarity of card (3). Search for a card using `->search` (e.g. `->search -3 tohru` or `->search -3 -touhou` or `->search -3 #keqing`) then draw any card from the list. Example: `->draw icy harmony `.',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. This quest requires specific rarity of card (3). Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw icy harmony `.',
             tier: 2,
             can_drop: true,
             min_level: 25,
@@ -322,7 +322,7 @@ module.exports = {
                 user.exp += 500
                 user.xp += 5
                 user.lemons += 30
-                stats.tomatoin += 1000
+                stats.tomatoin += 500
                 stats.lemonin += 30
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **5** xp`
@@ -337,7 +337,8 @@ module.exports = {
             tier: 3,
             can_drop: true,
             min_level: 0,
-            actions: [],
+            actions: ['claim cards'],
+            progress: (ctx, user, stats, extra) => `[${extra.totalregclaims}/28]`,
             check: (ctx, user, stats, extra) => extra.totalregclaims >= 28,
             resolve: (ctx, user, stats) => {
                 user.exp += 750
@@ -354,7 +355,8 @@ module.exports = {
             tier: 4,
             can_drop: true,
             min_level: 20,
-            actions: [],
+            actions: ['claim cards'],
+            progress: (ctx, user, stats, extra) => `[${extra.totalregclaims}/56]`,
             check: (ctx, user, stats, extra) => extra.totalregclaims >= 56,
             resolve: (ctx, user, stats) => {
                 user.exp += 1000
@@ -367,12 +369,13 @@ module.exports = {
         {
             id: 'complete4',
             name: 'Complete 4 quests',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Complete quests during the week, any quest type counts toward your completion. Check your progress with the `stats` command. As this is a **weekly** quest, you have 7 days to complete it.',
             tier: 3,
             can_drop: true,
             min_level: 0,
-            actions: [],
-            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 4,
+            actions: ['quest list'],
+            progress: (ctx, user, stats, extra) => `[${[extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0) || 0}/4]`,
+            check: (ctx, user, stats, extra) => ([extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0))  >= 4,
             resolve: (ctx, user, stats) => {
                 user.exp += 750
                 stats.tomatoin += 750
@@ -384,12 +387,13 @@ module.exports = {
         {
             id: 'complete7',
             name: 'Complete 7 quests',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Complete quests during the week, any quest type counts toward your completion. Check your progress with the `stats` command. As this is a **weekly** quest, you have 7 days to complete it.',
             tier: 4,
             can_drop: true,
             min_level: 0,
-            actions: [],
-            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 7,
+            actions: ['quest list'],
+            progress: (ctx, user, stats, extra) => `[${[extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0)  || 0}/7]`,
+            check: (ctx, user, stats, extra) => ([extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0))  >= 7,
             resolve: (ctx, user, stats) => {
                 user.exp += 1000
                 stats.tomatoin += 1000
@@ -401,11 +405,12 @@ module.exports = {
         {
             id: 'draw10',
             name: 'Draw 10 cards',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw thundering might`. Do this 10 times. As this is a **weekly** quest, you have 7 days to complete it.',
             tier: 3,
             can_drop: true,
             min_level: 0,
-            actions: [],
+            actions: ['draw'],
+            progress: (ctx, user, stats, extra) => `[${extra.draw}/10]`,
             check: (ctx, user, stats, extra) => extra.draw >= 10,
             resolve: (ctx, user, stats) => {
                 user.exp += 750
@@ -418,11 +423,12 @@ module.exports = {
         {
             id: 'draw12',
             name: 'Draw 12 cards',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Use draw to complete this quest. With draw you can get any card that you want as long as you know the name. Search for a card using `->cards global:true` (e.g. `->cards global:true card_query:tohru` or `->cards global:true card_query:-touhou` or `->cards global:true card_query:#keqing`) then draw any card from the list. Example: `->draw thundering might`. Do this 12 times. As this is a **weekly** quest, you have 7 days to complete it.',
             tier: 4,
             can_drop: true,
             min_level: 0,
             actions: [],
+            progress: (ctx, user, stats, extra) => `[${extra.draw}/12]`,
             check: (ctx, user, stats, extra) => extra.draw >= 12,
             resolve: (ctx, user, stats) => {
                 user.exp += 1000
@@ -435,11 +441,12 @@ module.exports = {
         {
             id: 'bid12',
             name: 'Bid on 12 auctions',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Use auction to complete this quest. Find an auction you like using `->auction list`. Example: `->auction bid`. Try bidding higher if you get instantly outbid! As this is a **weekly** quest, you have 7 days to complete it.',
             tier: 3,
             can_drop: true,
             min_level: 0,
             actions: [],
+            progress: (ctx, user, stats, extra) => `[${extra.aucbid}/12]`,
             check: (ctx, user, stats, extra) => extra.aucbid >= 12,
             resolve: (ctx, user, stats) => {
                 user.exp += 750
@@ -452,11 +459,12 @@ module.exports = {
         {
             id: 'bid18',
             name: 'Bid on 18 auctions',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Use auction to complete this quest. Find an auction you like using `->auction list`. Example: `->auction bid`. Try bidding higher if you get instantly outbid! As this is a **weekly** quest, you have 7 days to complete it.',
             tier: 4,
             can_drop: true,
             min_level: 0,
             actions: [],
+            progress: (ctx, user, stats, extra) => `[${extra.aucbid}/18]`,
             check: (ctx, user, stats, extra) => extra.aucbid >= 18,
             resolve: (ctx, user, stats) => {
                 user.exp += 1000
@@ -476,7 +484,8 @@ module.exports = {
             tier: 5,
             can_drop: true,
             min_level: 0,
-            actions: [],
+            actions: ['claim cards'],
+            progress: (ctx, user, stats, extra) => `[${extra.totalregclaims}/120]`,
             check: (ctx, user, stats, extra) => extra.totalregclaims >= 120,
             resolve: (ctx, user, stats) => {
                 user.exp += 3000
@@ -493,7 +502,8 @@ module.exports = {
             tier: 6,
             can_drop: true,
             min_level: 10,
-            actions: [],
+            actions: ['claim cards'],
+            progress: (ctx, user, stats, extra) => `[${extra.totalregclaims}/240]`,
             check: (ctx, user, stats, extra) => extra.totalregclaims >= 240,
             resolve: (ctx, user, stats) => {
                 user.exp += 6000
@@ -506,12 +516,13 @@ module.exports = {
         {
             id: 'complete15',
             name: 'Complete 15 quests',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Complete quests during the month, any quest type counts toward your completion. Check your progress with the `stats` command. As this is a **monthly** quest, you have 30 days to complete it.',
             tier: 5,
             can_drop: true,
             min_level: 0,
-            actions: [],
-            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 15,
+            actions: ['stats'],
+            progress: (ctx, user, stats, extra) => `[${[extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0) }/15]`,
+            check: (ctx, user, stats, extra) => [extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0)  >= 15,
             resolve: (ctx, user, stats) => {
                 user.exp += 1250
                 stats.tomatoin += 1250
@@ -523,12 +534,13 @@ module.exports = {
         {
             id: 'complete20',
             name: 'Complete 20 quests',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Complete quests during the month, any quest type counts toward your completion. Check your progress with the `stats` command. As this is a **monthly** quest, you have 30 days to complete it.',
             tier: 6,
             can_drop: true,
             min_level: 0,
-            actions: [],
-            check: (ctx, user, stats, extra) => (extra.t1quests + extra.t2quests + extra.t3quests + extra.t4quests + extra.t5quests + extra.t6quests) >= 20,
+            actions: ['stats'],
+            progress: (ctx, user, stats, extra) => `[${[extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0) }/20]`,
+            check: (ctx, user, stats, extra) => ([extra.t1quests, extra.t2quests, extra.t3quests, extra.t4quests, extra.t5quests, extra.t6quests].filter(x => !isNaN(x)).reduce((a, b) => a + b, 0))  >= 20,
             resolve: (ctx, user, stats) => {
                 user.exp += 1500
                 stats.tomatoin += 1500
@@ -540,11 +552,12 @@ module.exports = {
         {
             id: 'bid30',
             name: 'Bid on 30 auctions',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Use auction to complete this quest. Find an auction you like using `->auction list`. Example: `->auction bid`. Try bidding higher if you get instantly outbid! As this is a **monthly** quest, you have 30 days to complete it.',
             tier: 5,
             can_drop: true,
             min_level: 0,
-            actions: [],
+            actions: ['auction bid'],
+            progress: (ctx, user, stats, extra) => `[${extra.aucbid}/30]`,
             check: (ctx, user, stats, extra) => extra.aucbid >= 30,
             resolve: (ctx, user, stats) => {
                 user.exp += 7500
@@ -557,11 +570,12 @@ module.exports = {
         {
             id: 'bid45',
             name: 'Bid on 45 auctions',
-            desc: 'Claim cards using the `/claim cards` command. As this is a **weekly** quest, you have 7 days to complete it. Example: `/claim cards count:10`',
+            desc: 'Use auction to complete this quest. Find an auction you like using `->auction list`. Example: `->auction bid`. Try bidding higher if you get instantly outbid! As this is a **monthly** quest, you have 30 days to complete it.',
             tier: 6,
             can_drop: true,
             min_level: 0,
-            actions: [],
+            actions: ['auction bid'],
+            progress: (ctx, user, stats, extra) => `[${extra.aucbid}/45]`,
             check: (ctx, user, stats, extra) => extra.aucbid >= 45,
             resolve: (ctx, user, stats) => {
                 user.exp += 10000
