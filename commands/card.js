@@ -129,6 +129,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     const tohruEffect = (!stats.totalregclaims || stats.totalregclaims === 0) && await check_effect(ctx, user, 'tohrugift')
     for (let i = 0; i < amount; i++) {
         const rng = Math.random()
+        const legRng = Math.random()
         const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
@@ -141,6 +142,8 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
             boostDrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
+        else if (legRng > ctx.config.rng.legendary && colCards.some(x => x.level === 5) && !lock && !spec)
+            card = _.sample(colCards.filter(x => !x.excluded ))
         else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const userCard = userCards.find(x => x.cardid === card.id)
@@ -354,7 +357,7 @@ cmd('summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => 
             description: `summons **${formatName(card)}**!`
         })
 
-        return ctx.bot.createMessage(ctx.interaction.channel.id, card.imgur)
+        return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {content: card.imgur})
     }
 
     return ctx.reply(user, {
@@ -456,6 +459,8 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
             .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
             .sort(parsedargs.sort)
     }
+
+
     if (cards.length === 0) {
         return ctx.reply(user, 'there are no cards to sell in this transaction!', 'red')
     }
@@ -540,6 +545,10 @@ cmd(['sell', 'preview'], withInteraction(withCards(async (ctx, user, cards, pars
         cards = cards.filter(x => otherIDs.indexOf(x.cardid) === -1)
             .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
             .sort(parsedargs.sort)
+    }
+
+    if (cards.length === 0) {
+        return ctx.reply(user, 'there are no cards to sell in this transaction!', 'red')
     }
 
     cards.splice(100, cards.length)
@@ -735,8 +744,8 @@ cmd(['boost', 'list'], withInteraction((ctx, user) => {
         return ctx.reply(user, `no current boosts`, 'red')
     }
 
-    const description = boosts.map(x => 
-        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards boost_id:${x.id}\`)`).join('\n')
+    const description = boosts.map(x =>
+        `[${formatDateTimeRelative(new Date(x.expires))}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards boost_id:${x.id}\`)`).join('\n')
 
     return ctx.send(ctx.interaction, {
         description,
@@ -757,7 +766,7 @@ cmd(['boost', 'info'], withInteraction((ctx, user, args) => {
     list.push(`Rate: **${boost.rate * 100}%**`)
     list.push(`Cards in pool: **${numFmt(boost.cards.length)}**`)
     list.push(`Command: \`${ctx.prefix}claim cards boost_id:${boost.id}\``)
-    list.push(`Expires in **${msToTime(boost.expires - now)}**`)
+    list.push(`Expires in **${formatDateTimeRelative(new Date(boost.expires))}**`)
 
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
