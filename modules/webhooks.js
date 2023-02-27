@@ -15,7 +15,6 @@ const {
 } = require('../modules/user')
 
 let listener
-let voteCache = []
 
 const listen = (ctx) => {
     const app = express()
@@ -68,12 +67,6 @@ const listen = (ctx) => {
             vote.vote = obj.id
             vote.votedat = new Date()
             await vote.save()
-            let cache = voteCache.find(x => x.id == obj.id)
-
-            if (!cache)
-                voteCache.push({id: obj.id, count: 1})
-            else
-                cache.count++
 
             res.status(200).end()
 
