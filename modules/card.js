@@ -51,7 +51,7 @@ const promoRarity = {
 const formatName = (x) => {
     const promo = promoRarity[x.col]
     const rarity = promo? `\`${new Array(x.level + 1).join(promo)}\`` : new Array(x.level + 1).join('★')
-    return `[${rarity}]${x.locked? ' `🔒` ': ''}${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
+    return `[${rarity}]${x.locked? ' `🔒`': ''}${x.fav? ' `❤`' : ''} [${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
     //return `[${new Array(x.level + 1).join('★')}]${x.fav? ' `❤` ' : ' '}[${cap(x.name.replace(/_/g, ' '))}](${x.shorturl}) \`[${x.col}]\``
 }
 
@@ -68,6 +68,7 @@ const parseArgs = (ctx, user, option) => {
         tags: [],
         antitags: [],
         extra: [],
+        sources: [],
         lastcard: false,
         diff: 0,
         fav: false,
@@ -137,6 +138,7 @@ const parseArgs = (ctx, user, option) => {
                     case 'gif': q.filters.push(c => c.animated == m); break
                     case 'multi': q.filters.push(c => m? c.amount > 1 : c.amount === 1); q.userQuery = true; break
                     case 'fav': q.filters.push(c => m? c.fav : !c.fav); m? q.fav = true: q.fav; q.userQuery = true; break
+                    case 'lock':
                     case 'locked': q.filters.push(c => m? c.locked : !c.locked); m? q.locked = true: q.locked; q.userQuery = true; break
                     case 'new': q.filters.push(c => m? c.obtained > lastdaily : c.obtained <= lastdaily); q.userQuery = true; break
                     case 'rated': q.filters.push(c => m? c.rating: !c.rating); q.userQuery = true; break
@@ -160,6 +162,8 @@ const parseArgs = (ctx, user, option) => {
             q.tags.push(substr.replace(/[^\w]/gi, ''))
         } else if(x[0] === ':') {
             q.extra.push(substr)
+        } else if(x[0] === '$') {
+            q.sources.push(substr)
         } else {
             const tryid = tryGetUserID(x)
             if(tryid) q.ids.push(tryid)
@@ -271,6 +275,11 @@ const withCards = (callback) => async (ctx, user, args) => {
         cards = cards.filter(x => !tgcards.includes(x.id))
     }
 
+    if (args.sources.length > 0) {
+        const sourced = ctx.cardInfos.filter(x => x.meta.source && args.sources.some(y => y === x.meta.source)).map(z => z.id)
+        cards = cards.filter(x => sourced.includes(x.id))
+    }
+
     if(args.lastcard)
         cards = map.filter(x => x.id === user.lastcard)
 
@@ -310,6 +319,11 @@ const withGlobalCards = (callback) => async(ctx, user, args) => {
     if(args.antitags.length > 0) {
         const tgcards = await fetchTaggedCards(args.antitags)
         cards = cards.filter(x => !tgcards.includes(x.id))
+    }
+
+    if (args.sources.length > 0) {
+        const sourced = ctx.cardInfos.filter(x => x.meta.source && args.sources.some(y => y === x.meta.source)).map(z => z.id)
+        cards = cards.filter(x => sourced.includes(x.id))
     }
 
     if(args.lastcard)
