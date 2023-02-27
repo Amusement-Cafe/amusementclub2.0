@@ -13,6 +13,7 @@ const {
     promoClaimCost,
     XPtoLEVEL,
     generateNextId,
+    generateFirstId,
 } = require('../utils/tools')
 
 const {
@@ -632,7 +633,7 @@ cmd('vote', withInteraction(async (ctx, user) => {
         vote = new Votes()
         vote.userid = user.discord_id
         vote.generatedat = new Date()
-        vote.token = lastToken? generateNextId(lastToken.token, 50): generateNextId("a".repeat(50), 50)
+        vote.token = lastToken? generateNextId(lastToken.token, 15) : generateFirstId(15)
         await vote.save()
     }
 

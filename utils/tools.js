@@ -1,3 +1,5 @@
+const _ = require("lodash")
+
 const cap = (str) => {
     return str.split(' ').map(s => s[0].toUpperCase() + s.slice(1).toLowerCase()).join(' ')
 }
@@ -56,13 +58,17 @@ const nameSort = (a, b, prop = "name") => {
     return 0;
 }
 
+const charPool = ['a','b','c','d','e','f','g','h','i','j','k','m',
+            'n','o','p','q','r','s','t','u','v','w','x','y','z'];
+
+const generateFirstId = (idLength = 4) => {
+    return _.times(idLength, () => charPool[_.random(charPool.length - 1, false)]).join('')
+}
+
 const generateNextId = (lastId, idLength = 4) => {
     if(lastId.length != idLength)
         throw new Error(`Last ID '${lastId}' length should be same as requested length '${idLength}'`)
-
-    // The digits in the space are aliased by these characters:
-    const charPool = ['a','b','c','d','e','f','g','h','i','j','k','m',
-            'n','o','p','q','r','s','t','u','v','w','x','y','z'];
+    
     const base = charPool.length;
 
     // Translate the last ID from our custom character pool to its corresponding
@@ -133,6 +139,7 @@ module.exports = {
     nameSort,
     tryGetUserID,
     getAllUserIDs,
+    generateFirstId,
     generateNextId,
     XPtoLEVEL,
     LEVELtoXP,

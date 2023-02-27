@@ -82,18 +82,25 @@ const listen = (ctx) => {
         }
     })
 
-    app.get("/votes:id", async (req, res) => {
-        if (!req.params.id)
-            return res.status(400).end()
-        let votes = voteCache.find(x => x.id == req.params.id)?.count
+    app.get("/votes", async (req, res) => {
+        
+        let votes = await Vote.aggregate([
+            {
+                $group: {
+                    _id: '$vote',
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    vote: '$_id',
+                    count: 1
+                }
+            }
+        ])
 
-        if (!votes)
-            votes = await Vote.countDocuments({vote: req.params.id})
-
-        if (!votes)
-            return res.status(200).send({count: 0, id: req.params.id}).end()
-
-        res.status(200).send({count: votes, id: req.params.id}).end()
+        res.status(200).send(votes).end()
     })
 
     listener = app.listen(ctx.dbl.port, () => console.log(`Listening to webhooks on port ${ctx.dbl.port}`))
