@@ -43,8 +43,8 @@
                         "description": "Set the length of time in hours the auction will be listed for!",
                         "type": 4,
                         "required": false,
-                        "min_value": 1,
-                        "max_value": 10
+                        "minValue": 1,
+                        "maxValue": 10
                     }
                 ]
             },
@@ -203,8 +203,8 @@
                         "name": "count",
                         "description": "Put an amount to claim more than 1 card at a time!",
                         "type": 4,
-                        "min_value": 1,
-                        "max_value": 10,
+                        "minValue": 1,
+                        "maxValue": 10,
                         "required": false
                     },
                     {
@@ -541,18 +541,6 @@
     },
     {
         "type": 1,
-        "name": "favs",
-        "description": "View your list of favorited cards!",
-        "options": [
-            {
-                "name": "card_query",
-                "description": "Specify a card or card query here!",
-                "type": 3
-            }
-        ]
-    },
-    {
-        "type": 1,
         "name": "forge",
         "description": "Forge 2 cards of the same rarity to get another!",
         "options": [
@@ -635,8 +623,8 @@
                                 "type": 4,
                                 "name": "tax_percentage",
                                 "description": "The % you want to tax on each claim",
-                                "min_value": 0,
-                                "max_value": 15,
+                                "minValue": 0,
+                                "maxValue": 15,
                                 "required": true
                             }
                         ]
@@ -898,13 +886,13 @@
     {
         "type": 1,
         "name": "kofi",
-        "description": "Claim a KoFi transaction!",
+        "description": "Claim a KoFi transaction, or get information about our Ko-Fi page!",
         "options": [
             {
                 "name": "transaction_id",
                 "description": "Put the order page URL or txid in the url here to claim",
                 "type": 3,
-                "required": true
+                "required": false
             }
         ]
     },
@@ -916,37 +904,86 @@
             {
                 "name": "tomatoes",
                 "description": "Displays a leaderboard of the top tomato balances in the bot, as well as your position!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "name": "lemons",
                 "description": "Displays a leaderboard of the top lemon balances in the bot, as well as your position!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "name": "vials",
                 "description": "Displays a leaderboard of the top vial balances in the bot, as well as your position!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "name": "cards",
                 "description": "Displays a leaderboard of the top unique card holders!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "name": "clout",
                 "description": "Displays a leaderboard of the top clout amount in the bot, as well as your position!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "name": "completed",
                 "description": "Displays a leaderboard of the top completed count in the bot, as well as your position!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             },
             {
                 "name": "level",
                 "description": "Displays a leaderboard of the top user levels in the bot, as well as your position!",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "local",
+                        "description": "Use this if you want to view only the local guild leaderboard instead of global",
+                        "type": 5
+                    }
+                ]
             }
         ]
     },
@@ -983,19 +1020,14 @@
                         "description": "The card query of the cards you want to liquefy",
                         "type": 3,
                         "required": true
-                    }
-                ]
-            },
-            {
-                "name": "preview",
-                "description": "View the list of cards that would be taken in liquefy many",
-                "type": 1,
-                "options": [
+                    },
                     {
-                        "name": "card_query",
-                        "description": "The card query of the cards you want to liquefy",
-                        "type": 3,
-                        "required": true
+                        "name": "count",
+                        "description": "Limit the number of cards to liquefy, Default 100",
+                        "type": 4,
+                        "minValue": 1,
+                        "maxValue": 100,
+                        "required": false
                     }
                 ]
             }
@@ -1139,6 +1171,31 @@
                                 "required": true
                             }
                         ]
+                    },
+                    {
+                        "name": "profile",
+                        "description": "Profile Preferences",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "profile_option",
+                                "description": "The name of the option you want to edit",
+                                "type": 3,
+                                "required": true
+                            },
+                            {
+                                "name": "extra_arguments",
+                                "description": "Add your edits here, not used for card option!",
+                                "type": 3,
+                                "required": false
+                            },
+                            {
+                                "name": "card_query",
+                                "description": "Only required for the card option! (Premium Only)",
+                                "type": 3,
+                                "required": false
+                            }
+                        ]
                     }
                 ]
             },
@@ -1155,6 +1212,11 @@
                     {
                         "name": "notify",
                         "description": "Notification Preferences",
+                        "type": 1
+                    },
+                    {
+                        "name": "profile",
+                        "description": "Profile Preferences",
                         "type": 1
                     },
                     {
@@ -1191,16 +1253,8 @@
             },
             {
                 "name": "info",
-                "description": "Get information about a quest in your quest list",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "quest_number",
-                        "description": "The number next to the quest you want more information about",
-                        "type": 4,
-                        "required": true
-                    }
-                ]
+                "description": "Get information about your current quests",
+                "type": 1
             }
         ]
     },
@@ -1215,17 +1269,38 @@
                 "type": 1,
                 "options": [
                     {
-                        "type": 4,
-                        "name": "rating",
-                        "description": "Your rating for the card, prefixed by : (e.g. :9)",
-                        "min_value": 1,
-                        "max_value": 10,
-                        "required": true
-                    },
-                    {
                         "name": "card_query",
                         "description": "The card query or card name of the card you want to rate",
                         "type": 3,
+                        "required": true
+                    },
+                    {
+                        "type": 4,
+                        "name": "rating",
+                        "description": "Your rating for the card between 1 and 10",
+                        "minValue": 1,
+                        "maxValue": 10,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "many",
+                "description": "Add a rating for multiple cards",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "card_query",
+                        "description": "The card query or card name of the cards you want to rate",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "type": 4,
+                        "name": "rating",
+                        "description": "Your rating for the cards between 1 and 10",
+                        "minValue": 1,
+                        "maxValue": 10,
                         "required": true
                     }
                 ]
@@ -1247,6 +1322,19 @@
                                 "required": true
                             }
                         ]
+                    },
+                    {
+                        "name": "one",
+                        "description": "Remove a rating from multiple cards",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "card_query",
+                                "description": "The card query or card name of the cards you want to remove a rating for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
                     }
                 ]
             }
@@ -1257,14 +1345,7 @@
         "type": 1,
         "name": "report",
         "description": "Report an issue you see with the bot!",
-        "options": [
-            {
-                "name": "message",
-                "description": "Type the issue or suspicious activity you would like to report here.",
-                "type": 3,
-                "required": true
-            }
-        ]
+        "options": []
     },
     {
         "type": 1,
@@ -1328,8 +1409,8 @@
                         "name": "count",
                         "description": "Limit the number of cards to sell, Default 100",
                         "type": 4,
-                        "min_value": 1,
-                        "max_value": 100,
+                        "minValue": 1,
+                        "maxValue": 100,
                         "required": false
                     }
                 ]
@@ -1364,7 +1445,7 @@
     {
         "type": 1,
         "name": "stats",
-        "description": "View your daily stats!"
+        "description": "View your stats!"
     },
     {
         "type": 1,
@@ -1565,93 +1646,29 @@
                 ]
             },
             {
-                "name": "all",
-                "description": "View a list of all of your prior transactions",
+                "name": "list",
+                "description": "Get a list of all of your transactions, use options to narrow the list",
                 "type": 1,
                 "options": [
                     {
                         "name": "card_query",
                         "description": "Add a card query to filter for specific transactions",
                         "type": 3
-                    }
-                ]
-            },
-            {
-                "name": "pending",
-                "description": "View a list of transactions that are pending",
-                "type": 1,
-                "options": [
+                    },
                     {
-                        "name": "card_query",
-                        "description": "Add a card query to filter for specific transactions",
-                        "type": 3
-                    }
-                ]
-            },
-            {
-                "name": "received",
-                "description": "View a list of transactions where you received a card",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "Add a card query to filter for specific transactions",
-                        "type": 3
-                    }
-                ]
-            },
-            {
-                "name": "sent",
-                "description": "View a list of transactions where you sent a card",
-                "type": 1,
-                "options": [
-                    {
-                        "name": "card_query",
-                        "description": "Add a card query to filter for specific transactions",
-                        "type": 3
-                    }
-                ]
-            },
-            {
-                "name": "auction",
-                "description": "Base group for auction transactions",
-                "type": 2,
-                "options": [
-                    {
-                        "name": "all",
-                        "description": "View a list of all transactions involving auctions",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "Add a card query to filter for specific transactions",
-                                "type": 3
-                            }
-                        ]
+                        "name": "auctions",
+                        "description": "Set to true for only auction transactions, false to exclude only auctions. Default: Combined",
+                        "type": 5
                     },
                     {
                         "name": "received",
-                        "description": "View a list of all transactions where you got a card from auction",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "Add a card query to filter for specific transactions",
-                                "type": 3
-                            }
-                        ]
+                        "description": "Set to true for only received, set to false for only sent. Default: Combined",
+                        "type": 5
                     },
                     {
-                        "name": "sent",
-                        "description": "View a list of all transactions where you sold a card on auction",
-                        "type": 1,
-                        "options": [
-                            {
-                                "name": "card_query",
-                                "description": "Add a card query to filter for specific transactions",
-                                "type": 3
-                            }
-                        ]
+                        "name": "pending",
+                        "description": "Set to true for only pending, set to false for only finished. Default: Combined",
+                        "type": 5
                     }
                 ]
             }
