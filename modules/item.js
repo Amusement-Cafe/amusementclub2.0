@@ -50,7 +50,7 @@ const mapUserInventory = (ctx, user, items) => {
  * @return {Promise}
  */
 const withUserItems = (callback) => async (ctx, user, args) => {
-    const uItems = await UserInv.find({userid: user.discord_id})
+    const uItems = await UserInv.find({userid: user.discord_id}).lean()
     if (uItems.length === 0)
         return ctx.reply(user, `your inventory is empty.
         You can obtain inventory items in the \`${ctx.prefix}store\`.
@@ -189,7 +189,8 @@ const uses = {
                 description: resp,
                 image: { url: '' }
             },
-            edit: true
+            edit: true,
+            extra: ctx.extraInteraction
         })
     },
 
@@ -220,8 +221,8 @@ const uses = {
                 if (!userEffect.expires)
                     return ctx.reply(user, desc, 'red', true)
                 eobject.expires = asdate.add(userEffect.expires, item.lasts, 'days')
+                eobject.notified = false
             }
-            user.effects = user.effects.filter(x => x.id != userEffect.id)
             desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
                 ${effect.passive? `The countdown timer on this effect has been extended. Find it in \`${ctx.prefix}effect list passives\``:
                 `You have extended the number of uses for this effect. Your new usage limit is **${eobject.uses}**`}`
@@ -230,6 +231,8 @@ const uses = {
             if(!effect.passive) {
                 eobject.uses = item.lasts
                 eobject.cooldownends = new Date()
+            } else {
+                eobject.notified = false
             }
             desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
                 ${effect.passive? `To use this passive effect equip it with \`/hero equip\``:
@@ -246,7 +249,10 @@ const uses = {
         await removeUserCards(ctx, user, item.cards)
 
         pullInventoryItem(user, item)
-        await UserEffect.insertOne(eobject)
+        if (userEffect)
+            await UserEffect.findOneAndUpdate({userid: user.discord_id, id: userEffect.id}, eobject)
+        else
+            await UserEffect.create(eobject)
         await user.save()
 
         await completed(ctx, user, item.cards)
@@ -365,6 +371,7 @@ const infos = {
         }
 
         const fields = [
+            { name: 'Recipe Cost', value: `Price: **${item.price}**${ctx.symbols.tomato}`},
             { name: `Effect`, value: effect.desc },
             { name: `Requires`, value: requires }
         ]
