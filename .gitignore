@@ -90,6 +90,7 @@ typings/
 # Custom
 config.json
 .idea/*
+test/data/*
 # duckdoc.io project config
 .duckdoc
 scripts/cols.json
