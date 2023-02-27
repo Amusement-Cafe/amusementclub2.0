@@ -70,7 +70,7 @@ cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
         const clout = user.cloutedcols? user.cloutedcols.find(y => x.id === y.id): null
         const overall = ctx.cards.filter(c => c.col === x.id).length
         const usercount = userCards.filter(c => ctx.cards[c.cardid]?.col === x.id).length
-        const rate = Math.floor((usercount / overall) * 100)
+        const rate = Math.ceil((usercount / overall) * 100)
         const cloutCount = clout? clout.amount: 0
 
         return {
@@ -85,9 +85,9 @@ cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
 
     if (sort && !args.completed) {
         if (args.sortComplete)
-            colList.sort(firstBy((a, b) => b.perc - a.perc).thenBy((c, d) => c.colName - d.colName))
+            colList.sort(firstBy((a, b) => b.perc - a.perc).thenBy((c, d) => d.owned - c.owned).thenBy((e, f) => e.colName - f.colName))
         else
-            colList.sort(firstBy((a, b) => a.perc - b.perc).thenBy((c, d) => c.colName - d.colName))
+            colList.sort(firstBy((a, b) => a.perc - b.perc).thenBy((c, d) => c.owned - d.owned).thenBy((e, f) => e.colName - f.colName))
     }
 
     const pages = ctx.pgn.getPages(colList.map(x => {
