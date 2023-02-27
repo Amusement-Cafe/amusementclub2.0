@@ -1,11 +1,11 @@
 const {parseArgs} = require("./card");
 const {bestColMatchMulti} = require("./collection");
 
-const withInteraction = (callback, ephemeral = false) => async (ctx, user, args) => {
-    if (ephemeral)
-        await ctx.interaction.acknowledge(64)
-    else
-        await ctx.interaction.acknowledge()
+const withInteraction = (callback, options) => async (ctx, user, args) => {
+    if (options?.ephemeral)
+        await ctx.interaction.defer(64)
+    else if (!options)
+        await ctx.interaction.defer()
 
     args = await parseInteractionOptions(ctx, user)
     return callback(ctx, user, args)
@@ -51,11 +51,14 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'message': interactionArgs.message = x.value; break;
             case 'missing': interactionArgs.missing = x.value; break;
             case 'notification_option': interactionArgs.option = x.value; break;
+            case 'pending': interactionArgs.pending = x.value; break;
             case 'plot_number': interactionArgs.plot = x.value; break;
             case 'price': interactionArgs.price = x.value; break;
+            case 'profile_option': interactionArgs.option = x.value; break;
             case 'promo': interactionArgs.promo = x.value; break;
             case 'quest_number': interactionArgs.questNum = x.value; break;
             case 'rating': interactionArgs.rating = x.value; break;
+            case 'received': interactionArgs.received = x.value; break;
             case 'role': interactionArgs.role = x.value; break;
             case 'slot_number': interactionArgs.slot = x.value; break;
             case 'sort_completion': interactionArgs.sortComplete = x.value; break;
