@@ -1,5 +1,4 @@
 const {pcmd}        = require('../utils/cmd')
-const Announcement  = require('../collections/announcement')
 const Transaction   = require('../collections/transaction')
 const Users         = require('../collections/user')
 const UserCards     = require('../collections/userCard')
@@ -18,10 +17,6 @@ const {
     findUserCards,
     getUserCards,
 } = require('../modules/user')
-
-const {
-    byAlias,
-} = require('../modules/collection')
 
 const {
     checkGuildLoyalty,
@@ -427,12 +422,12 @@ pcmd(['admin'], ['sudo', 'crash'], withInteraction((ctx) => {
 }))
 
 pcmd(['admin'], ['sudo', 'refresh', 'global'], withInteraction(async (ctx, user) => {
-    await ctx.bot.bulkEditCommands(ctx.slashCmd)
+    await ctx.bot.application.bulkEditGlobalCommands(ctx.slashCmd)
     return ctx.reply(user, `an update of the bot's **GLOBAL** slash commands is currently underway. Please allow for up to 1 hour for the changes to be reflected, the bot may not be usable during this time.`)
 }))
 
 pcmd(['admin'], ['sudo', 'refresh', 'admin'], withInteraction(async (ctx, user) => {
-    await ctx.bot.bulkEditGuildCommands(ctx.adminGuildID, ctx.adminCmd)
+    await ctx.bot.application.bulkEditGuildCommands(ctx.adminGuildID, ctx.adminCmd)
     return ctx.reply(user, `an update of the bot's **ADMIN** slash commands is currently underway. Please allow a few minutes for the changes to be reflected.`)
 
 }))
@@ -506,20 +501,43 @@ pcmd(['admin'], ['sudo', 'auclock'], withInteraction(async (ctx, user, ...args) 
 }))
 
 pcmd(['admin'], ['sudo', 'announce'], withInteraction(async (ctx, user, args) => {
-    const title = args.title
-    const announcement = new Announcement()
-    announcement.date = new Date()
-    announcement.title = title
-    announcement.body = args.message
-    await announcement.save()
-
-    return ctx.reply(user, {
-        title,
-        author: { name: `New announcement set` },
-        description: args.message,
-        footer: { text: `Date: ${announcement.date}` },
+    return ctx.interaction.createModal({
+        title: "Bot Announcement Form",
+        customID: "sudoAnnounce",
+        components: [
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 4,
+                        customID: 'announceTitle',
+                        label: 'Announcement Title',
+                        style: 1,
+                        minLength: 1,
+                        maxLength: 512,
+                        placeholder: 'Announcement Title Goes Here',
+                        required: true
+                    }
+                ]
+            },
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 4,
+                        customID: 'announceBody',
+                        label: 'Announcement Body',
+                        style: 2,
+                        minLength: 1,
+                        maxLength: 4000,
+                        placeholder: 'Announcement Body Goes Here',
+                        required: true
+                    }
+                ]
+            }
+        ]
     })
-}))
+}, {modal: true}))
 
 pcmd(['admin'], ['sudo', 'lead', 'lemons'], withInteraction(async (ctx, user) => {
     let allUsersWithLemons = (await Users.find(

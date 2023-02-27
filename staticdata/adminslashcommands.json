@@ -386,20 +386,7 @@
                 "name": "announce",
                 "description": "Send a bot announcement",
                 "type": 1,
-                "options": [
-                    {
-                        "name": "title",
-                        "description": "The title of the announcement",
-                        "type": 3,
-                        "required": true
-                    },
-                    {
-                        "name": "message",
-                        "description": "The body of the announcement",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
+                "options": []
             },
             {
                 "name": "auclock",
