@@ -81,11 +81,11 @@ cmd('kofi', withInteraction(async (ctx, user, args) => {
             description: 'Amusement Club has been provided free to use for over 5 years and the plan is to keep it that way. This Ko-Fi is purely to help support hosting costs and a coffee or two. ' +
                 '**For $3 you can become a Amusement Plus* user for 30 days, currently all this does is grant you extra display features for your \`/profile\` and an extra role in the main support server and bot.**\n',
 
-            url: 'https://ko-fi.com/amusement'
+            url: ctx.config.links.kofi
         }, user.discord_id)
     if (!args.transID && user.premium)
         return ctx.reply(user, `thank you for your support! Your Amusement Plus will expire on **${formatDateTimeLong(user.premiumExpires)}**. 
-        If you would like to extend your time, [click here](https://ko-fi.com/amusement) and re-up your time!`)
+        If you would like to extend your time, [click here](${ctx.config.links.kofi}) and re-up your time!`)
     const isLink = args.transID.startsWith('http')
     let query
 
