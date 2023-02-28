@@ -1,14 +1,6 @@
 {
-    "bot": {
-        "token": "DISCORD_VALID_BOT_TOKEN_GOES_HERE",
-        "shards": 1,
-        "prefix": "/",
-        "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com",
-        "shorturl": "https://amuse.noxc.dev",
-        "invite": "",
-        "maintenance": true,
-        "debug": true,
-        "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE"
+    "analytics": {
+        "mixpanel": ""
     },
     "auction": {
         "auctionFeePercent": 10,
@@ -20,16 +12,23 @@
         },
         "lock": false
     },
+    "bot": {
+        "token": "DISCORD_VALID_BOT_TOKEN_GOES_HERE",
+        "shards": 1,
+        "prefix": "/",
+        "database": "",
+        "invite": "",
+        "maintenance": true,
+        "debug": true,
+        "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE"
+    },
     "channels": {
         "tagLog": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
         "guildLog": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
         "evalUpdate" :"DISCORD_VALID_CHANNEL_ID_GOES_HERE"
     },
-    "analytics": {
-        "mixpanel": ""
-    },
-    "sourcing": {
-        "sauceNaoToken": ""
+    "effects": {
+        "uniqueFrequency": 10
     },
     "evals": {
         "auction": {
@@ -43,11 +42,18 @@
         "evalUserRate": 0.25,
         "evalVialRate": 0.055
     },
-    "effects": {
-        "uniqueFrequency": 10
+    "links": {
+        "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com",
+        "shorturl": "https://amuse.noxc.dev",
+        "topggUrl": "",
+        "dblUrl": "",
+        "kofi": ""
     },
     "rng": {
         "legendary": 0.001
+    },
+    "sourcing": {
+        "sauceNaoToken": ""
     },
     "symbols": {
         "tomato": "`🍅`",
