@@ -1,3 +1,5 @@
+const { Expedition, Guild } = require('../collections')
+
 const {cmd, pcmd}   = require('../utils/cmd')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
@@ -49,6 +51,10 @@ const {
     saveAndCheck,
     getStats,
 } = require("../modules/userstats")
+
+const {
+    format_gain,
+} = require('../modules/expedition')
 
 const Anilist = new anilist();
 
@@ -404,6 +410,93 @@ cmd(['hero', 'submit'], withInteraction(async (ctx, user, args) => {
         }
     })
 })).access('dm')
+
+cmd(['hero', 'scout'], async (ctx, user, arg1) => {
+    if(!user.hero)
+        return ctx.reply(user, `you don't have a hero yet. To get one use \`${ctx.prefix}hero get [hero name]\`. See list with \`${ctx.prefix}hero list\``, 'red')
+
+    const now = new Date()
+    const existing = await Expedition.findOne({ user: user.discord_id, finished: false })
+    if (existing) {
+        return ctx.reply(user, `you already have expedition finishing in **${msToTime(existing.finishes - now)}**`, 'red')
+    }
+    
+    const index = parseInt(arg1)
+    if (isNaN(index) || index > 4) {
+        const formatGain = (x, key) => {
+            const len = x[key]
+            if(x[key] && len > 0) {
+                return `**${x[key][0]}-${x[key][len - 1]}** ${ctx.symbols[`${key}_gem`]}`
+            }
+        }
+
+        const embed = { 
+            description: `please specify index of the expedition location (e.g. \`${ctx.prefix}hero scout 1\`):`,
+            fields: ctx.expeditions.map((x, i) => {
+                const gain = [formatGain(x, 'green'), formatGain(x, 'purple'), formatGain(x, 'yellow')]
+                return {
+                    name: `${i + 1}. ${x.name}`,
+                    value: `Gain: ${gain.filter(y => y).join(' | ')}\nTime: **${x.time}h**`,
+                }
+            })
+        }
+
+        return ctx.reply(user, embed, 'amethyst')
+    }
+
+    const expData = ctx.expeditions[index - 1]
+    const embed = { author: { name: `Do you want to send your hero on expedition for ${expData.time}h?`} }
+
+    return ctx.pgn.addConfirmation(user.discord_id, ctx.msg.channel.id, {
+        embed,
+        onConfirm: async (x) => {
+            const exp = new Expedition()
+            exp.user = user.discord_id
+            exp.hero = user.hero
+            exp.type = index - 1
+            exp.started = new Date()
+            exp.finishes = asdate.add(exp.started, expData.time, 'hours')
+            await exp.save()
+
+            return ctx.reply(user, `your hero is now on expedition in **${expData.name}** for the next **${expData.time}h**.
+                Use \`${ctx.prefix}exp list\` to see your expedition status.
+                Use \`${ctx.prefix}prefs set notify exp true\` to get a DM when your expedition is over.`, 'green')
+        }
+    })
+})
+
+cmd(['exp', 'list'], async (ctx, user, arg1) => {
+    const history = await Expedition.find({ user: user.discord_id })
+    const current = history.find(x => !x.finished)
+    const now = new Date()
+
+    if (history.length === 0) {
+        return ctx.reply(user, `you don't have any expeditions. To get started use \`${ctx.prefix}hero scout\``, 'red')
+    }
+
+    const finishedExp = history.filter(x => x.finished)
+    const pages = ctx.pgn.getPages(finishedExp.map(x => {
+        return `[${msToTime(now - x.finishes, {compact: true})}] to **${ctx.expeditions[x.type].name}** gained: ${format_gain(ctx, x.gain)}`
+    }))
+
+    if (finishedExp.length === 0) {
+        pages[0] = 'No expedition history'
+    }
+
+    const curData = current? ctx.expeditions[current.type] : undefined
+    const embed = {
+        description: current? `Hero is currently exploring **${curData.name}**, finishes in **${msToTime(current.finishes - now)}**.` : `No current hero expeditions.`,
+        color: colors.amethyst,
+        fields: [],
+    }
+
+    return ctx.pgn.addPagination(user.discord_id, ctx.msg.channel.id, {
+        pages,
+        embed,
+        buttons: ['back', 'forward'],
+        switchPage: (data) => data.embed.fields[0] = { name: 'History', value: data.pages[data.pagenum] },
+    })
+})
 
 pcmd(['admin'], ['sudo', 'hero', 'cache', 'flush'], async (ctx, user) => {
     await reloadCache()

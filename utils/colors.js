@@ -4,6 +4,7 @@ module.exports = {
     green: 1030733,
     blue: 1420012,
     grey: 3553598,
-    deepgreen:1142316,
+    amethyst: 11162566,
+    deepgreen: 1142316,
     default: 2067276
 }

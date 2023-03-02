@@ -105,6 +105,7 @@ module.exports = model('User', {
             vote:       { type: Boolean, default: false },
             completed:  { type: Boolean, default: true  },
             effectend:  { type: Boolean, default: false },
+            exp:        { type: Boolean, default: true },
         },
         interactions:   {
             canhas:     { type: Boolean, default: true  },

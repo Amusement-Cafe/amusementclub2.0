@@ -17,5 +17,9 @@ module.exports = {
     UserStats:      require('./userstats'),
     UserSlot:       require('./userSlot'),
     UserQuest:      require('./userQuest'),
-    Kofi:           require('./kofi')
+    Kofi:           require('./kofi'),
+    Expedition:     require('./expedition'),
+    BattleProfile:  require('./battleProfile'),
+    CardStats:      require('./cardStats'),
+    Match:          require('./match')
 }

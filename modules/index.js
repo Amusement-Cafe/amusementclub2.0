@@ -14,5 +14,7 @@ module.exports = {
     webhooks: require('./webhooks'),
     preferences: require('./preferences'),
     plot: require('./plot'),
-    modals: require('./modals')
+    modals: require('./modals'),
+    expedition: require('./expedition'),
+    battle: require('./battle'),
 }

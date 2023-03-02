@@ -34,6 +34,7 @@ const desc = {
     card: `set a favorite card to display`,
     favcomplete: `set a favorite complete collection`,
     favclout: `set a favorite clouted collection`,
+    exp: `when your expedition finishes`,
 }
 
 const premium = {
