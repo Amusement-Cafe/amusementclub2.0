@@ -211,6 +211,8 @@ const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.
 
 const getGuildUser = async (ctx, user) => await GuildUser.findOne({guildid: ctx.guild.id, userid: user.discord_id})
 
+const getGuildUsers = async (ctx) => await GuildUser.find({guildid: ctx.guild.id}).lean()
+
 const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === user.discord_id
 
 const fetchGuildUsers = async (ctx) => await User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
@@ -239,6 +241,7 @@ module.exports = Object.assign(module.exports, {
     XPtoRANK,
     rankXP,
     getGuildUser,
+    getGuildUsers,
     isUserOwner,
     getMaintenanceCost,
     bill_guilds,

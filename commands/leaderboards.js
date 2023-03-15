@@ -17,6 +17,10 @@ const {
     fetchOnly,
 } = require("../modules/user")
 
+const {
+    getGuildUsers,
+} = require("../modules/guild")
+
 
 cmd(['leaderboard', 'tomatoes'], withInteraction(async (ctx, user, args) => {
     let embed = {
@@ -39,9 +43,10 @@ cmd(['leaderboard', 'tomatoes', 'local'], withInteraction(async (ctx, user, args
     let embed = {
         color: colors.blue
     }
-    const greater = await Users.countDocuments({exp: {$gt: user.exp}})
-    const topTomatoes = await Users.find({exp: {$gt: 1000}}).sort({exp: 'descending'}).limit(10).lean()
-    let table = new AsciiTable('Tomato Leaderboard')
+    const guildUsers = await getGuildUsers(ctx)
+    const greater = await Users.countDocuments({discord_id: {$in: guildUsers.map(x => x.userid)}, exp: {$gt: user.exp}})
+    const topTomatoes = await Users.find({discord_id: {$in: guildUsers.map(x => x.userid)}, exp: {$gt: 1000}}).sort({exp: 'descending'}).limit(10).lean()
+    let table = new AsciiTable('Local Tomato Leaderboard')
     table.setHeading('Ranking', 'Username', 'Tomatoes')
     topTomatoes.map((x, i) => {
         table.addRow(`${i+1}`, x.username, numFmt(Math.floor(x.exp)))
@@ -73,9 +78,10 @@ cmd(['leaderboard', 'vials', 'local'], withInteraction(async (ctx, user, args) =
     let embed = {
         color: colors.blue
     }
-    const greater = await Users.countDocuments({vials: {$gt: user.vials}})
-    const topVials = await Users.find({vials: {$gt: 100}}).sort({vials: 'descending'}).limit(10).lean()
-    let table = new AsciiTable('Vial Leaderboard')
+    const guildUsers = await getGuildUsers(ctx)
+    const greater = await Users.countDocuments({discord_id: {$in: guildUsers.map(x => x.userid)}, vials: {$gt: user.vials}})
+    const topVials = await Users.find({discord_id: {$in: guildUsers.map(x => x.userid)}, vials: {$gt: 100}}).sort({vials: 'descending'}).limit(10).lean()
+    let table = new AsciiTable('Local Vial Leaderboard')
     table.setHeading('Ranking', 'Username', 'Vials')
     topVials.map((x, i) => {
         table.addRow(`${i+1}`, x.username, numFmt(Math.floor(x.vials)))
@@ -107,9 +113,10 @@ cmd(['leaderboard', 'lemons', 'local'], withInteraction(async (ctx, user, args) 
     let embed = {
         color: colors.blue
     }
-    const greater = await Users.countDocuments({lemons: {$gt: user.lemons}})
-    const topLemons = await Users.find({lemons: {$gt: 500}}).sort({lemons: 'descending'}).limit(10).lean()
-    let table = new AsciiTable('Lemon Leaderboard')
+    const guildUsers = await getGuildUsers(ctx)
+    const greater = await Users.countDocuments({discord_id: {$in: guildUsers.map(x => x.userid)}, lemons: {$gt: user.lemons}})
+    const topLemons = await Users.find({discord_id: {$in: guildUsers.map(x => x.userid)}, lemons: {$gt: 500}}).sort({lemons: 'descending'}).limit(10).lean()
+    let table = new AsciiTable('Local Lemon Leaderboard')
     table.setHeading('Ranking', 'Username', 'Lemons')
     topLemons.map((x, i) => {
         table.addRow(`${i+1}`, x.username, numFmt(Math.floor(x.lemons)))
@@ -140,8 +147,9 @@ cmd(['leaderboard', 'cards', 'local'], withInteraction(async (ctx, user, args) =
     let embed = {
         color: colors.blue
     }
-    const topUnique = await UserCard.aggregate([{$project: {userid: 1, _id: 0}}]).sortByCount('userid').limit(10)
-    let table = new AsciiTable('Unique Card Leaderboard')
+    const guildUsers = await getGuildUsers(ctx)
+    const topUnique = await UserCard.aggregate([{$match: {userid: {$in: guildUsers.map(x => x.userid)}}}, {$project: {userid: 1, _id: 0}}]).sortByCount('userid').limit(10)
+    let table = new AsciiTable('Local Unique Card Leaderboard')
     table.setHeading('Ranking', 'Username', 'Card Count')
     for (let i=0; i < topUnique.length; i++) {
         const unique = topUnique[i]
@@ -180,7 +188,8 @@ cmd(['leaderboard', 'clout', 'local'], withInteraction(async (ctx, user, args) =
     let embed = {
         color: colors.blue
     }
-    const clouted = await Users.find({ cloutedcols: {$exists: true, $ne: []} }, {username: 1, cloutedcols: 1, discord_id: 1}).lean()
+    const guildUsers = await getGuildUsers(ctx)
+    const clouted = await Users.find({discord_id: {$in: guildUsers.map(x => x.userid)}, cloutedcols: {$exists: true, $ne: []} }, {username: 1, cloutedcols: 1, discord_id: 1}).lean()
     let cloutUsers = clouted.map(x => {
         let cloutNum = 0
         x.cloutedcols.map(y => cloutNum += y.amount)
@@ -189,7 +198,7 @@ cmd(['leaderboard', 'clout', 'local'], withInteraction(async (ctx, user, args) =
     const userEntry = cloutUsers.find(x => x.discord_id === user.discord_id)
     const userPos = cloutUsers.findIndex(x => x.discord_id === user.discord_id)
     cloutUsers = cloutUsers.slice(0, 10)
-    let table = new AsciiTable('Clout Leaderboard')
+    let table = new AsciiTable('Local Clout Leaderboard')
     table.setHeading('Ranking', 'Username', 'Clouts')
     cloutUsers.map((x, i) => {
         table.addRow(`${i+1}`, x.username, x.clouts)
@@ -224,12 +233,13 @@ cmd(['leaderboard', 'completed', 'local'], withInteraction(async (ctx, user, arg
     let embed = {
         color: colors.blue
     }
-    const completed = await Users.find({ completedcols: {$exists: true, $ne: []} }, {username: 1, completedcols: 1, discord_id: 1}).lean()
+    const guildUsers = await getGuildUsers(ctx)
+    const completed = await Users.find({discord_id: {$in: guildUsers.map(x => x.userid)}, completedcols: {$exists: true, $ne: []} }, {username: 1, completedcols: 1, discord_id: 1}).lean()
     let completedUsers = completed.map(x => {return {username: x.username, discord_id: x.discord_id, completed: x.completedcols.length}}).sort((a, b) => b.completed - a.completed)
     const userEntry = completedUsers.find(x => x.discord_id === user.discord_id)
     const userPos = completedUsers.findIndex(x => x.discord_id === user.discord_id)
     completedUsers = completedUsers.slice(0, 10)
-    let table = new AsciiTable('Completed Leaderboard')
+    let table = new AsciiTable('Local Completed Leaderboard')
     table.setHeading('Ranking', 'Username', 'Completed #')
     completedUsers.map((x, i) => {
         table.addRow(`${i+1}`, x.username, x.completed)
@@ -261,9 +271,10 @@ cmd(['leaderboard', 'level', 'local'], withInteraction(async (ctx, user, args) =
     let embed = {
         color: colors.blue
     }
-    const greater = await Users.countDocuments({xp: {$gt: user.xp}})
-    const topLevel = await Users.find({xp: {$gt: 1000}}).sort({xp: 'descending'}).limit(10).lean()
-    let table = new AsciiTable('Level Leaderboard')
+    const guildUsers = await getGuildUsers(ctx)
+    const greater = await Users.countDocuments({discord_id: {$in: guildUsers.map(x => x.userid)}, xp: {$gt: user.xp}})
+    const topLevel = await Users.find({discord_id: {$in: guildUsers.map(x => x.userid)}, xp: {$gt: 1000}}).sort({xp: 'descending'}).limit(10).lean()
+    let table = new AsciiTable('Local Level Leaderboard')
     table.setHeading('Ranking', 'Username', 'Level')
     topLevel.map((x, i) => {
         table.addRow(`${i+1}`, x.username, XPtoLEVEL(x.xp))
