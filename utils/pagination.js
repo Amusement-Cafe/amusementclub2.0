@@ -133,7 +133,7 @@ const addPagination = async (ctx, params) => {
             interMsg = await ctx.interaction.createFollowup({ embeds: [obj.embed], components: obj.components })
     }
     obj.msg = interMsg.id
-    obj.channel = interMsg.channel.id
+    obj.channel = interMsg.channelID
 }
 
 const addConfirmation = async (ctx, params) => {
@@ -176,7 +176,7 @@ const addConfirmation = async (ctx, params) => {
 
     const msg = await ctx.interaction.createFollowup({ embeds: [obj.embed], components: obj.components })
     obj.msg = msg.id
-    obj.channel = msg.channel.id
+    obj.channel = msg.channelID
 }
 
 const addConfirmPagination = async (ctx, params) => {
@@ -248,7 +248,7 @@ const addConfirmPagination = async (ctx, params) => {
         interMsg = await ctx.interaction.createFollowup({ embeds: [obj.embed], components: obj.components })
 
     obj.msg = interMsg.id
-    obj.channel = interMsg.channel.id
+    obj.channel = interMsg.channelID
 }
 
 const doSwitch =  async (ctx, newpage) => {

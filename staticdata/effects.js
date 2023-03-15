@@ -42,7 +42,7 @@ module.exports = [
     }, {
         id: 'rulerjeanne',
         name: 'The Ruler Jeanne',
-        desc: 'Get `->daily` every 17 hours instead of 20',
+        desc: 'Get `/daily` every 17 hours instead of 20',
         passive: true
     }, {
         id: 'spellcard',
@@ -64,7 +64,7 @@ module.exports = [
         cooldown: 20,
         use: async (ctx, user) => {
             const quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)[0]
-            const quest = Object.assign({}, quests, ctx.quests.daily.find(y => y.id === quests.questid))
+            const quest = ctx.quests.daily.find(y => y.id === quests?.questid && y.tier === 1)
             if(!quest)
                 return { msg: `you don't have any tier 1 quest to complete`, used: false }
 
