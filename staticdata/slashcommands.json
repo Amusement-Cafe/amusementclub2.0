@@ -1324,7 +1324,7 @@
                         ]
                     },
                     {
-                        "name": "one",
+                        "name": "many",
                         "description": "Remove a rating from multiple cards",
                         "type": 1,
                         "options": [

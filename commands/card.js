@@ -839,6 +839,80 @@ cmd(['rate', 'remove', 'one'], withInteraction(withCards(async (ctx, user, cards
     return ctx.reply(user, `removed rating for ${formatName(card)}`)
 }))).access('dm')
 
+cmd(['rate', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    const rating = parsedargs.rating
+
+    const embed = {
+        title: `**${user.username}**, do you want to rate **${numFmt(cards.length)}** cards as ${rating}/10?`,
+        color: colors.yellow
+    }
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x))),
+        embed,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        onConfirm: async () => {
+            let stats = await getStats(ctx, user, user.lastdaily)
+            await Promise.all(cards.map(async x => {
+                let info = fetchInfo(ctx, x.id)
+                if (x.rating) {
+                    const oldrating = x.rating
+                    info.ratingsum -= oldrating
+                    info.usercount--
+                } else {
+                    stats.rates++
+                }
+                info.ratingsum += rating
+                info.usercount++
+                await info.save()
+            }))
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {rating: rating})
+            await saveAndCheck(ctx, user, stats)
+            return ctx.reply(user, `set rating **${rating}** for **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+}))).access('dm')
+
+cmd(['rate', 'remove', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    const embed = {
+        title: `**${user.username}**, do you want to remove the rating from **${numFmt(cards.length)}** cards?`,
+        color: colors.yellow
+    }
+    cards = cards.filter(x => x.rating)
+
+    if (cards.length === 0)
+        return ctx.reply(user, 'all cards in your request are already unrated!', 'red')
+
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x))),
+        embed,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        onConfirm: async () => {
+            await Promise.all(cards.map(async x => {
+                const oldrating = x.rating
+                let info = fetchInfo(ctx, x.id)
+
+                if (info.ratingsum != 0) {
+                    info.ratingsum -= oldrating
+                }
+                if (info.usercount != 0) {
+                    info.usercount--
+                }
+                await info.save()
+            }))
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {rating: 0})
+            return ctx.reply(user, `removed rating for **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+}))).access('dm')
+
 cmd(['wish', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     let targetUser
     if(parsedargs.ids[0]) {
