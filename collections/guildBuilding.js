@@ -1,6 +1,6 @@
 const {model, Schema} = require('mongoose')
 
-module.exports = model('GuildBuilding', {
+module.exports = model('Guildbuilding', {
     guildid:    { type: String, index: true },
     id:         { type: String },
 

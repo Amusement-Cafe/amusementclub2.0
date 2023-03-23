@@ -1,6 +1,6 @@
 const {model, Schema} = require('mongoose')
 
-module.exports = model('GuildUser', {
+module.exports = model('Guilduser', {
     userid:     { type: String, index: true },
     guildid:    { type: String, index: true },
 

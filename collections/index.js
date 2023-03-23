@@ -17,5 +17,7 @@ module.exports = {
     UserStats:      require('./userstats'),
     UserSlot:       require('./userSlot'),
     UserQuest:      require('./userQuest'),
-    Kofi:           require('./kofi')
+    Kofi:           require('./kofi'),
+    GuildBuilding:  require('./guildBuilding'),
+    GuildUser:      require('./guildUser'),
 }
