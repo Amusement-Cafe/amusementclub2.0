@@ -106,6 +106,7 @@ const fetchInfo = (ctx, id) => {
     if(!info) {
         info = new Cardinfo()
         info.id = id
+        info.meta.added = new Date()
         ctx.cardInfos[id] = info
     }
 
