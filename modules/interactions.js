@@ -29,6 +29,7 @@ const parseInteractionOptions = async (ctx, user) => {
             case 'bid': interactionArgs.bid = x.value; break;
             case 'boost_id': interactionArgs.boostID = x.value; break;
             case 'booru_id': interactionArgs.booruID = x.value; break;
+            case 'building': interactionArgs.building = x.value; break;
             case 'card_id': interactionArgs.cardID = x.value; break;
             case 'card_query': interactionArgs.cardQuery = x.value; break;
             case 'card_query_1': cardArgs1 = parseArgs(ctx, user, x); interactionArgs.cardQuery1 = x.value; break;

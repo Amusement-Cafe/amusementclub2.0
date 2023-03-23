@@ -571,7 +571,15 @@
             {
                 "name": "info",
                 "description": "Get the guilds current info",
-                "type": 1
+                "type": 1,
+                "options": [
+                    {
+                        "name": "building",
+                        "description": "The id of the building to see info for",
+                        "type": 3,
+                        "required": false
+                    }
+                ]
             },
             {
                 "name": "lead",
