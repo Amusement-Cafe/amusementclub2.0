@@ -18,6 +18,11 @@ const {
     getStaticStats,
 } = require("../modules/userstats")
 
+const {
+    isUserOwner,
+    isUserManager,
+} = require("../modules/guild")
+
 
 cmd(['store', 'view'], withInteraction(async (ctx, user, args) => {
     let cat = args.store || null
@@ -64,37 +69,55 @@ cmd(['store', 'info'], withInteraction(withItem(async (ctx, user, item, args) =>
 cmd(['store', 'buy'], withInteraction(withItem(async (ctx, user, item, args) => {
     let stats = await getStaticStats(ctx, user, user.lastdaily)
     const catNum = _.uniq(ctx.items.filter(x => x.price >= 0).map(x => x.type)).indexOf(item.type) + 1
-    if (catNum == 3 && stats.store3 >= 3)
+    const isGuildStore = catNum == 5
+    const isTicketStore = catNum == 3
+    if (isTicketStore && stats.store3 >= 3)
         return ctx.reply(user, `you have run out of available purchases from this store. Please try again after your next daily!`, 'red')
 
     let symbol = ctx.symbols[ctx.items.filter(x => x.type === item.type)[0].currency]
     let balance = symbol === ctx.symbols.lemon? user.lemons: user.exp
+    if (isGuildStore) {
+        if (!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)))
+            return ctx.reply(user, `to purchase an item from this store you need to have the **manager** role in this server or be the server owner!` , 'red')
+        balance = symbol === ctx.symbols.lemon? ctx.guild.lemons: ctx.guild.balance
+    }
+
     if(balance < item.price)
-        return ctx.reply(user, `you have to have at least **${numFmt(item.price)}** ${symbol} to buy this item`, 'red')
+        return ctx.reply(user, `you have to have at least **${numFmt(item.price)}** ${symbol}${catNum == 5? ' in the guild': ''} to buy this item`, 'red')
 
     return ctx.sendCfm(ctx, user, {
         question: `Do you want to buy **${item.name} ${item.type}** for **${item.price}** ${symbol}?`,
         force: ctx.globals.force,
         onConfirm: async (x) => {
-            buyItem(ctx, user, item)
-            let stats = await getStats(ctx, user, user.lastdaily)
-            stats.store++
-            stats[`store${catNum}`]++
+            const buy = await buyItem(ctx, user, item)
+            if (buy)
+                return ctx.reply(user, buy, 'red', true)
+            if (catNum === 5) {
+                if (symbol === ctx.symbols.lemon)
+                    ctx.guild.lemons -= item.price
+                else
+                    ctx.guild.balance -= item.price
 
-            if (symbol === ctx.symbols.lemon) {
-                user.lemons -= item.price
-                stats.lemonout += item.price
+                await ctx.guild.save()
+                return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
+                The item has been built in the current guild. See \`${ctx.prefix}guild info\` for details`, 'green', true)
             } else {
-                user.exp -= item.price
-                stats.tomatoout += item.price
-            }
-
-            await user.save()
-            await stats.save()
-
-            return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
+                let stats = await getStats(ctx, user, user.lastdaily)
+                stats.store++
+                stats[`store${catNum}`]++
+                if (symbol === ctx.symbols.lemon) {
+                    user.lemons -= item.price
+                    stats.lemonout += item.price
+                } else {
+                    user.exp -= item.price
+                    stats.tomatoout += item.price
+                }
+                await user.save()
+                await stats.save()
+                return ctx.reply(user, `you purchased **${item.name} ${item.type}** for **${item.price}** ${symbol}
                 The item has been added to your inventory. See \`${ctx.prefix}inventory info ${item.id}\` for details
                 ${catNum == 3? `You have **${3-stats.store3}** purchase(s) left for this store today!`: ''}`, 'green', true)
+            }
         }
     }, false)
 })))
