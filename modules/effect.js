@@ -26,7 +26,7 @@ const check_effect = async (ctx, user, id, uEffect) => {
         return false
     }
 
-    return effect && inSlot && userEffect.expires
+    return effect && inSlot && userEffect?.expires
 }
 
 const formatUserEffect = (ctx, user, x) => {
