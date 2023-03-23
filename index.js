@@ -70,6 +70,25 @@ const fillCardData = (carddata) => {
     })
 }
 
+const calculateDistribution = (cards) => {
+    const claimableCount = {
+        0: 0,
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0
+    }
+    cards.map(x => {
+        const col = config.data.collections.filter(y => y.id == x.col)[0]
+        if (!col.promo && (!col.rarity || col.rarity > 0)) {
+            claimableCount[x.level]++
+            claimableCount[0]++
+        }
+    })
+    return claimableCount
+}
+
 /* create our glorious sending fn */
 const send = (interaction, content, userid, components, edit = false) => {
     if(content.description)
@@ -266,6 +285,7 @@ con('startup', async (data) => {
         auctionFeePercent: config.auction.auctionFeePercent,
         cardInfos,
         filter,
+        distribution: calculateDistribution(config.cards),
         direct, /* DM reply function to the user */
         symbols: config.symbols,
         baseurl: config.links.baseurl,
