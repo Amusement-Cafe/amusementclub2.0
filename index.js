@@ -317,6 +317,15 @@ con('shutdown', async () => {
     process.exit()
 })
 
+con('autorestart', async () => {
+    ctx.settings.wip = true
+    ctx.settings.wipMsg = `the bot is about to undergo a weekly restart. Please try your command again in a few minutes |ω･)ﾉ`
+    await new Promise(res=>setTimeout(res,150000))
+    stopTicks()
+    await bot.disconnect(false)
+    process.exit()
+})
+
 con('updateCards', (carddata) => {
     fillCardData(carddata.updateCards)
     ctx.cards = config.cards
