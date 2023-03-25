@@ -1,10 +1,16 @@
 const mongoose      = require('mongoose')
-const User          = require('../collections/user')
-const UserQuest     = require('../collections/userQuest')
-const UserEffect    = require('../collections/userEffect')
-const UserInv       = require('../collections/userInventory')
 const asdate        = require('add-subtract-date')
 
+const {
+    User,
+    UserQuest,
+    UserEffect,
+    UserInventory,
+    Cardinfo,
+    GuildUser,
+    GuildBuilding,
+    Guild
+} = require('../collections')
 const main = async () => {
     const mongoUri = 'mongodb://127.0.0.1:27017/amusement2'
     const mcn = await mongoose.connect(mongoUri)
@@ -14,12 +20,13 @@ const main = async () => {
 
 const cinnabarTransfer = async () => {
     let count = 0
-    const users = await User.find()
     let prog = 'O'
     let left = '-'
+
+    const futureExpiry = asdate.add(new Date(), 1, 'days')
+    const users = await User.find()
     const length = users.length
     const next = Math.floor(length / 10)
-    const futureExpiry = asdate.add(new Date(), 2, 'days')
     for await (const u of users) {
         const curCount = Math.floor(count / next)
         process.stdout.write(`\r[${prog.repeat(curCount)}${left.repeat(10-curCount)}] ${count}/${length}`)
@@ -28,9 +35,10 @@ const cinnabarTransfer = async () => {
             const quest = new UserQuest()
             quest.userid = u.discord_id
             quest.questid = q
-            quest.questtype = 'daily'
+            quest.type = 'daily'
             quest.expiry = futureExpiry
             quest.completed = false
+            quest.created = new Date()
             await quest.save()
         }
 
@@ -48,7 +56,7 @@ const cinnabarTransfer = async () => {
         }
 
         for (const i of u.inventory) {
-            const item = new UserInv()
+            const item = new UserInventory()
             item.userid = u.discord_id
             item.id = i.id
             item.acquired = i.time
@@ -71,11 +79,74 @@ const cinnabarTransfer = async () => {
         }
         u.premium = false
 
+
         await u.save()
         count++
         process.stdout.write(`\r[${prog.repeat(curCount)}${left.repeat(10-curCount)}] ${count}/${length}`)
     }
 
+    const cards = await Cardinfo.find()
+    for await (const c of cards) {
+        if (c.meta.added)
+            continue
+        c.meta.added = c._id.getTimestamp()
+        await c.save()
+    }
+
+    const replacements = {
+        castle: {
+            id: "pampercentral",
+            maxLevel: 4
+        },
+        heroq: {
+            id: "lemonadestand",
+            maxLevel: 5
+        },
+        auchouse: {
+            id: "discountcenter",
+            maxLevel: 4
+        },
+        smithhub: {
+            id: "processingplant",
+            maxLevel: 4
+        },
+        gbank: {
+            id: "arcadecenter",
+            maxLevel: 3
+        },
+        tavern: {
+            id: "pachinkohall",
+            maxLevel: 2
+        }
+    }
+
+    const guilds = await Guild.find()
+    for await (g of guilds) {
+        for (const u of g.userstats) {
+            const gUser = new GuildUser()
+            gUser.userid = u.id
+            gUser.guildid = g.id
+            gUser.xp = u.xp
+            gUser.level = u.rank
+            gUser.roles = u.roles
+            await gUser.save()
+        }
+
+        for (const b of g.buildings) {
+            let replacement = replacements[b.id]
+            const newBuilding = new GuildBuilding()
+            newBuilding.guildid = g.id
+            newBuilding.id = replacement.id
+            newBuilding.level = b.level > replacement.maxLevel? replacement.maxLevel: b.level
+            newBuilding.health = 100
+            await newBuilding.save()
+        }
+        g.buildings = []
+        await g.save()
+
+        count++
+    }
+    process.exit()
 }
 
 main()
