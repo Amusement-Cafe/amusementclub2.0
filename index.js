@@ -215,7 +215,7 @@ let tickArray, reconnecting
 
 const startTicks = () => {
     const auctionTick   =   setInterval(tick.bind({}, ctx), 5000)
-    const guildTick     =   setInterval(gtick.bind({}, ctx), 10000)
+    const guildTick     =   setInterval(gtick.bind({}, ctx), 2000)
     const userQueueTick =   setInterval(qtick.bind({}, ctx), 1000)
     const heroTick      =   setInterval(htick.bind({}, ctx), 60000 * 5)
     const auditTick     =   setInterval(atick.bind({}, ctx), 600000)

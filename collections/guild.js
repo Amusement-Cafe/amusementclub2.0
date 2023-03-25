@@ -29,6 +29,7 @@ module.exports = model('Guild', {
     overridelock:   { type: String, default: '' },
     lock:           { type: String, default: '' },
     lockactive:     { type: Boolean, default: false },
+    processing:     { type: Boolean, default: false },
     lastlock:       { type: Date, default: new Date(0) },
     discount:       { type: Number, default: 0 },
 

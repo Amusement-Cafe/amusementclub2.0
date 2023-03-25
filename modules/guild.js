@@ -13,7 +13,8 @@ const {
 } = require('./effect')
 
 const {
-    numFmt
+    numFmt,
+    formatDateTimeRelative
 } = require('../utils/tools')
 
 const m_hero = require('./hero')
@@ -125,22 +126,25 @@ const clean_trans = async (ctx, now) => {
 }
 
 const bill_guilds = async (ctx, now) => {
-    return
-    const guild = await Guild.findOne({nextcheck: {$lt: now}})
+    const guild = await Guild.findOne({nextcheck: {$lt: now}, processing: {$ne: true}})
 
     if(!guild) return;
     console.log(guild.id)
+    guild.processing = true
+    await guild.save()
 
     let buildings = await getAllBuildings(ctx, guild.id)
 
-    if(!guild.lockactive && (!buildings || buildings.length === 0)) {
+    if(!guild.lockactive && (!buildings || buildings.length === 0) && !guild.overridelock) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
+        guild.processing = false
         await guild.save()
         return
     }
 
     const report = []
-    const total = guildLock.maintenance
+    ctx.guild = guild
+    const total = await getMaintenanceCost(ctx)
     let ratio = guild.balance / total
     guild.balance = Math.max(0, guild.balance - total)
 
@@ -153,8 +157,36 @@ const bill_guilds = async (ctx, now) => {
     if(ratio < 1) {
         guild.lockactive = false
         report.push(`> Lock has been disabled until next check`)
+        if (buildings && buildings.length > 0) {
+            await Promise.all(buildings.map(async x => {
+                const info = ctx.items.find(y => y.id === x.id)
+                x.health -= 5
+                let demolish = false
+                if (x.health <= 0 && x.level > 1) {
+                    x.level--
+                    x.health = 74
+                    report.push(`${ctx.symbols.red_circle} **${info.name}** has dropped down to level **${x.level}**!`)
+                    await x.save()
+
+                } else if(x.health <= 0 && x.level <= 1) {
+                    report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
+                    demolish = true
+                    await deleteBuilding(ctx, guild.id, x.id)
+
+                }
+            }))
+            report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
+            report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
+        }
     } else {
         report.push(`> All costs were covered!`)
+        if (buildings && buildings.length > 0) {
+            report.push(`> All buildings have been healed by 5 health`)
+            await Promise.all(buildings.map(async x => {
+                x.health = Math.min(x.health + 5, 100)
+                await x.save()
+            }))
+        }
         if(guild.lock && !guild.lockactive) {
            report.push(`> Guild lock is back!`)
         }
@@ -162,7 +194,8 @@ const bill_guilds = async (ctx, now) => {
     }
 
     guild.nextcheck = asdate.add(new Date(), 24, 'hours')
-    report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
+    report.push(`Next check is **${formatDateTimeRelative(guild.nextcheck)}**`)
+    guild.processing = false
     await guild.save()
 
     // m_hero.checkGuildLoyalty(isolatedCtx)
@@ -170,12 +203,14 @@ const bill_guilds = async (ctx, now) => {
     const index = cache.findIndex(x => x.id === guild.id)
     cache[index] = guild
     
-    return ctx.bot.rest.channels.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
-        embeds: [{
-            author: { name: `Receipt for ${now}` },
-            description: report.join('\n'),
-            color: (ratio < 1? color.red : color.green),
-    }]})
+    try{
+        await ctx.bot.rest.channels.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
+            embeds: [{
+                author: { name: `Receipt for ${now}` },
+                description: report.join('\n'),
+                color: (ratio < 1? color.red : color.green),
+            }]})
+    } catch (e) {process.send({error: {message: e.message, stack: e.stack}})}
 }
 
 const getMaintenanceCost = async (ctx) => {

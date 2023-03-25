@@ -141,6 +141,8 @@ const cinnabarTransfer = async () => {
             newBuilding.health = 100
             await newBuilding.save()
         }
+        if (g.lockactive && !g.lock)
+            g.lockactive = false
         g.buildings = []
         await g.save()
 
