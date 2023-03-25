@@ -39,6 +39,10 @@ const {
     withInteraction,
 } = require("../modules/interactions")
 
+const {
+    getBuilding,
+} = require("../modules/guild")
+
 cmd(['auction', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
     const now = new Date()
     const req = {finished: false}
@@ -182,8 +186,10 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
     if(price <= 4)
         price *= ceval
 
+    const hasBuilding = await getBuilding(ctx, ctx.guild.id, 'discountcenter')
+    const multiplier = hasBuilding? 1 - (hasBuilding.level * 0.05): 1
     price = Math.round(price)
-    const fee = Math.round(price * (ctx.auctionFeePercent / 100))
+    const fee = Math.round((price * (ctx.auctionFeePercent / 100)) * multiplier)
     const min = Math.round(ceval * .5)
     const max = Math.round(ceval * 4)
     const timenum = parsedargs.timeLength
@@ -219,7 +225,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.sendCfm(ctx, user, {
-        embed: { footer: { text: `This will cost ${numFmt(fee)} (${ctx.auctionFeePercent}% fee)` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (${ctx.auctionFeePercent}% fee${hasBuilding? `, the cost was reduced by ${(hasBuilding.level * 0.05) * 100}% due to a Discount Center`: ''})` } },
         force: ctx.globals.force,
         question,
         check,

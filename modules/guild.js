@@ -3,7 +3,7 @@ const Transaction   = require('../collections/transaction')
 const Auction       = require('../collections/auction')
 const User          = require('../collections/user')
 const GuildUser     = require('../collections/guildUser')
-
+const GuildBuilding = require('../collections/guildBuilding')
 const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
@@ -98,19 +98,19 @@ const addGuildXP = async (ctx, user, xp) => {
     guildUser.xp += xp + (await check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
-    if(rank > guildUser.rank) {
+    if(rank > guildUser.level) {
         await ctx.bot.rest.channels.createMessage(ctx.interaction.channelID, {
             embeds: [
                 {
-                    description: `**${user.username}**, you ranked up in **${ctx.discord_guild.name}!**
-                    Your rank is now **${rank}**`,
+                    description: `**${user.username}**, you leveled up in **${ctx.discord_guild.name}!**
+                    Your level is now **${rank}**`,
                     color: color.green
                 }
             ]
         })
 
         guildUser.xp -= rankXP[rank - 1]
-        guildUser.rank = rank
+        guildUser.level = rank
     }
     await guildUser.save()
 }
@@ -125,12 +125,15 @@ const clean_trans = async (ctx, now) => {
 }
 
 const bill_guilds = async (ctx, now) => {
-    const guild = await Guild.findOne({nextcheck: {$lt: now}, lock: {$exists: true, $ne: ''}})
+    return
+    const guild = await Guild.findOne({nextcheck: {$lt: now}})
 
     if(!guild) return;
     console.log(guild.id)
 
-    if(!guild.lockactive) {
+    let buildings = await getAllBuildings(ctx, guild.id)
+
+    if(!guild.lockactive && (!buildings || buildings.length === 0)) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
         await guild.save()
         return
@@ -175,17 +178,26 @@ const bill_guilds = async (ctx, now) => {
     }]})
 }
 
-const getMaintenanceCost = (ctx) => {
-    return ctx.guild.lock? guildLock.maintenance : 0
+const getMaintenanceCost = async (ctx) => {
+    const buildings = await getAllBuildings(ctx, ctx.guild.id)
+    let cost = ctx.guild.lock? guildLock.maintenance : 0
+    buildings.map(x => {
+        let item = ctx.items.find(y => y.id === x.id)
+        cost += item.levels[x.level - 1].maintenance
+    })
+    const pamper = buildings.find(x => x.id === 'pampercentral')
+    if (!pamper)
+        return cost
+    return cost * (1 - (pamper.level * 0.05))
 }
 
-const getBuildingInfo = (ctx, user, args) => {
-    const reg = new RegExp(args.join(''), 'gi')
-    const item = ctx.items.filter(x => x.type === 'blueprint').find(x => reg.test(x.id))
+const getBuildingInfo = async (ctx, user, args) => {
+    const reg = new RegExp(args, 'gi')
+    const item = ctx.items.filter(x => x.type === 'guild').find(x => reg.test(x.id))
     if(!item)
         return ctx.reply(user, `building with ID \`${args.join('')}\` was not found`, 'red')
 
-    const building = ctx.guild.buildings.find(x => x.id === item.id)
+    const building = await getBuilding(ctx, ctx.guild.id, item.id)
     if(!building)
         return ctx.reply(user, `**${item.name}** is not built in this guild`, 'red')
 
@@ -193,8 +205,8 @@ const getBuildingInfo = (ctx, user, args) => {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
     }))}
 
     const heart = building.health < 50? '💔' : '❤️'
@@ -207,7 +219,11 @@ const getBuildingInfo = (ctx, user, args) => {
     return ctx.send(ctx.interaction, embed, user.discord_id)
 }
 
-const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)
+const getAllBuildings = async (ctx, guildid) => await GuildBuilding.find({guildid: guildid})
+
+const getBuilding = async (ctx, guildid, buildingid) => await GuildBuilding.findOne({guildid: guildid, id: buildingid})
+
+const deleteBuilding = async (ctx, guildid, buildingid) => await GuildBuilding.deleteOne({guildid: guildid, id: buildingid})
 
 const getGuildUser = async (ctx, user) => await GuildUser.findOne({guildid: ctx.guild.id, userid: user.discord_id})
 
@@ -217,8 +233,8 @@ const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === use
 
 const fetchGuildUsers = async (ctx) => await User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
 
-const isUserManager = (ctx, user) => {
-    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+const isUserManager = async (ctx, user) => {
+    const guildUser = await getGuildUser(ctx, user)
     return (guildUser && guildUser.roles.includes('manager'))
 }
 
@@ -254,4 +270,6 @@ module.exports = Object.assign(module.exports, {
     fetchGuildById,
     fetchGuildUsers,
     clean_trans,
+    getAllBuildings,
+    deleteBuilding,
 })

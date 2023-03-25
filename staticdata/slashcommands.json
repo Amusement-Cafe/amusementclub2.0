@@ -693,6 +693,45 @@
                         ]
                     }
                 ]
+            },
+            {
+                "name": "upgrade",
+                "description": "Upgrades a building in the guild",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "building",
+                        "description": "The id of the building to upgrade",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "downgrade",
+                "description": "Downgrades or demolishes a building in the guild",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "building",
+                        "description": "The id of the building to downgrade/demolish",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "name": "convert",
+                "description": "Convert a guild's lemons into tomatoes",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "amount",
+                        "description": "The amount of lemons to convert into tomatoes",
+                        "type": 10,
+                        "required": true
+                    }
+                ]
             }
         ]
     },

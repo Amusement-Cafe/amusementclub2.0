@@ -447,31 +447,31 @@
                 "price": 0,
                 "level": 50,
                 "maintenance": 25,
-                "desc": "Increases plot lemon capacity by 10%"
+                "desc": "Increase plot lemon capacity by 10%"
             },
             {
                 "price": 100,
                 "level": 50,
                 "maintenance": 50,
-                "desc": "Increases plot lemon capacity by 20%"
+                "desc": "Increase plot lemon capacity by 20%"
             },
             {
                 "price": 1000,
                 "level": 50,
                 "maintenance": 75,
-                "desc": "Increases plot lemon capacity by 30%"
+                "desc": "Increase plot lemon capacity by 30%"
             },
             {
                 "price": 2000,
                 "level": 50,
                 "maintenance": 100,
-                "desc": "Increases plot lemon capacity by 40%"
+                "desc": "Increase plot lemon capacity by 40%"
             },
             {
                 "price": 10000,
                 "level": 50,
                 "maintenance": 125,
-                "desc": "Increases plot lemon capacity by 50%"
+                "desc": "Increase plot lemon capacity by 50%"
             }
         ]
     },
@@ -487,25 +487,25 @@
                 "price": 0,
                 "level": 50,
                 "maintenance": 100,
-                "desc": "Increases payout of base daily by 5%"
+                "desc": "Increase payout of base daily by 5%"
             },
             {
                 "price": 15000,
                 "level": 50,
                 "maintenance": 150,
-                "desc": "Increases payout of base daily by 10% and increases plot payouts by 10%"
+                "desc": "Increase payout of base daily by 10% and increases plot payouts by 10%"
             },
             {
                 "price": 30000,
                 "level": 50,
                 "maintenance": 200,
-                "desc": "Increases payout of base daily by 15% and increases plot payouts by 10%"
+                "desc": "Increase payout of base daily by 15% and increases plot payouts by 10%"
             },
             {
                 "price": 45000,
                 "level": 50,
                 "maintenance": 250,
-                "desc": "Increases payout of base daily by 20% and increases plot payouts by 15%"
+                "desc": "Increase payout of base daily by 20% and increases plot payouts by 15%"
             }
         ]
     },
@@ -521,13 +521,13 @@
                 "price": 0,
                 "level": 50,
                 "maintenance": 1000,
-                "desc": "Increases Special claim chance by 2%"
+                "desc": "Increase Special claim chance by 2%"
             },
             {
                 "price": 5000,
                 "level": 75,
                 "maintenance": 2000,
-                "desc": "Increases Legendary claim chance by 1% (Does not increase special chance)"
+                "desc": "Increase Legendary claim chance by 1% (Does not increase special chance)"
             }
         ]
     },
@@ -543,19 +543,19 @@
                 "price": 0,
                 "level": 50,
                 "maintenance": 5,
-                "desc": "Increases chances of a 1 star card in any claim by 10%"
+                "desc": "Increase chances of a 1 star card in any claim by 10%"
             },
             {
                 "price": 5000,
                 "level": 75,
                 "maintenance": 50,
-                "desc": "Increases chances of a 2 star card in any claim by 10%"
+                "desc": "Increase chances of a 2 star card in any claim by 10%"
             },
             {
                 "price": 15000,
                 "level": 75,
                 "maintenance": 500,
-                "desc": "Increases chances of a 3 star card in any claim by 10%"
+                "desc": "Increase chances of a 3 star card in any claim by 10%"
             }
         ]
     },
@@ -571,25 +571,25 @@
                 "price": 0,
                 "level": 75,
                 "maintenance": 15,
-                "desc": "Decreases maintenance fees by 5%"
+                "desc": "Decrease maintenance fees by 5%"
             },
             {
                 "price": 2500,
                 "level": 75,
                 "maintenance": 20,
-                "desc": "Decreases maintenance fees by 10%"
+                "desc": "Decrease maintenance fees by 10%"
             },
             {
                 "price": 5000,
                 "level": 75,
                 "maintenance": 25,
-                "desc": "Decreases maintenance fees by 15%"
+                "desc": "Decrease maintenance fees by 15%"
             },
             {
                 "price": 50000,
                 "level": 75,
                 "maintenance": 50,
-                "desc": "Decreases maintenance fees by 20%"
+                "desc": "Decrease maintenance fees by 20%"
             }
         ]
     },
@@ -605,25 +605,25 @@
                 "price": 0,
                 "level": 75,
                 "maintenance": 10,
-                "desc": "Decreases auction fee by 5%"
+                "desc": "Decrease auction fee by 5%"
             },
             {
                 "price": 1000,
                 "level": 75,
                 "maintenance": 20,
-                "desc": "Decreases auction fee by 10%"
+                "desc": "Decrease auction fee by 10%"
             },
             {
                 "price": 2000,
                 "level": 75,
                 "maintenance": 40,
-                "desc": "Decreases auction fee by 15%"
+                "desc": "Decrease auction fee by 15%"
             },
             {
                 "price": 5000,
                 "level": 75,
                 "maintenance": 80,
-                "desc": "Decreases auction fee by 20%"
+                "desc": "Decrease auction fee by 20%"
             }
         ]
     },

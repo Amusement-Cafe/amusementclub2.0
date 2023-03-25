@@ -36,6 +36,7 @@ const {
 const {
     addGuildXP,
     rankXP,
+    getBuilding,
 } = require('../modules/guild')
 
 const {
@@ -185,10 +186,11 @@ cmd('daily', withInteraction(async (ctx, user) => {
     const hasJeanne = await check_effect(ctx, user, 'rulerjeanne')
     const future = asdate.add(user.lastdaily, hasJeanne? 17 : 20, 'hours')
     const streakCheck = oldStats.daily >= asdate.subtract(new Date(), 2, 'days')
-
+    const hasBuilding = await getBuilding(ctx, ctx.guild.id, 'processingplant')
+    const baseAmount = 500
     if(future < now) {
         const quests = []
-        let amount = 500, streakAdd
+        let amount, streakAdd, buildingAdd
         const promoAmount = 500 + ((oldStats.promoclaims * 50) || 0)
         const promo = ctx.promos.find(x => x.starts < now && x.expires > now)
         const boosts = ctx.boosts.filter(x => x.starts < now && x.expires > now)
@@ -200,10 +202,14 @@ cmd('daily', withInteraction(async (ctx, user) => {
         const monthlies = userquests.filter(x => x.type === 'monthly')
         let stats = await getStats(ctx, user)
         stats.daily = now
+        amount = baseAmount
+
+        if(hasBuilding)
+            amount += (hasBuilding.level * 0.05) * baseAmount
 
         if(streakCheck) {
             user.streaks.daily++
-            streakAdd = user.streaks.daily >= 100? amount: Math.ceil(amount * (user.streaks.daily / 100))
+            streakAdd = user.streaks.daily >= 100? amount: Math.ceil(baseAmount * (user.streaks.daily / 100))
             amount += streakAdd
         } else {
             user.streaks.daily = 0

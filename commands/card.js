@@ -45,6 +45,7 @@ const {
 
 const {
     addGuildXP,
+    getBuilding,
 } = require('../modules/guild')
 
 const {
@@ -127,9 +128,14 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
 
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
     const tohruEffect = (!stats.totalregclaims || stats.totalregclaims === 0) && await check_effect(ctx, user, 'tohrugift')
+    const hasArcade = await getBuilding(ctx, ctx.guild.id, 'arcadecenter')
+    const hasHall = await getBuilding(ctx, ctx.guild.id, 'pachinkohall')
     for (let i = 0; i < amount; i++) {
-        const rng = Math.random()
-        const legRng = Math.random()
+        let rng = Math.random()
+        let legRng = Math.random()
+        if (hasHall)
+            hasHall.level === 1? rng -= 0.02: legRng -= 0.01
+
         const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
@@ -142,9 +148,19 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
             boostDrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
-        else if (legRng > ctx.config.rng.legendary && colCards.some(x => x.level === 5) && !lock && !spec)
+        else if (legRng < ctx.config.rng.legendary && colCards.some(x => x.level === 5) && !lock && !spec)
             card = _.sample(colCards.filter(x => !x.excluded ))
-        else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
+        else if (hasArcade) {
+            const increaseRarity = hasArcade.level
+            const ratio = ctx.distribution[increaseRarity] / (ctx.distribution[0] - ctx.distribution[4] - ctx.distribution[5])
+            const arcadeRng = Math.random()
+            if (arcadeRng < ratio * 1.1)
+                card = _.sample(colCards.filter(x => x.level === increaseRarity && !x.excluded))
+            else
+                card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
+        }
+        else
+            card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const userCard = userCards.find(x => x.cardid === card.id)
         const alreadyClaimed = cards.filter(x => x.card === card).length

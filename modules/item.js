@@ -4,6 +4,7 @@ const asdate        = require('add-subtract-date')
 const UserSlot      = require("../collections/userSlot")
 const UserInv       = require("../collections/userInventory")
 const UserEffect    = require("../collections/userEffect")
+const GuildBuilding = require("../collections/guildBuilding")
 const msToTime      = require('pretty-ms')
 
 const {
@@ -38,6 +39,10 @@ const {
     getStats,
     saveAndCheck
 } = require("./userstats")
+
+const {
+    getBuilding,
+} = require("./guild")
 
 
 const mapUserInventory = (ctx, user, items) => {
@@ -393,6 +398,24 @@ const infos = {
     bonus: (ctx, user, item) => ({
         description: item.fulldesc
     }),
+
+    guild: (ctx, user, item) => {
+        let embed = {
+            description: item.fulldesc,
+            fields: [{
+                name: `Building Price`,
+                value: `Price: **${item.price}**${ctx.symbols.tomato}`
+            }]
+        }
+        item.levels.map((x, i) => (embed.fields.push({
+            name: `Level ${i + 1}`,
+            value: `Price: **${x.price}** ${ctx.symbols.tomato}
+                Maintenance Cost: **${x.maintenance}**${ctx.symbols.tomato}/day
+                Level Requirement: **${x.level}**
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+        })))
+        return embed
+    }
 }
 
 const checks = {
@@ -513,7 +536,18 @@ const buys = {
         }, [])
         insertInventoryItem(user, item, cards)
     },
-    bonus: (ctx, user, item) => insertInventoryItem(user, item)
+    bonus: (ctx, user, item) => insertInventoryItem(user, item),
+    guild: async (ctx, user, item) => {
+        const existing = await getBuilding(ctx, ctx.guild.id, item.id)
+        if (existing)
+            return `this guild already has \`${item.id}\` built.`
+        const building = new GuildBuilding()
+        building.guildid = ctx.guild.id
+        building.id = item.id
+        building.level = 1
+        building.health = 100
+        await building.save()
+    }
 }
 
 const getQuestion = (ctx, user, item) => {

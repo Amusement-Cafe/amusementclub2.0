@@ -1,5 +1,8 @@
 const Plots = require('../collections/plot')
 const asdate = require('add-subtract-date')
+const {
+    getBuilding,
+} = require("./guild")
 
 
 const baseStorageCaps = [300, 600, 1200, 1800, 3600, 7200]
@@ -47,11 +50,13 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0, guildID, use
     }
     if (!ctx.guild)
         return
-    
+
     let relatedPlots = await getGuildPlots(ctx, building)
     if (relatedPlots.length === 0)
         return
 
+    const hasBuilding = await getBuilding(ctx, ctx.guild.id, 'processingplant')
+    const multiplier = hasBuilding && hasBuilding.level > 1? hasBuilding.level === 4? 1.15: 1.1 : 1
     relatedPlots.map(async x => {
         const maxCap = await getMaxStorage(ctx, x)
         let payAmount = amount
@@ -59,7 +64,9 @@ const plotPayout = async (ctx, building, requiredLevel, amount = 0, guildID, use
             if (building === 'auchouse')
                 payAmount = amount * x.building.level
 
-            x.building.stored_lemons += payAmount
+            payAmount = payAmount * multiplier
+
+            x.building.stored_lemons += Math.round(payAmount)
 
             if (x.building.stored_lemons > maxCap)
                 x.building.stored_lemons = maxCap
@@ -98,7 +105,16 @@ const getMaxStorage = async (ctx, plot) => {
     let castle = await getUserPlots(ctx, false, 'castle', plot.user_id, plot.guild_id)
     const baseCapacity = baseStorageCaps[plot.building.level]
     const castleLevel = castle[0].building.level
-    return castleLevel > 1 ? baseCapacity + ((baseCapacity * ((castleLevel * 25) / 100))) : baseCapacity
+    const multiplied = await getBuilding(ctx, plot.guild_id, 'lemonadestand')
+    let multiplier = 1
+
+    if (multiplied)
+        multiplier = 1 + (multiplied.level * 0.1)
+
+    if (castleLevel <= 1)
+        return baseCapacity * multiplier
+
+    return  (baseCapacity + ((baseCapacity * ((castleLevel * 25) / 100)))) * multiplier
 }
 
 
