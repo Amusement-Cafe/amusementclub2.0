@@ -1,8 +1,11 @@
 const { 
-    countUserCards, getUserCards, removeUserCards,
+    countUserCards,
+    getUserCards,
+    removeUserCards,
 } = require('./user')
 
-const _ = require('lodash')
+const _             = require('lodash')
+const UserInventory = require("../collections/userInventory")
 
 const byAlias = (ctx, name) => {
     const regex = new RegExp(name, 'gi')
@@ -111,8 +114,14 @@ const reset = async (ctx, user, col, amounts) => {
     await removeUserCards(ctx, user, cardsToRemove)
     await completed(ctx, user, cardsToRemove)
 
-    if(legendary)
-        user.inventory.push({ id: 'legendticket', time: new Date(), col: col.id })
+    if(legendary) {
+        const ticket = new UserInventory()
+        ticket.userid = user.discord_id
+        ticket.id = 'legendticket'
+        ticket.acquired = new Date()
+        ticket.col = col.id
+        await ticket.save()
+    }
 
     await user.save()
 
