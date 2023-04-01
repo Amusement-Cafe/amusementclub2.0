@@ -135,7 +135,7 @@ const bill_guilds = async (ctx, now) => {
 
     let buildings = await getAllBuildings(ctx, guild.id)
 
-    if(!guild.lockactive && (!buildings || buildings.length === 0) && !guild.overridelock) {
+    if(!guild.lockactive && (!buildings || buildings.length === 0)) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
         guild.processing = false
         await guild.save()
