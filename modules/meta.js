@@ -1,4 +1,4 @@
-const got = require('got');
+const got = require('got')
 
 const {
     Tag, 
@@ -22,8 +22,8 @@ const getBooruPost = async (ctx, booruID) =>  {
             return resp.body;
         }
 
-    } catch (err) {
-        console.log(err.response.body)
+    } catch (e) {
+        process.send({error: {message: e.message, stack: e.stack}})
     }
 }
 
@@ -37,7 +37,6 @@ const setCardBooruData = async (ctx, user, cardID, post) => {
     info.meta.source = post.source
     info.meta.image = post.file_url
     info.meta.contributor = user.discord_id
-    console.log(info)
     await info.save()
 
     const newTagString = `${post.tag_string_general} ${post.tag_string_character} ${post.tag_string_copyright}`
