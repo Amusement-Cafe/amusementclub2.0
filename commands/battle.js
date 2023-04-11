@@ -1,4 +1,4 @@
-const msToTime  = require('pretty-ms')
+const _ = require('lodash')
 
 const { 
     fetchOrCreateBP,
@@ -17,10 +17,17 @@ const {
     escapeRegex,
 } = require('../utils/tools')
 
-const { format_gain } = require('../modules/expedition')
-const { cmd } = require('../utils/cmd')
+const {
+    withInteraction,
+} = require("../modules/interactions")
 
-const _ = require('lodash')
+const { 
+    format_gain 
+} = require('../modules/expedition')
+
+const { 
+    cmd 
+} = require('../utils/cmd')
 
 const {
     formatName,
@@ -32,12 +39,12 @@ const {
 
 const colors = require('../utils/colors')
 
-cmd(['gems'], async (ctx, user, ...args) => {
+cmd(['gems'], withInteraction(async (ctx, user, ...args) => {
     const battleProfile = await fetchOrCreateBP(ctx, user)
     return ctx.reply(user, `you have ${format_gain(ctx, battleProfile.inv)}`, 'amethyst')
-}).access('dm')
+}))
 
-cmd(['card', 'upgrade'], ['cd', 'up'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['card', 'upgrade'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     const card = bestMatch(cards.filter(x => x.col === ctx.battleCol))
     if(!card) {
         return ctx.reply(user, `please specify card from collection \`${ctx.battleCol}\`!
@@ -59,9 +66,9 @@ cmd(['card', 'upgrade'], ['cd', 'up'], withCards(async (ctx, user, cards, parsed
         Card level: **${cardStats.level}/10**.
         New card stats: ${formatStats(ctx, cardStats).join(' | ')} \n
         Use \`${ctx.prefix}battle cards\` to view your battle cards.`, 'amethyst')
-})).access('dm')
+})))
 
-cmd(['battle', 'cards'], ['btl', 'cd'], withCards(async (ctx, user, cards, parsedargs) => {
+cmd(['battle', 'cards'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     const cardStats = await fetchCardStats(ctx, user, cards.filter(x => x.col === ctx.battleCol).map(x => x.id))
 
     if (cardStats.length === 0) {
@@ -85,9 +92,9 @@ cmd(['battle', 'cards'], ['btl', 'cd'], withCards(async (ctx, user, cards, parse
             color: colors.amethyst,
         }
     })
-})).access('dm')
+})))
 
-cmd(['battle', 'join'], async (ctx, user, ...args) => {
+cmd(['battle', 'join'], withInteraction(async (ctx, user, ...args) => {
     const bCardCount = await fetchUserBattleCards(ctx, user).count()
 
     if (bCardCount < 3) {
@@ -99,4 +106,4 @@ cmd(['battle', 'join'], async (ctx, user, ...args) => {
     const battle = await joinOrCreateMatch(ctx, user)
     
     return ctx.reply(user, `joined! Match ID: `, 'amethyst')
-}).access('dm')
+}))
