@@ -622,29 +622,13 @@ cmd('vote', withInteraction(async (ctx, user) => {
     const future = asdate.add(user.lastvote, 12, 'hours')
     const topggTime = msToTime(future - now, { compact: true })
 
-    let vote = await Votes.findOne({userid: user.discord_id, votedat: {$eq: null}}).lean()
-    const past = asdate.subtract(new Date(), 12, 'hours')
-    const voted = await Votes.findOne({userid: user.discord_id, votedat: {$gt: past}}).lean()
-    const lastVote = (await Votes.find({userid: user.discord_id, votedat: {$ne: null}}).sort({ votedat: -1 }))[0]
-    const nextVote = lastVote? asdate.add(lastVote.votedat, 12, 'hours') : now
-
-    if (!vote && !voted) {
-        const lastToken = (await Votes.find().sort({ _id: -1 }))[0]
-        vote = new Votes()
-        vote.userid = user.discord_id
-        vote.generatedat = new Date()
-        vote.token = lastToken? generateNextId(lastToken.token, 15) : generateFirstId(15)
-        await vote.save()
-    }
-
     return ctx.send(ctx.interaction, {
         color: colors.blue,
         description: `You can vote for Amusement Club **every 12 hours** and get rewards.
         Make sure you have allowed messages from server members in order to receive rewards in DMs.
         - [Vote on top.gg](${ctx.dbl.topggUrl}) to get **free cards** (${future > now? topggTime : `ready`})
         - [Vote on Discord Bot List](${ctx.dbl.dblUrl}) to get **free ${ctx.symbols.tomato}**
-        ${vote? `- [Vote on the next Special card!](https://club.amusement.cafe/vote?token=${vote.token})`: 
-            `- Next special vote ready in ${msToTime(nextVote - new Date(), {compact: true})}`}`,
+        - [View the 2023 Special Vote Results!](https://club.amusement.cafe/vote)`,
         
         fields: [
             {
