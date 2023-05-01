@@ -154,7 +154,7 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
             const increaseRarity = hasArcade.level
             const ratio = ctx.distribution[increaseRarity] / (ctx.distribution[0] - ctx.distribution[4] - ctx.distribution[5])
             const arcadeRng = Math.random()
-            if (arcadeRng < ratio * 1.1)
+            if (arcadeRng < ratio * 1.1 && colCards.some(x => x.level === increaseRarity && !x.excluded))
                 card = _.sample(colCards.filter(x => x.level === increaseRarity && !x.excluded))
             else
                 card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
