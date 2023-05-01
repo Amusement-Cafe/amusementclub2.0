@@ -36,7 +36,11 @@ const {
     registerTopggVote,
     registerDblVote,
     registerKofiPayment
-} = require("./modules/webhooks");
+} = require("./modules/webhooks")
+
+const {
+    updateCompletion
+} = require("./modules/collection")
 
 const userq = []
 const guildq = []
@@ -326,8 +330,9 @@ con('autorestart', async () => {
     process.exit()
 })
 
-con('updateCards', (carddata) => {
+con('updateCards', async (carddata) => {
     fillCardData(carddata.updateCards)
+    await updateCompletion(ctx, config.cards, ctx.cards)
     ctx.cards = config.cards
 })
 
