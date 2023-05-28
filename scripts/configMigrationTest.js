@@ -43,7 +43,8 @@ const main = async () => {
         channels: {
             tagLog: old.auditc.taglogchannel || "",
             guildLog: old.guildLogChannel || "",
-            evalUpdate: old.evalc.aucEval.evalUpdateChannel || ""
+            evalUpdate: old.evalc.aucEval.evalUpdateChannel || "",
+            report: ""
         },
         effects: {
             uniqueFrequency: old.uniqueFrequency || 10

@@ -1,4 +1,3 @@
-// const Eris          = require('eris')
 const Oceanic       = require('oceanic.js')
 const Emitter       = require('events')
 const Filter        = require('bad-words')
@@ -7,7 +6,6 @@ const mongoose      = require('mongoose')
 
 const _             = require('lodash')
 const asdate        = require('add-subtract-date')
-const paginator     = require('discord-paginator')
 const sagiri        = require('sagiri')
 
 const commands      = require('./commands')
@@ -306,6 +304,7 @@ con('startup', async (data) => {
         config,
         rng: config.rng,
         guildLogChannel: config.channels.guildLog,
+        reportChannel: config.channels.report,
         settings: {
             wip: config.bot.maintenance,
             wipMsg: 'bot is currently under maintenance. Please check again later |ω･)ﾉ',

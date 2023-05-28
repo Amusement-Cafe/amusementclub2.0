@@ -20,7 +20,7 @@ mod('report', async (ctx, user) => {
         Are you sure you want to submit this? 
         Please note that false reports or spamming using this feature may get you blocked from reporting`,
         onConfirm: async () => {
-            await ctx.bot.rest.channels.createMessage('671783963253276733', {
+            await ctx.bot.rest.channels.createMessage(ctx.reportChannel, {
                 embeds: [
                     {
                         footer: {

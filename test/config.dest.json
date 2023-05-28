@@ -25,7 +25,8 @@
     "channels": {
         "tagLog": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
         "guildLog": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
-        "evalUpdate" :"DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+        "evalUpdate" :"DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+        "report" :"DISCORD_VALID_CHANNEL_ID_GOES_HERE"
     },
     "effects": {
         "uniqueFrequency": 10

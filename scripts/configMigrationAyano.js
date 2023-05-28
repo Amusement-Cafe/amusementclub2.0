@@ -42,7 +42,8 @@ const main = async () => {
             channels: {
                 tagLog: old.shard.auditc.taglogchannel || "",
                 guildLog: old.shard.guildLogChannel || "",
-                evalUpdate: old.shard.evalc.aucEval.evalUpdateChannel || ""
+                evalUpdate: old.shard.evalc.aucEval.evalUpdateChannel || "",
+                report: ""
             },
             effects: {
                 uniqueFrequency: old.shard.uniqueFrequency || 10
