@@ -126,6 +126,9 @@ const clean_trans = async (ctx, now) => {
 }
 
 const bill_guilds = async (ctx, now) => {
+    if (ctx.settings.wip)
+        return
+
     const guild = await Guild.findOne({nextcheck: {$lt: now}, processing: {$ne: true}})
 
     if(!guild) return;

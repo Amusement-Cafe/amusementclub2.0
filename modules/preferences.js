@@ -10,6 +10,8 @@ const {rct}              = require('../utils/cmd')
 const {deleteUserEffect} = require("./effect")
 
 const notifyCheck = async (ctx) => {
+    if (ctx.settings.wip)
+        return
     await checkAnnounce(ctx)
     await checkDaily(ctx)
     await checkEffect(ctx)
