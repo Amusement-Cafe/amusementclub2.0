@@ -454,7 +454,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
     }
 
     if (user.prefs.profile.bio != 'This user has not set a bio')
-        description = `${user.username}'s Bio: **${user.prefs.profile.bio}**`
+        description = `Bio: **${user.prefs.profile.bio}**`
 
     // if(ctx.guild) {
     //     const curUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
@@ -648,13 +648,13 @@ cmd(['quest', 'list'], withInteraction(async (ctx, user) => {
     let dailyQuests = quests.filter(x => x.type === 'daily').map((y, i) => {
         const info = ctx.quests.daily.find(z => z.id === y.questid)
         return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})
-        Expires in: ${formatDateTimeRelative(y.expiry)}`
+        Expires: ${formatDateTimeRelative(y.expiry)}`
     })
 
     let weeklyQuests = quests.filter(x => x.type === 'weekly').map((y, i) => {
         const info = ctx.quests.weekly.find(z => z.id === y.questid)
         return `${i + 1}. \`${new Array(info.tier + 1).join('★')}\` ${info.name} (${info.reward(ctx)})
-        Expires in: ${formatDateTimeRelative(y.expiry)} | Progress: ${info.progress(ctx, user, dayStats, combinedStats.weekly)}`
+        Expires: ${formatDateTimeRelative(y.expiry)} | Progress: ${info.progress(ctx, user, dayStats, combinedStats.weekly)}`
     })
 
     let monthlyQuests = quests.filter(x => x.type === 'monthly').map((y, i) => {
