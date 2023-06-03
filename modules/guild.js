@@ -266,7 +266,7 @@ const getGuildUsers = async (ctx) => await GuildUser.find({guildid: ctx.guild.id
 
 const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === user.discord_id
 
-const fetchGuildUsers = async (ctx) => await User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
+const fetchGuildUsers = async (ctx, users) => await User.find({ discord_id: {$in: users.map(x => x.userid) }})
 
 const isUserManager = async (ctx, user) => {
     const guildUser = await getGuildUser(ctx, user)

@@ -27,6 +27,7 @@ const {
     getAllBuildings,
     getBuilding,
     deleteBuilding,
+    getGuildUsers,
 } = require('../modules/guild')
 
 const {
@@ -364,13 +365,14 @@ cmd(['guild', 'unlock'], withInteraction(async (ctx, user) => {
 }))
 
 cmd(['guild', 'lead'], withInteraction(async (ctx, user) => {
-    const guildUsers = await fetchGuildUsers(ctx).select('discord_id username hero')
+    const guildMembers = await getGuildUsers(ctx)
+    const guildUsers = await fetchGuildUsers(ctx, guildMembers)
     const heroes = await Promise.all(guildUsers.map(x => x.hero? get_hero(ctx, x.hero) : {id: -1}))
-    const pages = ctx.pgn.getPages(ctx.guild.userstats
+    const pages = ctx.pgn.getPages(guildMembers
         .sort((a, b) => b.xp - a.xp)
         .sort((a, b) => b.rank - a.rank)
         .map((x, i) => {
-        const curUser = guildUsers.find(y => y.discord_id === x.id)
+        const curUser = guildUsers.find(y => y.discord_id === x.userid)
         const xpSum = rankXP.slice(0, x.rank).reduce((acc, cur) => acc + cur, 0) + x.xp
         const hero = heroes.find(y => y.id === curUser.hero)
         return `${i + 1}. **${curUser.username}** (${numFmt(xpSum)}xp) ${hero? `\`${hero.name}\`` : ''}`
