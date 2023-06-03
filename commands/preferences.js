@@ -154,6 +154,7 @@ cmd(['preferences', 'show', 'profile'], withInteraction((ctx, user) => {
 
 cmd(['preferences', 'set', 'profile'], withInteraction(withCards(async (ctx, user, cards, args) => {
     const profile = user.prefs.profile
+    const argumentless = ['card', 'title']
     if(!profile.hasOwnProperty(args.option)) {
         return ctx.reply(user, `profile setting \`${args.option}\` doesn't exist.`, 'red')
     }
@@ -161,7 +162,7 @@ cmd(['preferences', 'set', 'profile'], withInteraction(withCards(async (ctx, use
     if (premium[args.option] && !user.premium)
         return ctx.reply(user, `this setting is only available to premium users! For more information about how to become a premium user, check out \`/kofi\` ***without arguments***!`)
 
-    if (args.option !== 'card' && !args.extraArgs)
+    if (!argumentless.some(x => x === args.option) && !args.extraArgs)
         return ctx.reply(user, `an extra argument is required for this option! Please make sure it is filled in and try again!`, 'red')
 
 
