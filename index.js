@@ -150,21 +150,36 @@ const symbols = {
 }
 
 const sendPgn = async (ctx, user, pgnObject, userqRemove = true) => {
-    await pgn.addPagination(ctx, pgnObject)
-    if (userqRemove)
-        _.remove(userq, (x) => x.id === user.discord_id)
+    try {
+        await pgn.addPagination(ctx, pgnObject)
+        if (userqRemove)
+            _.remove(userq, (x) => x.id === user.discord_id)
+    } catch (e) {
+        process.send({error: {message: e.message, stack: e.stack}})
+    }
+    
 }
 
 const sendCfm = async (ctx, user, cfmObject, userqRemove = true) => {
-    await pgn.addConfirmation(ctx, cfmObject)
-    if (userqRemove)
-        _.remove(userq, (x) => x.id === user.discord_id)
+    try {
+        await pgn.addConfirmation(ctx, cfmObject)
+        if (userqRemove)
+            _.remove(userq, (x) => x.id === user.discord_id)
+    } catch (e) {
+        process.send({error: {message: e.message, stack: e.stack}})
+        
+    }
+    
 }
 
 const sendCfmPgn = async (ctx, user, cfmPgnObject, userqRemove = true) => {
-    await pgn.addConfirmPagination(ctx, cfmPgnObject)
-    if (userqRemove)
-        _.remove(userq, (x) => x.id === user.discord_id)
+    try {
+        await pgn.addConfirmPagination(ctx, cfmPgnObject)
+        if (userqRemove)
+            _.remove(userq, (x) => x.id === user.discord_id)
+    } catch (e) {
+        process.send({error: {message: e.message, stack: e.stack}})
+    }
 }
 
 /* service tick for checks */
@@ -461,6 +476,7 @@ bot.on('interactionCreate', async (interaction) => {
             }
 
             if (usr.ban.full) {
+                await interaction.defer()
                 return reply(usr, `this account was banned permanently.
                         For more information please visit [bot discord](${ctx.cafe})`, 'red')
             }
