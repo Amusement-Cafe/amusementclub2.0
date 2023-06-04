@@ -341,12 +341,17 @@ con('updateBoosts', (boostdata) => ctx.boosts = boostdata.updateBoosts.map( x =>
 con('updateWords', (wordsdata) => filter.addWords(...wordsdata.updateWords))
 
 con('vote', (voteData) => {
-    if (voteData.type === 'dbl')
-        registerDblVote(ctx, voteData.vote)
-    if (voteData.type === 'topgg')
-        registerTopggVote(ctx, voteData.vote)
-    if (voteData.type === 'kofi')
-        registerKofiPayment(ctx, voteData.vote)
+    try {
+        if (voteData.type === 'dbl')
+            registerDblVote(ctx, voteData.vote)
+        if (voteData.type === 'topgg')
+            registerTopggVote(ctx, voteData.vote)
+        if (voteData.type === 'kofi')
+            registerKofiPayment(ctx, voteData.vote)
+    } catch (e) {
+        process.send({error: {message: e.message, stack: e.stack}})
+    }
+
 })
 
 bot.once('ready', async () => {
