@@ -302,8 +302,8 @@ cmd(['auction', 'bid'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `your bid should be higher than **${numFmt(auc.price)}** ${ctx.symbols.tomato}`, 'red')
 
     if(lastBidder){
-        if (bid < auc.highbid)
-            return ctx.reply(user, `you cannot lower how much you bid!`, 'red')
+        if (bid <= auc.highbid)
+            return ctx.reply(user, `you cannot re-bid at the same price or lower!`, 'red')
         await bid_auc(ctx, user, auc, bid, true)
     } else {
         await bid_auc(ctx, user, auc, bid)
