@@ -50,9 +50,9 @@ const registerTopggVote = async (ctx, vote) => {
 }
 
 const registerDblVote = async (ctx, vote) => {
-    let votingUser = await fetchOnly(vote.body.id)
+    let votingUser = await fetchOnly(vote)
 
-    if(!votingUser) 
+    if(!votingUser)
         return
 
     const streak1 = 10 - votingUser.streaks.votes.dbl % 10
