@@ -451,7 +451,7 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id, true),
         onDecline: (x) => decline_trs(ctx, x, trs.id, true),
-        onTimeout: (x) => ctx.pgn.sendTimeout(ctx.interaction, `**${trs.from}** tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
+        onTimeout: (x) => ctx.reply(user, `you tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``, 'grey', true)
     })
 })))
 
