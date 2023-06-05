@@ -440,7 +440,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
             inline: true
         }
         if (user.prefs.profile.favclout)
-            cloutField.value += `Favorite clouted col: **${user.cloutedcols.find(x => x.id === user.prefs.profile.favclout).amount}**\`${user.prefs.profile.favclout}\``
+            cloutField.value += `Favorite clouted col: **${user.cloutedcols.find(x => x.id === user.prefs.profile.favclout).amount}** \`${user.prefs.profile.favclout}\``
         fields.push(cloutField)
     }
 
