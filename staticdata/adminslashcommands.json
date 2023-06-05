@@ -566,6 +566,31 @@
                         "required": true
                     }
                 ]
+            },
+            {
+                "name": "scan",
+                "description": "Upload and scan a source file to bulk source cards",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "collection",
+                        "description": "The collection you are scanning a source file for",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "source",
+                        "description": "The source file to use",
+                        "type": 11,
+                        "required": true
+                    },
+                    {
+                        "name": "author_id",
+                        "description": "The user ID of the card creator",
+                        "type": 6,
+                        "required": false
+                    }
+                ]
             }
         ]
     },

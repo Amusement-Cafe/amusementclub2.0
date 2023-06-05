@@ -299,7 +299,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withInteraction( wi
 pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan'], withInteraction( async (ctx, user, args) => {
     const attachment = ctx.interaction.data.resolved.attachments.first()
     https.get(attachment.url, res => {
-        const authorID = args.extra[0]
+        const authorID = args.author
         const col = _.flattenDeep(args.cols)[0]
 
         if (!col) {
