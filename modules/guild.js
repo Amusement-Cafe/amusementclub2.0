@@ -233,7 +233,7 @@ const getBuildingInfo = async (ctx, user, args) => {
     const reg = new RegExp(args, 'gi')
     const item = ctx.items.filter(x => x.type === 'guild').find(x => reg.test(x.id))
     if(!item)
-        return ctx.reply(user, `building with ID \`${args.join('')}\` was not found`, 'red')
+        return ctx.reply(user, `building with ID \`${args}\` was not found`, 'red')
 
     const building = await getBuilding(ctx, ctx.guild.id, item.id)
     if(!building)
