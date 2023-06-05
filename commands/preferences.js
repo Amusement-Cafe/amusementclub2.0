@@ -15,6 +15,10 @@ const {
     findUserCards,
 } = require("../modules/user")
 
+const {
+    bestColMatch,
+} = require("../modules/collection")
+
 const desc = {
     aucbidme: `someone bid on your auction`,
     aucoutbid: `someone outbid you on the auction`,
@@ -155,20 +159,20 @@ cmd(['preferences', 'show', 'profile'], withInteraction((ctx, user) => {
 cmd(['preferences', 'set', 'profile'], withInteraction(withCards(async (ctx, user, cards, args) => {
     const profile = user.prefs.profile
     const argumentless = ['card', 'title']
-    if(!profile.hasOwnProperty(args.option)) {
+    if(!profile.hasOwnProperty(args.option.toLowerCase())) {
         return ctx.reply(user, `profile setting \`${args.option}\` doesn't exist.`, 'red')
     }
 
-    if (premium[args.option] && !user.premium)
+    if (premium[args.option.toLowerCase()] && !user.premium)
         return ctx.reply(user, `this setting is only available to premium users! For more information about how to become a premium user, check out \`/kofi\` ***without arguments***!`)
 
-    if (!argumentless.some(x => x === args.option) && !args.extraArgs)
+    if (!argumentless.some(x => x === args.option.toLowerCase()) && !args.extraArgs)
         return ctx.reply(user, `an extra argument is required for this option! Please make sure it is filled in and try again!`, 'red')
 
 
 
     let resp = ''
-    switch (args.option) {
+    switch (args.option.toLowerCase()) {
         case 'card':
             const userCard = await findUserCards(ctx, user, cards.map(x => x.cardid))
             if (!userCard || userCard.length === 0)
@@ -194,7 +198,6 @@ cmd(['preferences', 'set', 'profile'], withInteraction(withCards(async (ctx, use
             resp = `you have set your bio to:\n**${args.extraArgs}**`
             break;
         case 'title':
-
             let options = []
             const availableTitles = ctx.achievements.filter(x => user.achievements.some(y => y === x.id) && x.title)?.map(x => {
                 return {title: x.title, id: x.id}
@@ -227,18 +230,18 @@ cmd(['preferences', 'set', 'profile'], withInteraction(withCards(async (ctx, use
             }, null, options)
             break;
         case 'favcomplete':
-            const complete = user.completedcols.find(x => x.id === args.extraArgs)
-            if (!complete)
+            const bestCol = bestColMatch(ctx, args.extraArgs)
+            if (!bestCol || !user.completedcols.some(x => x.id === bestCol.id))
                 return ctx.reply(user, `you do not have \`${args.extraArgs}\` completed! Check your spelling and completion and try again!`, 'red')
             profile.favcomplete = args.extraArgs
-            resp = `your favorite completion has been set to \`${complete.id}\`!`
+            resp = `your favorite completion has been set to \`${bestCol.id}\`!`
             break;
         case 'favclout':
-            const clout = user.cloutedcols.find(x => x.id === args.extraArgs)
-            if (!clout)
+            const cloutCol = bestColMatch(ctx, args.extraArgs)
+            if (!cloutCol || !user.cloutedcols.some(x => x.id === cloutCol.id))
                 return ctx.reply(user, `you do not have \`${args.extraArgs}\` clouted! Check your spelling and try again!`, 'red')
             profile.favclout = args.extraArgs
-            resp = `your favorite clout has been set to \`${clout.id}\`!`
+            resp = `your favorite clout has been set to \`${cloutCol.id}\`!`
             break;
     }
 
