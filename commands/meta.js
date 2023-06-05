@@ -188,7 +188,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withInteraction( wit
                 }
             ],
             footer: { text: `Booru ID: ${booruID}` },
-            image: { url: getPostURL(post) }
+            image: { url: post.file_url }
         },
         onConfirm: async (x) => {
             try {
@@ -196,7 +196,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withInteraction( wit
                 return ctx.reply(user, `sources and tags have been saved!`, 'green', true)
 
             } catch(e) {
-                return ctx.reply(user, `unexpected error occured while trying to add card booru data. Please try again.
+                return ctx.reply(user, `unexpected error occurred while trying to add card booru data. Please try again.
                     ${e.message}`, 'red', true)
             }
         },
@@ -263,7 +263,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withInteraction( w
                 }
             ],
             footer: { text: `Booru ID: ${booruID}` },
-            image: { url: getPostURL(post) }
+            image: { url: post.file_url }
         },
         onConfirm: async (x) => {
             try {
