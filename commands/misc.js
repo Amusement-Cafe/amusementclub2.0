@@ -174,7 +174,7 @@ cmd('license', withInteraction(async (ctx, user) => {
 
 const getHelpEmbed = (ctx, o) => {
 
-    const footerText = `Amusement Club Bort | xQAxThF | v${pjson.version} | by noxc#4905 and Mj11jM#1111`
+    const footerText = `Amusement Club Cinnabar | xQAxThF | v${pjson.version} | by noxc#4905 and Mj11jM#1111`
     return {
         embeds: [{
             title: `\u2B50 Amusement Club \u2B50 Card Game Help`,
