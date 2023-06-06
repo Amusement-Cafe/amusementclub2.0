@@ -5,13 +5,19 @@ const Kofi              = require('../collections/kofi')
 const msToTime          = require('pretty-ms')
 const _                 = require('lodash')
 const pjson             = require('../package.json')
-const { fetchOnly }     = require('../modules/user')
 const asdate            = require('add-subtract-date')
 
 const {
     withInteraction,
 } = require("../modules/interactions")
-const {formatDateTimeLong} = require("../utils/tools");
+
+const {
+    fetchOnly,
+} = require('../modules/user')
+
+const {
+    formatDateTimeLong,
+} = require("../utils/tools")
 
 cmd('help', withInteraction(async (ctx, user) => {
     let sbj = 'general'
@@ -174,7 +180,7 @@ cmd('license', withInteraction(async (ctx, user) => {
 
 const getHelpEmbed = (ctx, o) => {
 
-    const footerText = `Amusement Club Cinnabar | xQAxThF | v${pjson.version} | by noxc#4905 and Mj11jM#1111`
+    const footerText = `Amusement Club Cinnabar | xQAxThF | v${pjson.version} | by noxc (formerly noxc#4905) and mj11jm (formerly Mj11jM#1111)`
     return {
         embeds: [{
             title: `\u2B50 Amusement Club \u2B50 Card Game Help`,
