@@ -401,10 +401,6 @@ bot.on('interactionCreate', async (interaction) => {
             const reply = (user, str, clr = 'default', edit) => send(interaction, toObj(user, str, clr), user.discord_id, [], edit)
             let botUser = await user.fetchOnly(interactionUser.id)
 
-            if (userq.some(x => x.id === interactionUser.id)) {
-                await interaction.defer(64)
-                return reply(botUser, 'you are currently on a command cooldown. These last only 3 seconds from your last command, please wait a moment and try your command again!', 'red')
-            }
 
             const curguild = await guild.fetchGuildById(interaction.guildID)
 
@@ -464,11 +460,17 @@ bot.on('interactionCreate', async (interaction) => {
                 interactionUser
             })
 
-            let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.username)
+            let usr = await user.fetchOrCreate(isolatedCtx, interactionUser.id, interactionUser.globalName || interactionUser.username)
             usr.username = usr.username.replace(/\*/gi, '')
             const cntnt = msg.map(x => x.trim()).join(' ')
             let args = cntnt.split(/ +/)
-            userq.push({id: interactionUser.id, expires: asdate.add(new Date(), 3, 'seconds')})
+
+            if (userq.some(x => x.id === interactionUser.id)) {
+                await interaction.defer(64)
+                return reply(botUser, 'you are currently on a command cooldown. These last only 5 seconds from your last command, please wait a moment and try your command again!', 'red')
+            }
+
+            userq.push({id: interactionUser.id, expires: asdate.add(new Date(), 5, 'seconds')})
 
             if (ctx.settings.wip && !usr.roles.includes('admin') && !usr.roles.includes('mod')) {
                 await interaction.defer()
