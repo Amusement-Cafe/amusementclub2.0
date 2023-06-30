@@ -11,6 +11,10 @@ const {
     XPtoLEVEL,
 } = require('../utils/tools')
 
+const {
+    pushUserCountUpdate
+} = require("./eval")
+
 const fetchOrCreate = async (ctx, userid, username) => {
     let user = await User.findOne({ discord_id: userid })
 
@@ -179,7 +183,9 @@ const addUserCards = async (ctx, user, cardIds) => {
         }
     }))
 
-    return await UserCard.bulkWrite(updates)
+    const update = await UserCard.bulkWrite(updates)
+    cardIds.map(x => pushUserCountUpdate({id: x}))
+    return update
 }
 
 const removeUserCards = async (ctx, user, cardIds) => {
