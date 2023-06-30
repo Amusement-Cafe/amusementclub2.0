@@ -21,6 +21,7 @@ const {
     getVialCost,
     getVialCostFast,
     getQueueTime,
+    evalCardFast,
 } = require('../modules/eval')
 
 const {
@@ -350,10 +351,16 @@ cmd(['draw'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedarg
     let staticStats = await getStaticStats(ctx, user, user.lastdaily)
 
     const amount = staticStats.draw || 0
+    cards = cards.filter(x => {
+        const eval = evalCardFast(ctx, x)
+        if (eval > 0 && eval != 'Infinity')
+            return x
+        return 0
+    })
     const card = bestMatch(cards)
 
     if (!card)
-        return ctx.reply(user, `no cards found matching \`${parsedargs.cardQuery}\``, 'red')
+        return ctx.reply(user, `no cards found matching \`${parsedargs.cardQuery}\` that can be drawn!`, 'red')
 
     const cost = await getVialCost(ctx, card)
     let extra = Math.floor(cost * .2 * amount)
