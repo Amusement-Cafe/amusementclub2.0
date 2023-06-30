@@ -1,7 +1,3 @@
-# This branch is under development and is not meant to be used until this notice is removed
-
----
-
 **Amusement Club** is a global gacha game for Discord with thousands of cute and fancy cards made by the bot's community. You can get started on any server by typing `/claim cards` in a bot channel. 
 
 Each claim will cost you more 🍅 tomatoes (in-game currency), using `/daily` will reset your claim cost and give you extra tomatoes.
