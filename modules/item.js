@@ -210,8 +210,7 @@ const uses = {
         let userEffect = uEffects.find(x => x.id === item.effectid)
         if(userEffect && userEffect.expires < new Date()) {
             user.heroslots = user.heroslots.filter(x => x != userEffect.id)
-            uEffects = uEffects.filter(x => x.id != userEffect.id)
-            await uEffects.save()
+            await UserEffect.deleteOne(userEffect)
             user.markModified('heroslots')
             userEffect = false
         }
