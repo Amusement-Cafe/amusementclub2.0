@@ -204,12 +204,12 @@ module.exports = {
             check: (ctx, user, stats) => stats.draw >= 2,
             resolve: (ctx, user, stats) => {
                 user.exp += 500
-                user.vials += stats.vialout * 0.75
+                user.vials += Math.floor(stats.vialout * 0.75)
                 user.xp += 3
                 user.lemons += 30
                 stats.tomatoin += 500
                 stats.lemonin += 30
-                stats.vialin += stats.vialout * 0.75
+                stats.vialin += Math.floor(stats.vialout * 0.75)
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **75%** ${ctx.symbols.vial} cost | **3** xp`
         }, {
@@ -224,12 +224,12 @@ module.exports = {
             check: (ctx, user, stats) => stats.draw >= 4,
             resolve: (ctx, user, stats) => {
                 user.exp += 500
-                user.vials += stats.vialout * 0.8
+                user.vials += Math.floor(stats.vialout * 0.8)
                 user.xp += 6
                 user.lemons += 30
                 stats.tomatoin += 500
                 stats.lemonin += 30
-                stats.vialin += stats.vialout * 0.8
+                stats.vialin += Math.floor(stats.vialout * 0.8)
             },
             reward: (ctx) => `**500** ${ctx.symbols.tomato} | **30** ${ctx.symbols.lemon} | **80%** ${ctx.symbols.vial} cost | **6** xp`
         }, {

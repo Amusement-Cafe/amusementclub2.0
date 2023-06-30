@@ -63,7 +63,7 @@ module.exports = [
         passive: false,
         cooldown: 20,
         use: async (ctx, user) => {
-            const quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)[0]
+            const quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)
             const quest = ctx.quests.daily.find(y => y.id === quests?.questid && y.tier === 1)
             if(!quest)
                 return { msg: `you don't have any tier 1 quest to complete`, used: false }
@@ -121,7 +121,6 @@ module.exports = [
 
             await addUserCards(ctx, user, [card.id])
             user.lastcard = card.id
-            user.markModified('cards')
             await completed(ctx, user, [card.id])
             await user.save()
 
