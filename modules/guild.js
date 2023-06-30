@@ -213,7 +213,7 @@ const bill_guilds = async (ctx, now) => {
                 description: report.join('\n'),
                 color: (ratio < 1? color.red : color.green),
             }]})
-    } catch (e) {process.send({error: {message: e.message, stack: e.stack}})}
+    } catch (e) {}
 }
 
 const getMaintenanceCost = async (ctx) => {
