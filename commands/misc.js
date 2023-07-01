@@ -169,7 +169,7 @@ cmd('invite', withInteraction(async (ctx, user) => {
 cmd('license', withInteraction(async (ctx, user) => {
     const embed = {
         title: `Code License`,
-        description: `This bot's source code is (or parts of it are) provided freely by noxc#4905, Mj11jM#1111, and contributors under the [MPL-2.0 Licence](https://github.com/Amusement-Cafe/amusementclub2.0/blob/master/LICENSE)
+        description: `This bot's source code is (or parts of it are) provided freely by @noxc, @mj11jm, and contributors under the [MPL-2.0 Licence](https://github.com/Amusement-Cafe/amusementclub2.0/blob/master/LICENSE)
         To view the source code of the main project, [click here](https://github.com/Amusement-Cafe/amusementclub2.0)
         If you are using some or part of the code for this bot in your works, some semi-public attribution may be required. 
         Leaving this command in and in help untouched, can count as such.`,
@@ -180,7 +180,7 @@ cmd('license', withInteraction(async (ctx, user) => {
 
 const getHelpEmbed = (ctx, o) => {
 
-    const footerText = `Amusement Club Cinnabar | xQAxThF | v${pjson.version} | by noxc (formerly noxc#4905) and mj11jm (formerly Mj11jM#1111)`
+    const footerText = `Amusement Club Cinnabar | xQAxThF | v${pjson.version} | by @noxc and @mj11jm`
     return {
         embeds: [{
             title: `\u2B50 Amusement Club \u2B50 Card Game Help`,
