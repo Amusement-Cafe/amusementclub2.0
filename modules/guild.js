@@ -158,8 +158,10 @@ const bill_guilds = async (ctx, now) => {
     report.push(`Remaining guild balance: **${numFmt(guild.balance)}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
-        guild.lockactive = false
-        report.push(`> Lock has been disabled until next check`)
+        if (guild.lockactive && guild.lock && !guild.overridelock) {
+            guild.lockactive = false
+            report.push(`> Lock has been disabled until next check`)
+        }
         if (buildings && buildings.length > 0) {
             await Promise.all(buildings.map(async x => {
                 const info = ctx.items.find(y => y.id === x.id)
@@ -177,6 +179,7 @@ const bill_guilds = async (ctx, now) => {
                     await deleteBuilding(ctx, guild.id, x.id)
 
                 }
+
             }))
             report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
             report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
