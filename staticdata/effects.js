@@ -64,7 +64,7 @@ module.exports = [
         cooldown: 20,
         use: async (ctx, user) => {
             const quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)
-            const quest = ctx.quests.daily.find(y => y.id === quests?.questid && y.tier === 1)
+            const quest = ctx.quests.daily.find(y => quests?.some(z => z.id === y.id) && y.tier === 1)
             if(!quest)
                 return { msg: `you don't have any tier 1 quest to complete`, used: false }
 
