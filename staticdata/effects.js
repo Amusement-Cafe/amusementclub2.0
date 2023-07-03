@@ -63,13 +63,14 @@ module.exports = [
         passive: false,
         cooldown: 20,
         use: async (ctx, user) => {
-            const quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)
+            let quests = (await getUserQuests(ctx, user)).filter(x => x.type === 'daily' && !x.completed)
             const quest = ctx.quests.daily.find(y => quests?.some(z => z.questid === y.id) && y.tier === 1)
             if(!quest)
                 return { msg: `you don't have any tier 1 quest to complete`, used: false }
 
             let stats = await getStats(ctx, user, user.lastdaily)
             quest.resolve(ctx, user, stats)
+            quests = quests.filter(x => x.questid === quest.id)[0]
             await UserQuest.deleteOne(quests)
             stats.t1quests += 1
             await user.save()
