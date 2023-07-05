@@ -299,15 +299,14 @@ const uses = {
                 const uEffect = await UserEffect.find({userid: user.discord_id})
                 const chosenEffect = uEffect.find(x => reg.test(x.id))
                 const itemEffect = ctx.effects.find(x => x.id === chosenEffect.id)
+                let update
 
                 if (chosenEffect.expires)
-                    chosenEffect.expires = asdate.add(chosenEffect.expires, 1, 'days')
+                    update = {expires: asdate.add(chosenEffect.expires, 1, 'days')}
                 else
-                    chosenEffect.uses++
+                    update = {uses: chosenEffect.uses + 1}
 
-                user.markModified('effects')
-                await chosenEffect.save()
-                await user.save()
+                await UserEffect.findOneAndUpdate({userid: user.discord_id, id: chosenEffect.id}, update)
 
                 await ctx.reply(user, `you have successfully increased the ${chosenEffect.expires? 'expiration time': 'use count'} for **${itemEffect.name}** by 1 ${chosenEffect.expires? 'day': 'use'}!`, 'green', true)
                 break
