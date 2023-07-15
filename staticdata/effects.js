@@ -3,8 +3,9 @@ const { byAlias, completed } = require('../modules/collection')
 const { formatName } = require('../modules/card')
 const { addUserCards, getUserCards, findUserCards, getUserQuests} = require('../modules/user')
 const { getStats } = require("../modules/userstats")
-const {UserQuest} = require("../collections");
-const asdate = require("add-subtract-date");
+const { UserQuest } = require("../collections")
+const asdate = require("add-subtract-date")
+const { evalCard } = require("../modules/eval")
 
 module.exports = [
     {
@@ -124,6 +125,7 @@ module.exports = [
             user.lastcard = card.id
             await completed(ctx, user, [card.id])
             await user.save()
+            await evalCard(ctx, card)
 
             return { msg: `you got ${formatName(card)}`, img: card.url, used: true }
         }
