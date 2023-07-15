@@ -343,9 +343,7 @@ const timeoutTick = () => {
     paginations.filter(x => x.expires < now).map(async y => {
         try {
             await y.interaction.editOriginal({embeds: [y.embed], components: []})
-        } catch (e) {
-            process.send({error: {message: e.message, stack: e.stack}})
-        }
+        } catch (e) {}
     })
     paginations = paginations.filter(x => x.expires >= now)
 
@@ -353,9 +351,7 @@ const timeoutTick = () => {
         try {
             await y.interaction.editOriginal({embeds: [y.embed], components: []})
             await y.onTimeout()
-        } catch (e) {
-            process.send({error: {message: e.message, stack: e.stack}})
-        }
+        } catch (e) {}
     })
     confirmations = confirmations.filter(x => x.expires >= now)
 
@@ -363,9 +359,7 @@ const timeoutTick = () => {
         try {
             await y.interaction.editOriginal({embeds: [y.embed], components: []})
             await y.onTimeout()
-        } catch (e) {
-            process.send({error: {message: e.message, stack: e.stack}})
-        }
+        } catch (e) {}
     })
     confirmPaginations = confirmPaginations.filter(x => x.expires >= now)
 }
