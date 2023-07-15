@@ -73,8 +73,10 @@ const fetchGuildById = async (guildId) => {
         fromcache = false
     }
 
-    if(!fromcache && guild)
+    if(!fromcache && guild) {
+        guild.cacheClear = asdate.add(new Date(), 12, 'hours')
         cache.push(guild)
+    }
 
     return guild
 }
@@ -90,8 +92,10 @@ const addGuildXP = async (ctx, user, xp) => {
 
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
-            ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
+            try {
+                ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
                 For more information run \`/guild info\``)
+            } catch (e) {}
         }
     }
 
@@ -100,15 +104,17 @@ const addGuildXP = async (ctx, user, xp) => {
     const rank = XPtoRANK(guildUser.xp)
 
     if(rank > guildUser.level) {
-        await ctx.bot.rest.channels.createMessage(ctx.interaction.channelID, {
-            embeds: [
-                {
-                    description: `**${user.username}**, you leveled up in **${ctx.discord_guild.name}!**
+        try {
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channelID, {
+                embeds: [
+                    {
+                        description: `**${user.username}**, you leveled up in **${ctx.discord_guild.name}!**
                     Your level is now **${rank}**`,
-                    color: color.green
-                }
-            ]
-        })
+                        color: color.green
+                    }
+                ]
+            })
+        } catch (e) {}
 
         guildUser.xp -= rankXP[rank - 1]
         guildUser.level = rank
@@ -138,7 +144,8 @@ const bill_guilds = async (ctx, now) => {
 
     let buildings = await getAllBuildings(ctx, guild.id)
 
-    if(!guild.lockactive && (!buildings || buildings.length === 0)) {
+
+    if((!guild.lock || guild.overridelock) && (!buildings || buildings.length === 0)) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
         guild.processing = false
         await guild.save()
@@ -179,11 +186,11 @@ const bill_guilds = async (ctx, now) => {
                     await deleteBuilding(ctx, guild.id, x.id)
 
                 }
-
+                report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
+                report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
             }))
-            report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
-            report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
         }
+
     } else {
         report.push(`> All costs were covered!`)
         if (buildings && buildings.length > 0) {
@@ -194,9 +201,9 @@ const bill_guilds = async (ctx, now) => {
             }))
         }
         if(guild.lock && !guild.lockactive) {
-           report.push(`> Guild lock is back!`)
+            report.push(`> Guild lock is back!`)
+            guild.lockactive = true
         }
-        guild.lockactive = true
     }
 
     guild.nextcheck = asdate.add(new Date(), 24, 'hours')
@@ -207,8 +214,14 @@ const bill_guilds = async (ctx, now) => {
     // m_hero.checkGuildLoyalty(isolatedCtx)
 
     const index = cache.findIndex(x => x.id === guild.id)
-    cache[index] = guild
-    
+
+    if (index < 0) {
+        guild.cacheClear = asdate.add(new Date(), 4, 'hours')
+        cache.push(guild)
+    } else {
+        cache[index] = guild
+    }
+
     try{
         await ctx.bot.rest.channels.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
             embeds: [{
