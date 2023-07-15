@@ -178,9 +178,6 @@ const uses = {
         await addUserCards(ctx, user, cardIds)
 
         pullInventoryItem(user, item)
-        await user.save()
-
-        user.markModified('cards')
         user.lastcard = cards[0].id
         await user.save()
 
