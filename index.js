@@ -486,7 +486,7 @@ bot.on('interactionCreate', async (interaction) => {
             usr.exp = Math.min(usr.exp, 10 ** 7)
             usr.vials = Math.min(usr.vials, 10 ** 6)
 
-            console.log(`[${usr.username}]: ${cntnt}`)
+            console.log(`${new Date().toLocaleTimeString()} [${usr.username}]: ${cntnt}`)
             if (isolatedCtx.discord_guild)
                 isolatedCtx.guild = curguild || await guild.fetchOrCreate(isolatedCtx, usr, interaction.member.guild)
 
@@ -520,7 +520,7 @@ bot.on('interactionCreate', async (interaction) => {
                 interactionUser
             })
 
-            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
+            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.globalName || interactionUser.username)
             usr.username = usr.username.replace(/\*/gi, '')
             await trigger('rct', isoCtx, usr, [interaction.data.customID])
         } catch (e) {
@@ -559,7 +559,7 @@ bot.on('interactionCreate', async (interaction) => {
                 args
             })
 
-            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.username)
+            let usr = await user.fetchOrCreate(isoCtx, interactionUser.id, interactionUser.globalName || interactionUser.username)
             usr.username = usr.username.replace(/\*/gi, '')
             await interaction.defer()
             await trigger('mod', isoCtx, usr, [interaction.data.customID])
