@@ -225,7 +225,7 @@ cmd(['auction', 'sell'], withInteraction(withCards(async (ctx, user, cards, pars
         ${(card.amount == 1 && card.rating)? 'You will lose your rating for this card' : ''}`
 
     ctx.sendCfm(ctx, user, {
-        embed: { footer: { text: `This will cost ${numFmt(fee)} (${ctx.auctionFeePercent}% fee${hasBuilding? `, the cost was reduced by ${(hasBuilding.level * 0.05) * 100}% due to a Discount Center`: ''})` } },
+        embed: { footer: { text: `This will cost ${numFmt(fee)} (${ctx.auctionFeePercent}% fee${hasBuilding? `, the cost was reduced by ${Math.floor((hasBuilding.level * 0.05) * 100)}% due to a Discount Center`: ''})` } },
         force: ctx.globals.force,
         question,
         check,
