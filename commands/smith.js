@@ -130,6 +130,7 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
                 await completed(ctx, user, [card1.id, card2.id, newcard.id])
                 await user.save()
                 await saveAndCheck(ctx, user, stats)
+                await evalCard(ctx, newcard)
 
                 await plotPayout(ctx, 'smithhub', 1, 10)
 
