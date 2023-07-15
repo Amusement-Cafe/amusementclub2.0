@@ -214,6 +214,9 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     await completed(ctx, user, cards.map(x => x.card.id))
 
     if(newCards.length > 0) {
+        newCards.map(async x => {
+            await evalCard(ctx, x.card)
+        })
         await bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
     }
 
