@@ -43,18 +43,21 @@ const check_achievements = async (ctx, user, action, channelID, stats, allStats)
         await plotPayout(ctx, 'tavern', 1, 25)
 
 
-        return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
-            color: colors.blue,
-            author: { name: `New Achievement:` },
-            title: complete.name,
-            description: `\`${complete.desc}\``,
-            thumbnail: { url: `${ctx.baseurl}/achievements/${complete.id}.png` },
-            fields: [{
-                name: `Reward`,
-                value: reward
-            }],
-            footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
-        }]})
+        try {
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
+                    color: colors.blue,
+                    author: { name: `New Achievement:` },
+                    title: complete.name,
+                    description: `\`${complete.desc}\``,
+                    thumbnail: { url: `${ctx.baseurl}/achievements/${complete.id}.png` },
+                    fields: [{
+                        name: `Reward`,
+                        value: reward
+                    }],
+                    footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
+                }]})
+        } catch (e) {}
+
 
     } else if (complete.length > 1) {
         complete.map(x => {
@@ -64,12 +67,14 @@ const check_achievements = async (ctx, user, action, channelID, stats, allStats)
         await user.save()
         await stats.save()
         await plotPayout(ctx, 'tavern', 1, complete.length * 25)
-        return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
-            color: colors.blue,
-            author: { name: `New Achievements:` },
-            description: rewards.join('\n'),
-            footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
-        }]})
+        try {
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
+                    color: colors.blue,
+                    author: { name: `New Achievements:` },
+                    description: rewards.join('\n'),
+                    footer: {text: `To view your achievements use ${ctx.prefix}achievements`}
+                }]})
+        } catch (e) {}
     }
 }
 
@@ -137,19 +142,21 @@ const check_daily = async (ctx, user, action, channelID, stats, allStats) => {
     await user.save()
     let guildID
     if (channelID)
-        guildID = ctx.bot.getChannel(channelID).guild.id
+        guildID = ctx.bot.getChannel(channelID)?.guild.id
 
     await plotPayout(ctx,'tavern', 2, 15, guildID, user.discord_id)
 
-    return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
-            color: colors.green,
-            author: {name: `${user.username}, you completed:`},
-            description: complete.join('\n'),
-            fields: [{
-                name: `Rewards`,
-                value: rewards.join('\n')
-            }]
-        }]})
+    try {
+        await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [{
+                color: colors.green,
+                author: {name: `${user.username}, you completed:`},
+                description: complete.join('\n'),
+                fields: [{
+                    name: `Rewards`,
+                    value: rewards.join('\n')
+                }]
+            }]})
+    } catch (e) {}
 }
 
 const check_all = async (ctx, user, action, channelID, stats, allStats) => {
