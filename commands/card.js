@@ -618,7 +618,7 @@ cmd(['eval', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, pa
     const cardInfo = await fetchInfo(ctx, card.id)
     return ctx.reply(user,
         `card ${formatName(card)} is worth: **${numFmt(price)}** ${ctx.symbols.tomato} ${card.level < 4? `or **${numFmt(vials)}** ${ctx.symbols.vial}` : ``}
-        ${cardInfo.aucevalinfo.evalprices.length > ctx.eval.auction.minSamples? `**This eval is taken as an average of auction prices!**`: ''}`)
+        ${cardInfo.aucevalinfo.evalprices.length >= ctx.eval.auction.minSamples? `**This eval is taken as an average of auction prices!**`: ''}`)
 }))).access('dm')
 
 cmd(['eval', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
