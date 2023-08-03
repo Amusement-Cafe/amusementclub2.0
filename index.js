@@ -494,6 +494,7 @@ bot.on('interactionCreate', async (interaction) => {
                 distinct_id: usr.discord_id,
                 command: args,
                 guild: isolatedCtx.guild ? isolatedCtx.guild.id : 'direct',
+                options: options
             })
             await trigger('cmd', isolatedCtx, usr, args, isolatedCtx.prefix)
         } catch (e) {
