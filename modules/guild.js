@@ -188,9 +188,9 @@ const bill_guilds = async (ctx, now) => {
                     await deleteBuilding(ctx, guild.id, x.id)
 
                 }
-                report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
-                report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
             }))
+            report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
+            report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
         }
 
     } else {
@@ -285,7 +285,7 @@ const getGuildUser = async (ctx, user) => await GuildUser.findOne({guildid: ctx.
 
 const getGuildUsers = async (ctx) => await GuildUser.find({guildid: ctx.guild.id}).lean()
 
-const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === user.discord_id
+const isUserOwner = (ctx, user) => ctx.guild && ctx.guild.ownerid? ctx.guild.ownerid === user.discord_id: ctx.interaction.channel.guild.ownerID === user.discord_id
 
 const fetchGuildUsers = async (ctx, users) => await User.find({ discord_id: {$in: users.map(x => x.userid) }})
 

@@ -219,25 +219,43 @@ pcmd(['admin', 'auditor'], ['audit', 'transaction'], withInteraction( async (ctx
 }))
 
 pcmd(['admin', 'auditor'], ['audit', 'warn'], withInteraction( async (ctx, user, args) => {
-    let warnedUser = await fetchOnly(args.ids[0])
-
-    if (!warnedUser)
-        return ctx.reply(user, `user with ID ${args.ids[0]} not found`, 'red')
-
-    try {
-        const ch = await ctx.bot.getDMChannel(args.ids[0])
-        let embed = {
-            title: "**Rule Violation Warning**",
-            description: `${args.extraArgs}`,
-            color: colors['yellow']
-        }
-        await ctx.direct(warnedUser, embed)
-    } catch(e) {
-        return ctx.reply(user, `insufficient permissions to send a DM message. Warning message not sent.`, 'red')
-    }
-
-    return ctx.reply(user, "Warning message sent")
-}))
+    return ctx.interaction.createModal({
+        title: "Audit Warning Form",
+        customID: "auditWarn",
+        components: [
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 4,
+                        customID: 'warnUser',
+                        label: 'User To Warn',
+                        style: 2,
+                        minLength: 1,
+                        maxLength: 4000,
+                        placeholder: 'Add user ID to warn',
+                        required: true
+                    }
+                ]
+            },
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 4,
+                        customID: 'warnBody',
+                        label: 'Body',
+                        style: 2,
+                        minLength: 1,
+                        maxLength: 4000,
+                        placeholder: 'The message to be sent to the warned user, title will always be Rule Violation Warning',
+                        required: true
+                    }
+                ]
+            }
+        ]
+    })
+}, {modal: true}))
 
 pcmd(['admin', 'auditor'], ['audit', 'auc'], ['audit', 'auction'], withInteraction( async (ctx, user, args) => {
     const auc = await Auction.findOne({ id: args.aucID })

@@ -168,6 +168,35 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'lemons'], withInteraction(async (ctx, us
     return ctx.reply(user, rpl.join('\n'))
 }))
 
+pcmd(['admin'], ['sudo', 'add', 'owner'], withInteraction(async (ctx, user, args) => {
+    const target = await fetchOnly(args.ids[0]).lean()
+
+    if(!target)
+        throw new Error(`cannot find user with that ID`)
+
+    const guild = await fetchGuildById(args.guildID)
+
+    if(!guild)
+        throw new Error('cannot find a guild with that ID')
+
+    guild.ownerid = target.discord_id
+    await guild.save()
+
+    return ctx.reply(user, `set **${target.username}** as the new owner for guild with ID **${guild.id}**!`)
+}))
+
+pcmd(['admin'], ['sudo', 'remove', 'owner'], withInteraction(async (ctx, user, args) => {
+    const guild = await fetchGuildById(args.guildID)
+
+    if(!guild)
+        throw new Error('cannot find a guild with that ID')
+
+    guild.ownerid = null
+    await guild.save()
+
+    return ctx.reply(user, `removed owner for guild with ID **${guild.id}**!`)
+}))
+
 pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)

@@ -122,6 +122,25 @@
                                 "required": true
                             }
                         ]
+                    },
+                    {
+                        "name": "owner",
+                        "description": "Add an owner to a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to set as guild owner",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to set owner for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
                     }
                 ]
             },
@@ -163,6 +182,19 @@
                             {
                                 "name": "role",
                                 "description": "The role to remove from the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "owner",
+                        "description": "Remove an owner from a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to remove owner from",
                                 "type": 3,
                                 "required": true
                             }
@@ -848,20 +880,7 @@
                 "name": "warn",
                 "type": 1,
                 "description": "Send a warning to a user",
-                "options": [
-                    {
-                        "name": "user_id",
-                        "type": 3,
-                        "description": "The user ID of the user to warn",
-                        "required": true
-                    },
-                    {
-                        "name": "extra_arguments",
-                        "type": 3,
-                        "description": "The warning message",
-                        "required": true
-                    }
-                ]
+                "options": []
             },
             {
                 "name": "transaction",

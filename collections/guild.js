@@ -26,6 +26,7 @@ module.exports = model('Guild', {
     nextcheck:      { type: Date, default: new Date() },
     reportchannel:  { type: String },
     lastcmdchannel: { type: String },
+    ownerid:        { type: String },
     overridelock:   { type: String, default: '' },
     lock:           { type: String, default: '' },
     lockactive:     { type: Boolean, default: false },
