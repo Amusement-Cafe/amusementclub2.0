@@ -170,8 +170,8 @@ cmd(['guild', 'donate'], withInteraction(async (ctx, user, args) => {
 cmd(['guild', 'set', 'tax'], withInteraction(async (ctx, user, args) => {
     const tax = args.tax
 
-    if(!isUserOwner(ctx, user) && !isUserManager(ctx, user) && !user.roles.includes('admin'))
-        return ctx.reply(user, `only server owner can modify guild tax`, 'red')
+    if(!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)) && !user.roles.includes('admin'))
+        return ctx.reply(user, `only the server owner or managers can modify guild tax`, 'red')
 
     if(isNaN(tax))
         return ctx.reply(user, `please specify a number that indicates % of claim tax`, 'red')
@@ -232,7 +232,7 @@ cmd(['guild', 'manager', 'add'], withInteraction(async (ctx, user, args) => {
     if(!tgUser)
         return ctx.reply(user, `user with ID \`${args.ids[0]}\` was not found`, 'red')
 
-    const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
+    const target = await getGuildUser(ctx, tgUser)
     if(!target)
         return ctx.reply(user, `it appears that **${tgUser.username}** is not a member of this guild`, 'red')
 
@@ -240,8 +240,7 @@ cmd(['guild', 'manager', 'add'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `it appears that **${tgUser.username}** already has a manager role`, 'red')
 
     target.roles.push('manager')
-    ctx.guild.markModified('userstats')
-    await ctx.guild.save()
+    await target.save()
 
     return ctx.reply(user, `successfully assigned manager role to **${tgUser.username}**`)
 }))
@@ -257,7 +256,7 @@ cmd(['guild', 'manager', 'remove'], withInteraction(async (ctx, user, args) => {
     if(!tgUser)
         return ctx.reply(user, `user with ID \`${args.ids[0]}\` was not found`, 'red')
 
-    const target = ctx.guild.userstats.find(x => x.id === tgUser.discord_id)
+    const target = await getGuildUser(ctx, tgUser)
     if(!target)
         return ctx.reply(user, `it appears that **${tgUser.username}** is not a member of this guild`, 'red')
 
@@ -265,15 +264,13 @@ cmd(['guild', 'manager', 'remove'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `it appears that **${tgUser.username}** doesn't have a manager role`, 'red')
 
     target.roles.pull('manager')
-    ctx.guild.markModified('userstats')
-    await ctx.guild.save()
+    await target.save()
 
     return ctx.reply(user, `successfully removed manager role from **${tgUser.username}**`)
 }))
 
 cmd(['guild', 'lock'], withInteraction(async (ctx, user, args) => {
-    const guildUser = await getGuildUser(ctx, user)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    if(!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)))
         return ctx.reply(user, `only owner or guild manager can set guild lock`, 'red')
 
 
@@ -337,8 +334,7 @@ cmd(['guild', 'lock'], withInteraction(async (ctx, user, args) => {
 }))
 
 cmd(['guild', 'unlock'], withInteraction(async (ctx, user) => {
-    const guildUser = await getGuildUser(ctx, user)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    if(!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)))
         return ctx.reply(user, `only owner or guild manager can remove guild lock`, 'red')
 
     if(!ctx.guild.lock)
@@ -389,8 +385,7 @@ cmd(['guild', 'lead'], withInteraction(async (ctx, user) => {
 }))
 
 cmd(['guild', 'convert'], withInteraction(async (ctx, user, args) => {
-    const guildUser = await getGuildUser(ctx, user)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    if(!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)))
         return ctx.reply(user, `only owner or guild manager can convert lemons!`, 'red')
 
     if (args.amount > ctx.guild.lemons)
@@ -411,8 +406,7 @@ cmd(['guild', 'convert'], withInteraction(async (ctx, user, args) => {
 }))
 
 cmd(['guild', 'upgrade'], withInteraction(async (ctx, user, args) => {
-    const guildUser = await getGuildUser(ctx, user)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    if(!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)))
         return ctx.reply(user, `only owner or guild manager can upgrade buildings!`, 'red')
 
     const reg = new RegExp(args.building, 'gi')
@@ -447,8 +441,7 @@ cmd(['guild', 'upgrade'], withInteraction(async (ctx, user, args) => {
 }))
 
 cmd(['guild', 'downgrade'], withInteraction(async (ctx, user, args) => {
-    const guildUser = await getGuildUser(ctx, user)
-    if(!isUserOwner(ctx, user) && !(guildUser && guildUser.roles.includes('manager')))
+    if(!isUserOwner(ctx, user) && !(await isUserManager(ctx, user)))
         return ctx.reply(user, `only owner or guild manager can downgrade buildings!`, 'red')
 
     const reg = new RegExp(args.building, 'gi')

@@ -41,13 +41,15 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
 
         await guild.save()
-        await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {
-            embeds: [{
-                description: `**${user.username}**, new guild added. This channel was marked as bot and report channel.
+        try {
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {
+                embeds: [{
+                    description: `**${user.username}**, new guild added. This channel was marked as bot and report channel.
             Type \`/help help_menu:guild here:true\` to see more about guild setup`,
-                color: color.green
-            }]
-        })
+                    color: color.green
+                }]
+            })
+        } catch (e) {}
     }
     guild.cacheClear = asdate.add(new Date(), 12, 'hours')
 
