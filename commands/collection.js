@@ -70,7 +70,7 @@ cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
         const clout = user.cloutedcols? user.cloutedcols.find(y => x.id === y.id): null
         const overall = ctx.cards.filter(c => c.col === x.id).length
         const usercount = userCards.filter(c => ctx.cards[c.cardid]?.col === x.id).length
-        const rate = Math.ceil((usercount / overall) * 100)
+        const rate = ((usercount / overall) * 100).toPrecision(3)
         const cloutCount = clout? clout.amount: 0
 
         return {
