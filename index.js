@@ -596,5 +596,7 @@ bot.on('error', async (err, sh) => {
     process.send({error: {message: err.message, stack: err.stack}})
 })
 
+process.on('unhandledRejection', () => {})
+
 module.exports.schemas = require('./collections')
 module.exports.modules = require('./modules')
