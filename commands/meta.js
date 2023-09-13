@@ -203,7 +203,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withInteraction( wit
     })
 })))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
     
     if(parsedargs.isEmpty()) {
         return ctx.reply(user, `please specify card`, 'red')
