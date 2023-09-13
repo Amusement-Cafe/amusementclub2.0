@@ -178,6 +178,11 @@ cmd(['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items
 })))
 
 cmd('daily', withInteraction(async (ctx, user) => {
+
+    if (!ctx.guild) {
+        return ctx.reply(user, `there was an error acquiring the guild you are running daily in. Please make sure that this guild is active with \`/guild info\`. 
+        If you continue to see this message please contact us via \`/report\` or [join our discord](${ctx.cafe})`, 'red')
+    }
     user.lastdaily = user.lastdaily || new Date(0)
     const oldStats = await getStaticStats(ctx, user, user.lastdaily)
     const oldClaims = oldStats.claims || 0
@@ -428,7 +433,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
             value: `Completed collections: **${numFmt(user.completedcols.length)}**\n`,
             inline: true
         }
-        if (user.prefs.profile.favcomplete)
+        if (user.prefs.profile.favcomplete && user.premium)
             completedField.value += `Favorite Completion: **${user.prefs.profile.favcomplete}**`
         fields.push(completedField)
 
@@ -439,7 +444,7 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
             value: `Overall clout: **${numFmt(cloutsum)}**\nHighest Clout Count: **${highestClout.amount}** \`${highestClout.id}\`\n`,
             inline: true
         }
-        if (user.prefs.profile.favclout)
+        if (user.prefs.profile.favclout && user.premium)
             cloutField.value += `Favorite clouted col: **${user.cloutedcols.find(x => x.id === user.prefs.profile.favclout).amount}** \`${user.prefs.profile.favclout}\``
         fields.push(cloutField)
     }
@@ -470,9 +475,9 @@ cmd('profile', withInteraction(async (ctx, user, args) => {
         title,
         description,
         fields,
-        color: user.prefs.profile.color,
+        color: user.prefs.profile.color && user.premium? user.prefs.profile.color: '16756480',
         image: {
-            url: user.prefs.profile.card? ctx.cards[user.prefs.profile.card].url: ''
+            url: user.prefs.profile.card && user.premium? ctx.cards[user.prefs.profile.card].url: ''
         },
         thumbnail: {
             url: botuser? botuser.avatarURL('png'): ''
