@@ -16,6 +16,7 @@ const notifyCheck = async (ctx) => {
     await checkDaily(ctx)
     await checkEffect(ctx)
     await checkVote(ctx)
+    await checkKofi(ctx)
 }
 
 const checkAnnounce = async (ctx) => {
@@ -120,6 +121,24 @@ const checkVote = async (ctx) => {
 
     userToVote.votenotified = true
     await userToVote.save()
+}
+
+const checkKofi = async (ctx) => {
+    let curTime = new Date()
+    const kofiExpiry = await User
+        .findOne({
+            premium: true,
+            premiumExpires: {$lt: curTime}
+        })
+
+    if (!kofiExpiry)
+        return
+
+    await sendNotification(ctx, kofiExpiry, `Your Amu+ has expired!`, `thank you for your support of Amusement Club!
+    Your Amu+ has now expired, if you would like to renew it you can do so through the \`/kofi\` command!`)
+    kofiExpiry.premium = false
+
+    await kofiExpiry.save()
 }
 
 const sendNotification = async (ctx, user, title, body) => {
