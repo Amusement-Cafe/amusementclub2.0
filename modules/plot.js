@@ -114,7 +114,7 @@ const getMaxStorage = async (ctx, plot) => {
     if (castleLevel <= 1)
         return baseCapacity * multiplier
 
-    return  (baseCapacity + ((baseCapacity * ((castleLevel * 25) / 100)))) * multiplier
+    return  Math.floor((baseCapacity + ((baseCapacity * ((castleLevel * 25) / 100)))) * multiplier)
 }
 
 
