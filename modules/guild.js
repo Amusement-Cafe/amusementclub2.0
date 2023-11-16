@@ -140,7 +140,6 @@ const bill_guilds = async (ctx, now) => {
     const guild = await Guild.findOne({nextcheck: {$lt: now}, processing: {$ne: true}})
 
     if(!guild) return;
-    console.log(guild.id)
     guild.processing = true
     await guild.save()
 
@@ -186,7 +185,8 @@ const bill_guilds = async (ctx, now) => {
                     report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
                     demolish = true
                     await deleteBuilding(ctx, guild.id, x.id)
-
+                } else {
+                    await x.save()
                 }
             }))
             report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
