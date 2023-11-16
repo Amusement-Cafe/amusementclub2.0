@@ -167,7 +167,7 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
         return ctx.reply(user, `you cannot liquefy card higher than 3 ${ctx.symbols.star}`, 'red')
 
     if(card.level < 3 && await check_effect(ctx, user, 'holygrail'))
-        vials += vials * .25
+        vials += Math.round(vials * .25)
 
     if(card.fav && card.amount === 1)
         return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
@@ -222,21 +222,26 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
 
     let vials = 0
     const hasGrail = await check_effect(ctx, user, 'holygrail')
-    cards.forEach(card => {
-        let cost = getVialCostFast(ctx, card)
-        if(cost >= 0) {
-            if(cost === Infinity)
-                cost = 5
+    await Promise.all(
+        cards.map(async card => {
+            let cost = Math.round((await getVialCost(ctx, card)) * .25)
 
-            if(card.level < 3 && hasGrail)
-                cost += cost * .25
+            if(cost >= 0) {
+                if(cost === Infinity)
+                    cost = 5
 
-            cost = Math.round(cost * .25)
-            vials += cost
-        } else {
-            vials = NaN
-        }
-    })
+                // cost = Math.round(cost * .25)
+
+                if(card.level < 3 && hasGrail)
+                    cost += Math.round(cost * .25)
+
+                vials += cost
+            } else {
+                vials = NaN
+            }
+        })
+    )
+
 
     if(isNaN(vials)) {
         const evalTime = getQueueTime()
