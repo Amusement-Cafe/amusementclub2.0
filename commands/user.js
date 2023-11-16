@@ -179,10 +179,6 @@ cmd(['inventory', 'info'], withInteraction(withUserItems(async (ctx, user, items
 
 cmd('daily', withInteraction(async (ctx, user) => {
 
-    if (!ctx.guild) {
-        return ctx.reply(user, `there was an error acquiring the guild you are running daily in. Please make sure that this guild is active with \`/guild info\`. 
-        If you continue to see this message please contact us via \`/report\` or [join our discord](${ctx.cafe})`, 'red')
-    }
     user.lastdaily = user.lastdaily || new Date(0)
     const oldStats = await getStaticStats(ctx, user, user.lastdaily)
     const oldClaims = oldStats.claims || 0
@@ -250,8 +246,13 @@ cmd('daily', withInteraction(async (ctx, user) => {
 
         await addGuildXP(ctx, user, 10)
         ctx.guild.balance += userLevel
-        await ctx.guild.save()
-
+        try {
+            await ctx.guild.save()
+        } catch (e) {
+            process.send({error: {message: e.message, stack: e.stack}})
+            console.log(user.discord_id)
+            console.log(ctx.guild)
+        }
         if(hero) {
             hero.xp += 3
             await hero.save()
