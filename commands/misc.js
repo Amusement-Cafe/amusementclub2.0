@@ -112,9 +112,14 @@ cmd('kofi', withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `thank you for your donation to Amusement Club servers! The amount registered in this transaction is below the amount required for 1 month of Amusement Plus, so it will not be granted. 
         If you make another donation within the next 30 days that grants you access please contact us in our [support server](${ctx.cafe})`)
 
+    const alreadyPremium = user.premiumExpires && user.premium
+    user.premiumExpires = asdate.add(alreadyPremium? user.premiumExpires: new Date(), months, 'months')
     user.premium = true
-    const alreadyPremium = user.premiumExpires
-    user.premiumExpires = asdate.add(alreadyPremium? alreadyPremium: new Date(), months, 'months')
+
+    if (user.premiumExpires < new Date())
+        user.premiumExpires = asdate.add(new Date(), months, 'months')
+
+    await user.save()
 
     if (!user.roles.some(x => x === 'AmuPlus'))
         user.roles.push('AmuPlus')
