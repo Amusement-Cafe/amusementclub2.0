@@ -8,9 +8,9 @@ Each claim will cost you more 🍅 tomatoes (in-game currency), using `/daily` w
 - If you are self-hosting a version of this bot, please read [Hosting](#Hosting)
 
 Invite the bot [here](https://club.amusement.cafe).
-Get your bot issues resolved on the [Amusement Cafe](https://discord.gg/xQAxThF) support server.
+Get your bot issues resolved on the [Amusement Cafe](https://discord.gg/HEqbtpzbHz) support server.
 
-[![Discord Server](https://img.shields.io/discord/351871492536926210)](https://discord.gg/xQAxThF)
+[![Discord Server](https://img.shields.io/discord/351871492536926210)](https://discord.gg/HEqbtpzbHz)
 
 ## Contributing
 

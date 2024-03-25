@@ -313,7 +313,7 @@ con('startup', async (data) => {
         prefix: config.bot.prefix,
         uniqueFrequency: config.effects.uniqueFrequency,
         eval: config.evals,
-        cafe: 'https://discord.gg/xQAxThF', /* support server invite */
+        cafe: 'https://discord.gg/HEqbtpzbHz', /* support server invite */
         mixpanel,
         sauce,
         config,
