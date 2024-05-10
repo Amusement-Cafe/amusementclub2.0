@@ -45,6 +45,7 @@ const {
 
 const {
     addGuildXP,
+    getBuilding,
 } = require('../modules/guild')
 
 const {
@@ -127,8 +128,14 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
 
     const lock = (ctx.guild.overridelock && !any? ctx.guild.overridelock: null) || (ctx.guild.lockactive && !any? ctx.guild.lock : null)
     const tohruEffect = (!stats.totalregclaims || stats.totalregclaims === 0) && await check_effect(ctx, user, 'tohrugift')
+    const hasArcade = await getBuilding(ctx, ctx.guild.id, 'arcadecenter')
+    const hasHall = await getBuilding(ctx, ctx.guild.id, 'pachinkohall')
     for (let i = 0; i < amount; i++) {
-        const rng = Math.random()
+        let rng = Math.random()
+        let legRng = Math.random()
+        if (hasHall)
+            hasHall.level === 1? rng -= 0.02: legRng -= 0.01
+
         const spec = _.sample(ctx.collections.filter(x => x.rarity > rng))
         const col = promo || spec || (lock? ctx.collections.find(x => x.id === lock) 
             : _.sample(ctx.collections.filter(x => !x.rarity && !x.promo)))
@@ -141,7 +148,19 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
             boostDrop = true
             card = ctx.cards[_.sample(boost.cards)]
         }
-        else card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
+        else if (legRng < ctx.config.rng.legendary && colCards.some(x => x.level === 5) && !lock && !spec)
+            card = _.sample(colCards.filter(x => !x.excluded ))
+        else if (hasArcade) {
+            const increaseRarity = hasArcade.level
+            const ratio = ctx.distribution[increaseRarity] / (ctx.distribution[0] - ctx.distribution[4] - ctx.distribution[5])
+            const arcadeRng = Math.random()
+            if (arcadeRng < ratio * 1.1 && colCards.some(x => x.level === increaseRarity && !x.excluded))
+                card = _.sample(colCards.filter(x => x.level === increaseRarity && !x.excluded))
+            else
+                card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
+        }
+        else
+            card = _.sample(colCards.filter(x => x.level < 5 && !x.excluded))
 
         const userCard = userCards.find(x => x.cardid === card.id)
         const alreadyClaimed = cards.filter(x => x.card === card).length
@@ -195,6 +214,9 @@ cmd(['claim', 'cards'], withInteraction(async (ctx, user, args) => {
     await completed(ctx, user, cards.map(x => x.card.id))
 
     if(newCards.length > 0) {
+        newCards.map(async x => {
+            await evalCard(ctx, x.card)
+        })
         await bulkIncrementUserCount(ctx, newCards.map(x => x.card.id))
     }
 
@@ -354,7 +376,7 @@ cmd('summon', withInteraction(withCards(async (ctx, user, cards, parsedargs) => 
             description: `summons **${formatName(card)}**!`
         })
 
-        return ctx.bot.createMessage(ctx.interaction.channel.id, card.imgur)
+        return ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {content: card.imgur})
     }
 
     return ctx.reply(user, {
@@ -391,6 +413,12 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
 
+    if(targetuser && !targetuser.prefs.interactions.cansell)
+        return ctx.reply(user, `the user you are checking has disabled the ability to sell them cards`, 'red')
+
+    if (!parsedargs.locked)
+        cards = cards.filter(x => !x.locked)
+
     if (targetuser && parsedargs.missing) {
         const otherCards = await getUserCards(ctx, targetuser)
         const otherIDs = otherCards.map(x => x.cardid)
@@ -426,7 +454,7 @@ cmd(['sell', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedar
         perms,
         onConfirm: (x) => confirm_trs(ctx, x, trs.id, true),
         onDecline: (x) => decline_trs(ctx, x, trs.id, true),
-        onTimeout: (x) => ctx.pgn.sendTimeout(ctx.interaction, `**${trs.from}** tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``)
+        onTimeout: (x) => ctx.reply(user, `you tried to sell **${formatName(card)}** to **${trs.to}**. This is now a pending transaction with ID \`${trs.id}\``, 'grey', true)
     })
 })))
 
@@ -437,6 +465,12 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
 
+    if(targetuser && !targetuser.prefs.interactions.cansell)
+        return ctx.reply(user, `the user you are checking has disabled the ability to sell them cards`, 'red')
+
+    if (!parsedargs.locked)
+        cards = cards.filter(x => !x.locked)
+
     if (targetuser && parsedargs.missing) {
         const otherCards = await getUserCards(ctx, targetuser)
         const otherIDs = otherCards.map(x => x.cardid)
@@ -444,6 +478,8 @@ cmd(['sell', 'many'], withInteraction(withCards(async (ctx, user, cards, parseda
             .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
             .sort(parsedargs.sort)
     }
+
+
     if (cards.length === 0) {
         return ctx.reply(user, 'there are no cards to sell in this transaction!', 'red')
     }
@@ -516,12 +552,22 @@ cmd(['sell', 'preview'], withInteraction(withCards(async (ctx, user, cards, pars
     const id = parsedargs.ids[0]
     const targetuser = id? await User.findOne({ discord_id: id }) : null
 
+    if(targetuser && !targetuser.prefs.interactions.cansell)
+        return ctx.reply(user, `the user you are checking has disabled the ability to sell them cards`, 'red')
+
+    if (!parsedargs.locked)
+        cards = cards.filter(x => !x.locked)
+
     if (targetuser && parsedargs.missing) {
         const otherCards = await getUserCards(ctx, targetuser)
         const otherIDs = otherCards.map(x => x.cardid)
         cards = cards.filter(x => otherIDs.indexOf(x.cardid) === -1)
             .filter(x => x.fav && x.amount == 1 && !parsedargs.fav? x.cardid === -1 : x)
             .sort(parsedargs.sort)
+    }
+
+    if (cards.length === 0) {
+        return ctx.reply(user, 'there are no cards to sell in this transaction!', 'red')
     }
 
     cards.splice(100, cards.length)
@@ -572,7 +618,7 @@ cmd(['eval', 'one'], withInteraction(withGlobalCards(async (ctx, user, cards, pa
     const cardInfo = await fetchInfo(ctx, card.id)
     return ctx.reply(user,
         `card ${formatName(card)} is worth: **${numFmt(price)}** ${ctx.symbols.tomato} ${card.level < 4? `or **${numFmt(vials)}** ${ctx.symbols.vial}` : ``}
-        ${cardInfo.aucevalinfo.evalprices.length > ctx.eval.aucEval.minSamples? `**This eval is taken as an average of auction prices!**`: ''}`)
+        ${cardInfo.aucevalinfo.evalprices.length >= ctx.eval.auction.minSamples? `**This eval is taken as an average of auction prices!**`: ''}`)
 }))).access('dm')
 
 cmd(['eval', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
@@ -717,8 +763,8 @@ cmd(['boost', 'list'], withInteraction((ctx, user) => {
         return ctx.reply(user, `no current boosts`, 'red')
     }
 
-    const description = boosts.map(x => 
-        `[${msToTime(x.expires - now, {compact: true})}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards claim_id:${x.id}\`)`).join('\n')
+    const description = boosts.map(x =>
+        `[${formatDateTimeRelative(new Date(x.expires))}] **${x.rate * 100}%** rate for **${x.name}** (\`${ctx.prefix}claim cards boost_id:${x.id}\`)`).join('\n')
 
     return ctx.send(ctx.interaction, {
         description,
@@ -739,7 +785,7 @@ cmd(['boost', 'info'], withInteraction((ctx, user, args) => {
     list.push(`Rate: **${boost.rate * 100}%**`)
     list.push(`Cards in pool: **${numFmt(boost.cards.length)}**`)
     list.push(`Command: \`${ctx.prefix}claim cards boost_id:${boost.id}\``)
-    list.push(`Expires in **${msToTime(boost.expires - now)}**`)
+    list.push(`Expires in **${formatDateTimeRelative(new Date(boost.expires))}**`)
 
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(boost.cards.map(c => formatName(ctx.cards[c])), 10, 1024),
@@ -810,6 +856,80 @@ cmd(['rate', 'remove', 'one'], withInteraction(withCards(async (ctx, user, cards
     await info.save()
 
     return ctx.reply(user, `removed rating for ${formatName(card)}`)
+}))).access('dm')
+
+cmd(['rate', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    const rating = parsedargs.rating
+
+    const embed = {
+        title: `**${user.username}**, do you want to rate **${numFmt(cards.length)}** cards as ${rating}/10?`,
+        color: colors.yellow
+    }
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x))),
+        embed,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        onConfirm: async () => {
+            let stats = await getStats(ctx, user, user.lastdaily)
+            await Promise.all(cards.map(async x => {
+                let info = fetchInfo(ctx, x.id)
+                if (x.rating) {
+                    const oldrating = x.rating
+                    info.ratingsum -= oldrating
+                    info.usercount--
+                } else {
+                    stats.rates++
+                }
+                info.ratingsum += rating
+                info.usercount++
+                await info.save()
+            }))
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {rating: rating})
+            await saveAndCheck(ctx, user, stats)
+            return ctx.reply(user, `set rating **${rating}** for **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+}))).access('dm')
+
+cmd(['rate', 'remove', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'rate')
+
+    const embed = {
+        title: `**${user.username}**, do you want to remove the rating from **${numFmt(cards.length)}** cards?`,
+        color: colors.yellow
+    }
+    cards = cards.filter(x => x.rating)
+
+    if (cards.length === 0)
+        return ctx.reply(user, 'all cards in your request are already unrated!', 'red')
+
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x))),
+        embed,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        onConfirm: async () => {
+            await Promise.all(cards.map(async x => {
+                const oldrating = x.rating
+                let info = fetchInfo(ctx, x.id)
+
+                if (info.ratingsum != 0) {
+                    info.ratingsum -= oldrating
+                }
+                if (info.usercount != 0) {
+                    info.usercount--
+                }
+                await info.save()
+            }))
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {rating: 0})
+            return ctx.reply(user, `removed rating for **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
 }))).access('dm')
 
 cmd(['wish', 'list'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs) => {
@@ -962,3 +1082,97 @@ cmd(['wish', 'remove', 'many'], withInteraction(withGlobalCards(async (ctx, user
         }
     })
 }))).access('dm')
+
+cmd(['lock', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'lock')
+
+    const unlocked = cards.filter(x => !x.locked)
+    let card = bestMatch(unlocked)
+
+    if(!card) {
+        card = bestMatch(cards)
+        return ctx.reply(user, `card ${formatName(card)} is already locked!`, 'red')
+    }
+
+    await UserCard.updateOne({cardid: card.id, userid: user.discord_id}, {locked: true})
+
+    return ctx.reply(user, `locked ${formatName(card)}`)
+})))
+
+cmd(['lock', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => !x.locked)
+
+    if(cards.length === 0)
+        return ctx.reply(user, `all cards from that request are already locked`, 'red')
+
+    const embed = {
+        title: `**${user.username}**, do you want to lock **${numFmt(cards.length)}** cards?`,
+        footer: { text: `Locked cards can be shown with -locked` },
+        color: colors.yellow
+    }
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x)), 10),
+        embed,
+        force: ctx.globals.force,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.description = data.pages[data.pagenum]
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} || Locked cards can be shown with -locked`}
+        },
+        onConfirm: async (x) => {
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {locked: true})
+
+            return ctx.reply(user, `locked **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+})))
+
+cmd(['lock', 'remove', 'one'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    if(parsedargs.isEmpty())
+        return ctx.qhelp(ctx, user, 'lock')
+
+    const locked = cards.filter(x => x.locked)
+    let card = bestMatch(locked)
+
+    if(!card) {
+        card = bestMatch(cards)
+        return ctx.reply(user, `card ${formatName(card)} is not locked`, 'red')
+    }
+
+    await UserCard.updateOne({cardid: card.id, userid: user.discord_id}, {locked: false})
+
+    return ctx.reply(user, `unlocked ${formatName(card)}`)
+})))
+
+cmd(['lock', 'remove', 'many'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
+    cards = cards.filter(x => x.locked)
+
+    if(cards.length === 0)
+        return ctx.reply(user, `all cards from that request are already unlocked`, 'red')
+
+    const embed = {
+        title: `**${user.username}**, do you want to unlock **${numFmt(cards.length)}** cards?`,
+        footer: { text: `Locked cards can be shown with -locked` },
+        color: colors.yellow
+    }
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(x => formatName(x)), 10),
+        embed,
+        force: ctx.globals.force,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.description = data.pages[data.pagenum]
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} || Locked cards can be shown with -locked`}
+        },
+        onConfirm: async (x) => {
+            const cardIds = cards.map(c => c.id)
+            await UserCard.updateMany({userid: user.discord_id, cardid: { $in: cardIds }}, {locked: false})
+
+            return ctx.reply(user, `unlocked **${numFmt(cards.length)}** cards`, 'green', true)
+        }
+    })
+})))

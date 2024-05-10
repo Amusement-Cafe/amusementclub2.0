@@ -1,51 +1,73 @@
 {
-    "token": "DISCORD_VALID_BOT_TOKEN_GOES_HERE",
-    "database": "mongodb://localhost/amusement",
-    "prefix": "->",
-    "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com",
-    "shorturl": "https://amuse.noxc.dev",
-    "daily": 72000000,
-    "debug": true,
-    "invite": "",
-    "maintenance": true,
-    "auctionLock": false,
-    "uniqueFrequency": 10,
-    "guildLogChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
-    "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE",
-    "auditc": {
-        "channel": ["DISCORD_VALID_CHANNEL_ID_GOES_HERE", "CAN TAKE MULTIPLE"],
-        "taglogchannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+    "analytics": {
+        "mixpanel": ""
     },
-    "autoAuction": {
-        "auctionCount": 100,
-        "auctionMultiplier": 0.9,
-        "auctionLength": 12,
-        "auctionUserID": "DISCORD_VALID_USER_ID_GOES_HERE WILL EMPTY CARDS"
+    "auction": {
+        "auctionFeePercent": 10,
+        "auto": {
+            "count": 100,
+            "multiplier": 0.9,
+            "length": 12,
+            "userID": "DISCORD_VALID_USER_ID_GOES_HERE WILL EMPTY CARDS"
+        },
+        "lock": false
     },
-    "evalc": {
-        "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],
-        "evalUserRate": 0.25,
-        "evalVialRate": 0.055,
-        "aucEval": {
+    "bot": {
+        "token": "DISCORD_VALID_BOT_TOKEN_GOES_HERE",
+        "shards": 1,
+        "prefix": "/",
+        "database": "",
+        "invite": "",
+        "maintenance": true,
+        "debug": true,
+        "adminGuildID": "DISCORD_VALID_GUILD_ID_GOES_HERE"
+    },
+    "channels": {
+        "tagLog": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+        "guildLog": "DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+        "evalUpdate" :"DISCORD_VALID_CHANNEL_ID_GOES_HERE",
+        "report" :"DISCORD_VALID_CHANNEL_ID_GOES_HERE"
+    },
+    "effects": {
+        "uniqueFrequency": 10
+    },
+    "evals": {
+        "auction": {
             "minSamples": 4,
             "maxSamples": 16,
             "minBounds": 0.5,
             "maxBounds": 5.0,
-            "aucFailMultiplier": 0.90,
-            "evalUpdateChannel": "DISCORD_VALID_CHANNEL_ID_GOES_HERE"
-        }
+            "aucFailMultiplier": 0.90
+        },
+        "cardPrices": [ 30, 80, 150, 400, 1000, 2500 ],
+        "evalUserRate": 0.25,
+        "evalVialRate": 0.055
     },
-    "dbl": {
-        "token": "",
-        "port": 2727,
-        "pass": "",
+    "links": {
+        "baseurl": "https://amusementclub.nyc3.digitaloceanspaces.com",
+        "shorturl": "https://amuse.noxc.dev",
         "topggUrl": "",
-        "dblUrl": ""
+        "dblUrl": "",
+        "kofi": ""
     },
-    "analytics": {
-        "mixpanel": ""
+    "rng": {
+        "legendary": 0.001
     },
-    "metac": {
+    "sourcing": {
         "sauceNaoToken": ""
+    },
+    "symbols": {
+        "tomato": "`🍅`",
+        "vial": "`🍷`",
+        "lemon": "`🍋`",
+        "star": "★",
+        "auc_sbd": "🔹",
+        "auc_lbd": "🔷",
+        "auc_sod": "🔸",
+        "auc_wss": "▫️",
+        "accept": "✅",
+        "decline": "❌",
+        "red_circle": "`🔴`",
+        "amu_plus": "➕"
     }
 }

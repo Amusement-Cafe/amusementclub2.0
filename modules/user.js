@@ -1,6 +1,7 @@
 const User      = require('../collections/user')
 const UserCard  = require('../collections/userCard')
 const UserSlot  = require('../collections/userSlot')
+const UserQuest = require("../collections/userQuest");
 const _         = require('lodash')
 const asdate    = require('add-subtract-date')
 const colors    = require('../utils/colors')
@@ -57,12 +58,12 @@ const fetchOrCreate = async (ctx, userid, username) => {
             ]
         }
         try {
-            await ctx.bot.createMessage(ctx.interaction.channel.id, {embed})
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {embeds: [embed]})
         } catch (e) {
-            const dmChannel = await ctx.bot.getDMChannel(userid)
+            const dmChannel = await ctx.bot.rest.users.createDM(userid)
             try {
                 embed.description += `\n**This message has been sent as a DM because you have run a command or selected a button in a channel the bot cannot view. Please allow the bot view access to that channel or run commands in a channel the bot can view!**`
-                await ctx.bot.createMessage(dmChannel.id, {embed})
+                await ctx.bot.rest.channels.createMessage(dmChannel.id, {embeds: [embed]})
             } catch (e) {}
         }
 
@@ -96,7 +97,7 @@ const onUsersFromArgs = async (args, callback) => {
     }))
 }
 
-const getQuest = (ctx, user, tier, exclude) => {
+const getDailyQuest = (ctx, user, tier, exclude) => {
     const level = XPtoLEVEL(user.xp)
     const available = ctx.quests.daily.filter(x => 
         (!exclude || x.id.slice(0,-1) != exclude)
@@ -112,6 +113,50 @@ const getQuest = (ctx, user, tier, exclude) => {
         x.id != exclude
     ))
 }
+
+const getWeeklyQuest = (ctx, user, tier, exclude) => {
+    const level = XPtoLEVEL(user.xp)
+    const available = ctx.quests.weekly.filter(x =>
+        (!exclude || x.id != exclude)
+        && x.tier === tier
+        && x.min_level <= level
+        && x.can_drop)
+
+    if(available.length > 0) {
+        return _.sample(available)
+    }
+
+    return _.sample(ctx.quests.weekly.filter(x =>
+        x.id != exclude
+    ))
+}
+
+const getMonthlyQuest = (ctx, user, tier, exclude) => {
+    const level = XPtoLEVEL(user.xp)
+    const available = ctx.quests.monthly.filter(x =>
+        (!exclude || x.id != exclude)
+        && x.tier === tier
+        && x.min_level <= level
+        && x.can_drop)
+
+    if(available.length > 0) {
+        return _.sample(available)
+    }
+
+    return _.sample(ctx.quests.monthly.filter(x =>
+        x.id != exclude
+    ))
+}
+
+const deleteOldQuests = async (now) => {
+    await UserQuest.deleteMany({expiry: {$lt: now}})
+}
+
+const getUserQuests = async (ctx, user) => UserQuest.find({userid: user.discord_id})
+
+const updateUserQuest = async (ctx, user, questid, query) => UserQuest.updateOne({userid: user.discord_id, questid: questid}, query, { returnNewDocument: true })
+
+const deleteDailyQuests = async (ctx, user) => UserQuest.deleteMany({userid: user.discord_id, type: 'daily'})
 
 const getUserCards = (ctx, user) => UserCard.find({ userid: user.discord_id }).lean()
 
@@ -133,7 +178,6 @@ const addUserCards = async (ctx, user, cardIds) => {
             setDefaultsOnInsert: true,
         }
     }))
-
     return await UserCard.bulkWrite(updates)
 }
 
@@ -158,8 +202,14 @@ module.exports = {
     fetchOnly,
     onUsersFromArgs,
     updateUser,
-    getQuest,
+    updateUserQuest,
+    getDailyQuest,
+    getWeeklyQuest,
+    getMonthlyQuest,
     getUserCards,
+    getUserQuests,
+    deleteDailyQuests,
+    deleteOldQuests,
     findUserCards,
     addUserCards,
     removeUserCards,

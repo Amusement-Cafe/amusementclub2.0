@@ -31,10 +31,20 @@ const getStaticStats = async (ctx, user, daily) => {
     return userStats
 }
 
+const getAllStats = async (ctx, user) => UserStats.find({discord_id: user.discord_id}).lean()
+
+/*
+Get a static and sorted list of all stats for a user.
+Pass a startDate to get stats starting from that time
+Otherwise time will default to unix 0
+ */
+const getTimedStats = async (ctx, user, startDate = new Date(0)) => UserStats.find({discord_id: user.discord_id, daily: {$gte: startDate}}).lean()
+
 // Save a users stats and then check for completed quests and achievements
 const saveAndCheck = async (ctx, user, stats) => {
     await stats.save()
-    await check_all(ctx, user, ctx.action, null, stats)
+    const allStats = await getAllStats(ctx, user)
+    await check_all(ctx, user, ctx.action, null, stats, allStats)
 }
 
 const formatUserStats = (stat, count) => {
@@ -78,13 +88,21 @@ const formatUserStats = (stat, count) => {
         case 'store4': return {stat: `Purchases From Store 4`, count: count}
         case 't1quests': return {stat: `T1 Quests Completed`, count: count}
         case 't2quests': return {stat: `T2 Quests Completed`, count: count}
+        case 't3quests': return {stat: `T3 Quests Completed`, count: count}
+        case 't4quests': return {stat: `T4 Quests Completed`, count: count}
+        case 't5quests': return {stat: `T5 Quests Completed`, count: count}
+        case 't6quests': return {stat: `T6 Quests Completed`, count: count}
+        case 'totaldaily': return {stat: 'Total Dailies', count: count}
+
 
     }
 }
 
 module.exports = {
     formatUserStats,
+    getAllStats,
     getStats,
     getStaticStats,
+    getTimedStats,
     saveAndCheck
 }

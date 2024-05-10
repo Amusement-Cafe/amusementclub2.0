@@ -122,6 +122,25 @@
                                 "required": true
                             }
                         ]
+                    },
+                    {
+                        "name": "owner",
+                        "description": "Add an owner to a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "user_id",
+                                "description": "The user ID to set as guild owner",
+                                "type": 6,
+                                "required": true
+                            },
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to set owner for",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
                     }
                 ]
             },
@@ -163,6 +182,19 @@
                             {
                                 "name": "role",
                                 "description": "The role to remove from the users",
+                                "type": 3,
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "owner",
+                        "description": "Remove an owner from a guild",
+                        "type": 1,
+                        "options": [
+                            {
+                                "name": "guild_id",
+                                "description": "The guild ID to remove owner from",
                                 "type": 3,
                                 "required": true
                             }
@@ -386,20 +418,7 @@
                 "name": "announce",
                 "description": "Send a bot announcement",
                 "type": 1,
-                "options": [
-                    {
-                        "name": "title",
-                        "description": "The title of the announcement",
-                        "type": 3,
-                        "required": true
-                    },
-                    {
-                        "name": "message",
-                        "description": "The body of the announcement",
-                        "type": 3,
-                        "required": true
-                    }
-                ]
+                "options": []
             },
             {
                 "name": "auclock",
@@ -577,6 +596,31 @@
                         "description": "The direct link to the image that will be searched for",
                         "type": 3,
                         "required": true
+                    }
+                ]
+            },
+            {
+                "name": "scan",
+                "description": "Upload and scan a source file to bulk source cards",
+                "type": 1,
+                "options": [
+                    {
+                        "name": "collection",
+                        "description": "The collection you are scanning a source file for",
+                        "type": 3,
+                        "required": true
+                    },
+                    {
+                        "name": "source",
+                        "description": "The source file to use",
+                        "type": 11,
+                        "required": true
+                    },
+                    {
+                        "name": "author_id",
+                        "description": "The user ID of the card creator",
+                        "type": 6,
+                        "required": false
                     }
                 ]
             }
@@ -836,20 +880,7 @@
                 "name": "warn",
                 "type": 1,
                 "description": "Send a warning to a user",
-                "options": [
-                    {
-                        "name": "user_id",
-                        "type": 3,
-                        "description": "The user ID of the user to warn",
-                        "required": true
-                    },
-                    {
-                        "name": "extra_arguments",
-                        "type": 3,
-                        "description": "The warning message",
-                        "required": true
-                    }
-                ]
+                "options": []
             },
             {
                 "name": "transaction",

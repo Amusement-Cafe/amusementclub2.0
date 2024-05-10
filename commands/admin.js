@@ -1,10 +1,9 @@
 const {pcmd}        = require('../utils/cmd')
-const Announcement  = require('../collections/announcement')
-const Auction       = require('../collections/auction')
 const Transaction   = require('../collections/transaction')
 const Users         = require('../collections/user')
 const UserCards     = require('../collections/userCard')
 const _             = require('lodash')
+const asdate        = require('add-subtract-date')
 
 const {
     getHelpEmbed,
@@ -18,10 +17,6 @@ const {
     findUserCards,
     getUserCards,
 } = require('../modules/user')
-
-const {
-    byAlias,
-} = require('../modules/collection')
 
 const {
     checkGuildLoyalty,
@@ -173,6 +168,35 @@ pcmd(['admin', 'mod'], ['sudo', 'add', 'lemons'], withInteraction(async (ctx, us
     return ctx.reply(user, rpl.join('\n'))
 }))
 
+pcmd(['admin'], ['sudo', 'add', 'owner'], withInteraction(async (ctx, user, args) => {
+    const target = await fetchOnly(args.ids[0]).lean()
+
+    if(!target)
+        throw new Error(`cannot find user with that ID`)
+
+    const guild = await fetchGuildById(args.guildID)
+
+    if(!guild)
+        throw new Error('cannot find a guild with that ID')
+
+    guild.ownerid = target.discord_id
+    await guild.save()
+
+    return ctx.reply(user, `set **${target.username}** as the new owner for guild with ID **${guild.id}**!`)
+}))
+
+pcmd(['admin'], ['sudo', 'remove', 'owner'], withInteraction(async (ctx, user, args) => {
+    const guild = await fetchGuildById(args.guildID)
+
+    if(!guild)
+        throw new Error('cannot find a guild with that ID')
+
+    guild.ownerid = null
+    await guild.save()
+
+    return ctx.reply(user, `removed owner for guild with ID **${guild.id}**!`)
+}))
+
 pcmd(['admin', 'mod'], ['sudo', 'add', 'card'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs, args) => {
     if(!parsedargs.ids[0])
         throw new Error(`please specify user ID`)
@@ -256,8 +280,11 @@ pcmd(['admin'], ['sudo', 'guild', 'unlock'], withInteraction(async (ctx, user, a
 pcmd(['admin'], ['sudo', 'reset', 'daily'], withInteraction(async (ctx, user, args) => {
     const rpl = ['']
 
+    const now = new Date()
+    const past = asdate.subtract(now, 1, 'day')
+
     await onUsersFromArgs(args, async (target, newargs) => {
-        target.lastdaily = new Date(0)
+        target.lastdaily = new Date(past)
         await target.save()
         rpl.push(`\`✅\` daily reset for **${target.username}** (${target.discord_id})`)
     })
@@ -424,12 +451,12 @@ pcmd(['admin'], ['sudo', 'crash'], withInteraction((ctx) => {
 }))
 
 pcmd(['admin'], ['sudo', 'refresh', 'global'], withInteraction(async (ctx, user) => {
-    await ctx.bot.bulkEditCommands(ctx.slashCmd)
+    await ctx.bot.application.bulkEditGlobalCommands(ctx.slashCmd)
     return ctx.reply(user, `an update of the bot's **GLOBAL** slash commands is currently underway. Please allow for up to 1 hour for the changes to be reflected, the bot may not be usable during this time.`)
 }))
 
 pcmd(['admin'], ['sudo', 'refresh', 'admin'], withInteraction(async (ctx, user) => {
-    await ctx.bot.bulkEditGuildCommands(ctx.adminGuildID, ctx.adminCmd)
+    await ctx.bot.application.bulkEditGuildCommands(ctx.adminGuildID, ctx.adminCmd)
     return ctx.reply(user, `an update of the bot's **ADMIN** slash commands is currently underway. Please allow a few minutes for the changes to be reflected.`)
 
 }))
@@ -490,9 +517,9 @@ pcmd(['admin'], ['sudo', 'wip'], ['sudo', 'maintenance'], withInteraction(async 
     ctx.settings.wip = !ctx.settings.wip
 
     if (!ctx.settings.wip)
-        await ctx.bot.editStatus("online", { name: 'commands', type: 2})
+        await ctx.bot.editStatus("online", [{ name: 'commands', type: 2}])
     else
-        await ctx.bot.editStatus("idle", { name: 'maintenance', type: 2})
+        await ctx.bot.editStatus("idle", [{ name: 'maintenance', type: 2}])
     return ctx.reply(user, `maintenance mode is now **${ctx.settings.wip? `ENABLED` : `DISABLED`}**`)
 }))
 
@@ -503,20 +530,43 @@ pcmd(['admin'], ['sudo', 'auclock'], withInteraction(async (ctx, user, ...args) 
 }))
 
 pcmd(['admin'], ['sudo', 'announce'], withInteraction(async (ctx, user, args) => {
-    const title = args.title
-    const announcement = new Announcement()
-    announcement.date = new Date()
-    announcement.title = title
-    announcement.body = args.message
-    await announcement.save()
-
-    return ctx.reply(user, {
-        title,
-        author: { name: `New announcement set` },
-        description: args.message,
-        footer: { text: `Date: ${announcement.date}` },
+    return ctx.interaction.createModal({
+        title: "Bot Announcement Form",
+        customID: "sudoAnnounce",
+        components: [
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 4,
+                        customID: 'announceTitle',
+                        label: 'Announcement Title',
+                        style: 1,
+                        minLength: 1,
+                        maxLength: 512,
+                        placeholder: 'Announcement Title Goes Here',
+                        required: true
+                    }
+                ]
+            },
+            {
+                type: 1,
+                components: [
+                    {
+                        type: 4,
+                        customID: 'announceBody',
+                        label: 'Announcement Body',
+                        style: 2,
+                        minLength: 1,
+                        maxLength: 4000,
+                        placeholder: 'Announcement Body Goes Here',
+                        required: true
+                    }
+                ]
+            }
+        ]
     })
-}))
+}, {modal: true}))
 
 pcmd(['admin'], ['sudo', 'lead', 'lemons'], withInteraction(async (ctx, user) => {
     let allUsersWithLemons = (await Users.find(

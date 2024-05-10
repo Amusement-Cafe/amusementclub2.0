@@ -5,7 +5,11 @@ const dateFormat    = require('dateformat')
 
 const colors        = require('../utils/colors')
 const {cmd, pcmd}   = require('../utils/cmd')
-const {numFmt}      = require('../utils/tools')
+
+const {
+    numFmt,
+    formatDateTimeLong
+} = require('../utils/tools')
 
 const {
     cap,
@@ -104,7 +108,7 @@ cmd('info', withInteraction(withGlobalCards(async (ctx, user, cards, parsedargs)
         }
 
         if(extrainfo.meta.added)
-            meta.push(`Added: **${dateFormat(extrainfo.meta.added, "yyyy-mm-dd")}** (${msToTime(new Date() - extrainfo.meta.added, {compact: true})})`)
+            meta.push(`Added: **${formatDateTimeLong(extrainfo.meta.added)}** (${msToTime(new Date() - extrainfo.meta.added, {compact: true})})`)
 
         if(meta.length > 0) {
             embed.fields.push({
@@ -184,7 +188,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withInteraction( wit
                 }
             ],
             footer: { text: `Booru ID: ${booruID}` },
-            image: { url: getPostURL(post) }
+            image: { url: post.file_url }
         },
         onConfirm: async (x) => {
             try {
@@ -192,14 +196,14 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'booru'], withInteraction( wit
                 return ctx.reply(user, `sources and tags have been saved!`, 'green', true)
 
             } catch(e) {
-                return ctx.reply(user, `unexpected error occured while trying to add card booru data. Please try again.
+                return ctx.reply(user, `unexpected error occurred while trying to add card booru data. Please try again.
                     ${e.message}`, 'red', true)
             }
         },
     })
 })))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess'], withInteraction( withGlobalCards(async (ctx, user, cards, parsedargs) => {
     
     if(parsedargs.isEmpty()) {
         return ctx.reply(user, `please specify card`, 'red')
@@ -259,7 +263,7 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'guess', 'booru'], withInteraction( w
                 }
             ],
             footer: { text: `Booru ID: ${booruID}` },
-            image: { url: getPostURL(post) }
+            image: { url: post.file_url }
         },
         onConfirm: async (x) => {
             try {
@@ -292,20 +296,14 @@ pcmd(['admin', 'mod', 'metamod'], ['meta', 'set', 'source'], withInteraction( wi
     return ctx.reply(user, `successfully set source image for ${formatName(card)}`)
 })))
 
-pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan', 'source'], withInteraction( async (ctx, user, ...args) => {
-    https.get(ctx.msg.attachments[0].url, res => {
-        const parsedArgs = parseArgs(ctx, args, user)
-        const authorID = parsedArgs.extra[0]
-        const colArg = args.find(x => x[0] == '-').replace('-', '')
-
-        if (!colArg) {
-            return ctx.reply(user, `please specify collection`, 'red')
-        }
-
-        const col = bestColMatch(ctx, colArg)
+pcmd(['admin', 'mod', 'metamod'], ['meta', 'scan'], withInteraction( async (ctx, user, args) => {
+    const attachment = ctx.interaction.data.resolved.attachments.first()
+    https.get(attachment.url, res => {
+        const authorID = args.author
+        const col = _.flattenDeep(args.cols)[0]
 
         if (!col) {
-            return ctx.reply(user, `collection with name \`${colArg}\` was no found`, 'red')
+            return ctx.reply(user, `collection with name \`${args.colQuery}\` was no found`, 'red')
         }
 
         res.setEncoding('utf8')

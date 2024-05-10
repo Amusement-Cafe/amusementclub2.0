@@ -1,18 +1,26 @@
-const Annmouncement = require('../collections/announcement')
+const Announcement = require('../collections/announcement')
 const User          = require('../collections/user')
 const UserSlot      = require('../collections/userSlot')
+const UserEffect    = require("../collections/userEffect")
 
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 
+const {rct}              = require('../utils/cmd')
+const {deleteUserEffect} = require("./effect")
+
 const notifyCheck = async (ctx) => {
+    if (ctx.settings.wip)
+        return
     await checkAnnounce(ctx)
     await checkDaily(ctx)
+    await checkEffect(ctx)
     await checkVote(ctx)
+    await checkKofi(ctx)
 }
 
 const checkAnnounce = async (ctx) => {
-    const lastBotAnnounce = await Annmouncement
+    const lastBotAnnounce = await Announcement
         .findOne({ notify: true })
         .sort({ date: -1 })
 
@@ -59,9 +67,39 @@ const checkDaily = async (ctx) => {
 
     if (!userToDaily) return
 
-    await sendNotification(ctx, userToDaily, `Your daily is ready`, `you can claim your daily bonus now with \`/daily\`!`)
+    await sendNotification(ctx, userToDaily, `Daily Ready!`, `you can claim your daily bonus now with \`/daily\`!`)
     userToDaily.dailynotified = true
     await userToDaily.save()
+}
+
+const checkEffect = async (ctx) => {
+    let currentTime = new Date()
+    let userToNotify
+    const expiredEffect = await UserEffect.findOne({expires: {$lt: currentTime}, notified: false})
+    if (expiredEffect) {
+        userToNotify = await User.findOne({
+            'prefs.notifications.effectend': true,
+            discord_id: expiredEffect.userid
+        })
+        if (!userToNotify) {
+            return await deleteUserEffect(expiredEffect)
+        }
+        await sendNotification(ctx, userToNotify, `Effect Expired!`, `your effect \`${expiredEffect.id}\` has expired and has been removed from your hero slot!`)
+        return await deleteUserEffect(expiredEffect)
+    }
+    const cooldownExpired = await UserEffect.findOne({cooldownends: {$lt: currentTime}, notified: false})
+    if (!cooldownExpired)
+        return
+    userToNotify = await User.findOne({
+        'prefs.notifications.effectend': true,
+        discord_id: cooldownExpired.userid
+    })
+    if (userToNotify)
+        await sendNotification(ctx, userToNotify, `Effect Ready!`, `your effect \`${cooldownExpired.id}\` is now off of cooldown and is ready to be used!`)
+
+    cooldownExpired.notified = true
+    await cooldownExpired.save()
+
 }
 
 const checkVote = async (ctx) => {
@@ -85,6 +123,24 @@ const checkVote = async (ctx) => {
     await userToVote.save()
 }
 
+const checkKofi = async (ctx) => {
+    let curTime = new Date()
+    const kofiExpiry = await User
+        .findOne({
+            premium: true,
+            premiumExpires: {$lt: curTime}
+        })
+
+    if (!kofiExpiry)
+        return
+
+    await sendNotification(ctx, kofiExpiry, `Your Amu+ has expired!`, `thank you for your support of Amusement Club!
+    Your Amu+ has now expired, if you would like to renew it you can do so through the \`/kofi\` command!`)
+    kofiExpiry.premium = false
+
+    await kofiExpiry.save()
+}
+
 const sendNotification = async (ctx, user, title, body) => {
     try {
         await ctx.direct(user, { 
@@ -98,10 +154,25 @@ const sendNotification = async (ctx, user, title, body) => {
 
 const getLastAnnouncement = (ctx, user) => {
     const date = user.lastannounce || new Date(0)
-    return Annmouncement
+    return Announcement
         .findOne({ date: { $gt: date } })
         .sort({ date: -1 })
 }
+
+rct('title_select', async (ctx, user) => {
+    if (ctx.interaction.user.id !== ctx.interaction.message.interaction.user.id)
+        return
+
+    user.prefs.profile.title = ctx.interaction.data.values.raw[0]
+    await user.save()
+    return ctx.interaction.editParent({embeds: [
+            {
+                description: `**${user.username}**, you have selected a new title! Check it out with \`/profile\``,
+                color: colors.green
+            }
+        ],
+    components: []})
+})
 
 module.exports = {
     notifyCheck,

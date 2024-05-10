@@ -21,6 +21,7 @@ const {
     getVialCost,
     getVialCostFast,
     getQueueTime,
+    evalCardFast,
 } = require('../modules/eval')
 
 const {
@@ -53,8 +54,9 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
     if(!parsedargs[0] || parsedargs[0].isEmpty())
         return ctx.qhelp(ctx, user, 'forge')
 
-    const batch1 = cards[0]
-    const batch2 = cards[1]
+    const batch1 = cards[0].filter(x => !x.locked)
+    const batch2 = cards[1]?.filter(x => !x.locked)
+
 
     let card1, card2
 
@@ -128,6 +130,7 @@ cmd(['forge'], withInteraction(withMultiQuery(async (ctx, user, cards, parsedarg
                 await completed(ctx, user, [card1.id, card2.id, newcard.id])
                 await user.save()
                 await saveAndCheck(ctx, user, stats)
+                await evalCard(ctx, newcard)
 
                 await plotPayout(ctx, 'smithhub', 1, 10)
 
@@ -153,7 +156,9 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
-    const card = cards[0]
+    const card = cards.filter(x => !x.locked)[0]
+    if (!card)
+        return ctx.reply(user, `no card found to liquefy!`, 'red')
     let vials = Math.round((await getVialCost(ctx, card)) * .25)
     if(vials === Infinity)
         vials = 5
@@ -162,7 +167,7 @@ cmd(['liquefy', 'one'], withInteraction(withCards(async (ctx, user, cards, parse
         return ctx.reply(user, `you cannot liquefy card higher than 3 ${ctx.symbols.star}`, 'red')
 
     if(card.level < 3 && await check_effect(ctx, user, 'holygrail'))
-        vials += vials * .25
+        vials += Math.round(vials * .25)
 
     if(card.fav && card.amount === 1)
         return ctx.reply(user, `you are about to liquefy the last copy of a favorite card. 
@@ -205,7 +210,8 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
-    cards.splice(100, cards.length)
+    cards = cards.filter(x => !x.locked)
+    cards.splice(parsedargs.count || 100, cards.length)
     
     if(cards.some(x => x.level > 3))
         return ctx.reply(user, `you cannot liquefy cards higher than 3 ${ctx.symbols.star}`, 'red')
@@ -216,21 +222,26 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
 
     let vials = 0
     const hasGrail = await check_effect(ctx, user, 'holygrail')
-    cards.forEach(card => {
-        let cost = getVialCostFast(ctx, card)
-        if(cost >= 0) {
-            if(cost === Infinity)
-                cost = 5
+    await Promise.all(
+        cards.map(async card => {
+            let cost = Math.round((await getVialCost(ctx, card)) * .25)
 
-            if(card.level < 3 && hasGrail)
-                cost += cost * .25
+            if(cost >= 0) {
+                if(cost === Infinity)
+                    cost = 5
 
-            cost = Math.round(cost * .25)
-            vials += cost
-        } else {
-            vials = NaN
-        }
-    })
+                // cost = Math.round(cost * .25)
+
+                if(card.level < 3 && hasGrail)
+                    cost += Math.round(cost * .25)
+
+                vials += cost
+            } else {
+                vials = NaN
+            }
+        })
+    )
+
 
     if(isNaN(vials)) {
         const evalTime = getQueueTime()
@@ -238,13 +249,23 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
             Please try again in **${msToTime(evalTime)}**.`, 'yellow')
     }
 
-    const question = `Do you want to liquefy **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?
-        To view cards that are going to be liquefied, use \`${ctx.prefix}liquefy preview\``
+    const question = `Do you want to liquefy **${cards.length} card(s)** into **${numFmt(vials)}** ${ctx.symbols.vial}?`
 
-    return ctx.sendCfm(ctx, user, {
+    return ctx.sendCfmPgn(ctx, user, {
+        pages: ctx.pgn.getPages(cards.map(card => formatName(card)), 10),
+        embed: {
+            title: question,
+            footer: { text: `Resulting vials are not constant and can change depending on card popularity` }
+        },
+        force: ctx.globals.force,
+        buttons: ['first', 'back', 'forward', 'last', 'confirm', 'decline'],
         question,
-        embed: { footer: { text: `Resulting vials are not constant and can change depending on card popularity` }},
-        onConfirm: async (x) => { 
+        switchPage: (data) => {
+            const page = data.pages[data.pagenum]
+            data.embed.description = data.pages[data.pagenum]
+            data.embed.footer = {text: `${data.pagenum + 1}/${data.pages.length} || Resulting vials are not constant and can change depending on card popularity`}
+        },
+        onConfirm: async (x) => {
             try {
                 const cardCount = cards.length
                 const lemons = 15 * cardCount
@@ -270,14 +291,15 @@ cmd(['liquefy', 'many'], withInteraction(withCards(async (ctx, user, cards, pars
                 return ctx.reply(user, `an error occurred while executing this command. 
                     Please try again`, 'red', true)
             }
-        },
-    }, false)
+        }
+    })
 })))
 
 cmd(['liquefy', 'preview'], withInteraction(withCards(async (ctx, user, cards, parsedargs) => {
     if(parsedargs.isEmpty())
         return ctx.qhelp(ctx, user, 'liq')
 
+    cards = cards.filter(x => !x.locked)
     cards.splice(100, cards.length)
     
     if(cards.some(x => x.level > 3))
@@ -335,13 +357,21 @@ cmd(['draw'], withInteraction(withGlobalCards(async (ctx, user, cards, parsedarg
     let staticStats = await getStaticStats(ctx, user, user.lastdaily)
 
     const amount = staticStats.draw || 0
+    cards = cards.filter(x => {
+        const eval = evalCardFast(ctx, x)
+        if (eval > 0 && eval != 'Infinity')
+            return x
+        return 0
+    })
     const card = bestMatch(cards)
 
     if (!card)
-        return ctx.reply(user, `no cards found matching \`${parsedargs.cardQuery}\``, 'red')
+        return ctx.reply(user, `no cards found matching \`${parsedargs.cardQuery}\` that can be drawn!`, 'red')
 
     const cost = await getVialCost(ctx, card)
-    const extra = Math.floor(cost * .2 * amount)
+    let extra = Math.floor(cost * .2 * amount)
+    if (amount >= 10)
+        extra = Math.floor(cost * (2 ** amount / 100))
     const vials = cost + extra
     const col = ctx.collections.find(x => x.id === card.col)
 

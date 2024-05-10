@@ -5,6 +5,7 @@ const anilist       = require('anilist-node')
 const colors        = require('../utils/colors')
 const Guild         = require('../collections/guild')
 const UserSlot      = require('../collections/userSlot')
+const UserEffect    = require("../collections/userEffect");
 
 
 const {
@@ -14,9 +15,11 @@ const {
 const {
     XPtoLEVEL,
     numFmt,
+    formatDateTimeLong,
 } = require('../utils/tools')
 
 const {
+    deleteUserEffect,
     formatUserEffect,
     withUserEffects,
 } = require('../modules/effect')
@@ -224,28 +227,32 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
 
     const usables = effects.filter(x => !x.passive).sort((a, b) => a.cooldownends - b.cooldownends)
 
-    let effect, effectArgs
+    let effect, expired
     const reg = new RegExp(args.effect, 'gi')
     effect = usables.find(x => reg.test(x.id))
 
     if(!effect)
         return ctx.reply(user, `effect with ID \`${args.effect}\` was not found or it is not usable`, 'red')
 
-    const userEffect = user.effects.find(x => x.id === effect.id)
+    const uEffects = await UserEffect.find({userid: user.discord_id})
+    const userEffect = uEffects.find(x => x.id === effect.id)
     const now = new Date()
     if(effect.cooldownends > now)
-        return ctx.reply(user, `effect card **${effect.name}** is on cooldown for **${msToTime(effect.cooldownends - now)}**`, 'red')
+        return ctx.reply(user, `effect card **${effect.name}** is on cooldown until \n**${formatDateTimeLong(effect.cooldownends)}**`, 'red')
 
     const res = await effect.use(ctx, user, args)
     if(!res.used)
         return ctx.reply(user, res.msg, 'red')
 
-    const count = user.effects.length
     const cooldown = await check_effect(ctx, user, 'spellcard')? Math.round(effect.cooldown * .6) : effect.cooldown
     userEffect.uses--
     userEffect.cooldownends = asdate.add(new Date(), cooldown, 'hours')
-    user.effects = user.effects.filter(x => x.uses === undefined || x.uses > 0)
-    user.markModified('effects')
+    userEffect.notified = false
+    await userEffect.save()
+    if (userEffect.uses === 0) {
+        await deleteUserEffect(userEffect)
+        expired = true
+    }
 
     await user.save()
     let stats = await getStats(ctx, user, user.lastdaily)
@@ -257,11 +264,10 @@ cmd(['effect', 'use'], withInteraction(withUserEffects(async (ctx, user, effects
         color: colors.green
     }
 
-    if(count > user.effects.length) {
+    if(expired)
         embed.description += `\nEffect Card has expired. Please make a new one`
-    } else {
-        embed.description += `\nEffect Card has been used and now on cooldown for **${cooldown}** hour(s)\n**${userEffect.uses}** uses left`
-    }
+    else
+        embed.description += `\nEffect Card has been used and now on cooldown until: \n**${formatDateTimeLong(asdate.add(new Date(), cooldown, 'hours'))}**\n**${userEffect.uses}** uses left`
 
     return ctx.reply(user, embed)
 }))).access('dm')
@@ -304,9 +310,8 @@ cmd(['hero', 'equip'], withInteraction(withUserEffects(async (ctx, user, effects
 
     const equip = async () => {
         if(!effect.expires) {
-            const ueffect = user.effects.findIndex(x => x.id === effect.id)
-            user.effects[ueffect].expires = asdate.add(new Date(), effect.lasts, 'days')
-            user.markModified('effects')
+            const expiryDate = asdate.add(new Date(), effect.lasts, 'days')
+            await UserEffect.updateOne({userid: user.discord_id, _id: effect._id}, {expires: expiryDate})
         }
 
         chosenSlot.effect_name = effect.id

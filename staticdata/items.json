@@ -430,5 +430,241 @@
     "desc": "swaps a legendary card",
     "fulldesc": "When used on a legendary card, swaps it for another random legendary in the same collection.",
     "level": 100
-}
+    },
+
+
+    {
+        "id": "lemonadestand",
+        "name": "Lemonade Stand",
+        "price": 2500,
+        "type": "guild",
+        "desc": "Increases lemon storage in buildings",
+        "currency": "tomato",
+        "typedesc": "This is the **GUILD** store! To purchase items here you need to be either the server owner or designated as a manager! Any items bought here will be taken from the guild's balance and immediately built.",
+        "fulldesc": "The lemonade stand increases the lemon capacity of every user plot building by a specific percentage per level. If this building becomes disabled or is downgraded, the excess lemons stored in plots will be voided.",
+        "levels": [
+            {
+                "price": 0,
+                "level": 50,
+                "maintenance": 25,
+                "desc": "Increase plot lemon capacity by 10%"
+            },
+            {
+                "price": 100,
+                "level": 50,
+                "maintenance": 50,
+                "desc": "Increase plot lemon capacity by 20%"
+            },
+            {
+                "price": 1000,
+                "level": 50,
+                "maintenance": 75,
+                "desc": "Increase plot lemon capacity by 30%"
+            },
+            {
+                "price": 2000,
+                "level": 50,
+                "maintenance": 100,
+                "desc": "Increase plot lemon capacity by 40%"
+            },
+            {
+                "price": 10000,
+                "level": 50,
+                "maintenance": 125,
+                "desc": "Increase plot lemon capacity by 50%"
+            }
+        ]
+    },
+    {
+        "id": "processingplant",
+        "name": "Processing Plant",
+        "price": 7500,
+        "type": "guild",
+        "desc": "Increases Payouts",
+        "fulldesc": "The processing plant increases the base payout for daily by specific percentages each level, and increases plot payouts by another percentage depending on level.",
+        "levels": [
+            {
+                "price": 0,
+                "level": 50,
+                "maintenance": 100,
+                "desc": "Increase payout of base daily by 5%"
+            },
+            {
+                "price": 15000,
+                "level": 50,
+                "maintenance": 150,
+                "desc": "Increase payout of base daily by 10% and increases plot payouts by 10%"
+            },
+            {
+                "price": 30000,
+                "level": 50,
+                "maintenance": 200,
+                "desc": "Increase payout of base daily by 15% and increases plot payouts by 10%"
+            },
+            {
+                "price": 45000,
+                "level": 50,
+                "maintenance": 250,
+                "desc": "Increase payout of base daily by 20% and increases plot payouts by 15%"
+            }
+        ]
+    },
+    {
+        "id": "pachinkohall",
+        "name": "Pachinko Hall",
+        "price": 25000,
+        "type": "guild",
+        "desc": "Increases claim chances of either specials or legendaries",
+        "fulldesc": "The Pachinko Hall increases your chances to claim either a special or legendary card. This is additive so if Specials are a 2% chance to drop, it will be 4%",
+        "levels": [
+            {
+                "price": 0,
+                "level": 50,
+                "maintenance": 1000,
+                "desc": "Increase Special claim chance by 2%"
+            },
+            {
+                "price": 5000,
+                "level": 75,
+                "maintenance": 2000,
+                "desc": "Increase Legendary claim chance by 1% (Does not increase special chance)"
+            }
+        ]
+    },
+    {
+        "id": "arcadecenter",
+        "name": "Arcade Center",
+        "price": 10000,
+        "type": "guild",
+        "desc": "Increases Rarity Chance",
+        "fulldesc": "The arcade center increases the chance of claiming a specific rarity by 10% per claim, depending on level",
+        "levels": [
+            {
+                "price": 0,
+                "level": 50,
+                "maintenance": 5,
+                "desc": "Increase chances of a 1 star card in any claim by 10%"
+            },
+            {
+                "price": 5000,
+                "level": 75,
+                "maintenance": 50,
+                "desc": "Increase chances of a 2 star card in any claim by 10%"
+            },
+            {
+                "price": 15000,
+                "level": 75,
+                "maintenance": 500,
+                "desc": "Increase chances of a 3 star card in any claim by 10%"
+            }
+        ]
+    },
+    {
+        "id": "pampercentral",
+        "name": "Pamper Central",
+        "price": 15000,
+        "type": "guild",
+        "desc": "Ease your payments away",
+        "fulldesc": "High Maintenance fees got you down? Get yourself down to Pamper Central and reduce the stress from fees by reducing the fees!",
+        "levels": [
+            {
+                "price": 0,
+                "level": 75,
+                "maintenance": 15,
+                "desc": "Decrease maintenance fees by 5%"
+            },
+            {
+                "price": 2500,
+                "level": 75,
+                "maintenance": 20,
+                "desc": "Decrease maintenance fees by 10%"
+            },
+            {
+                "price": 5000,
+                "level": 75,
+                "maintenance": 25,
+                "desc": "Decrease maintenance fees by 15%"
+            },
+            {
+                "price": 50000,
+                "level": 75,
+                "maintenance": 50,
+                "desc": "Decrease maintenance fees by 20%"
+            }
+        ]
+    },
+    {
+        "id": "discountcenter",
+        "name": "Discount Center",
+        "price": 5000,
+        "type": "guild",
+        "desc": "Reduces Auction Fees",
+        "fulldesc": "Reduces the final auction fee by a certain percentage per level. (e.g. At level 2, an auction list fee of 100 would become 90)",
+        "levels": [
+            {
+                "price": 0,
+                "level": 75,
+                "maintenance": 10,
+                "desc": "Decrease auction fee by 5%"
+            },
+            {
+                "price": 1000,
+                "level": 75,
+                "maintenance": 20,
+                "desc": "Decrease auction fee by 10%"
+            },
+            {
+                "price": 2000,
+                "level": 75,
+                "maintenance": 40,
+                "desc": "Decrease auction fee by 15%"
+            },
+            {
+                "price": 5000,
+                "level": 75,
+                "maintenance": 80,
+                "desc": "Decrease auction fee by 20%"
+            }
+        ]
+    },
+    {
+        "id": "sodashop",
+        "name": "Soda Shop",
+        "price": 0,
+        "type": "guild",
+        "desc": "Get a bit of a.... boost",
+        "fulldesc": "This item will do a thing",
+        "levels": [
+            {
+                "price": 0,
+                "level": 75,
+                "maintenance": 100,
+                "desc": "Increase the chance of claiming a specific collection by 2%"
+            },
+            {
+                "price": 5000,
+                "level": 75,
+                "maintenance": 200,
+                "desc": "Increase the chance of claiming a specific collection by 4%"
+            },
+            {
+                "price": 10000,
+                "level": 75,
+                "maintenance": 300,
+                "desc": "Increase the chance of claiming a specific collection by 6%"
+            },
+            {
+                "price": 15000,
+                "level": 75,
+                "maintenance": 400,
+                "desc": "Increase the chance of claiming a specific collection by 8%"
+            },
+            {
+                "price": 20000,
+                "level": 75,
+                "maintenance": 500,
+                "desc": "Increase the chance of claiming a specific collection by 10%"
+            }
+        ]
+    }
 ]

@@ -1,8 +1,9 @@
-const {cmd, pcmd}       = require('../utils/cmd')
-const colors            = require('../utils/colors')
-const Tag               = require('../collections/tag')
-const dateFormat        = require('dateformat')
-const {getHelpEmbed}    = require('./misc')
+const {cmd, pcmd}          = require('../utils/cmd')
+const colors               = require('../utils/colors')
+const Tag                  = require('../collections/tag')
+const dateFormat           = require('dateformat')
+const {getHelpEmbed}       = require('./misc')
+const {formatDateTimeLong} = require("../utils/tools")
 
 const {
     fetchOnly,
@@ -196,7 +197,7 @@ cmd(['tag', 'created'], withInteraction(withGlobalCards(async (ctx, user, cards,
     const tags = userTags.filter(x => cardIDs.includes(x.card))
 
     if(tags.length === 0)
-        return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`)
+        return ctx.reply(user, `cannot find your tags for matching cards (${cards.length} cards matched)`, 'red')
 
     return ctx.sendPgn(ctx, user, {
         pages: ctx.pgn.getPages(tags.map(x => {
@@ -302,7 +303,7 @@ pcmd(['admin', 'mod', 'tagmod'], ['tagmod', 'info'],
         else
             resp.push(`Author: **SYSTEM ADDED TAG**`)
         resp.push(`Status: **${tag.status}**`)
-        resp.push(`Date Created: **${dateFormat(tag._id.getTimestamp(), "yyyy-mm-dd HH:MM:ss")}**`)
+        resp.push(`Date Created: **${formatDateTimeLong(tag._id.getTimestamp())}**`)
 
         const embed = {
             author: {name: `Info on tag #${tag.name}`},

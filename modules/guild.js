@@ -2,7 +2,8 @@ const Guild         = require('../collections/guild')
 const Transaction   = require('../collections/transaction')
 const Auction       = require('../collections/auction')
 const User          = require('../collections/user')
-
+const GuildUser     = require('../collections/guildUser')
+const GuildBuilding = require('../collections/guildBuilding')
 const color         = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const msToTime      = require('pretty-ms')
@@ -12,7 +13,8 @@ const {
 } = require('./effect')
 
 const {
-    numFmt
+    numFmt,
+    formatDateTimeRelative
 } = require('../utils/tools')
 
 const m_hero = require('./hero')
@@ -39,14 +41,17 @@ const fetchOrCreate = async (ctx, user, discord_guild) => {
         guild.nextcheck = asdate.add(new Date(), 20, 'hours')
 
         await guild.save()
-        await ctx.bot.createMessage(ctx.interaction.channel.id, {
-            embed: {
-                description: `**${user.username}**, new guild added. This channel was marked as bot and report channel.
+        try {
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channel.id, {
+                embeds: [{
+                    description: `**${user.username}**, new guild added. This channel was marked as bot and report channel.
             Type \`/help help_menu:guild here:true\` to see more about guild setup`,
-                color: color.green
-            }
-        })
+                    color: color.green
+                }]
+            })
+        } catch (e) {}
     }
+    guild.cacheClear = asdate.add(new Date(), 12, 'hours')
 
     if(!fromcache)
         cache.push(guild)
@@ -70,23 +75,29 @@ const fetchGuildById = async (guildId) => {
         fromcache = false
     }
 
-    if(!fromcache && guild)
+    if(!fromcache && guild) {
+        guild.cacheClear = asdate.add(new Date(), 12, 'hours')
         cache.push(guild)
+    }
 
     return guild
 }
 
 const addGuildXP = async (ctx, user, xp) => {
-    let guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+    let guildUser = await GuildUser.findOne({guildid: ctx.guild.id, userid: user.discord_id})
     
     if(!guildUser) {
-        ctx.guild.userstats.push({ id: user.discord_id, xp: 0, rank: 0 })
-        guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+        guildUser = new GuildUser()
+        guildUser.guildid = ctx.guild.id
+        guildUser.userid = user.discord_id
+        await guildUser.save()
 
         if(user.xp > 10) {
             const warning = `\nPlease be aware that your claims are **${Math.round(ctx.guild.tax * 100)}%** more expensive here`
-            ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
+            try {
+                ctx.reply(user, `welcome to **${ctx.discord_guild.name}!** ${ctx.guild.tax > 0? warning : ''}
                 For more information run \`/guild info\``)
+            } catch (e) {}
         }
     }
 
@@ -94,37 +105,57 @@ const addGuildXP = async (ctx, user, xp) => {
     guildUser.xp += xp + (await check_effect(ctx, user, 'onvictory')? xp * .25 : 0)
     const rank = XPtoRANK(guildUser.xp)
 
-    if(rank > guildUser.rank) {
-        ctx.reply(user, `you ranked up in **${ctx.discord_guild.name}!**
-            Your rank is now **${rank}**`)
+    if(rank > guildUser.level) {
+        try {
+            await ctx.bot.rest.channels.createMessage(ctx.interaction.channelID, {
+                embeds: [
+                    {
+                        description: `**${user.username}**, you leveled up in **${ctx.discord_guild.name}!**
+                    Your level is now **${rank}**`,
+                        color: color.green
+                    }
+                ]
+            })
+        } catch (e) {}
 
         guildUser.xp -= rankXP[rank - 1]
-        guildUser.rank = rank
+        guildUser.level = rank
     }
+    await guildUser.save()
 }
 
 const clean_trans = async (ctx, now) => {
     const transactionTime = asdate.subtract(new Date(), 14, 'days')
     const trClean = await Transaction.deleteMany({time: {$lt: transactionTime}})
     const aucClean = await Auction.deleteMany({time: {$lt: transactionTime}})
+    cache = cache.filter(x => x.cacheClear < new Date())
     if (trClean.n > 0 || aucClean.n > 0)
         console.log(`Cleaned ${trClean.n} transactions and ${aucClean.n} auctions`)
 }
 
 const bill_guilds = async (ctx, now) => {
-    const guild = await Guild.findOne({nextcheck: {$lt: now}, lock: {$exists: true, $ne: ''}})
+    if (ctx.settings.wip)
+        return
+
+    const guild = await Guild.findOne({nextcheck: {$lt: now}, processing: {$ne: true}})
 
     if(!guild) return;
-    console.log(guild.id)
+    guild.processing = true
+    await guild.save()
 
-    if(!guild.lockactive) {
+    let buildings = await getAllBuildings(ctx, guild.id)
+
+
+    if((!guild.lock || guild.overridelock) && (!buildings || buildings.length === 0)) {
         guild.nextcheck = asdate.add(new Date(), 24, 'hours')
+        guild.processing = false
         await guild.save()
         return
     }
 
     const report = []
-    const total = guildLock.maintenance
+    ctx.guild = guild
+    const total = await getMaintenanceCost(ctx)
     let ratio = guild.balance / total
     guild.balance = Math.max(0, guild.balance - total)
 
@@ -135,44 +166,94 @@ const bill_guilds = async (ctx, now) => {
     report.push(`Remaining guild balance: **${numFmt(guild.balance)}** ${ctx.symbols.tomato}`)
 
     if(ratio < 1) {
-        guild.lockactive = false
-        report.push(`> Lock has been disabled until next check`)
+        if (guild.lockactive && guild.lock && !guild.overridelock) {
+            guild.lockactive = false
+            report.push(`> Lock has been disabled until next check`)
+        }
+        if (buildings && buildings.length > 0) {
+            await Promise.all(buildings.map(async x => {
+                const info = ctx.items.find(y => y.id === x.id)
+                x.health -= 5
+                let demolish = false
+                if (x.health <= 0 && x.level > 1) {
+                    x.level--
+                    x.health = 74
+                    report.push(`${ctx.symbols.red_circle} **${info.name}** has dropped down to level **${x.level}**!`)
+                    await x.save()
+
+                } else if(x.health <= 0 && x.level <= 1) {
+                    report.push(`${ctx.symbols.red_circle} **${info.name}** has been destroyed!`)
+                    demolish = true
+                    await deleteBuilding(ctx, guild.id, x.id)
+                } else {
+                    await x.save()
+                }
+            }))
+            report.push(`> All buildings have taken 5 damage due to insufficient funds!`)
+            report.push(`> Buildings stop functioning at 25 health and are downgraded or deleted at 0 health`)
+        }
+
     } else {
         report.push(`> All costs were covered!`)
-        if(guild.lock && !guild.lockactive) {
-           report.push(`> Guild lock is back!`)
+        if (buildings && buildings.length > 0) {
+            report.push(`> All buildings have been healed by 5 health`)
+            await Promise.all(buildings.map(async x => {
+                x.health = Math.min(x.health + 5, 100)
+                await x.save()
+            }))
         }
-        guild.lockactive = true
+        if(guild.lock && !guild.lockactive) {
+            report.push(`> Guild lock is back!`)
+            guild.lockactive = true
+        }
     }
 
     guild.nextcheck = asdate.add(new Date(), 24, 'hours')
-    report.push(`Next check is in **${msToTime(guild.nextcheck - now, {compact: true})}**`)
+    report.push(`Next check is **${formatDateTimeRelative(guild.nextcheck)}**`)
+    guild.processing = false
     await guild.save()
 
     // m_hero.checkGuildLoyalty(isolatedCtx)
 
     const index = cache.findIndex(x => x.id === guild.id)
-    cache[index] = guild
-    
-    return ctx.bot.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
-        embed: {
-            author: { name: `Receipt for ${now}` },
-            description: report.join('\n'),
-            color: (ratio < 1? color.red : color.green),
-    }})
+
+    if (index < 0) {
+        guild.cacheClear = asdate.add(new Date(), 4, 'hours')
+        cache.push(guild)
+    } else {
+        cache[index] = guild
+    }
+
+    try{
+        await ctx.bot.rest.channels.createMessage(guild.reportchannel || guild.lastcmdchannel || guild.botchannels[0], {
+            embeds: [{
+                author: { name: `Receipt for ${now}` },
+                description: report.join('\n'),
+                color: (ratio < 1? color.red : color.green),
+            }]})
+    } catch (e) {}
 }
 
-const getMaintenanceCost = (ctx) => {
-    return ctx.guild.lock? guildLock.maintenance : 0
+const getMaintenanceCost = async (ctx) => {
+    const buildings = await getAllBuildings(ctx, ctx.guild.id)
+    let cost = ctx.guild.lock? guildLock.maintenance : 0
+    buildings.map(x => {
+        let item = ctx.items.find(y => y.id === x.id)
+        cost += item.levels[x.level - 1].maintenance
+    })
+    const pamper = buildings.find(x => x.id === 'pampercentral')
+    if (!pamper)
+        return cost
+    return cost * (1 - (pamper.level * 0.05))
 }
 
-const getBuildingInfo = (ctx, user, args) => {
-    const reg = new RegExp(args.join(''), 'gi')
-    const item = ctx.items.filter(x => x.type === 'blueprint').find(x => reg.test(x.id))
+const getBuildingInfo = async (ctx, user, args) => {
+    const reg = new RegExp(args, 'gi')
+    const item = ctx.items.filter(x => x.type === 'guild').find(x => reg.test(x.id))
     if(!item)
-        return ctx.reply(user, `building with ID \`${args.join('')}\` was not found`, 'red')
+        return ctx.reply(user, `building with ID \`${args}\` was not found`, 'red')
 
-    const building = ctx.guild.buildings.find(x => x.id === item.id)
+    const building = await getBuilding(ctx, ctx.guild.id, item.id)
     if(!building)
         return ctx.reply(user, `**${item.name}** is not built in this guild`, 'red')
 
@@ -180,8 +261,8 @@ const getBuildingInfo = (ctx, user, args) => {
         description: item.fulldesc,
         fields: item.levels.map((x, i) => ({
             name: `Level ${i + 1}`, 
-            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.lemon}
-                > ${x.desc.replace(/{currency}/gi, ctx.symbols.lemon)}`
+            value: `Price: **${numFmt(x.price)}** ${ctx.symbols.tomato}
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
     }))}
 
     const heart = building.health < 50? '💔' : '❤️'
@@ -194,16 +275,22 @@ const getBuildingInfo = (ctx, user, args) => {
     return ctx.send(ctx.interaction, embed, user.discord_id)
 }
 
-const getBuilding = (ctx, id) => ctx.guild.buildings.find(x => x.id === id && x.health > 50)
+const getAllBuildings = async (ctx, guildid) => await GuildBuilding.find({guildid: guildid})
 
-const getGuildUser = (ctx, user) => ctx.guild.userstats.find(x => x.id === user.discord_id)
+const getBuilding = async (ctx, guildid, buildingid) => await GuildBuilding.findOne({guildid: guildid, id: buildingid})
 
-const isUserOwner = (ctx, user) => ctx.interaction.channel.guild.ownerID === user.discord_id
+const deleteBuilding = async (ctx, guildid, buildingid) => await GuildBuilding.deleteOne({guildid: guildid, id: buildingid})
 
-const fetchGuildUsers = (ctx) => User.find({ discord_id: {$in: ctx.guild.userstats.map(x => x.id) }})
+const getGuildUser = async (ctx, user) => await GuildUser.findOne({guildid: ctx.guild.id, userid: user.discord_id})
 
-const isUserManager = (ctx, user) => {
-    const guildUser = ctx.guild.userstats.find(x => x.id === user.discord_id)
+const getGuildUsers = async (ctx) => await GuildUser.find({guildid: ctx.guild.id}).lean()
+
+const isUserOwner = (ctx, user) => ctx.guild && ctx.guild.ownerid? ctx.guild.ownerid === user.discord_id: ctx.interaction.channel.guild.ownerID === user.discord_id
+
+const fetchGuildUsers = async (ctx, users) => await User.find({ discord_id: {$in: users.map(x => x.userid) }})
+
+const isUserManager = async (ctx, user) => {
+    const guildUser = await getGuildUser(ctx, user)
     return (guildUser && guildUser.roles.includes('manager'))
 }
 
@@ -226,6 +313,7 @@ module.exports = Object.assign(module.exports, {
     XPtoRANK,
     rankXP,
     getGuildUser,
+    getGuildUsers,
     isUserOwner,
     getMaintenanceCost,
     bill_guilds,
@@ -238,4 +326,6 @@ module.exports = Object.assign(module.exports, {
     fetchGuildById,
     fetchGuildUsers,
     clean_trans,
+    getAllBuildings,
+    deleteBuilding,
 })

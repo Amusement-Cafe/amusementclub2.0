@@ -72,7 +72,8 @@ module.exports = model('User', {
     ban:                {
         full:           {type: Boolean},
         embargo:        {type: Boolean},
-        tags:           {type: Number}
+        report:         {type: Boolean},
+        tags:           {type: Number},
     },
 
     lastcard:           { type: Number, default: -1 },
@@ -84,16 +85,42 @@ module.exports = model('User', {
     dailyquests:        { type: Array, default: [] },
     questlines:         { type: Array, default: [] },
 
+    streaks:            {
+        votes:          {
+            topgg:      { type: Number, default: 0 },
+            dbl:        { type: Number, default: 0 },
+        },
+        daily:          { type: Number, default: 0 },
+        kofi:           { type: Number, default: 0 },
+    },
+
     prefs:              {
         notifications:  {
-            aucbidme:   { type: Boolean, default: true },
-            aucoutbid:  { type: Boolean, default: true },
+            aucbidme:   { type: Boolean, default: true  },
+            aucoutbid:  { type: Boolean, default: true  },
             aucnewbid:  { type: Boolean, default: false },
-            aucend:     { type: Boolean, default: true },
+            aucend:     { type: Boolean, default: true  },
             announce:   { type: Boolean, default: false },
             daily:      { type: Boolean, default: false },
             vote:       { type: Boolean, default: false },
-            completed:  { type: Boolean, default: true },
+            completed:  { type: Boolean, default: true  },
+            effectend:  { type: Boolean, default: false },
         },
-    }
+        interactions:   {
+            canhas:     { type: Boolean, default: true  },
+            candiff:    { type: Boolean, default: true  },
+            cansell:    { type: Boolean, default: true  },
+        },
+        profile:        {
+            bio:        { type: String, default: 'This user has not set a bio' },
+            title:      { type: String, default: '' },
+            color:      { type: String, default: '16756480' },
+            card:       { type: String, default: '' },
+            favcomplete:{ type: String, default: '' },
+            favclout:   { type: String, default: '' },
+        }
+    },
+
+    premium:            { type: Boolean, default: false },
+    premiumExpires:     { type: Date }
 })

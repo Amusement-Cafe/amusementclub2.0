@@ -228,7 +228,7 @@ const validate_trs = async (ctx, user, cards, id, targetuser, count = 100) => {
     else if(pendingto.length >= 5)
         return `you already have pending transactions to **${pendingto[0].to}**. 
             You can have up to **5** pending transactions to the same user.
-            Type \`/transaction pending\` to see them
+            Type \`/transaction list pending:true\` to see them
             \`/transaction decline transaction_id:id\` to decline`
 
     let lastFav = false
@@ -254,7 +254,7 @@ const validate_trs = async (ctx, user, cards, id, targetuser, count = 100) => {
 
         if(cards.length == 0) {
             return `all cards from this query are already put up on sale or you are attempting to sell the last of a favorite already in a transaction.
-                Check your \`${ctx.prefix}transaction pending\` transactions and use \`/transaction decline transaction_id:id\` to decline them.`
+                Check your \`${ctx.prefix}transaction list pending:true\` transactions and use \`/transaction decline transaction_id:id\` to decline them.`
         }
     }
 }

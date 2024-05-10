@@ -128,7 +128,7 @@ const getEval = (ctx, card, ownerCount, modifier = 1) => {
     if (card.level === 5)
         price = Math.round(legendaryBaseEval(ctx, card) * modifier)
 
-    if (info.aucevalinfo.evalprices.length >= ctx.eval.aucEval.minSamples) {
+    if (info.aucevalinfo.evalprices.length >= ctx.eval.auction.minSamples) {
 
         let priceFloor = Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
             * limitPriceGrowth((allUsers * ctx.eval.evalUserRate) / ownerCount)) * 0.3579) * modifier)
@@ -161,8 +161,8 @@ const evalAucOutlierCheck = (ctx, number, index, info) => {
         if (i !== index)
             othSum += b
     })
-    let othAvg = othSum / ((ctx.eval.aucEval.minSamples * 2) - 1)
-    return _.inRange(number, othAvg * ctx.eval.aucEval.minBounds, othAvg * ctx.eval.aucEval.maxBounds)
+    let othAvg = othSum / ((ctx.eval.auction.minSamples * 2) - 1)
+    return _.inRange(number, othAvg * ctx.eval.auction.minBounds, othAvg * ctx.eval.auction.maxBounds)
 }
 
 const aucEvalChecks = async (ctx, auc, success = true) => {
@@ -174,7 +174,7 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     let eval = evalCardFast(ctx, card)
 
     if (!success && eval !== 0) {
-        let float = parseFloat((auc.price * ctx.eval.aucEval.aucFailMultiplier).toFixed(2))
+        let float = parseFloat((auc.price * ctx.eval.auction.aucFailMultiplier).toFixed(2))
 
         if (auc.price > eval * 1.5)
             float = eval
@@ -191,30 +191,30 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
     info.aucevalinfo.lasttoldeval < 0? lastEval = eval: lastEval = info.aucevalinfo.lasttoldeval
 
     //If auction prices has filled up, shift it before moving on to the next steps
-    if (info.aucevalinfo.newaucprices.length > ctx.eval.aucEval.maxSamples)
+    if (info.aucevalinfo.newaucprices.length > ctx.eval.auction.maxSamples)
         info.aucevalinfo.newaucprices.shift()
 
     //If eval prices have filled up, shift it before moving on to the next steps
-    if (info.aucevalinfo.evalprices.length > ctx.eval.aucEval.maxSamples)
+    if (info.aucevalinfo.evalprices.length > ctx.eval.auction.maxSamples)
         info.aucevalinfo.evalprices.shift()
 
     //If auction prices are at 2x min sample, or at max samples. Start this nonsense
-    if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples * 2 || info.aucevalinfo.newaucprices.length === ctx.eval.aucEval.maxSamples) {
+    if (info.aucevalinfo.newaucprices.length >= ctx.eval.auction.minSamples * 2 || info.aucevalinfo.newaucprices.length === ctx.eval.auction.maxSamples) {
         //Filter out price outliers, to give a more natural/gentle price increase/decrease
         info.aucevalinfo.newaucprices = info.aucevalinfo.newaucprices.filter((a, b) => evalAucOutlierCheck(ctx, a, b, info))
         //Now that it's been filtered, check if the list is longer than minimum samples.
         //If it is, start this movement of waiting auc prices into eval prices. Auc prices will be cleared afterwards
-        if (info.aucevalinfo.newaucprices.length >= ctx.eval.aucEval.minSamples) {
+        if (info.aucevalinfo.newaucprices.length >= ctx.eval.auction.minSamples) {
             info.aucevalinfo.newaucprices.map(x => {
                 info.aucevalinfo.evalprices.push(x)
-                if (info.aucevalinfo.evalprices.length > ctx.eval.aucEval.maxSamples)
+                if (info.aucevalinfo.evalprices.length > ctx.eval.auction.maxSamples)
                     info.aucevalinfo.evalprices.shift()
             })
             info.aucevalinfo.newaucprices = []
         }
     }
 
-    if (info.aucevalinfo.auccount % (ctx.eval.aucEval.minSamples * 2) === 0){
+    if (info.aucevalinfo.auccount % (ctx.eval.auction.minSamples * 2) === 0){
         let newEval = await evalCard(ctx, card)
         let floored = newEval === Math.round((((ctx.eval.cardPrices[card.level] + (card.animated? 100 : 0))
             * limitPriceGrowth(((userCount || card.ownercount * 2) * ctx.eval.evalUserRate) / card.ownercount)) * 0.3579))
@@ -267,8 +267,8 @@ const aucEvalChecks = async (ctx, auc, success = true) => {
 
         info.aucevalinfo.lasttoldeval = newEval
 
-        if (ctx.eval.aucEval.evalUpdateChannel)
-            await ctx.bot.createMessage(ctx.eval.aucEval.evalUpdateChannel, {embed: pricesEmbed})
+        if (ctx.config.channels.evalUpdate)
+            await ctx.bot.rest.channels.createMessage(ctx.config.channels.evalUpdate, {embeds: [pricesEmbed]})
     }
 
     await info.save()

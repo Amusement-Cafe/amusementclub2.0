@@ -1,10 +1,11 @@
 const dateFormat    = require('dateformat')
 const msToTime      = require('pretty-ms')
 const _             = require('lodash')
+const {firstBy}     = require("thenby")
+
 
 const {
     byAlias, 
-    bestColMatch,
     reset,
     resetNeeds,
     hasResetNeeds,
@@ -43,6 +44,7 @@ cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
 
     const completed = args.completed? true: args.completed === false
     const clouted = args.clouted? true: args.clouted === false
+    const sort = args.sortComplete? true: args.sortComplete === false
 
     cols = _.uniqBy(cols, 'id').sort((a, b) => nameSort(a, b, 'id')).filter(x => x)
 
@@ -64,24 +66,35 @@ cmd(['collection', 'list'], withInteraction(async (ctx, user, args) => {
         return ctx.reply(user, `no collections found`, 'red')
 
     const userCards = await getUserCards(ctx, user)
-    const pages = ctx.pgn.getPages(cols.map(x => {
+    const colList = cols.map(x => {
         const clout = user.cloutedcols? user.cloutedcols.find(y => x.id === y.id): null
         const overall = ctx.cards.filter(c => c.col === x.id).length
-        const usercount = userCards.filter(c => ctx.cards[c.cardid].col === x.id).length
-        const rate = usercount / overall
-        const cloutstars = clout && clout.amount > 0? `[${clout.amount}${ctx.symbols.star}] ` : ''
+        const usercount = userCards.filter(c => ctx.cards[c.cardid]?.col === x.id).length
+        const rate = ((usercount / overall) * 100).toPrecision(3)
+        const cloutCount = clout? clout.amount: 0
 
-        let rateText = ''
-        if(rate > 0) {
-            const floorRate = Math.floor(rate * 100)
-            if(floorRate < 1) {
-                rateText = `(<1%)`
-            } else {
-                rateText = `(${Math.floor(rate * 100)}%)`
-            }
+        return {
+            colName: x.name,
+            colID: x.id,
+            clouted: cloutCount,
+            allCards: overall,
+            owned: usercount,
+            perc: rate
         }
+    })
 
-        return `${cloutstars}**${x.name}** \`${x.id}\` ${rateText} ${rateText === `(100%)`? ``: `[${usercount}/${overall}]`}`
+    if (sort && !args.completed) {
+        if (args.sortComplete)
+            colList.sort(firstBy((a, b) => b.perc - a.perc).thenBy((c, d) => d.owned - c.owned).thenBy((e, f) => e.colName - f.colName))
+        else
+            colList.sort(firstBy((a, b) => a.perc - b.perc).thenBy((c, d) => c.owned - d.owned).thenBy((e, f) => e.colName - f.colName))
+    }
+
+    const pages = ctx.pgn.getPages(colList.map(x => {
+        const cloutStars = x.clouted > 0? `[${x.clouted}${ctx.symbols.star}] `: ''
+        const percText = x.perc > 0? x.perc < 1? '(<1%)': `(${x.perc}%)`: ''
+        const countText = x.perc >= 100? '': `[${x.owned}/${x.allCards}]`
+        return `${cloutStars}**${x.colName}** \`${x.colID}\` ${percText} ${countText}`
     }))
 
     return ctx.sendPgn(ctx, user, {

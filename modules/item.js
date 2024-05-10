@@ -2,9 +2,10 @@ const _             = require('lodash')
 const colors        = require('../utils/colors')
 const asdate        = require('add-subtract-date')
 const UserSlot      = require("../collections/userSlot")
+const UserInv       = require("../collections/userInventory")
+const UserEffect    = require("../collections/userEffect")
+const GuildBuilding = require("../collections/guildBuilding")
 const msToTime      = require('pretty-ms')
-
-
 
 const {
     XPtoLEVEL,
@@ -14,7 +15,8 @@ const {
 const {
     formatName,
     mapUserCards,
-    filter, bestMatch,
+    filter,
+    bestMatch,
 } = require('./card')
 
 const {
@@ -36,11 +38,15 @@ const {
 const {
     getStats,
     saveAndCheck
-} = require("./userstats");
+} = require("./userstats")
+
+const {
+    getBuilding,
+} = require("./guild")
 
 
-const mapUserInventory = (ctx, user) => {
-    return user.inventory.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
+const mapUserInventory = (ctx, user, items) => {
+    return items.map(x => Object.assign({}, ctx.items.find(y => y.id === x.id), x))
 }
 
 /**
@@ -48,14 +54,15 @@ const mapUserInventory = (ctx, user) => {
  * @param  {Function} callback command handler
  * @return {Promise}
  */
-const withUserItems = (callback) => (ctx, user, args) => {
-    if (user.inventory.length == 0) 
+const withUserItems = (callback) => async (ctx, user, args) => {
+    const uItems = await UserInv.find({userid: user.discord_id}).lean()
+    if (uItems.length === 0)
         return ctx.reply(user, `your inventory is empty.
         You can obtain inventory items in the \`${ctx.prefix}store\`.
         If you are looking for your cards, use \`${ctx.prefix}cards\` instead.
         For more information see \`${ctx.prefix}help help_menu:inventory\``, 'red')
 
-    let items = mapUserInventory(ctx, user)
+    let items = mapUserInventory(ctx, user, uItems)
     let index
     if(!isNaN(args.invItem)) {
         index = parseInt(args.invItem) - 1
@@ -118,7 +125,7 @@ const uses = {
         await emptyPlot.save()
 
         user.lemons -= item.levels[0].price
-        pullInventoryItem(user, item.id, index)
+        pullInventoryItem(user, item)
         stats.lemonout += item.levels[0].price
         await user.save()
         await saveAndCheck(ctx, user, stats)
@@ -170,10 +177,7 @@ const uses = {
 
         await addUserCards(ctx, user, cardIds)
 
-        pullInventoryItem(user, item.id, index)
-        await user.save()
-
-        user.markModified('cards')
+        pullInventoryItem(user, item)
         user.lastcard = cards[0].id
         await user.save()
 
@@ -187,7 +191,8 @@ const uses = {
                 description: resp,
                 image: { url: '' }
             },
-            edit: true
+            edit: true,
+            extra: ctx.extraInteraction
         })
     },
 
@@ -198,12 +203,12 @@ const uses = {
         if(check)
             return ctx.reply(user, check, 'red')
 
-        let userEffect = user.effects.find(x => x.id === item.effectid)
+        let uEffects = await UserEffect.find({userid: user.discord_id})
+        let userEffect = uEffects.find(x => x.id === item.effectid)
         if(userEffect && userEffect.expires < new Date()) {
             user.heroslots = user.heroslots.filter(x => x != userEffect.id)
-            user.effects = user.effects.filter(x => x.id != userEffect.id)
+            await UserEffect.deleteOne(userEffect)
             user.markModified('heroslots')
-            user.markModified('effects')
             userEffect = false
         }
 
@@ -217,16 +222,18 @@ const uses = {
                 if (!userEffect.expires)
                     return ctx.reply(user, desc, 'red', true)
                 eobject.expires = asdate.add(userEffect.expires, item.lasts, 'days')
+                eobject.notified = false
             }
-            user.effects = user.effects.filter(x => x.id != userEffect.id)
             desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
                 ${effect.passive? `The countdown timer on this effect has been extended. Find it in \`${ctx.prefix}effect list passives\``:
                 `You have extended the number of uses for this effect. Your new usage limit is **${eobject.uses}**`}`
         } else {
-            eobject = { id: item.effectid }
+            eobject = { id: item.effectid, userid: user.discord_id }
             if(!effect.passive) {
                 eobject.uses = item.lasts
                 eobject.cooldownends = new Date()
+            } else {
+                eobject.notified = false
             }
             desc = `you got **${effect.name}** ${effect.passive? 'passive':'usable'} Effect Card!
                 ${effect.passive? `To use this passive effect equip it with \`/hero equip\``:
@@ -242,8 +249,11 @@ const uses = {
 
         await removeUserCards(ctx, user, item.cards)
 
-        pullInventoryItem(user, item.id, index)
-        user.effects.push(eobject)
+        pullInventoryItem(user, item)
+        if (userEffect)
+            await UserEffect.findOneAndUpdate({userid: user.discord_id, id: userEffect.id}, eobject)
+        else
+            await UserEffect.create(eobject)
         await user.save()
 
         await completed(ctx, user, item.cards)
@@ -283,16 +293,17 @@ const uses = {
                 break
             case 'effectincrease':
                 const reg = new RegExp(args.effect, 'gi')
-                const chosenEffect = user.effects.find(x => reg.test(x.id))
+                const uEffect = await UserEffect.find({userid: user.discord_id})
+                const chosenEffect = uEffect.find(x => reg.test(x.id))
                 const itemEffect = ctx.effects.find(x => x.id === chosenEffect.id)
+                let update
 
                 if (chosenEffect.expires)
-                    chosenEffect.expires = asdate.add(chosenEffect.expires, 1, 'days')
+                    update = {expires: asdate.add(chosenEffect.expires, 1, 'days')}
                 else
-                    chosenEffect.uses++
+                    update = {uses: chosenEffect.uses + 1}
 
-                user.markModified('effects')
-                await user.save()
+                await UserEffect.findOneAndUpdate({userid: user.discord_id, id: chosenEffect.id}, update)
 
                 await ctx.reply(user, `you have successfully increased the ${chosenEffect.expires? 'expiration time': 'use count'} for **${itemEffect.name}** by 1 ${chosenEffect.expires? 'day': 'use'}!`, 'green', true)
                 break
@@ -314,7 +325,7 @@ const uses = {
                 }, 'green', true)
                 break
         }
-        pullInventoryItem(user, item.id, index)
+        pullInventoryItem(user, item)
         await user.save()
     }
 }
@@ -360,6 +371,7 @@ const infos = {
         }
 
         const fields = [
+            { name: 'Recipe Cost', value: `Price: **${item.price}**${ctx.symbols.tomato}`},
             { name: `Effect`, value: effect.desc },
             { name: `Requires`, value: requires }
         ]
@@ -381,6 +393,24 @@ const infos = {
     bonus: (ctx, user, item) => ({
         description: item.fulldesc
     }),
+
+    guild: (ctx, user, item) => {
+        let embed = {
+            description: item.fulldesc,
+            fields: [{
+                name: `Building Price`,
+                value: `Price: **${item.price}**${ctx.symbols.tomato}`
+            }]
+        }
+        item.levels.map((x, i) => (embed.fields.push({
+            name: `Level ${i + 1}`,
+            value: `Price: **${x.price}** ${ctx.symbols.tomato}
+                Maintenance Cost: **${x.maintenance}**${ctx.symbols.tomato}/day
+                Level Requirement: **${x.level}**
+                > ${x.desc.replace(/{currency}/gi, ctx.symbols.tomato)}`
+        })))
+        return embed
+    }
 }
 
 const checks = {
@@ -442,7 +472,8 @@ const checks = {
                 if (!args.effect)
                     return `you need to supply an effect name with the \`effect_name:\` option!`
                 const reg = new RegExp(args.effect, 'gi')
-                const chosenEffect = user.effects.find(x => reg.test(x.id))
+                const uEffects = await UserEffect.find({userid: user.discord_id})
+                const chosenEffect = uEffects.find(x => reg.test(x.id))
                 if (!chosenEffect)
                     return `you either don't have \`${args.effect}\` or it is spelled incorrectly. Please try again!`
                 const itemEffect = ctx.effects.find(x => x.id === chosenEffect.id)
@@ -477,7 +508,7 @@ const checks = {
 }
 
 const buys = {
-    blueprint: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() }),
+    blueprint: (ctx, user, item) => insertInventoryItem(user, item),
     claim_ticket: (ctx, user, item) => {
         let col
         if(!_.isArray(item.level))
@@ -489,8 +520,7 @@ const buys = {
         let uItem = { id: item.id, time: new Date() }
         if (col)
             uItem.col = col.id
-        
-        user.inventory.push(uItem)
+        insertInventoryItem(user, uItem)
     },
     recipe: (ctx, user, item) => {
         const cards = item.recipe.reduce((arr, x) => {
@@ -499,9 +529,20 @@ const buys = {
                 && !arr.includes(y.id))).id)
             return arr
         }, [])
-        user.inventory.push({ id: item.id, cards, time: new Date() })
+        insertInventoryItem(user, item, cards)
     },
-    bonus: (ctx, user, item) => user.inventory.push({ id: item.id, time: new Date() })
+    bonus: (ctx, user, item) => insertInventoryItem(user, item),
+    guild: async (ctx, user, item) => {
+        const existing = await getBuilding(ctx, ctx.guild.id, item.id)
+        if (existing)
+            return `this guild already has \`${item.id}\` built.`
+        const building = new GuildBuilding()
+        building.guildid = ctx.guild.id
+        building.id = item.id
+        building.level = 1
+        building.health = 100
+        await building.save()
+    }
 }
 
 const getQuestion = (ctx, user, item) => {
@@ -521,14 +562,21 @@ const getQuestion = (ctx, user, item) => {
     }
 }
 
-const pullInventoryItem = (user, itemid, index) => {
-    if (index) {
-        _.pullAt(user.inventory, index)
-    } else {
-        const el = user.inventory.find(x => x.id === itemid)
-        _.pullAt(user.inventory, user.inventory.indexOf(el))
-    }
-    user.markModified('inventory')
+const insertInventoryItem = async (user, item, cards) => {
+    const invItem = new UserInv()
+    invItem.userid = user.discord_id
+    invItem.id = item.id
+    invItem.acquired = new Date()
+    if (cards)
+        invItem.cards = cards
+    if (item.col)
+        invItem.col = item.col
+
+    await invItem.save()
+}
+
+const pullInventoryItem = async (user, item) => {
+    await UserInv.deleteOne({_id: item._id, userid: user.discord_id})
 }
 
 module.exports = {

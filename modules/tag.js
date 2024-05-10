@@ -102,7 +102,7 @@ const withPurgeTag = (callback, tagPurge = true) => async(ctx, user, ...args) =>
         return ctx.qhelp(ctx, user, 'tag')
 
     if(parsedargs.isEmpty('ids') && !tagPurge) {
-        return ctx.reply(user, 'valid user is required')
+        return ctx.reply(user, 'valid user is required', 'red')
     } else if (!tagPurge) {
         fetchUser = parsedargs.ids[0]
     }
@@ -123,7 +123,7 @@ const withPurgeTag = (callback, tagPurge = true) => async(ctx, user, ...args) =>
 const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
     let log = await AuditTags.findOne({affectedUser: targetUser.discord_id})
 
-    if ((restore && !log) || !ctx.audit.taglogchannel)
+    if ((restore && !log) || !ctx.config.channels.tagLog)
         return false
 
     let now = new Date()
@@ -175,7 +175,7 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
             log.tagsBanned = banned
             log.last_edited = now
             if (validChange)
-                await ctx.bot.editMessage(ctx.audit.taglogchannel, log.message_id, {embed: baseEmbed})
+                await ctx.bot.rest.channels.editMessage(ctx.config.channels.tagLog, log.message_id, {embed: baseEmbed})
             return log
         }
     }
@@ -205,7 +205,7 @@ const logTagAudit = async(ctx, user, tag, ban, targetUser, restore = false) => {
                 return log
             } else {
                 if (validChange)
-                    await ctx.bot.editMessage(ctx.audit.taglogchannel, log.message_id, {embed: baseEmbed})
+                    await ctx.bot.rest.channels.editMessage(ctx.config.channels.tagLog, log.message_id, {embed: baseEmbed})
                 return log
             }
 
@@ -221,7 +221,7 @@ const newAuditTag = async (ctx, user, tag, target, ban, embed, now) => {
     ban? auditTag.tagsBanned.push(tag): auditTag.tagsRemoved.push(tag)
     ban? embed.fields[0].value = tag: embed.fields[1].value = tag
 
-    let newMessage = await ctx.bot.createMessage(ctx.audit.taglogchannel, {embed: embed})
+    let newMessage = await ctx.bot.rest.channels.createMessage(ctx.config.channels.tagLog, {embed: embed})
 
     auditTag.message_id = newMessage.id
     return auditTag

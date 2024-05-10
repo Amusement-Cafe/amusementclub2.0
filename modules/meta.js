@@ -1,4 +1,4 @@
-const Danbooru  = require('danbooru')
+const got  = require('got')
 
 const {
     Tag, 
@@ -13,11 +13,20 @@ const {
     urlRegex,
 } = require('../utils/tools')
 
-const booru = new Danbooru()
+const getBooruPost = async (ctx, booruID) => {
+    try {
+        let resp = await got(`https://danbooru.donmai.us/posts/${booruID}.json`, { json: true })
 
-const getBooruPost = (ctx, booruID) => booru.posts(booruID)
+        if (resp.statusCode == 200)
+        {
+            return resp.body;
+        }
 
-const getPostURL = (post) => booru.url(post.file_url)
+    } catch (e) {
+        process.send({error: {message: e.message, stack: e.stack}})
+    }
+}
+
 
 const setCardBooruData = async (ctx, user, cardID, post) => {
     const info = fetchInfo(ctx, cardID)
@@ -27,7 +36,7 @@ const setCardBooruData = async (ctx, user, cardID, post) => {
     info.meta.artist = post.tag_string_artist
     info.meta.pixivid  = post.pixiv_id
     info.meta.source = post.source
-    info.meta.image = getPostURL(post)
+    info.meta.image = post.file_url
     info.meta.contributor = user.discord_id
     await info.save()
 
@@ -106,6 +115,7 @@ const fetchInfo = (ctx, id) => {
     if(!info) {
         info = new Cardinfo()
         info.id = id
+        info.meta.added = new Date()
         ctx.cardInfos[id] = info
     }
 
@@ -116,7 +126,6 @@ const fetchAllInfos = async () => await Cardinfo.find()
 
 module.exports = {
     getBooruPost,
-    getPostURL,
     setCardBooruData,
     setCardSource,
     fetchInfo,

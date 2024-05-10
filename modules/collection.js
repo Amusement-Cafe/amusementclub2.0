@@ -1,8 +1,12 @@
 const { 
-    countUserCards, getUserCards, removeUserCards,
+    countUserCards,
+    getUserCards,
+    removeUserCards,
 } = require('./user')
 
-const _ = require('lodash')
+const _             = require('lodash')
+const UserInventory = require("../collections/userInventory")
+const Users         = require('../collections/user')
 
 const byAlias = (ctx, name) => {
     const regex = new RegExp(name, 'gi')
@@ -72,6 +76,24 @@ const completed = async (ctx, user, cardIDs) => {
     }
 }
 
+const updateCompletion = async (ctx, cards, oldCards) => {
+    const newCards = cards.filter(x => !oldCards.some(y => y.id === x.id))
+    const cols = _.uniqBy(newCards, 'col').map(x => x.col)
+    await Promise.all(cols.map(async x => {
+        const completedUsers = await Users.find({"completedcols.id": x})
+        completedUsers.map(async y => {
+            if (y.prefs.notifications.completed) {
+                try {
+                    await ctx.direct(y, `due to a collection update, you no longer have all the cards required for a full completion of \`${x}\`. 
+                    This collection has been removed from your completed list!`, 'red')
+                } catch (e) {y.prefs.notifications.completed = false}
+            }
+            y.completedcols = y.completedcols.filter(z => z.id !== x)
+            await y.save()
+        })
+    }))
+}
+
 const reset = async (ctx, user, col, amounts) => {
     const clouted = user.cloutedcols.find(x => x.id === col.id)
     const legendary = ctx.cards.find(x => x.col === col.id && x.level === 5)
@@ -111,8 +133,14 @@ const reset = async (ctx, user, col, amounts) => {
     await removeUserCards(ctx, user, cardsToRemove)
     await completed(ctx, user, cardsToRemove)
 
-    if(legendary)
-        user.inventory.push({ id: 'legendticket', time: new Date(), col: col.id })
+    if(legendary) {
+        const ticket = new UserInventory()
+        ticket.userid = user.discord_id
+        ticket.id = 'legendticket'
+        ticket.acquired = new Date()
+        ticket.col = col.id
+        await ticket.save()
+    }
 
     await user.save()
 
@@ -163,4 +191,5 @@ module.exports = {
     reset,
     resetNeeds,
     hasResetNeeds,
+    updateCompletion,
 }
