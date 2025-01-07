@@ -163,7 +163,7 @@ cmd('pat', withInteraction(async (ctx, user, args) => {
 cmd('invite', withInteraction(async (ctx, user) => {
     const embed = { 
         title: `Invite Amusement Club`,
-        description: `Please, read terms and conditions of using bot on your server by viewing [our site](https://docs.amusement.cafe/)
+        description: `Please, read terms and conditions of using bot on your server by viewing [our site](https://docs.amu.cards)
             After that [click here](${ctx.invite}) to invite the bot.`,
         color: colors.green
     }
@@ -202,7 +202,7 @@ const getHelpEmbed = (ctx, o) => {
                         type: 2,
                         style: 5,
                         label: `Documentation Page`,
-                        url: o.docs ? `https://docs.amusement.cafe/${o.docs}` : `https://docs.amusement.cafe/`
+                        url: o.docs ? `https://docs.amu.cards/${o.docs}` : `https://docs.amu.cards/`
                     }
                 ]
             }

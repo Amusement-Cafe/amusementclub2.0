@@ -2,15 +2,15 @@
 
 Each claim will cost you more 🍅 tomatoes (in-game currency), using `/daily` will reset your claim cost and give you extra tomatoes.
 
-- If you are new, [get started here](https://docs.amusement.cafe/en/getting-started/howto-play)
-- For setting up bot on your server check out [this page](https://docs.amusement.cafe/en/getting-started/server)
-- If you are upgrading from previous version, check out [this guide](https://docs.amusement.cafe/en/upgrade)
+- If you are new, [get started here](https://docs.amu.cards/en/getting-started/howto-play)
+- For setting up bot on your server check out [this page](https://docs.amu.cards/en/getting-started/server)
+- If you are upgrading from previous version, check out [this guide](https://docs.amu.cards/en/upgrade)
 - If you are self-hosting a version of this bot, please read [Hosting](#Hosting)
 
-Invite the bot [here](https://club.amusement.cafe).
-Get your bot issues resolved on the [Amusement Cafe](https://discord.gg/HEqbtpzbHz) support server.
+Invite the bot [here](https://amu.cards).
+Get your bot issues resolved on the [Amusement Cafe](https://support.amu.cards) support server.
 
-[![Discord Server](https://img.shields.io/discord/351871492536926210)](https://discord.gg/HEqbtpzbHz)
+[![Discord Server](https://img.shields.io/discord/351871492536926210)](https://support.amu.cards)
 
 ## Contributing
 

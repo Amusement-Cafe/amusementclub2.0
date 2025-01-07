@@ -51,8 +51,8 @@ const fetchOrCreate = async (ctx, userid, username) => {
                 {
                     name: `More information`,
                     value: `Use \`${ctx.prefix}help\` to get help about any command. For example, \`${ctx.prefix}help help_menu:forge\` will give you all information about forge.
-                        **Help has been deprecated as of 04/22. Use the [online documentation](https://docs.amusement.cafe/) for all help**
-                        Also check out our [how to play guide](https://docs.amusement.cafe/en/getting-started/howto-play) and [online documentation](https://docs.amusement.cafe/).
+                        **Help has been deprecated as of 04/22. Use the [online documentation](https://docs.amu.cards/) for all help**
+                        Also check out our [how to play guide](https://docs.amu.cards/en/getting-started/howto-play) and [online documentation](https://docs.amu.cards/).
                         Join the [support server](${ctx.cafe}) to ask any questions.`
                 }
             ]
